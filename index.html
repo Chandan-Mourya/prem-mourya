@@ -8,7 +8,7 @@
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
   <!-- Primary Meta Tags -->
-  <title>Chandan Mourya | Java Developer</title>
+  <title>Chandan Mourya | Software Engineer · Java · Spring Boot · AI</title>
   <meta name="google-site-verification" content="AwGOVjRtzVUPIrlZwzng4qJRJc4OMZt41dvYQzgjvWc" />
   
   <!-- Google Tag Manager -->
@@ -28,30 +28,29 @@
   gtag('config', 'G-W5JWGJFJ4M');
   </script>
 
-  <meta name="title" content="Chandan Mourya | Java Developer">
-  <meta name="description" content="Chandan Mourya, The things that I love most are writing code and learning about new technology. This curiosity has enabled me to learn Java and Frontend Web development. Looking for a position that would allow the use of my system design skills, support abilities and critical thinking. 
-">
+  <meta name="title" content="Chandan Mourya | Software Engineer · Java · Spring Boot · AI">
+  <meta name="description" content="Chandan Mourya — Software Engineer with 4.5+ years of experience building scalable Java + Spring Boot microservices, RESTful APIs, Elasticsearch-powered search, and AI/LLM-driven workflows. Microsoft Certified: Azure AI Engineer Associate.">
 
   <!-- Open Graph // Facebook -->
-  <meta property="og:type" content="website"><!-- 
-  <meta property="og:url" content="https://akashpawara.com"> -->
-  <meta property="og:title" content="Chandan Mourya | Java Developer ">
-  <meta property="og:description" content="Chandan Mourya, The things that I love most are writing code and learning about new technology. This curiosity has enabled me to learn Java and Frontend Web development. Looking for a position that would allow the use of my system design skills, support abilities and critical thinking."><!-- 
-  <meta property="og:image" content="https://akashpawara.com/assets/img/profile.jpg"> -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Chandan Mourya | Software Engineer · Java · Spring Boot · AI">
+  <meta property="og:description" content="4.5+ years engineering scalable backends, distributed systems, and AI-driven solutions with Java, Spring Boot, Elasticsearch, and modern LLM platforms.">
 
-  <!-- Twitter --> 
-  <meta property="twitter:card" content="summary_large_image"><!-- 
-  <meta property="twitter:url" content="https://akashpawara.com"> -->
-  <meta property="twitter:title" content="Chandan Mourya | Java Developer ">
-  <meta property="twitter:description" content="Chandan Mourya, The things that I love most are writing code and learning about new technology. This curiosity has enabled me to learn Java and Frontend Web development. Looking for a position that would allow the use of my system design skills, support abilities and critical thinking."><!-- 
-  <meta property="twitter:image" content="https://akashpawara.com/assets/img/profile.jpg"> -->
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:title" content="Chandan Mourya | Software Engineer · Java · Spring Boot · AI">
+  <meta property="twitter:description" content="4.5+ years engineering scalable backends, distributed systems, and AI-driven solutions with Java, Spring Boot, Elasticsearch, and modern LLM platforms.">
 
   <!-- Favicons -->
   <link href="assets/img/logo.png" rel="icon">
   <link href="assets/img/logo.png" rel="apple-touch-icon">
 
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+  <!-- Google Fonts: Inter (body) + Space Grotesk (headings) + JetBrains Mono (accents) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Legacy fonts kept for unmodified vendor pieces -->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700|Poppins:400,500,600,700" rel="stylesheet">
 
   <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
@@ -60,6 +59,1141 @@
   <link href="assets/vendor/remixicon/remixicon.css" rel="stylesheet">
   <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
   <link href="assets/css/style.min.css" rel="stylesheet">
+
+  <!-- ============================================================
+       Modern Dark Theme · v2 (clean, restrained, senior-engineer)
+       Long-scroll, sticky pill nav, single accent color.
+       Inspired by GitHub dark palette + Vercel/Linear restraint.
+       ============================================================ -->
+  <style>
+    /* ==========================================================
+       DESIGN TOKENS
+       ========================================================== */
+    :root{
+      /* Surfaces — GitHub Primer dark palette */
+      --bg:            #0d1117;
+      --bg-elevated:   #161b22;
+      --surface:       #1c2128;
+      --surface-hover: #21262d;
+      --border:        #30363d;
+      --border-subtle: #21262d;
+
+      /* Text */
+      --text:        #e6edf3;
+      --text-soft:   #c9d1d9;
+      --text-muted:  #8b949e;
+      --text-dim:    #6e7681;
+
+      /* Single accent */
+      --accent:        #58a6ff;
+      --accent-hover:  #79c0ff;
+      --accent-bg:     rgba(88,166,255,.10);
+      --accent-border: rgba(88,166,255,.30);
+      --green:         #3fb950;
+      --green-bg:      rgba(63,185,80,.10);
+
+      /* Type */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+
+      /* Sizing */
+      --container: 1080px;
+      --container-narrow: 880px;
+      --radius:    12px;
+      --radius-sm: 8px;
+      --radius-lg: 16px;
+
+      /* Spacing scale (4/8/12/16/24/32/48/64/96) */
+      --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+      --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px;
+      --space-24: 96px;
+    }
+
+    /* ==========================================================
+       BASE
+       ========================================================== */
+    *, *::before, *::after{ box-sizing: border-box; }
+
+    html, body{ background: var(--bg) !important; }
+    body{
+      font-family: var(--font-sans) !important;
+      color: var(--text) !important;
+      font-size: 15px;
+      line-height: 1.6;
+      letter-spacing: -0.01em;
+      -webkit-font-smoothing: antialiased;
+      margin: 0;
+      padding: 0;
+      position: static;
+      overflow-x: hidden;
+    }
+    /* Kill the template's fixed profile.jpg bg */
+    body::before, body::after{
+      display: none !important;
+      content: none !important;
+    }
+
+    h1, h2, h3, h4, h5, h6{
+      font-family: var(--font-sans) !important;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    a{ color: var(--accent); text-decoration: none; transition: color .15s ease; }
+    a:hover{ color: var(--accent-hover); }
+    p{ margin: 0; }
+
+    ::selection{ background: rgba(88,166,255,.35); color: var(--text); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar{ width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track{ background: var(--bg); }
+    ::-webkit-scrollbar-thumb{ background: var(--surface); border-radius: 10px; border: 2px solid var(--bg); }
+    ::-webkit-scrollbar-thumb:hover{ background: var(--border); }
+
+    img{ max-width: 100%; height: auto; display: block; }
+
+    /* ==========================================================
+       OVERRIDE TEMPLATE SPA: sections always visible & scrollable
+       ========================================================== */
+    section{
+      position: static !important;
+      opacity: 1 !important;
+      width: auto !important;
+      top: auto !important;
+      bottom: auto !important;
+      padding: var(--space-16) var(--space-6) !important;
+      margin: 0 !important;
+      overflow: visible !important;
+      transition: none !important;
+      z-index: auto !important;
+    }
+    section .container{
+      background: transparent !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      padding: 0 !important;
+      max-width: var(--container);
+      margin: 0 auto !important;
+      width: 100%;
+    }
+    /* Vertical breathing room between sub-blocks inside a section.
+       The About section stacks: about-me → counts → skills, etc. */
+    .about > .container + .container,
+    section > .container + .container{
+      margin-top: var(--space-16) !important;
+    }
+    @media (max-width: 768px){
+      section{ padding: var(--space-12) var(--space-4) !important; }
+      .about > .container + .container,
+      section > .container + .container{
+        margin-top: var(--space-12) !important;
+      }
+    }
+
+    /* ==========================================================
+       STICKY TOP NAV (#header)
+       ========================================================== */
+    #header,
+    #header.header-top{
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      height: auto !important;
+      width: 100% !important;
+      z-index: 1000 !important;
+      display: block !important;
+      align-items: initial !important;
+      background: transparent !important;
+      padding: 14px var(--space-6) !important;
+      overflow: visible !important;
+      border: 0 !important;
+    }
+    #header .container{
+      max-width: var(--container) !important;
+      margin: 0 auto !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: var(--space-4);
+      background: rgba(13,17,23,.78) !important;
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border: 1px solid var(--border) !important;
+      border-radius: 999px !important;
+      padding: 8px 8px 8px 20px !important;
+      text-align: left !important;
+      box-shadow: 0 4px 24px rgba(0,0,0,.3);
+    }
+
+    #header h1.brand{
+      font-size: 15px !important;
+      font-weight: 600 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      flex: 0 0 auto;
+      letter-spacing: -0.01em;
+    }
+    #header h1.brand a,
+    #header h1.brand a:hover{
+      color: var(--text) !important;
+      background: none !important;
+      -webkit-text-fill-color: initial !important;
+      display: inline-block;
+    }
+
+    .navbar{ margin: 0 !important; padding: 0 !important; }
+    .navbar ul{
+      display: flex !important;
+      gap: 2px;
+      margin: 0; padding: 0;
+      list-style: none;
+      background: transparent !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+    }
+    .navbar li{ margin: 0 !important; }
+    .navbar li + li{ margin-left: 0 !important; }
+    .navbar a{
+      display: inline-flex !important;
+      align-items: center;
+      padding: 7px 14px !important;
+      font-family: var(--font-sans) !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      color: var(--text-muted) !important;
+      border-radius: 999px !important;
+      transition: color .15s ease, background .15s ease;
+      white-space: nowrap;
+    }
+    .navbar a::before,
+    .navbar a:before{ display: none !important; }
+    .navbar a:hover,
+    .navbar li:hover > a{
+      color: var(--text) !important;
+      background: var(--surface) !important;
+    }
+    .navbar .active,
+    .navbar a.active{
+      color: var(--text) !important;
+      background: var(--surface) !important;
+    }
+
+    .mobile-nav-toggle{
+      display: none;
+      color: var(--text) !important;
+      background: var(--surface) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 999px;
+      width: 38px; height: 38px;
+      font-size: 20px !important;
+      position: static !important;
+      right: auto !important; top: auto !important;
+      align-items: center; justify-content: center;
+      line-height: 1 !important;
+      cursor: pointer;
+    }
+    @media (max-width: 820px){
+      .mobile-nav-toggle{ display: inline-flex !important; }
+      #header .navbar ul{ display: none !important; }
+    }
+
+    /* Mobile overlay nav */
+    .navbar-mobile{
+      background: rgba(13,17,23,.96) !important;
+      backdrop-filter: blur(20px);
+    }
+    .navbar-mobile ul{
+      display: block !important;
+      background: transparent !important;
+      border: 0 !important;
+      padding: 80px 20px 20px !important;
+      border-radius: 0 !important;
+    }
+    .navbar-mobile li{ padding: 8px 0 !important; }
+    .navbar-mobile a{
+      padding: 14px 18px !important;
+      font-size: 15px !important;
+      background: var(--surface) !important;
+      border: 1px solid var(--border);
+      width: 100%; justify-content: flex-start;
+    }
+
+    /* ==========================================================
+       HERO
+       ========================================================== */
+    .hero{
+      min-height: calc(100vh - 90px);
+      display: flex;
+      align-items: center;
+      padding: 130px var(--space-6) var(--space-16) !important;
+      position: relative;
+    }
+    /* Subtle hero glow */
+    .hero::before{
+      content: "";
+      position: absolute;
+      top: -10%; left: 50%;
+      transform: translateX(-50%);
+      width: 900px; height: 600px;
+      background: radial-gradient(closest-side, rgba(88,166,255,.10), transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .hero-inner{
+      position: relative;
+      z-index: 1;
+      max-width: var(--container);
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .hero-eyebrow{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: var(--green-bg);
+      border: 1px solid rgba(63,185,80,.25);
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 500;
+      margin: 0 0 var(--space-6);
+    }
+    .live-dot{
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 0 rgba(63,185,80,.6);
+      animation: live-pulse 2s ease-in-out infinite;
+    }
+    @keyframes live-pulse{
+      0%, 100%{ box-shadow: 0 0 0 0 rgba(63,185,80,.5); }
+      70%     { box-shadow: 0 0 0 6px rgba(63,185,80,0); }
+    }
+
+    .hero-name{
+      font-size: clamp(40px, 6vw, 64px) !important;
+      font-weight: 700 !important;
+      line-height: 1.05 !important;
+      letter-spacing: -0.035em;
+      color: var(--text) !important;
+      margin: 0 0 var(--space-3) !important;
+    }
+
+    .hero-role{
+      font-size: clamp(18px, 2.2vw, 24px);
+      font-weight: 500;
+      line-height: 1.35;
+      color: var(--text-soft);
+      margin: 0 0 var(--space-6);
+      max-width: 720px;
+    }
+    .hero-role .accent{ color: var(--accent); font-weight: 600; }
+
+    .hero-bio{
+      max-width: 640px;
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--text-muted);
+      margin: 0 0 var(--space-8);
+    }
+    .hero-bio strong{ color: var(--text-soft); font-weight: 500; }
+
+    .hero-stats{
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-4) var(--space-8);
+      padding: var(--space-4) 0;
+      margin: 0 0 var(--space-8);
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .hero-stat{ display: flex; flex-direction: column; gap: 2px; }
+    .hero-stat-value{
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+    .hero-stat-label{
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 0.2px;
+    }
+    .hero-stat-divider{
+      width: 1px;
+      height: 28px;
+      background: var(--border-subtle);
+    }
+    @media (max-width: 640px){
+      .hero-stat-divider{ display: none; }
+      .hero-stats{ gap: var(--space-4) var(--space-6); }
+    }
+
+    .hero-actions{
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      align-items: center;
+    }
+
+    /* Buttons */
+    .btn{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 500;
+      transition: all .15s ease;
+      cursor: pointer;
+      text-decoration: none;
+      border: 1px solid transparent;
+      font-family: var(--font-sans);
+      line-height: 1.2;
+    }
+    .btn i{ font-size: 15px; }
+    .btn-primary{
+      background: var(--accent);
+      color: #0d1117 !important;
+      border-color: var(--accent);
+    }
+    .btn-primary:hover{
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+      color: #0d1117 !important;
+      transform: translateY(-1px);
+    }
+    .btn-secondary{
+      background: var(--surface);
+      color: var(--text) !important;
+      border-color: var(--border);
+    }
+    .btn-secondary:hover{
+      background: var(--surface-hover);
+      border-color: var(--text-muted);
+      color: var(--text) !important;
+    }
+
+    .hero-socials{
+      display: inline-flex;
+      gap: 6px;
+      margin-left: 4px;
+    }
+    .btn-icon{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px; height: 38px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted) !important;
+      border-radius: var(--radius-sm);
+      font-size: 16px;
+      transition: all .15s ease;
+    }
+    .btn-icon:hover{
+      background: var(--surface-hover);
+      color: var(--text) !important;
+      border-color: var(--text-muted);
+    }
+
+    /* ==========================================================
+       SECTION TITLE
+       ========================================================== */
+    .section-title{
+      text-align: left !important;
+      margin-bottom: var(--space-12) !important;
+      max-width: 720px;
+    }
+    .section-title h2{
+      display: inline-flex !important;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px !important;
+      font-weight: 600 !important;
+      letter-spacing: 2px !important;
+      text-transform: uppercase;
+      color: var(--accent) !important;
+      margin: 0 0 var(--space-3) !important;
+      padding: 0 !important;
+      background: none !important;
+      border: 0 !important;
+      font-family: var(--font-sans) !important;
+      line-height: 1.4 !important;
+    }
+    .section-title h2::before{
+      content: "";
+      width: 24px;
+      height: 1px;
+      background: var(--accent);
+      display: inline-block;
+    }
+    .section-title h2::after{ display: none !important; }
+    .section-title p{
+      font-size: clamp(28px, 3.4vw, 36px) !important;
+      font-weight: 700 !important;
+      letter-spacing: -0.025em;
+      color: var(--text) !important;
+      text-transform: none !important;
+      margin: 0 !important;
+      line-height: 1.2 !important;
+      font-family: var(--font-sans) !important;
+    }
+
+    /* ==========================================================
+       ABOUT
+       ========================================================== */
+    .about-me{ padding: 0 !important; }
+    .about-me .row{ align-items: center; row-gap: var(--space-8); }
+    .about-me img{
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 340px;
+      border: 1px solid var(--border);
+    }
+    .about-me .content h3{
+      font-size: 22px !important;
+      font-weight: 600 !important;
+      color: var(--text) !important;
+      margin: 0 0 var(--space-3) !important;
+      background: none !important;
+      -webkit-text-fill-color: initial !important;
+      display: block !important;
+    }
+    .about-me .content p{
+      color: var(--text-muted);
+      font-size: 15px;
+      line-height: 1.75;
+      margin: 0 0 var(--space-4);
+    }
+    .about-me .content p.font-italic{ font-style: normal !important; }
+    .about-me .content strong{ color: var(--text); font-weight: 500; }
+    .about-me .content ul{ list-style: none !important; padding: 0 !important; margin: 0; }
+    .about-me .content ul li{
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: var(--space-2) !important;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    .about-me .content ul i{
+      color: var(--text-dim) !important;
+      font-size: 11px !important;
+      margin: 0 !important;
+      line-height: 1 !important;
+    }
+    .about-me .content ul strong{ color: var(--text); margin-right: 4px; font-weight: 500; }
+    .about-me .content ul a{ color: var(--text-soft); }
+    .about-me .content ul a:hover{ color: var(--accent); }
+
+    .about-links{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: var(--space-6);
+    }
+    .about-links a{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-soft) !important;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all .15s ease;
+    }
+    .about-links a:hover{
+      border-color: var(--accent);
+      color: var(--accent) !important;
+      background: var(--accent-bg);
+      transform: none;
+    }
+
+    /* ==========================================================
+       COUNTS (stats)
+       ========================================================== */
+    .counts{ padding: 0 !important; }
+    .counts .row{ row-gap: var(--space-3); }
+    .counts .count-box{
+      background: var(--bg-elevated) !important;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      padding: var(--space-6) !important;
+      text-align: left !important;
+      transition: all .15s ease;
+      height: 100%;
+      position: static !important;
+    }
+    .counts .count-box:hover{
+      border-color: var(--border);
+      background: var(--surface) !important;
+      transform: none;
+    }
+    .counts .count-box i{
+      position: static !important;
+      transform: none !important;
+      font-size: 16px !important;
+      color: var(--accent) !important;
+      background: var(--accent-bg) !important;
+      padding: 0 !important;
+      border-radius: var(--radius-sm) !important;
+      width: 36px; height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1 !important;
+      margin: 0 0 var(--space-3) !important;
+      box-shadow: none !important;
+    }
+    .counts .count-box span{
+      display: block;
+      font-size: 28px !important;
+      font-weight: 700 !important;
+      color: var(--text) !important;
+      line-height: 1.1 !important;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+      font-family: var(--font-sans) !important;
+    }
+    .counts .count-box p{
+      font-size: 13px !important;
+      color: var(--text-muted) !important;
+      margin: 0 !important;
+      font-family: var(--font-sans) !important;
+      line-height: 1.4 !important;
+    }
+
+    /* ==========================================================
+       SKILLS
+       ========================================================== */
+    .skills{ padding: 0 !important; }
+    .skill-groups{
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-3);
+    }
+    @media (min-width: 768px){
+      .skill-groups{ grid-template-columns: 1fr 1fr; }
+    }
+    .skill-group{
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      padding: var(--space-6);
+      transition: border-color .15s ease;
+    }
+    .skill-group:hover{
+      border-color: var(--border);
+      transform: none;
+      background: var(--bg-elevated);
+    }
+    .skill-group h4{
+      font-size: 11px !important;
+      font-weight: 600 !important;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted) !important;
+      margin: 0 0 var(--space-3) !important;
+      font-family: var(--font-sans) !important;
+      display: block;
+    }
+    .skill-group h4::before{ display: none !important; }
+    .skill-chips{ display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip{
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text-soft);
+      border: 1px solid var(--border-subtle);
+      font-size: 12.5px;
+      font-weight: 500;
+      font-family: var(--font-sans);
+      transition: all .15s ease;
+    }
+    .chip:hover{
+      border-color: var(--accent-border);
+      color: var(--accent);
+      background: var(--accent-bg);
+      transform: none;
+    }
+    .chip.ai{
+      color: var(--accent);
+      border-color: var(--accent-border);
+      background: var(--accent-bg);
+    }
+    .chip.ai:hover{
+      background: rgba(88,166,255,.18);
+      color: var(--accent-hover);
+      border-color: var(--accent);
+    }
+
+    /* ==========================================================
+       INTERESTS  (hide — not senior-portfolio appropriate)
+       ========================================================== */
+    .interests{ display: none !important; }
+
+    /* ==========================================================
+       RESUME / EXPERIENCE
+       ========================================================== */
+    .resume{ padding-top: 0 !important; }
+    .resume .row{ row-gap: var(--space-12); }
+    .resume .resume-title{
+      font-size: 11px !important;
+      font-weight: 600 !important;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted) !important;
+      margin: 0 0 var(--space-6) !important;
+      padding: 0;
+      font-family: var(--font-sans) !important;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .resume .resume-title::before{
+      content: "";
+      width: 18px;
+      height: 1px;
+      background: var(--text-muted);
+    }
+
+    .resume .resume-item{
+      padding: 0 0 var(--space-8) var(--space-6) !important;
+      border-left: 1px solid var(--border) !important;
+      position: relative;
+    }
+    .resume .resume-item::before{
+      content: "" !important;
+      position: absolute !important;
+      width: 9px !important;
+      height: 9px !important;
+      border-radius: 50% !important;
+      background: var(--accent) !important;
+      border: 2px solid var(--bg) !important;
+      box-shadow: 0 0 0 2px var(--accent-border) !important;
+      left: -5px !important;
+      top: 4px !important;
+    }
+    .resume .resume-item:last-child{ padding-bottom: 0 !important; }
+    .resume .resume-item h4{
+      font-size: 16px !important;
+      font-weight: 600 !important;
+      color: var(--text) !important;
+      text-transform: none !important;
+      line-height: 1.4 !important;
+      margin: 0 0 6px !important;
+      font-family: var(--font-sans) !important;
+      letter-spacing: -0.01em;
+    }
+    .resume .resume-item h4 a{ color: var(--text) !important; }
+    .resume .resume-item h4 a:hover{ color: var(--accent) !important; }
+    .resume .resume-item h5{
+      display: inline-flex !important;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface) !important;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted) !important;
+      padding: 3px 10px !important;
+      border-radius: 6px !important;
+      font-size: 12px !important;
+      font-weight: 500 !important;
+      margin: 0 0 var(--space-3) !important;
+      font-family: var(--font-mono) !important;
+    }
+    .resume .resume-item p{
+      color: var(--text-soft);
+      font-size: 14px;
+      line-height: 1.7;
+      margin: 0 0 var(--space-2);
+    }
+    .resume .resume-item p em{ color: var(--text-muted); font-style: normal; }
+    .resume .resume-item ul{
+      padding-left: 18px !important;
+      margin: var(--space-2) 0 0 !important;
+      list-style: disc;
+    }
+    .resume .resume-item ul li{
+      color: var(--text-soft);
+      font-size: 13.5px;
+      line-height: 1.7;
+      padding-bottom: var(--space-1) !important;
+    }
+    .resume .resume-item ul li::marker{ color: var(--text-dim); }
+    .resume .resume-item strong{ color: var(--text); font-weight: 600; }
+
+    .resume .resume-item .role-tag{
+      display: inline-flex;
+      align-items: center;
+      margin-left: 8px;
+      padding: 1px 8px;
+      border-radius: 4px;
+      background: var(--surface);
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      vertical-align: middle;
+      border: 1px solid var(--border-subtle);
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+    }
+    .resume .resume-item .badge-current{
+      background: var(--green-bg);
+      color: var(--green);
+      border-color: rgba(63,185,80,.25);
+    }
+
+    /* Resume "Download" CTA in the section title */
+    .resume .section-title span{
+      display: inline-block;
+      margin-top: var(--space-3);
+      font-size: 13px;
+    }
+    .resume .section-title span a{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text) !important;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all .15s ease;
+    }
+    .resume .section-title span a:hover{
+      border-color: var(--accent);
+      color: var(--accent) !important;
+      background: var(--accent-bg);
+    }
+
+    /* ==========================================================
+       BLOG (services)
+       ========================================================== */
+    .services{ padding-bottom: var(--space-16) !important; }
+    .services .row{ row-gap: var(--space-4); }
+    .services .icon-box{
+      background: var(--bg-elevated) !important;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      padding: var(--space-4) !important;
+      text-align: left !important;
+      transition: all .15s ease !important;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .services .icon-box:hover{
+      border-color: var(--border) !important;
+      background: var(--surface) !important;
+      transform: translateY(-2px);
+    }
+    .services .icon-box .icon{ display: none !important; }
+    .services .icon-box img.blog-img{
+      width: 100% !important;
+      height: 170px !important;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      margin-bottom: var(--space-3);
+    }
+    .services .icon-box img.blog-img:hover{ transform: none !important; }
+    .services .icon-box br{ display: none; }
+    .services .icon-box h4{
+      font-size: 15px !important;
+      font-weight: 600 !important;
+      margin: 0 0 var(--space-2) !important;
+      line-height: 1.4 !important;
+    }
+    .services .icon-box h4 a{ color: var(--text) !important; }
+    .services .icon-box h4 a:hover{ color: var(--accent) !important; }
+    .services .icon-box p{
+      color: var(--text-muted) !important;
+      font-size: 13.5px !important;
+      line-height: 1.65 !important;
+      margin: 0 !important;
+    }
+    .services .icon-box:hover h4 a,
+    .services .icon-box:hover p{ color: inherit !important; }
+
+    /* ==========================================================
+       PORTFOLIO
+       ========================================================== */
+    .portfolio{ padding-bottom: var(--space-16) !important; }
+    .portfolio .row:first-of-type{ margin-bottom: var(--space-6); }
+    .portfolio #portfolio-flters{
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 2px;
+      padding: 4px !important;
+      background: var(--bg-elevated) !important;
+      border: 1px solid var(--border-subtle);
+      border-radius: 999px !important;
+      margin: 0 auto var(--space-8) !important;
+      width: auto !important;
+      list-style: none !important;
+    }
+    .portfolio #portfolio-flters li{
+      padding: 6px 14px !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      text-transform: none !important;
+      color: var(--text-muted) !important;
+      background: transparent !important;
+      border-radius: 999px !important;
+      margin: 0 !important;
+      border: 0 !important;
+      cursor: pointer;
+      transition: all .15s ease;
+      line-height: 1.3 !important;
+    }
+    .portfolio #portfolio-flters li:hover{
+      color: var(--text) !important;
+      background: var(--surface) !important;
+    }
+    .portfolio #portfolio-flters li.filter-active{
+      background: var(--surface) !important;
+      color: var(--text) !important;
+    }
+    .portfolio .portfolio-item{ margin-bottom: var(--space-4) !important; }
+    .portfolio .portfolio-wrap{
+      background: var(--bg-elevated) !important;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: all .15s ease;
+      position: relative;
+    }
+    .portfolio .portfolio-wrap:hover{
+      border-color: var(--border) !important;
+      transform: translateY(-2px);
+    }
+    .portfolio .portfolio-wrap img{
+      display: block;
+      width: 100% !important;
+      height: 200px !important;
+      object-fit: cover;
+      transition: transform .4s ease;
+    }
+    .portfolio .portfolio-wrap:hover img{ transform: scale(1.04); }
+    .portfolio .portfolio-wrap::before{ display: none !important; }
+    .portfolio .portfolio-wrap .portfolio-info{
+      position: absolute !important;
+      inset: 0 !important;
+      display: flex !important;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: flex-start !important;
+      text-align: left !important;
+      padding: var(--space-4) !important;
+      background: linear-gradient(180deg, transparent 50%, rgba(13,17,23,.95) 100%) !important;
+      opacity: 0;
+      transition: opacity .2s ease;
+    }
+    .portfolio .portfolio-wrap:hover .portfolio-info{ opacity: 1; }
+    .portfolio .portfolio-wrap .portfolio-info::before,
+    .portfolio .portfolio-wrap .portfolio-info::after{ display: none !important; }
+    .portfolio .portfolio-wrap .portfolio-info h4{
+      font-size: 15px !important;
+      font-weight: 600 !important;
+      color: var(--text) !important;
+      margin: 0 0 2px !important;
+    }
+    .portfolio .portfolio-wrap .portfolio-info p{
+      color: var(--text-muted) !important;
+      font-size: 11.5px !important;
+      letter-spacing: 1px;
+      text-transform: uppercase !important;
+      margin: 0 !important;
+      font-weight: 500;
+    }
+    .portfolio .portfolio-wrap .portfolio-links{
+      position: absolute !important;
+      top: 12px !important; right: 12px !important;
+      display: flex; gap: 4px;
+      text-align: right !important;
+      opacity: 0;
+      transition: opacity .2s ease;
+    }
+    .portfolio .portfolio-wrap:hover .portfolio-links{ opacity: 1; }
+    .portfolio .portfolio-wrap .portfolio-links a{
+      width: 30px; height: 30px;
+      display: flex !important;
+      align-items: center; justify-content: center;
+      background: rgba(13,17,23,.92);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px !important;
+      margin: 0 !important;
+      color: var(--text-soft) !important;
+    }
+    .portfolio .portfolio-wrap .portfolio-links a:hover{
+      background: var(--accent);
+      color: var(--bg) !important;
+      border-color: transparent;
+    }
+
+    /* ==========================================================
+       CONTACT
+       ========================================================== */
+    .contact{ padding-bottom: var(--space-16) !important; }
+    .contact .row.mt-2{ row-gap: var(--space-3); margin-top: 0 !important; }
+    .contact .info-box{
+      background: var(--bg-elevated) !important;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      padding: var(--space-6) !important;
+      width: 100%;
+      transition: border-color .15s ease;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .contact .info-box:hover{
+      border-color: var(--border);
+      transform: none;
+    }
+    .contact .info-box i{
+      font-size: 18px !important;
+      color: var(--accent) !important;
+      background: var(--accent-bg);
+      padding: 0 !important;
+      border-radius: var(--radius-sm) !important;
+      width: 36px; height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 0 var(--space-3) !important;
+      line-height: 1 !important;
+    }
+    .contact .info-box h3{
+      font-size: 14px !important;
+      font-weight: 600 !important;
+      color: var(--text) !important;
+      margin: 0 0 var(--space-1) !important;
+    }
+    .contact .info-box p{
+      color: var(--text-muted) !important;
+      font-size: 14px !important;
+      margin: 0 !important;
+      line-height: 1.6 !important;
+    }
+    .contact .info-box .social-links{
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: var(--space-2);
+    }
+    .contact .info-box .social-links a{
+      width: 34px; height: 34px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted) !important;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      padding: 0 !important;
+      transition: all .15s ease;
+    }
+    .contact .info-box .social-links a:hover{
+      border-color: var(--accent);
+      color: var(--accent) !important;
+      background: var(--accent-bg);
+    }
+
+    .php-email-form{ margin-top: var(--space-6); }
+    .php-email-form .row{ row-gap: var(--space-3); }
+    .php-email-form input,
+    .php-email-form textarea{
+      background: var(--bg-elevated) !important;
+      border: 1px solid var(--border) !important;
+      color: var(--text) !important;
+      border-radius: var(--radius-sm) !important;
+      padding: 11px 14px !important;
+      font-size: 14px !important;
+      font-family: var(--font-sans) !important;
+      width: 100%;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    .php-email-form input::placeholder,
+    .php-email-form textarea::placeholder{ color: var(--text-dim); }
+    .php-email-form input:focus,
+    .php-email-form textarea:focus{
+      outline: none !important;
+      border-color: var(--accent) !important;
+      box-shadow: 0 0 0 3px var(--accent-bg) !important;
+    }
+    .php-email-form .text-center{ text-align: center; }
+    .php-email-form button[type="submit"]{
+      background: var(--accent) !important;
+      color: #0d1117 !important;
+      border: 0 !important;
+      padding: 11px 24px !important;
+      border-radius: var(--radius-sm) !important;
+      font-weight: 600 !important;
+      font-size: 14px !important;
+      font-family: var(--font-sans) !important;
+      cursor: pointer;
+      transition: all .15s ease;
+    }
+    .php-email-form button[type="submit"]:hover{
+      background: var(--accent-hover) !important;
+      transform: translateY(-1px);
+    }
+
+    /* ==========================================================
+       FOOTER (credits)
+       ========================================================== */
+    .credits{
+      position: static !important;
+      left: auto !important;
+      bottom: auto !important;
+      transform: none !important;
+      text-align: center;
+      padding: var(--space-8) var(--space-6) !important;
+      border-top: 1px solid var(--border-subtle);
+      background: transparent !important;
+      backdrop-filter: none !important;
+      border-radius: 0 !important;
+      color: var(--text-muted);
+      font-size: 13px;
+      z-index: auto;
+    }
+    .credits a{ color: var(--text-soft) !important; }
+    .credits a:hover{ color: var(--accent) !important; }
+
+    /* ==========================================================
+       UTILITIES / RESPONSIVE
+       ========================================================== */
+    @media (max-width: 768px){
+      #header{ padding: 10px 14px !important; }
+      #header .container{ padding: 6px 6px 6px 14px !important; }
+      .navbar a{ padding: 6px 10px !important; font-size: 12.5px !important; }
+      .hero{ padding: 110px var(--space-4) var(--space-12) !important; min-height: auto; }
+      .hero-name{ font-size: 40px !important; }
+      .hero-role{ font-size: 18px; }
+      .section-title{ margin-bottom: var(--space-8) !important; }
+      .resume .resume-item{ padding-left: var(--space-4) !important; }
+    }
+  </style>
 </head>
 
 <body>
@@ -67,37 +1201,75 @@
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PWCK6LH"
   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
-  <!-- ======= Header ======= -->
+  <!-- ======= Sticky Top Nav ======= -->
   <header id="header">
     <div class="container">
-
-      <h1><a href="index.html">Chandan Mourya </a></h1>
-      <!-- Uncomment below if you prefer to use an image logo -->
-      <!-- <a href="index.html" class="mr-auto"><img src="assets/img/logo.png" alt="" class="img-fluid"></a> -->
-      <h2>I'm a passionate <span>Java Developer </span> from Mumbai</h2> 
-
+      <h1 class="brand"><a href="#home">Chandan Mourya</a></h1>
       <nav id="navbar" class="navbar">
         <ul>
-          <li><a class="nav-link active" href="#header">Home</a></li>
+          <li><a class="nav-link active" href="#home">Home</a></li>
           <li><a class="nav-link" href="#about">About</a></li>
-          <li><a class="nav-link" href="#resume">Resume</a></li>
-          <li><a class="nav-link" href="#blog">Blogs</a></li>
+          <li><a class="nav-link" href="#resume">Experience</a></li>
           <li><a class="nav-link" href="#portfolio">Projects</a></li>
+          <li><a class="nav-link" href="#blog">Writing</a></li>
           <li><a class="nav-link" href="#contact">Contact</a></li>
         </ul>
         <i class="bi bi-list mobile-nav-toggle"></i>
-      </nav><!-- .navbar -->
+      </nav>
+    </div>
+  </header><!-- End Sticky Nav -->
 
-      <div class="social-links">
-        <a href="https://twitter.com/_Prem_mourya" class="twitter"><i class="bi bi-twitter"></i></a>
-        <a href="https://api.whatsapp.com/send?phone=918329589181" class="facebook"><i class="bi bi-whatsapp"></i></a>
-        <a href="https://www.instagram.com/_prem_mourya/" class="instagram"><i class="bi bi-instagram"></i></a>
-        <a href="https://www.linkedin.com/in/chandan-mourya-359323230/" class="linkedin"><i class="bi bi-linkedin"></i></a>
-        <a href="https://github.com/Chandan-Mourya" class="linkedin"><i class="bi bi-github"></i></a>
+  <!-- ======= Hero ======= -->
+  <section id="home" class="hero">
+    <div class="hero-inner">
+      <p class="hero-eyebrow"><span class="live-dot"></span> Available for new opportunities</p>
+      <h1 class="hero-name">Chandan Mourya</h1>
+      <p class="hero-role">
+        Software Engineer building <span class="accent">scalable backends</span> and <span class="accent">AI-powered systems</span>.
+      </p>
+      <p class="hero-bio">
+        4.5+ years engineering distributed Java &amp; Spring Boot microservices, Elasticsearch-driven search, and LLM workflows.
+        <strong>Microsoft Certified: Azure AI Engineer Associate.</strong> Currently at <strong>Punctuations.ai</strong>.
+      </p>
+
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="hero-stat-value">4.5+</span>
+          <span class="hero-stat-label">Years of experience</span>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <span class="hero-stat-value">3</span>
+          <span class="hero-stat-label">Companies</span>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <span class="hero-stat-value">99.31%</span>
+          <span class="hero-stat-label">Latency improvement</span>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <span class="hero-stat-value">7+</span>
+          <span class="hero-stat-label">Certifications</span>
+        </div>
       </div>
 
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="assets/files/Chandan_Mourya.pdf" download>
+          <i class="bi bi-download"></i> Download Resume
+        </a>
+        <a class="btn btn-secondary" href="#contact">
+          <i class="bi bi-envelope"></i> Get in Touch
+        </a>
+        <div class="hero-socials">
+          <a class="btn-icon" href="https://github.com/Chandan-Mourya" target="_blank" rel="noopener" aria-label="GitHub"><i class="bi bi-github"></i></a>
+          <a class="btn-icon" href="https://www.linkedin.com/in/chandan-mourya-359323230/" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+          <a class="btn-icon" href="https://leetcode.com/chandanmourya4786/" target="_blank" rel="noopener" aria-label="LeetCode"><i class="bi bi-code-slash"></i></a>
+          <a class="btn-icon" href="https://medium.com/@chandanmourya4786/" target="_blank" rel="noopener" aria-label="Medium"><i class="bi bi-medium"></i></a>
+        </div>
+      </div>
     </div>
-  </header><!-- End Header -->
+  </section><!-- End Hero -->
 
   <!-- ======= About Section ======= -->
   <section id="about" class="about">
@@ -115,31 +1287,37 @@
           <img src="assets/img/profile_about.png" class="img-fluid" alt="">
         </div>
         <div class="col-lg-8 pt-4 pt-lg-0 content" data-aos="fade-left">
-          <h3>Java Developer</h3>
+          <h3>Software Engineer · Backend &amp; AI</h3>
           <p class="font-italic">
-            Hey, The things that I love most are writing code and learning about new technology. This curiosity has enabled me to learn Java and Frontend Web development. Looking for a position that would allow the use of my java, system design skills, support abilities and critical thinking. 
+            Software Engineer with <strong>4.5+ years</strong> of experience building scalable backend systems in <strong>Java &amp; Spring Boot</strong> — RESTful APIs, microservices, and high-performance distributed applications. <strong>Microsoft Certified: Azure AI Engineer Associate</strong> with hands-on expertise in LLM-driven development, RAG pipelines, Elasticsearch-based search, and AI tooling that accelerates delivery.
           </p>
           <div class="row">
             <div class="col-lg-6">
               <ul>
                 <li><i class="bi bi-chevron-right"></i> <strong>Birthday:</strong> <span>06 March 2001</span></li>
-                <li><i class="bi bi-chevron-right"></i> <strong>Blog Site:</strong> <span><a href="#">Hashnode</a></span> |  <span><a href="https://medium.com/@chandanmourya4786/">Medium</a></span></li>
+                <li><i class="bi bi-chevron-right"></i> <strong>Blog:</strong> <span><a href="https://medium.com/@chandanmourya4786/" target="_blank" rel="noopener">Medium</a></span></li>
                 <li><i class="bi bi-chevron-right"></i> <strong>Phone:</strong> <span>+91 8329589181</span></li>
-                <li><i class="bi bi-chevron-right"></i> <strong>City:</strong> <span>Mumbai, India</span></li>
+                <li><i class="bi bi-chevron-right"></i> <strong>City:</strong> <span>Vasai / Mumbai, India</span></li>
               </ul>
             </div>
             <div class="col-lg-6">
               <ul>
-                <li><i class="bi bi-chevron-right"></i> <strong>Age:</strong> <span>21</span></li>
-                <li><i class="bi bi-chevron-right"></i> <strong>Degree:</strong> <span>BSC Computer Science</span></li>
-                <li><i class="bi bi-chevron-right"></i> <strong>Email:</strong> <span>chandanmourya4786@gmail.com</span></li> 
+                <li><i class="bi bi-chevron-right"></i> <strong>Experience:</strong> <span>4.5+ Years</span></li>
+                <li><i class="bi bi-chevron-right"></i> <strong>Degree:</strong> <span>BSc Computer Science</span></li>
+                <li><i class="bi bi-chevron-right"></i> <strong>Email:</strong> <span><a href="mailto:mouryachandan4786@gmail.com">mouryachandan4786@gmail.com</a></span></li>
                 <li><i class="bi bi-chevron-right"></i> <strong>Freelance:</strong> <span>Available</span></li>
               </ul>
             </div>
           </div>
           <p>
-             Most of the time, I believe in writing for self-reflection and reading for self-development.In my free time, while I'm not coding, I enjoy playing sports or video games and watching anime.
+            Currently building enterprise integrations and AI-powered search at <strong>Punctuations.ai</strong> — working on Elasticsearch KNN, OCR pipelines, Phi-4 cost optimization, and red-team evaluation workflows. Outside of work, I write on Medium, play sports, and watch anime.
           </p>
+          <div class="about-links">
+            <a href="https://www.linkedin.com/in/chandan-mourya-359323230/" target="_blank" rel="noopener"><i class="bi bi-linkedin"></i> LinkedIn</a>
+            <a href="https://github.com/Chandan-Mourya" target="_blank" rel="noopener"><i class="bi bi-github"></i> GitHub</a>
+            <a href="https://leetcode.com/chandanmourya4786/" target="_blank" rel="noopener"><i class="bi bi-code-slash"></i> LeetCode</a>
+            <a href="https://medium.com/@chandanmourya4786/" target="_blank" rel="noopener"><i class="bi bi-journal-text"></i> Medium</a>
+          </div>
         </div>
       </div>
 
@@ -152,9 +1330,9 @@
 
         <div class="col-lg-3 col-md-6">
           <div class="count-box">
-            <i class="bi bi-emoji-smile"></i>
-            <span data-purecounter-start="0" data-purecounter-end="450" data-purecounter-duration="1" class="purecounter"></span>
-            <p>DSA Questions</p>
+            <i class="bi bi-briefcase"></i>
+            <span data-purecounter-start="0" data-purecounter-end="4" data-purecounter-duration="1" class="purecounter"></span>
+            <p>Years of Experience</p>
           </div>
         </div>
 
@@ -162,23 +1340,23 @@
           <div class="count-box">
             <i class="bi bi-journal-richtext"></i>
             <span data-purecounter-start="0" data-purecounter-end="30" data-purecounter-duration="1" class="purecounter"></span>
-            <p>Projects</p>
+            <p>Projects Delivered</p>
           </div>
         </div>
 
         <div class="col-lg-3 col-md-6 mt-5 mt-lg-0">
           <div class="count-box">
-            <i class="bi bi-code"></i>
-            <span data-purecounter-start="0" data-purecounter-end="12" data-purecounter-duration="1" class="purecounter"></span>
-            <p>Hours Of Coding A Day</p>
+            <i class="bi bi-patch-check"></i>
+            <span data-purecounter-start="0" data-purecounter-end="7" data-purecounter-duration="1" class="purecounter"></span>
+            <p>Certifications</p>
           </div>
         </div>
 
         <div class="col-lg-3 col-md-6 mt-5 mt-lg-0">
           <div class="count-box">
-            <i class="bi bi-award"></i>
-            <span data-purecounter-start="0" data-purecounter-end="8" data-purecounter-duration="1" class="purecounter"></span>
-            <p>Awards</p>
+            <i class="bi bi-emoji-smile"></i>
+            <span data-purecounter-start="0" data-purecounter-end="450" data-purecounter-duration="1" class="purecounter"></span>
+            <p>DSA Problems Solved</p>
           </div>
         </div>
 
@@ -191,104 +1369,104 @@
 
       <div class="section-title">
         <h2>Skills</h2>
+        <p>The technologies I work with day-to-day</p>
       </div>
 
-      <div class="row skills-content">
+      <div class="skill-groups">
 
-        <div class="col-lg-6">
-
-          <div class="progress">
-            <span class="skill">Java <i class="val"></i></span>
-            <div class="progress-bar-wrap">
-              <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
+        <div class="skill-group" data-aos="fade-up">
+          <h4>Languages</h4>
+          <div class="skill-chips">
+            <span class="chip">Java</span>
+            <span class="chip">JavaScript</span>
+            <span class="chip">TypeScript</span>
+            <span class="chip">SQL</span>
+            <span class="chip">Python</span>
           </div>
-
-          <div class="progress">
-            <span class="skill">Spring Boot <i class="val"></i></span>
-            <div class="progress-bar-wrap">
-              <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
-          </div>
-
-          <div class="progress">
-<!--             <span class="skill">SQL <i class="val">65%</i></span> <!-- here in span wee have 65% showing i removed that -->
-                <span class="skill">SQL <i class="val"></i></span>
-            <div class="progress-bar-wrap">
-              <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
-          </div>
-
-          <div class="progress">
-            <span class="skill">Python <i class="val"></i></span>
-            <div class="progress-bar-wrap">
-              <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
-          </div>
-
-          <div class="progress">
-            <span class="skill">Hibernate <i class="val"></i></span>
-            <div class="progress-bar-wrap">
-              <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
-          </div>
-
         </div>
 
-        <div class="col-lg-6">
-
-          <div class="progress">
-            <span class="skill">HTML/CSS <i class="val"></i></span>
-            <div class="progress-bar-wrap">
-              <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
+        <div class="skill-group" data-aos="fade-up" data-aos-delay="50">
+          <h4>Backend &amp; Frameworks</h4>
+          <div class="skill-chips">
+            <span class="chip">Spring Boot</span>
+            <span class="chip">Spring Security</span>
+            <span class="chip">Hibernate / JPA</span>
+            <span class="chip">REST APIs</span>
+            <span class="chip">Microservices</span>
+            <span class="chip">Node.js</span>
+            <span class="chip">MVC Architecture</span>
           </div>
+        </div>
 
-          <div class="progress">
-            <span class="skill">Javascript <i class="val"></i></span>
-            <div class="progress-bar-wrap">
-              <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
+        <div class="skill-group" data-aos="fade-up" data-aos-delay="100">
+          <h4>AI &amp; Generative AI</h4>
+          <div class="skill-chips">
+            <span class="chip ai">LLMs</span>
+            <span class="chip ai">RAG</span>
+            <span class="chip ai">Embeddings</span>
+            <span class="chip ai">Prompt Engineering</span>
+            <span class="chip ai">Azure AI Foundry</span>
+            <span class="chip ai">GPT-4.1 / 4o-mini</span>
+            <span class="chip ai">Phi-4</span>
+            <span class="chip ai">AI Model Integration</span>
           </div>
+        </div>
 
-          <div class="progress">
-            <span class="skill">Bootstrap <i class="val"></i></span>
-            <div class="progress-bar-wrap">
-              <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
+        <div class="skill-group" data-aos="fade-up" data-aos-delay="150">
+          <h4>Search &amp; Data</h4>
+          <div class="skill-chips">
+            <span class="chip">Elasticsearch</span>
+            <span class="chip">MongoDB</span>
+            <span class="chip">PostgreSQL</span>
+            <span class="chip">MySQL</span>
           </div>
+        </div>
 
-          <!-- <div class="progress">
-            <span class="skill">JetPack Compose <i class="val">60%</i></span>
-            <div class="progress-bar-wrap">
-              <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
-          </div> -->
-
-          <div class="progress">
-            <span class="skill">AWS <i class="val"></i></span>
-            <div class="progress-bar-wrap">
-              <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
+        <div class="skill-group" data-aos="fade-up" data-aos-delay="200">
+          <h4>Cloud &amp; DevOps</h4>
+          <div class="skill-chips">
+            <span class="chip">Docker</span>
+            <span class="chip">Kubernetes</span>
+            <span class="chip">CI/CD</span>
+            <span class="chip">ArgoCD</span>
+            <span class="chip">Azure</span>
+            <span class="chip">AWS Lambda</span>
           </div>
+        </div>
 
-          <div class="progress">
-            <span class="skill">Swagger <i class="val"></i></span>
-            <div class="progress-bar-wrap">
-              <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
+        <div class="skill-group" data-aos="fade-up" data-aos-delay="250">
+          <h4>Messaging &amp; Observability</h4>
+          <div class="skill-chips">
+            <span class="chip">RabbitMQ</span>
+            <span class="chip">Kibana</span>
+            <span class="chip">Grafana</span>
+            <span class="chip">SLF4j</span>
           </div>
+        </div>
 
-         
+        <div class="skill-group" data-aos="fade-up" data-aos-delay="300">
+          <h4>Tools &amp; Platforms</h4>
+          <div class="skill-chips">
+            <span class="chip">Git / GitHub / GitLab</span>
+            <span class="chip">Postman</span>
+            <span class="chip">Maven</span>
+            <span class="chip">Gradle</span>
+            <span class="chip">JIRA</span>
+            <span class="chip">ClickUp</span>
+            <span class="chip">Cursor</span>
+          </div>
+        </div>
 
-          <!-- <div class="progress">
-            <span class="skill">Selenium<i class="val">50%</i></span>
-            <div class="progress-bar-wrap">
-              <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
-          </div> -->
-          
-
+        <div class="skill-group" data-aos="fade-up" data-aos-delay="350">
+          <h4>Soft Skills</h4>
+          <div class="skill-chips">
+            <span class="chip">Team Collaboration</span>
+            <span class="chip">Communication</span>
+            <span class="chip">Problem Solving</span>
+            <span class="chip">Critical Thinking</span>
+            <span class="chip">Agile Learning</span>
+            <span class="chip">Ownership</span>
+          </div>
         </div>
 
       </div>
@@ -451,76 +1629,65 @@
       <div class="section-title">
         <h2>Resume</h2>
         <p>Check My Resume</p>
-        <!-- Change the resume file -->
-        <!-- <span><a href="assets/files/mausamresume.pdf" download>CLICK TO DOWNLOAD RESUME</a></span>  -->
-        <span><a href="assets/files/chandanresume.pdf" download>CLICK TO DOWNLOAD RESUME</a></span> 
+        <span><a href="assets/files/Chandan_Mourya.pdf" download>CLICK TO DOWNLOAD RESUME</a></span>
       </div>
 
       <div class="row">
         <div class="col-lg-6">
-          <h3 class="resume-title">Sumary</h3>
+          <h3 class="resume-title">Summary</h3>
           <div class="resume-item pb-0">
             <h4>Chandan Mourya</h4>
-            <p><em> Looking for an Java Developer position that would allow the use of my system design skills, support abilities and critical thinking</em></p>
+            <p><em>Software Engineer with 4.5+ years of experience designing scalable Java + Spring Boot backends, distributed microservices, Elasticsearch-driven search, and AI/LLM-powered workflows.</em></p>
             <p>
             <ul>
-              <li>Mumbai, IN</li>
-              <li>(91) 8329589181</li>
-              <li>chandanmourya4786@gmail.com</li>
+              <li>Vasai / Mumbai, India</li>
+              <li>+91 8329589181</li>
+              <li>mouryachandan4786@gmail.com</li>
             </ul>
             </p>
           </div>
 
           <h3 class="resume-title">Education</h3>
           <div class="resume-item">
-            <h4>BSC Computer Science</h4>
-            <h5>July 2018 - May 2021</h5>
-            <p><em>Vidyavardhini Annasaheb Vartak College</em></p>
-            <p>CGPA - 8.06 </p>
+            <h4>BSc in Computer Science</h4>
+            <h5>July 2018 - April 2021</h5>
+            <p><em>Mumbai University · Vidyavardhini's Annasaheb Vartak College</em></p>
+            <p>CGPA - 8.06</p>
           </div>
           <div class="resume-item">
             <h4>XII | Computer Science</h4>
-            <h5>June 2017 - Feb 2018</h5>
-            <p><em>S.D.S.M College Palghar</em></p>
-            <p>Percentage - 59.38%</p>
-          </div>
-          <div class="resume-item">
-            <h4>X</h4>
-            <h5>June 2016 - March 2017</h5>
-            <p><em>Vidya Varidhi Vidyalaya</em></p>
-            <p>Percentage - 78.60% |</p>
+            <h5>June 2016 - April 2018</h5>
+            <p><em>S.D.S.M College, Palghar</em></p>
           </div>
 
-          <h3 class="resume-title">Certification Course</h3>
+          <h3 class="resume-title">Certifications</h3>
+          <div class="resume-item">
+            <h4>Microsoft Certified: Azure AI Engineer Associate <span class="role-tag badge-current">Certified</span></h4>
+            <p><em>Microsoft</em></p>
+          </div>
+          <div class="resume-item">
+            <h4>Master Microservices with Spring Boot and Spring Cloud</h4>
+            <p><em>Udemy</em></p>
+          </div>
+          <div class="resume-item">
+            <h4>Spring &amp; Hibernate for Beginners (includes Spring Boot)</h4>
+            <p><em>Udemy</em></p>
+          </div>
+          <div class="resume-item">
+            <h4>MongoDB - The Complete Developer's Guide</h4>
+            <p><em>Udemy</em></p>
+          </div>
+          <div class="resume-item">
+            <h4>Modern Java - Learn Java 8 features by coding it</h4>
+            <p><em>Udemy</em></p>
+          </div>
+          <div class="resume-item">
+            <h4>Git Complete - The Definitive, Step-by-Step Guide to Git</h4>
+            <p><em>Udemy</em></p>
+          </div>
           <div class="resume-item">
             <h4>Full Stack Web Development</h4>
             <p><em>Masai School</em></p>
-            <p>Ongoing Course</p>
-          </div>
-
-           <div class="resume-item">
-            <h4>Data Science Math Skill</h4>
-            <p><em>Coursera</em></p>
-          </div>
-
-          <div class="resume-item">
-            <h4>The Fundamentals Of Digital Marketing</h4>
-            <p><em>Google Digital Garage</em></p>
-          </div>
-
-          <div class="resume-item">
-            <h4>Google Analytics</h4>
-            <p><em>Google Analytics Academy</em></p>
-          </div>
-
-          <div class="resume-item">
-            <h4>Blockchain Essentials</h4>
-            <p><em>IBM</em></p>
-          </div>
-
-          <div class="resume-item">
-            <h4>Programming Foundations: Web Security</h4>
-            <p><em>linkedin Learning  </em></p>
           </div>
 
           <!-- <h3 class="resume-title">Achievments</h3>
@@ -538,115 +1705,101 @@
         </div>
         <div class="col-lg-6">
           <h3 class="resume-title">Work Experience</h3>
+
           <div class="resume-item">
-            <h4>Programmer at (TCS)</h4>
+            <h4>Software Engineer · Punctuations.ai <span class="role-tag badge-current">Current</span></h4>
+            <h5>Jun 2025 - Present</h5>
+            <p><em>Vasai, Maharashtra, India</em></p>
+            <p>
+            <ul>
+              <li>Built enterprise integrations: <strong>OneNote, SharePoint, YouTube, Statista,</strong> and <strong>Euromonitor Passport</strong> APIs.</li>
+              <li>Optimized <strong>Elasticsearch 9 KNN</strong> queries and improved fuzziness search to boost relevancy and retrieval accuracy.</li>
+              <li>OCR research &amp; optimization — enhanced Tesseract, evaluated <strong>GPT-based OCR</strong> and <strong>Nemotron OCR v2</strong>, prototyped extraction-quality improvements.</li>
+              <li>Reduced <strong>Phi-4 API costs by ~50%</strong> by eliminating redundant calls and improving request flow in the ingestion service.</li>
+              <li>Designed <strong>Relevancy Testing</strong> and <strong>Red Team Evaluation</strong> workflows — a reusable system for validating search quality and scaling future evaluations.</li>
+              <li>Improved data-migration throughput from <strong>~110-280K/day to ~400-600K/day (~2x)</strong> by removing bottlenecks and optimizing workflows.</li>
+              <li>Prevented large-scale duplication (~4.1TB storage impact) by fixing duplicate Hydra writes and retry-based patterns.</li>
+              <li>Removed redundant DOCX → PDF → OCR step, enabling <strong>direct DOCX-to-Image OCR</strong> — lowering cost and improving speed.</li>
+            </ul>
+            </p>
+          </div>
+
+          <div class="resume-item">
+            <h4>Software Engineer · Revlitix Inc</h4>
+            <h5>Jan 2023 - June 2025</h5>
+            <p><em>Bengaluru, Karnataka, India</em></p>
+            <p>
+            <ul>
+              <li>Designed scalable <strong>Java + Spring Boot</strong> microservices for integrations with <strong>Google Analytics 4, Google Ads, LinkedIn Ads &amp; Organic, Salesforce CRM, HubSpot CRM</strong> using secure OAuth 2.0 flows.</li>
+              <li>Built RESTful APIs for unified marketing &amp; sales analytics powering real-time dashboards across multiple clients.</li>
+              <li>Cut large-scale data processing time from <strong>24 hours to ~10 minutes (99.31% improvement)</strong> using multithreading (ExecutorService, ConcurrentHashMap).</li>
+              <li>Proposed and supported migration of Java ETL services to <strong>Node.js + AWS Lambda</strong>, reducing infra cost by <strong>~75%</strong>.</li>
+              <li>Contributed to a modular <strong>white-label analytics platform</strong> with client-specific branding, chart styling, and domain-based customization.</li>
+              <li>Built dynamic chart APIs supporting <strong>15+ chart types</strong> with drill-downs, filters, and KPI visibility settings.</li>
+              <li>Implemented advanced <strong>MongoDB aggregations &amp; lookups</strong> for performant cross-platform analytics.</li>
+              <li>Collaborated with frontend teams using <strong>TypeScript &amp; React</strong>, ensuring smooth API integration and consistent data flow.</li>
+            </ul>
+            </p>
+          </div>
+
+          <div class="resume-item">
+            <h4>Programmer · Tata Consultancy Services (TCS)</h4>
             <h5>May 2021 - Aug 2022</h5>
-            <p><em>Lower Parel, Mumbai, India </em></p>
+            <p><em>Thane, Maharashtra, India</em></p>
             <p>
             <ul>
-              <li>Working for NSDL infrastructure,</li>
-              <li>Working on Clients Location At Lower Parel, Mumbai, in.</li>
-              <li>Maintaining the servers, installing certificates, Deploying
-                new upgrades, etc.</li>
-            </ul>
-            </p>
-          </div>
-          
-         
-          <div class="resume-item">
-            <h4>Junior Frontend Developer Intern</h4>
-            <h5>June 2020 - Jan 2021</h5>
-            <p><em>Boisar, Mumbai, India </em></p>
-            <p>
-            <ul>
-              <li>Worked on navigation bar</li>
-              <li>Contact section of Classes website</li>
-              <li>Developed the student dashboard page</li>
+              <li>Worked on the <strong>NSDL Infrastructure Project</strong> — maintaining critical financial applications with a focus on security, reliability, and scalability.</li>
+              <li>Performed unit testing and system validation to improve application stability and overall efficiency.</li>
+              <li>Identified and fixed production bugs, resolved technical issues, and provided maintenance support to minimize downtime.</li>
             </ul>
             </p>
           </div>
 
-          <h3 class="resume-title">Projects</h3>
+          <h3 class="resume-title">Academic &amp; Side Projects</h3>
 
           <div class="resume-item">
-            <!-- <h4><a href="https://github.com/Kingbond470/Sarang">Spotify Java Application</a></h4> -->
-            <h4><a href="https://github.com/Chandan-Mourya/MonsterindiaClone">Monster India Clone</a></h4>
-            <h5>HTML | CSS | JAVASCRIPT</h5>
+            <h4>Payment Wallet Application</h4>
+            <h5>Java · Spring Boot · MySQL · Hibernate · Swagger</h5>
             <p>
             <ul>
-              <li>Collabration project with team from Masai School</li>
-             <li>Sign-in/Sign-up and data storage using Javascript</li>
-            <!-- <li>Local data storage using Room Database </li> -->
-            <li>Provide all features related to Job</li>
-            <li>User settings and premium page integration with google pay</li>
-            <!-- <li>Play music through search, artits, notification on any page</li> -->
-            <li>Search Job according to your Skills and abilities</li>
-
-            </ul>
-            </p>
-          </div>
-
-
-          <div class="resume-item">
-            <!-- <h4><a href="https://github.com/Kingbond470/MFine">mFine Android Application</a></h4> -->
-            <h4><a href="https://github.com/Chandan-Mourya/Sephora-Clone">Sephora Clone</a></h4>
-            <h5>Javascript | HTML | CSS</h5>
-            <p>
-            <ul>
-             <li>Sign-in/Sign-up, home, Explore, Wallet and Payment Page</li>
-            <!-- <li>Consult now, order lab test, order medicine, help and support </li> -->
-            <li>Bye all the types of Beauty Products </li>
-            <li>With a  Very Low price and bigger trusted componies</li>
-            <li>User profile, Navbar, Mens page, Womens Page, new Arrivals</li>
+              <li>REST API based payment wallet enabling users to add money, deposit funds, and pay bills.</li>
+              <li>Implemented transaction history tracking and bill-payment records.</li>
+              <li>Collaborative project built with a team of 2 members.</li>
             </ul>
             </p>
           </div>
 
           <div class="resume-item">
-            <!-- <h4><a href="https://github.com/Kingbond470/Algorithm-Visualization">Algorithm Visualization</a></h4> -->
-            <h4><a href="https://github.com/Chandan-Mourya/CartlaneClone">CartlaneClone</a></h4>
-            <h5>HTML | CSS | Javascript</h5>
-            <p>
-            <ul>
-              <li>Bye all the types of Jwelleries </li>
-              <li>GOLD, Daimond, Silver on huge Discount with 24 carate GOLD</li>
-              <li>User profile, Navbar, Mens page, Womens Page, new Arrivals</li>
-            </ul>
-            </p>
-          </div>
-
-          <div class="resume-item">
-            <!-- <h4><a href="https://github.com/Kingbond470/Algorithm-Visualization">Algorithm Visualization</a></h4> -->
             <h4><a href="https://github.com/Chandan-Mourya/Face-Mask-Detector">Face Mask Detection</a></h4>
-            <h5>Python | Tensorflow | Open-CV</h5>
+            <h5>Python · TensorFlow · OpenCV</h5>
             <p>
             <ul>
-              <li>Face Mask detection System </li>
-              <li>it will ditect weather a person has wear a mask or not</li>
-              <li>it will train The System with the large library if dataset</li>
+              <li>Detects whether a person is wearing a mask in real-time.</li>
+              <li>Trained on a labelled dataset with classical CNN architecture for high accuracy.</li>
+              <li>Recognized as a Top-5 college project at Vartak College.</li>
             </ul>
             </p>
           </div>
 
-
-          <h3 class="resume-title">Awards/Achievement</h3>
+          <h3 class="resume-title">Highlights &amp; Profiles</h3>
           <div class="resume-item">
-            <h4>Best Project</h4>
-            <h4>Top 5 projects in College</h4>
-            <p><em>Vartak college</em>
-            <h5><em><a href="https://github.com/Chandan-Mourya/Face-Mask-Detector">Face Mask Detection</a></em></h5>
+            <h4>Coding Profiles</h4>
+            <h5>
+              <em>
+                <a href="https://leetcode.com/chandanmourya4786/" target="_blank" rel="noopener">LeetCode</a> ·
+                <a href="https://www.hackerrank.com/chandanmourya471" target="_blank" rel="noopener">HackerRank</a> ·
+                <a href="https://github.com/Chandan-Mourya" target="_blank" rel="noopener">GitHub</a>
+              </em>
+            </h5>
           </div>
           <div class="resume-item">
-            <h4>Best Scorer (MSCIT)</h4>
-            <p><em>ZedCA Computer Classes </em></p>
-          </div>
-
-           <div class="resume-item">
-            <h4>Badges</h4>
-            <!-- <h5><em><a href="https://www.hackerrank.com/KingbondL?hr_r=1">HackerRank</a> -->
-              <h5><em><a href="https://www.hackerrank.com/chandanmourya471">HackerRank</a>
-              <!-- <a href="https://leetcode.com/kingbond470/"> Leetcode</a></em></h5> -->
-              <a href="https://leetcode.com/chandanmourya4786/"> Leetcode</a></em></h5>
+            <h4>Recognitions</h4>
+            <p>
+            <ul>
+              <li>Top-5 College Project — Face Mask Detection (Vartak College)</li>
+              <li>Best Scorer — MSCIT (ZedCA Computer Classes)</li>
+            </ul>
+            </p>
           </div>
 
 
@@ -1083,7 +2236,7 @@
           <div class="info-box">
             <i class="bx bx-envelope"></i>
             <h3>Email Me</h3>
-            <p>chandanmourya4786@gmail.com</p>
+            <p>mouryachandan4786@gmail.com</p>
           </div>
         </div>
         <div class="col-md-6 mt-4 d-flex align-items-stretch">
@@ -1123,7 +2276,7 @@
   </section><!-- End Contact Section -->
 
   <div class="credits">
-    @2022 - <a href="index.html">Chandan Mourya</a>
+    &copy; 2026 - <a href="index.html">Chandan Mourya</a> · Built with care.
   </div>
 
   <!-- Vendor JS Files -->
@@ -1143,6 +2296,96 @@
   <!-- Template Main JS File -->
   <script src="assets/js/main.min.js"></script>
   <script src="assets/js/email.min.js"></script>
+
+  <!-- ============================================================
+       Portfolio v2 — Override template SPA behavior:
+         · Smooth-scroll on nav clicks (instead of section toggling)
+         · Force all sections to remain visible
+         · Active nav link follows scroll position
+         · Mobile nav toggle still works
+       ============================================================ -->
+  <script>
+  (function(){
+    function ready(fn){
+      if (document.readyState !== 'loading') fn();
+      else document.addEventListener('DOMContentLoaded', fn);
+    }
+
+    ready(function(){
+      var NAV_OFFSET = 90;
+
+      // Force all sections visible (template adds/removes .section-show)
+      function showAll(){
+        document.querySelectorAll('section').forEach(function(s){
+          s.classList.add('section-show');
+          s.style.position = 'static';
+          s.style.opacity  = '1';
+          s.style.top      = 'auto';
+          s.style.bottom   = 'auto';
+        });
+      }
+      showAll();
+      // The template's MutationObserver / scroll handler may toggle these
+      // back; reassert every 250ms for a few seconds to be safe.
+      var safety = 0;
+      var safetyTimer = setInterval(function(){
+        showAll();
+        safety++;
+        if (safety > 20) clearInterval(safetyTimer);
+      }, 250);
+
+      // Prevent the template's "header-top" mode (we always want the pill nav)
+      var hdr = document.getElementById('header');
+      if (hdr){
+        var headerObserver = new MutationObserver(function(){
+          if (hdr.classList.contains('header-top')) hdr.classList.remove('header-top');
+        });
+        headerObserver.observe(hdr, { attributes: true, attributeFilter: ['class'] });
+      }
+
+      // Smooth-scroll on nav link clicks (capture phase beats template handler)
+      function onNavClick(e){
+        var href = this.getAttribute('href');
+        if (!href || href.charAt(0) !== '#') return;
+        var target = document.querySelector(href);
+        if (!target) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        var top = target.getBoundingClientRect().top + window.pageYOffset - NAV_OFFSET;
+        window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+
+        // Close mobile nav if open
+        document.body.classList.remove('mobile-nav-active');
+        document.querySelector('.navbar')?.classList.remove('navbar-mobile');
+        document.querySelector('.mobile-nav-toggle')?.classList.remove('bi-x');
+        document.querySelector('.mobile-nav-toggle')?.classList.add('bi-list');
+      }
+      document.querySelectorAll('a.nav-link, a[href^="#"]').forEach(function(a){
+        a.addEventListener('click', onNavClick, true);
+      });
+
+      // Active nav based on scroll position
+      var navLinks = Array.from(document.querySelectorAll('a.nav-link'));
+      var sections = navLinks
+        .map(function(a){ return document.querySelector(a.getAttribute('href')); })
+        .filter(Boolean);
+
+      function updateActive(){
+        var pos = window.scrollY + NAV_OFFSET + 40;
+        var idx = 0;
+        for (var i = 0; i < sections.length; i++){
+          if (sections[i].offsetTop <= pos) idx = i;
+        }
+        navLinks.forEach(function(a, i){
+          a.classList.toggle('active', i === idx);
+        });
+      }
+      window.addEventListener('scroll', updateActive, { passive: true });
+      window.addEventListener('resize', updateActive);
+      updateActive();
+    });
+  })();
+  </script>
 
 </body>
 
