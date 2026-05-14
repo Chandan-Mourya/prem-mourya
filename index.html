@@ -2298,6 +2298,76 @@
   <script src="assets/js/email.min.js"></script>
 
   <!-- ============================================================
+       Hidden access to personal notes
+       Desktop : Ctrl + Alt + P     OR    Shift-click brand
+       Mobile  : 5 quick taps on brand    OR    long-press brand (~800ms)
+       ============================================================ -->
+  <script>
+  (function(){
+    var NOTES_URL = 'notes/index.html';
+    function openNotes(){ window.open(NOTES_URL, '_blank', 'noopener'); }
+
+    // ---------- Desktop: keyboard shortcut ----------
+    document.addEventListener('keydown', function(e){
+      if (e.altKey && e.ctrlKey && (e.key === 'p' || e.key === 'P')){
+        e.preventDefault();
+        openNotes();
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', function(){
+      var brand = document.querySelector('#header h1.brand a');
+      if (!brand) return;
+
+      // ---------- Desktop: shift + click on brand ----------
+      brand.addEventListener('click', function(e){
+        if (e.shiftKey){
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          openNotes();
+        }
+      }, true);
+
+      // ---------- Mobile: 5 quick taps on brand (within 2s) ----------
+      var tapCount = 0;
+      var tapTimer = null;
+      brand.addEventListener('click', function(e){
+        // Ignore the shift-click path above
+        if (e.shiftKey) return;
+        tapCount++;
+        if (tapTimer) clearTimeout(tapTimer);
+        tapTimer = setTimeout(function(){ tapCount = 0; }, 2000);
+        if (tapCount >= 5){
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          tapCount = 0;
+          openNotes();
+        }
+      }, true);
+
+      // ---------- Mobile: long-press on brand (~800ms) ----------
+      var pressTimer = null;
+      var pressFired = false;
+      function startPress(){
+        pressFired = false;
+        pressTimer = setTimeout(function(){
+          pressFired = true;
+          openNotes();
+        }, 800);
+      }
+      function cancelPress(e){
+        if (pressTimer){ clearTimeout(pressTimer); pressTimer = null; }
+        if (pressFired && e){ e.preventDefault(); e.stopImmediatePropagation(); }
+      }
+      brand.addEventListener('touchstart', startPress, { passive: true });
+      brand.addEventListener('touchend',   cancelPress);
+      brand.addEventListener('touchmove',  cancelPress, { passive: true });
+      brand.addEventListener('touchcancel',cancelPress);
+    });
+  })();
+  </script>
+
+  <!-- ============================================================
        Portfolio v2 — Override template SPA behavior:
          · Smooth-scroll on nav clicks (instead of section toggling)
          · Force all sections to remain visible
