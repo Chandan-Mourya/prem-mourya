@@ -46,10 +46,110 @@
     <div class="qa-list">
 
       <details class="qa">
-        <summary>Process vs thread vs virtual thread <span class="qa-tag must">must</span></summary>
+        <summary>Process vs Thread vs Virtual Thread <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p>A <strong>process</strong> is an independent program execution with its own memory space — OS scheduled, expensive to create. A <strong>thread</strong> is a unit of execution <em>within</em> a process, sharing heap and code but with its own stack and PC. The OS scheduler manages threads — each Java thread maps 1:1 to an OS thread (a "platform thread").</p>
-          <p>A <strong>virtual thread</strong> (Java 21, Project Loom) is a lightweight thread managed by the JVM scheduler, not the OS. Millions can run concurrently with tiny memory footprint (~few KB vs MB for platform threads). They're perfect for I/O-bound work — a virtual thread parks instead of blocking the OS thread underneath. For modern microservices this is huge: you write blocking-style code and get reactive-like scalability without the cognitive cost.</p>
+          <p class="answer-intro">Three levels of concurrency, each progressively lighter — understanding the hierarchy is essential before talking about scaling and Project Loom.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Process</span>
+              <span class="core-diff-val">Independent program — <strong>own memory</strong>, OS-managed.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Thread (platform)</span>
+              <span class="core-diff-val">Inside a process, <strong>shares memory</strong>, 1:1 with an OS thread.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Virtual Thread</span>
+              <span class="core-diff-val">JVM-managed lightweight thread (Java 21+) — <strong>millions feasible</strong>.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Memory</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Process</div>
+                <ul>
+                  <li>Separate address space, separate heap.</li>
+                  <li>Inter-process communication via pipes, sockets, shared memory.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Threads (platform &amp; virtual)</div>
+                <ul>
+                  <li>Share heap, code, file descriptors with other threads in the process.</li>
+                  <li>Each has its own stack and program counter.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Cost &amp; Footprint</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Process / Platform Thread</div>
+                <ul>
+                  <li><strong>Process</strong> — MBs / seconds to spawn. Heavy.</li>
+                  <li><strong>Platform thread</strong> — ~1 MB stack, ~ms to spawn. A typical server tops out at a few thousand.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Virtual Thread</div>
+                <ul>
+                  <li>Few KB stack, microseconds to spawn.</li>
+                  <li><strong>Millions</strong> of concurrent virtual threads on a single JVM.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Scheduler</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Process / Platform Thread</div>
+                <ul>
+                  <li>Managed by the <strong>OS scheduler</strong>.</li>
+                  <li>Context switching has kernel-level cost.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Virtual Thread</div>
+                <ul>
+                  <li>Scheduled by the <strong>JVM</strong> onto a small pool of carrier (platform) threads.</li>
+                  <li>Parks instead of blocking the OS thread on I/O — that's the magic of Loom.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> When to Use</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Process / Platform Thread</div>
+                <ul>
+                  <li><strong>Process</strong> — strong isolation (sandboxing, security), different language.</li>
+                  <li><strong>Platform thread</strong> — CPU-bound parallel computation (sized to cores).</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Virtual Thread</div>
+                <ul>
+                  <li>I/O-bound services (most backend microservices).</li>
+                  <li>"One thread per request" without pool tuning headaches.</li>
+                  <li>Write blocking code, get reactive-like scale.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>Takeaway:</b> with Java 21 + Spring Boot 3.2 you can flip <code>spring.threads.virtual.enabled=true</code> and your service suddenly handles 10× more concurrent requests on the same hardware — provided your blocking calls aren't pinned (avoid <code>synchronized</code> around I/O; use <code>ReentrantLock</code>).
+          </div>
         </div>
       </details>
 
@@ -93,11 +193,107 @@
       </details>
 
       <details class="qa">
-        <summary>wait() vs sleep() — the difference</summary>
+        <summary>wait() vs sleep() <span class="qa-tag hot">hot</span></summary>
         <div class="qa-body">
-          <p><strong><code>wait()</code></strong> is on <code>Object</code>, releases the monitor it holds, and parks until <code>notify()</code>/<code>notifyAll()</code> or a timeout. Used for inter-thread communication.</p>
-          <p><strong><code>sleep()</code></strong> is on <code>Thread</code> (static), <strong>does not release any locks</strong>, and just pauses the current thread for the given duration. Used to throttle or back off.</p>
-          <p>The lock-holding behavior is the key gotcha. If you call <code>sleep()</code> inside a synchronized block, the lock is still held — other threads stay blocked. <code>wait()</code> deliberately releases the lock so other threads can make progress. Both can be interrupted (throw <code>InterruptedException</code>) and both restore the interrupt status correctly — handle the exception or re-set it with <code>Thread.currentThread().interrupt()</code>.</p>
+          <p class="answer-intro">Both pause the current thread, but they live on different classes and behave very differently with locks. Mixing them up is a classic interview red flag.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">wait()</span>
+              <span class="core-diff-val">On <code>Object</code> — <strong>releases the monitor lock</strong>, waits for <code>notify()</code>.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">sleep()</span>
+              <span class="core-diff-val">On <code>Thread</code> (static) — <strong>keeps all locks</strong>, just pauses for a duration.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Where it's defined</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> wait()</div>
+                <ul>
+                  <li>Instance method on <code>Object</code>.</li>
+                  <li>Called as <code>obj.wait()</code> — must hold <code>obj</code>'s monitor.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> sleep()</div>
+                <ul>
+                  <li>Static method on <code>Thread</code>.</li>
+                  <li>Called as <code>Thread.sleep(ms)</code> — affects current thread.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Lock Behavior</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> wait()</div>
+                <ul>
+                  <li><strong>Releases</strong> the monitor while waiting — other threads can enter synchronized blocks on the same lock.</li>
+                  <li>Re-acquires the monitor before returning.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> sleep()</div>
+                <ul>
+                  <li><strong>Does NOT release</strong> any locks.</li>
+                  <li>If called inside a synchronized block, every other thread waiting on that lock stays blocked.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> How it Wakes Up</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> wait()</div>
+                <ul>
+                  <li>Another thread calls <code>obj.notify()</code> / <code>obj.notifyAll()</code>.</li>
+                  <li>Optional timeout (<code>wait(ms)</code>).</li>
+                  <li>Interruption (<code>InterruptedException</code>).</li>
+                  <li>Spurious wakeups happen — <strong>always wait in a <code>while</code> loop</strong>.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> sleep()</div>
+                <ul>
+                  <li>The duration expires.</li>
+                  <li>Or another thread interrupts it (<code>InterruptedException</code>).</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Use Case</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> wait()</div>
+                <ul>
+                  <li>Inter-thread coordination — producer/consumer, signaling.</li>
+                  <li>Modern code prefers <code>BlockingQueue</code>, <code>CountDownLatch</code>, <code>Condition</code>.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> sleep()</div>
+                <ul>
+                  <li>Throttling, retry backoff, simulating delay in tests.</li>
+                  <li>Polling loops (though usually a smell).</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>Remember:</b> both throw <code>InterruptedException</code>. When you catch it, either propagate it or re-set the interrupt flag with <code>Thread.currentThread().interrupt()</code>. Swallowing it silently is one of the most common bugs in legacy Java code.
+          </div>
         </div>
       </details>
 

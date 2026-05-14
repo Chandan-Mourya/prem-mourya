@@ -46,12 +46,134 @@
     <div class="qa-list">
 
       <details class="qa">
-        <summary>Monolith vs microservices — when to choose? <span class="qa-tag must">must</span></summary>
+        <summary>Monolith vs Microservices <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p>A <strong>monolith</strong> ships as one deployable unit — one DB, one repo, one process. <strong>Microservices</strong> split functionality into independently deployable services, usually with their own DB.</p>
-          <p>Monoliths win when: team is small (&lt;15 engineers), product is still finding fit, transactional boundaries are unclear. They're <em>fast to ship</em>. Most failed microservices migrations started in this phase too early.</p>
-          <p>Microservices win when: team scales beyond a single squad, parts of the system have very different scaling/release profiles, organizational boundaries demand independent deploys, or specific subsystems need different tech (Python ML vs Java web).</p>
-          <p>My take after 5 years: <strong>start with a modular monolith</strong>, extract services only when monolith pain is real — slow deploys, team-blocking PRs, distinct scaling needs. Premature split = distributed monolith, the worst of both worlds.</p>
+          <p class="answer-intro">Two architectural styles at opposite ends of the spectrum. The right choice depends on team size, scale, and the cost of distributed-system complexity — not on fashion.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Monolith</span>
+              <span class="core-diff-val"><strong>One deployable unit</strong> — one repo, one DB, one process.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Microservices</span>
+              <span class="core-diff-val"><strong>Many small services</strong> — independently deployable, each owning its data.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Deployment</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Monolith</div>
+                <ul>
+                  <li>One artifact, one deploy.</li>
+                  <li>Simple pipelines and ops.</li>
+                  <li>Any change requires deploying the whole app.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Microservices</div>
+                <ul>
+                  <li>Each service deploys independently.</li>
+                  <li>Teams ship without blocking each other.</li>
+                  <li>More pipelines, more infra to manage.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Scaling</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Monolith</div>
+                <ul>
+                  <li>Scale the whole app together.</li>
+                  <li>Can't scale just the hot module.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Microservices</div>
+                <ul>
+                  <li>Scale each service independently based on load.</li>
+                  <li>Different tech stacks per service (Python ML, Go API, Java core).</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Data &amp; Transactions</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Monolith</div>
+                <ul>
+                  <li>Single shared DB.</li>
+                  <li>Strong ACID transactions across modules.</li>
+                  <li>Easy joins and reporting.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Microservices</div>
+                <ul>
+                  <li><strong>Database per service.</strong></li>
+                  <li>No cross-service transactions — use <strong>Saga</strong> + <strong>Outbox</strong>.</li>
+                  <li>Eventual consistency by design.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Complexity</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Monolith</div>
+                <ul>
+                  <li>Simple infra (one app, one DB).</li>
+                  <li>In-process calls — no network failures, no serialization.</li>
+                  <li>Debugging via stack traces.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Microservices</div>
+                <ul>
+                  <li>Distributed systems — network, retries, timeouts, circuit breakers.</li>
+                  <li>Need service discovery, API gateway, distributed tracing, centralized logging.</li>
+                  <li>Much higher ops cost.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> When to Choose</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Monolith</div>
+                <ul>
+                  <li>Small team (&lt; 15 engineers).</li>
+                  <li>Product still finding fit, boundaries unclear.</li>
+                  <li>Want to ship fast and iterate.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Microservices</div>
+                <ul>
+                  <li>Team scales beyond a single squad.</li>
+                  <li>Parts of the system have very different scaling/release profiles.</li>
+                  <li>Organizational boundaries demand independent deploys.</li>
+                  <li>Need polyglot tech for specific subsystems.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>My take after 5 years:</b> <strong>start with a modular monolith</strong>, extract services only when monolith pain is real — slow deploys, team-blocking PRs, distinct scaling needs. <em>Premature splitting = distributed monolith, the worst of both worlds.</em>
+          </div>
         </div>
       </details>
 

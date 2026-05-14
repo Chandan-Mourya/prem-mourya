@@ -61,24 +61,110 @@
       </details>
 
       <details class="qa">
-        <summary>Embedded documents vs references — when which?</summary>
+        <summary>Embedded documents vs References <span class="qa-tag hot">hot</span></summary>
         <div class="qa-body">
-          <p>The single most important MongoDB design decision.</p>
-          <p><strong>Embed</strong> when:</p>
-          <ul>
-            <li>Child data is always read with the parent.</li>
-            <li>The relationship is 1:1 or 1:few.</li>
-            <li>Child data isn't queried independently.</li>
-            <li>Size stays bounded (Mongo's 16 MB document limit, but real ceiling is much lower — hundreds of KB).</li>
-          </ul>
-          <p>Embedding gives atomic single-document writes — no transaction needed.</p>
-          <p><strong>Reference</strong> when:</p>
-          <ul>
-            <li>1:many or many:many with unbounded growth.</li>
-            <li>Child is independently queried (e.g., comments by user across many posts).</li>
-            <li>Child data is large or frequently updated alone.</li>
-          </ul>
-          <p>On Punctuations.ai: resume sections (experience, education, skills) are embedded; recruiter feedback and search-event history are separate collections referenced by ID.</p>
+          <p class="answer-intro">The single most important MongoDB design decision — it shapes how you query, scale, and maintain your data.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Embed</span>
+              <span class="core-diff-val">Nest child data <strong>inside</strong> the parent document — one read brings everything.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Reference</span>
+              <span class="core-diff-val">Store children in a <strong>separate collection</strong>, link by <code>_id</code> — like SQL foreign keys.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Read &amp; Write Pattern</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Embed</div>
+                <ul>
+                  <li>Single round-trip — read parent, get everything.</li>
+                  <li>Write is <strong>atomic</strong> on the whole document — no transactions needed.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Reference</div>
+                <ul>
+                  <li>Two queries or one <code>$lookup</code> — extra latency.</li>
+                  <li>Updates touch only the changed entity.</li>
+                  <li>Cross-document writes need multi-document transactions.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Relationship Cardinality</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Embed</div>
+                <ul>
+                  <li>1:1 or 1:few (bounded list).</li>
+                  <li>Tight ownership — child can't exist without parent.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Reference</div>
+                <ul>
+                  <li>1:many or many:many with <strong>unbounded growth</strong>.</li>
+                  <li>Child has its own identity, often queried independently.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Constraints</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Embed</div>
+                <ul>
+                  <li>Hard <strong>16 MB document limit</strong>; practical limit much lower (~hundreds of KB).</li>
+                  <li>Growing arrays force document migration — fragmentation, slow updates.</li>
+                  <li>Duplicated data if the same child belongs to multiple parents.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Reference</div>
+                <ul>
+                  <li>No size ceiling per relation.</li>
+                  <li>No duplicate data.</li>
+                  <li>App must handle "missing parent" / orphan references.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Use Case</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Embed</div>
+                <ul>
+                  <li>Blog post + its comments (if small).</li>
+                  <li>User profile + addresses.</li>
+                  <li>Resume + sections (experience, education, skills).</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Reference</div>
+                <ul>
+                  <li>User + millions of orders.</li>
+                  <li>Product + reviews (queried independently).</li>
+                  <li>Resume + recruiter feedback (separate lifecycle).</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>On Punctuations.ai:</b> resume sections (experience, education, skills) are <strong>embedded</strong> — always read with the resume, naturally bounded. Recruiter feedback and search-event history are <strong>referenced</strong> in separate collections — unbounded, independently queried, separate lifecycle.
+          </div>
         </div>
       </details>
 

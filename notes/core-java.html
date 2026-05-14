@@ -106,30 +106,335 @@
       </details>
 
       <details class="qa">
-        <summary>HashMap vs ConcurrentHashMap vs Hashtable</summary>
+        <summary>HashMap vs ConcurrentHashMap <span class="qa-tag hot">hot</span></summary>
         <div class="qa-body">
-          <p><strong>HashMap</strong> — fast, not thread-safe, allows one null key, multiple null values. Use it in single-threaded contexts.</p>
-          <p><strong>Hashtable</strong> — legacy, synchronized on every method (whole-map lock). Slow under contention. Don't use in new code.</p>
-          <p><strong>ConcurrentHashMap</strong> — thread-safe, no whole-map lock. In Java 8+ it uses CAS on individual bucket heads and synchronized blocks only on collision chains, giving very high concurrency. Read operations are mostly lock-free. Compound operations need atomic helpers: use <code>computeIfAbsent</code>, <code>merge</code>, <code>compute</code> rather than <code>get</code>+<code>put</code> sequences. Iteration is weakly consistent — no ConcurrentModificationException, but you may see stale entries. <strong>Doesn't allow null keys/values</strong>. This is the default for any multithreaded map in modern code.</p>
+          <p class="answer-intro">Both <strong>HashMap</strong> and <strong>ConcurrentHashMap</strong> are part of the Java Collections Framework and store key–value pairs, but they differ mainly in <strong>thread safety, performance, and behavior in concurrent environments</strong>.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">HashMap</span>
+              <span class="core-diff-val"><span class="no">Not thread-safe</span></span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">ConcurrentHashMap</span>
+              <span class="core-diff-val"><span class="ok">Thread-safe</span> — designed for concurrent access</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Thread Safety</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> HashMap</div>
+                <ul>
+                  <li>Not synchronized.</li>
+                  <li>Multiple threads modifying it can lead to <strong>data corruption</strong> or <strong>infinite loops</strong> (the famous Java 7 resize bug).</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> ConcurrentHashMap</div>
+                <ul>
+                  <li>Designed for concurrency.</li>
+                  <li>Uses internal locking — segment-based in Java 7, <strong>bucket-level + CAS</strong> in Java 8+ — to allow safe concurrent updates.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Performance</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> HashMap</div>
+                <ul>
+                  <li>Faster in single-threaded scenarios.</li>
+                  <li>No synchronization overhead.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> ConcurrentHashMap</div>
+                <ul>
+                  <li>Slightly slower than HashMap in single-thread use.</li>
+                  <li>Much faster in multi-threaded environments because it allows parallel reads / writes.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Synchronization Behavior</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> HashMap</div>
+                <ul>
+                  <li>Requires external synchronization in multithreading.</li>
+                  <li>Wrap with <code>Collections.synchronizedMap(...)</code> if you need it shared.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> ConcurrentHashMap</div>
+                <ul>
+                  <li>Handles synchronization internally.</li>
+                  <li>Multiple threads can read and write simultaneously without blocking the whole map.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Null Handling</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> HashMap</div>
+                <ul>
+                  <li class="cmp-mark-yes">Allows <strong>one</strong> null key.</li>
+                  <li class="cmp-mark-yes">Allows <strong>multiple</strong> null values.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> ConcurrentHashMap</div>
+                <ul>
+                  <li class="cmp-mark-no">Does <strong>NOT</strong> allow null keys.</li>
+                  <li class="cmp-mark-no">Does <strong>NOT</strong> allow null values.</li>
+                  <li>Prevents ambiguity between "absent" and "present with null" in concurrent reads.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Iteration Behavior</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> HashMap</div>
+                <ul>
+                  <li><strong>Fail-fast</strong> iterator.</li>
+                  <li>Throws <code>ConcurrentModificationException</code> if modified during iteration.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> ConcurrentHashMap</div>
+                <ul>
+                  <li><strong>Fail-safe</strong> (weakly consistent) iterator.</li>
+                  <li>Never throws CME; reflects some — not necessarily all — changes that happen during iteration.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Use Case</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> HashMap</div>
+                <ul>
+                  <li>Single-threaded applications.</li>
+                  <li>Local maps inside a method or per-request data where synchronization isn't needed.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> ConcurrentHashMap</div>
+                <ul>
+                  <li>Multi-threaded applications.</li>
+                  <li>Shared caches, counters, registries — anywhere multiple threads read/write the same map.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>Takeaway:</b> use <strong>HashMap</strong> for thread-local / single-threaded use, and reach for <strong>ConcurrentHashMap</strong> the moment a map is shared across threads. For atomic compound ops, prefer <code>computeIfAbsent</code> / <code>merge</code> / <code>compute</code> over <code>get</code>+<code>put</code>. <em>Hashtable is the legacy, whole-map-locked predecessor — don't use it in new code.</em>
+          </div>
         </div>
       </details>
 
       <details class="qa">
         <summary>ArrayList vs LinkedList — when to use which?</summary>
         <div class="qa-body">
-          <p><strong>ArrayList</strong> is backed by a resizable array. Random access (<code>get(i)</code>) is <strong>O(1)</strong>. Adding at the end is amortized O(1); inserting/removing in the middle is O(n) because of array shifts. Better cache locality, so iteration is fast.</p>
-          <p><strong>LinkedList</strong> is a doubly-linked list. Add/remove at the ends is <strong>O(1)</strong> if you have the reference; <code>get(i)</code> in the middle is O(n) because it walks pointers. Memory overhead is higher — each node has prev/next pointers. Poor cache locality.</p>
-          <p><strong>In practice, use ArrayList 95% of the time.</strong> The only times LinkedList wins are queue/deque patterns at both ends without random access — and even then <code>ArrayDeque</code> beats LinkedList. Many seniors I've met say they haven't used LinkedList in years.</p>
+          <p class="answer-intro">Both implement the <code>List</code> interface but have very different internal structures, which makes their performance profiles almost opposite.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">ArrayList</span>
+              <span class="core-diff-val">Backed by a <strong>resizable array</strong> — fast random access.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">LinkedList</span>
+              <span class="core-diff-val">Backed by a <strong>doubly-linked list</strong> — fast insert/delete at ends.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Time Complexity</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> ArrayList</div>
+                <ul>
+                  <li><code>get(i)</code> — <strong>O(1)</strong> random access.</li>
+                  <li><code>add(end)</code> — amortized <strong>O(1)</strong>.</li>
+                  <li><code>add/remove(middle)</code> — <strong>O(n)</strong> due to array shifts.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> LinkedList</div>
+                <ul>
+                  <li><code>get(i)</code> — <strong>O(n)</strong> (walks pointers).</li>
+                  <li><code>add/remove(end)</code> — <strong>O(1)</strong>.</li>
+                  <li><code>add/remove(middle)</code> — O(1) <em>if</em> you already have the node reference; O(n) to find it.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Memory &amp; Cache</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> ArrayList</div>
+                <ul>
+                  <li>Compact contiguous array — excellent <strong>CPU cache locality</strong>.</li>
+                  <li>Iteration is very fast.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> LinkedList</div>
+                <ul>
+                  <li>Each node = value + <code>prev</code> + <code>next</code> pointers — much higher overhead per element.</li>
+                  <li>Nodes scattered in heap — poor cache locality.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Use Case</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> ArrayList</div>
+                <ul>
+                  <li>Default for almost everything: lookups, iteration, random access.</li>
+                  <li>API responses, in-memory caches, intermediate data structures.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> LinkedList</div>
+                <ul>
+                  <li>Queue / deque patterns where you only touch the ends.</li>
+                  <li>Even then, <code>ArrayDeque</code> is usually faster.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>Takeaway:</b> use <strong>ArrayList 95% of the time</strong>. Reach for LinkedList only if you genuinely need an end-to-end queue/deque — and even then, prefer <code>ArrayDeque</code>. Many senior engineers say they haven't written <code>new LinkedList&lt;&gt;()</code> in years.
+          </div>
         </div>
       </details>
 
       <details class="qa">
         <summary>HashSet vs TreeSet vs LinkedHashSet</summary>
         <div class="qa-body">
-          <p><strong>HashSet</strong> — backed by a HashMap; O(1) add/contains/remove on average; <strong>no ordering</strong>. Default choice when you just need uniqueness.</p>
-          <p><strong>LinkedHashSet</strong> — HashSet + a doubly-linked list of entries; same O(1) performance but preserves <strong>insertion order</strong> on iteration. Slightly more memory.</p>
-          <p><strong>TreeSet</strong> — backed by a Red-Black tree; <strong>sorted</strong> by natural order or a Comparator; O(log n) operations. Use when you need range queries (<code>headSet</code>, <code>tailSet</code>, <code>subSet</code>) or always-sorted iteration.</p>
-          <p>The same hierarchy exists for Maps (HashMap / LinkedHashMap / TreeMap). Choose by ordering need first, then performance — most production code uses HashMap/HashSet.</p>
+          <p class="answer-intro">All three implement the <code>Set</code> interface (no duplicates), but differ in <strong>ordering</strong>, <strong>internal data structure</strong>, and <strong>performance</strong>.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">HashSet</span>
+              <span class="core-diff-val">Hash table — <strong>no order</strong>, fastest.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">LinkedHashSet</span>
+              <span class="core-diff-val">Hash table + linked list — preserves <strong>insertion order</strong>.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">TreeSet</span>
+              <span class="core-diff-val">Red-Black tree — always <strong>sorted</strong>.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Ordering</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> HashSet</div>
+                <p>No guaranteed order. Iteration order may even change as the table grows.</p>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> LinkedHashSet &amp; TreeSet</div>
+                <ul>
+                  <li><strong>LinkedHashSet</strong> — iterates in <strong>insertion order</strong>.</li>
+                  <li><strong>TreeSet</strong> — iterates in <strong>natural / Comparator order</strong>.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Performance</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> HashSet / LinkedHashSet</div>
+                <ul>
+                  <li><code>add</code>, <code>contains</code>, <code>remove</code> — <strong>O(1)</strong> average.</li>
+                  <li>LinkedHashSet has a tiny overhead from linked-list pointers.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> TreeSet</div>
+                <ul>
+                  <li><code>add</code>, <code>contains</code>, <code>remove</code> — <strong>O(log n)</strong>.</li>
+                  <li>Slower for plain insert/lookup, but gives ordered traversal for free.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Extra Features</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> HashSet / LinkedHashSet</div>
+                <ul>
+                  <li>Allow one <code>null</code> element.</li>
+                  <li>No range queries.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> TreeSet</div>
+                <ul>
+                  <li>Implements <code>NavigableSet</code>: <code>first()</code>, <code>last()</code>, <code>headSet</code>, <code>tailSet</code>, <code>subSet</code>, <code>ceiling</code>, <code>floor</code>.</li>
+                  <li>Does <strong>not</strong> allow <code>null</code> (it needs to compare).</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Use Case</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> HashSet</div>
+                <ul>
+                  <li>Default when you just need uniqueness and don't care about order.</li>
+                  <li>De-duplicating IDs, membership checks.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> LinkedHashSet / TreeSet</div>
+                <ul>
+                  <li><strong>LinkedHashSet</strong> — predictable iteration order for tests, caches, deterministic output.</li>
+                  <li><strong>TreeSet</strong> — always-sorted view, range queries, top-N lookups.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>Takeaway:</b> the same hierarchy applies to maps — <strong>HashMap / LinkedHashMap / TreeMap</strong>. Choose by ordering need first, then performance. Most production code defaults to <code>HashSet</code> / <code>HashMap</code>.
+          </div>
         </div>
       </details>
 
@@ -180,41 +485,358 @@
       <details class="qa">
         <summary>Method overloading vs overriding</summary>
         <div class="qa-body">
-          <p><strong>Overloading</strong> is having multiple methods in the <em>same class</em> with the same name but different parameter lists. The compiler picks which to call based on argument types — <strong>compile-time / static polymorphism</strong>. Return type alone is not enough to distinguish overloads.</p>
-          <p><strong>Overriding</strong> is when a subclass provides a new implementation of a method declared in its superclass with the same signature. Resolution happens at <em>runtime</em> based on the actual object type — <strong>runtime / dynamic polymorphism</strong>. The <code>@Override</code> annotation catches typos. Rules: the overriding method can't reduce visibility, can't throw broader checked exceptions, and the return type must be the same or a covariant subtype. Overriding is what makes interfaces and abstract classes useful.</p>
+          <p class="answer-intro">Both let you have methods with the same name but they live at very different levels — one is a <strong>compile-time</strong> mechanism, the other is the foundation of <strong>runtime polymorphism</strong>.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Overloading</span>
+              <span class="core-diff-val">Same method name, <strong>different parameters</strong>, in the same class — <em>compile-time polymorphism</em>.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Overriding</span>
+              <span class="core-diff-val">Subclass replaces a parent method with the <strong>same signature</strong> — <em>runtime polymorphism</em>.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Where it lives</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Overloading</div>
+                <p>Within the <strong>same class</strong> (or inherited overloads visible together).</p>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Overriding</div>
+                <p>Between a <strong>parent class / interface</strong> and a subclass.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Resolution</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Overloading</div>
+                <ul>
+                  <li>Picked by the <strong>compiler</strong> based on the static types of arguments.</li>
+                  <li>Also called <em>static binding</em>.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Overriding</div>
+                <ul>
+                  <li>Picked at <strong>runtime</strong> based on the actual object's class.</li>
+                  <li>Also called <em>dynamic dispatch / virtual call</em>.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Signature Rules</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Overloading</div>
+                <ul>
+                  <li>Must differ in <strong>parameter list</strong> (count or types).</li>
+                  <li class="cmp-mark-no">Cannot overload by <strong>return type alone</strong>.</li>
+                  <li>Can differ in access modifier and exceptions freely.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Overriding</div>
+                <ul>
+                  <li>Must have the <strong>same signature</strong>; return type same or <em>covariant</em>.</li>
+                  <li>Cannot <strong>reduce visibility</strong> (e.g., public → private).</li>
+                  <li>Cannot throw <strong>broader checked exceptions</strong>.</li>
+                  <li>Use <code>@Override</code> — the compiler catches typos.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Example</div>
+            <pre><code>// Overloading — same class, different params
+class Calc {
+    int add(int a, int b)        { return a + b; }
+    double add(double a, double b){ return a + b; }
+    int add(int a, int b, int c) { return a + b + c; }
+}
+
+// Overriding — subclass replaces parent behavior
+class Animal { void speak() { System.out.println("..."); } }
+class Dog extends Animal {
+    @Override
+    void speak() { System.out.println("Woof"); }
+}</code></pre>
+          </div>
+
+          <div class="takeaway">
+            <b>Takeaway:</b> overloading is a <strong>convenience</strong> for the API author; overriding is what makes <strong>polymorphism</strong> work — the foundation of interfaces, abstract classes, and most framework hooks like Spring's <code>@Transactional</code> proxies.
+          </div>
         </div>
       </details>
 
       <details class="qa">
-        <summary>Abstract class vs interface (post Java 8)</summary>
+        <summary>Abstract class vs Interface (post Java 8)</summary>
         <div class="qa-body">
-          <p>Java 8 blurred the line by adding <strong><code>default</code></strong> methods to interfaces. Key differences today:</p>
-          <p><strong>Abstract class</strong> can have constructors, instance state (fields), and any access modifier on members. A class can extend only one. Use when you have common state or constructor logic to share.</p>
-          <p><strong>Interface</strong> can have default and static methods, but only public abstract method signatures by default and only <code>public static final</code> fields. A class can implement many. Java 9 added private interface methods for helper logic. Use interfaces to declare a <em>capability</em> (Runnable, Comparable) that many unrelated classes can implement.</p>
-          <p>Modern guidance: <strong>prefer interfaces with defaults</strong>; reach for abstract classes only when you need shared state.</p>
+          <p class="answer-intro">Java 8 blurred the line by adding <code>default</code> methods to interfaces. Both let you define abstractions, but they still serve different design goals.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Abstract class</span>
+              <span class="core-diff-val">Partial implementation + <strong>shared state</strong> (fields, constructor) — <em>"is-a"</em>.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Interface</span>
+              <span class="core-diff-val">Pure contract / capability — <em>"can-do"</em>. Multiple inheritance allowed.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Inheritance</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Abstract class</div>
+                <ul>
+                  <li>A class can extend <strong>only one</strong> abstract class.</li>
+                  <li>Uses <code>extends</code>.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Interface</div>
+                <ul>
+                  <li>A class can implement <strong>multiple</strong> interfaces.</li>
+                  <li>Uses <code>implements</code>.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Fields &amp; State</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Abstract class</div>
+                <ul>
+                  <li>Can have <strong>instance fields</strong>, any access modifier.</li>
+                  <li>Can have <strong>constructors</strong>.</li>
+                  <li>Holds shared state used by subclasses.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Interface</div>
+                <ul>
+                  <li>Fields are <strong>implicitly <code>public static final</code></strong> — constants only.</li>
+                  <li class="cmp-mark-no">No constructors, no instance state.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Methods Allowed</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Abstract class</div>
+                <ul>
+                  <li>Abstract + concrete methods.</li>
+                  <li>Any access modifier (public, protected, private).</li>
+                  <li>Can have <code>static</code> and <code>final</code> methods.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Interface</div>
+                <ul>
+                  <li>Abstract methods (default).</li>
+                  <li><strong><code>default</code></strong> methods with a body (Java 8+).</li>
+                  <li><strong><code>static</code></strong> methods (Java 8+).</li>
+                  <li><strong><code>private</code></strong> helper methods (Java 9+).</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Use Case</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Abstract class</div>
+                <ul>
+                  <li>Shared base for closely-related classes (e.g., <code>AbstractList</code>, <code>HttpServlet</code>).</li>
+                  <li>When you need common <strong>fields, constructors, or template methods</strong>.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Interface</div>
+                <ul>
+                  <li>Cross-cutting capabilities — <code>Runnable</code>, <code>Comparable</code>, <code>Closeable</code>.</li>
+                  <li>Public APIs and contracts (Spring's <code>UserDetailsService</code>, JPA's <code>Repository</code>).</li>
+                  <li>Functional interfaces for lambdas.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>Modern guidance:</b> <strong>prefer interfaces with default methods</strong> by default — they're more flexible and support multiple inheritance. Reach for abstract classes only when you need <strong>shared state or constructor logic</strong>.
+          </div>
         </div>
       </details>
 
       <details class="qa">
-        <summary>Checked vs unchecked exceptions — which to use?</summary>
+        <summary>Checked vs Unchecked exceptions</summary>
         <div class="qa-body">
-          <p><strong>Checked</strong> exceptions extend <code>Exception</code> (but not RuntimeException). The compiler forces you to either declare them with <code>throws</code> or handle them. Examples: <code>IOException</code>, <code>SQLException</code>. Intended for <em>recoverable</em> conditions the caller might react to.</p>
-          <p><strong>Unchecked</strong> exceptions extend <code>RuntimeException</code> — no compile-time enforcement. Examples: <code>NullPointerException</code>, <code>IllegalArgumentException</code>. Intended for programming bugs.</p>
-          <p>Modern practice — and the Spring ecosystem agrees — leans <strong>heavily toward unchecked</strong>. Checked exceptions create noisy method signatures, encourage wrap-and-rethrow boilerplate, and don't compose well with lambdas. I usually wrap checked into unchecked at the boundary (e.g., <code>UncheckedIOException</code>) and use unchecked custom types like <code>ResourceNotFoundException</code> across services.</p>
+          <p class="answer-intro">Both extend <code>Throwable</code>, but the compiler treats them very differently — that single rule changes how you design APIs.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Checked</span>
+              <span class="core-diff-val">Extends <code>Exception</code> (not RuntimeException). <strong>Compiler enforces</strong> handling.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Unchecked</span>
+              <span class="core-diff-val">Extends <code>RuntimeException</code> or <code>Error</code>. <strong>No compile-time check.</strong></span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Compiler Enforcement</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Checked</div>
+                <ul>
+                  <li>Must be either caught (<code>try/catch</code>) or declared with <code>throws</code>.</li>
+                  <li>Failing to do so → <strong>compile error</strong>.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Unchecked</div>
+                <ul>
+                  <li>No requirement to declare or catch.</li>
+                  <li>If uncaught, it propagates up and crashes the thread.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> When They're Raised</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Checked</div>
+                <ul>
+                  <li>Predictable <strong>recoverable</strong> conditions outside program control.</li>
+                  <li>Examples: <code>IOException</code>, <code>SQLException</code>, <code>InterruptedException</code>.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Unchecked</div>
+                <ul>
+                  <li>Usually <strong>programming bugs</strong> — bad arguments, missing nulls, illegal state.</li>
+                  <li>Examples: <code>NullPointerException</code>, <code>IllegalArgumentException</code>, <code>ArithmeticException</code>.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Effect on API Design</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Checked</div>
+                <ul>
+                  <li>Noisy <code>throws</code> clauses propagate up the call chain.</li>
+                  <li>Painful with lambdas / streams (they don't allow checked throws).</li>
+                  <li>Encourages "wrap-and-rethrow" boilerplate.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Unchecked</div>
+                <ul>
+                  <li>Clean method signatures.</li>
+                  <li>Works naturally with lambdas, Streams, CompletableFuture.</li>
+                  <li>What Spring, Hibernate, JPA all use.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>Modern practice:</b> lean <strong>heavily toward unchecked</strong>. Wrap checked into unchecked at the boundary (<code>UncheckedIOException</code>, custom <code>ResourceNotFoundException</code>) and handle them centrally in a Spring <code>@ControllerAdvice</code>. Reserve checked exceptions for genuinely recoverable conditions the caller will react to specifically.
+          </div>
         </div>
       </details>
 
       <details class="qa">
-        <summary>== vs equals() — including for Integer cache</summary>
+        <summary>== vs equals() — and the Integer cache trap</summary>
         <div class="qa-body">
-          <p><strong><code>==</code></strong> compares <em>references</em> for objects (same memory address) and <em>values</em> for primitives. <strong><code>equals()</code></strong> compares <em>logical equality</em> as defined by the class.</p>
-          <p>The tricky case is <strong>Integer cache</strong>: <code>Integer.valueOf(i)</code> caches values from -128 to 127. So:</p>
-          <pre><code>Integer a = 100, b = 100;
+          <p class="answer-intro">Two of the most misunderstood operators in Java. Using the wrong one is a classic source of silent bugs.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">==</span>
+              <span class="core-diff-val">Compares <strong>reference identity</strong> for objects, <strong>values</strong> for primitives.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">equals()</span>
+              <span class="core-diff-val">Compares <strong>logical equality</strong> — whatever the class defines.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> What they compare</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> ==</div>
+                <ul>
+                  <li>For <strong>primitives</strong> (<code>int</code>, <code>long</code>) — pure value comparison.</li>
+                  <li>For <strong>objects</strong> — true only if both references point to the <strong>same memory location</strong>.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> equals()</div>
+                <ul>
+                  <li>A method on <code>Object</code>, overridable.</li>
+                  <li>Default impl in <code>Object</code> is just <code>==</code>.</li>
+                  <li>Overridden in <code>String</code>, <code>Integer</code>, collections, records, etc. for value-based equality.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> The Integer Cache Trap</div>
+            <p style="margin: 0 0 10px;"><code>Integer.valueOf(n)</code> caches values from <strong>-128 to 127</strong>, so within that range the same boxed object is reused.</p>
+            <pre><code>Integer a = 100, b = 100;
 Integer c = 200, d = 200;
-a == b; // true  — both point to the cached 100
-c == d; // false — outside cache, new objects
-a.equals(b) &amp;&amp; c.equals(d); // both true</code></pre>
-          <p>This catches juniors all the time. Rule: <strong>never use <code>==</code> on wrapper types or Strings</strong> — always <code>equals()</code> or <code>Objects.equals()</code>.</p>
+
+a == b;             // true  — both point to the cached 100
+c == d;             // false — outside cache, two new objects
+a.equals(b);        // true
+c.equals(d);        // true</code></pre>
+            <p style="margin: 10px 0 0;">This bug bites every junior at some point — and occasionally seniors. Caching exists for <code>Boolean</code>, <code>Byte</code>, <code>Short</code> (-128..127), <code>Character</code> (0..127), and configurable for <code>Integer</code>.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Strings — Same Story</div>
+            <pre><code>String a = "hello";
+String b = "hello";
+String c = new String("hello");
+
+a == b;             // true  — same pooled literal
+a == c;             // false — new String forces a new object
+a.equals(c);        // true</code></pre>
+          </div>
+
+          <div class="takeaway">
+            <b>Rule:</b> <strong>never use <code>==</code> on wrapper types or Strings</strong>. Use <code>equals()</code> for value comparison, or null-safe <code>Objects.equals(a, b)</code>. Reserve <code>==</code> for primitives and explicit reference identity checks (rare).
+          </div>
         </div>
       </details>
 
@@ -361,14 +983,102 @@ list.sort(Comparator.comparingInt(String::length));</code></pre>
       </details>
 
       <details class="qa">
-        <summary>String, StringBuilder, StringBuffer — performance</summary>
+        <summary>String vs StringBuilder vs StringBuffer</summary>
         <div class="qa-body">
-          <p><strong>String</strong> is immutable — every concatenation (<code>+</code>) in a loop creates a new object. Bad for performance.</p>
-          <p><strong>StringBuilder</strong> is a mutable, <strong>not thread-safe</strong> sequence of characters with amortized O(1) append. The compiler often optimizes simple <code>+</code> outside loops into StringBuilder automatically, but inside loops or complex builds you should use it explicitly.</p>
-          <p><strong>StringBuffer</strong> is the older, <strong>thread-safe</strong> version — every method is synchronized. Rarely needed today; if you need thread-safe building, build per-thread and combine, or use locks externally.</p>
-          <pre><code>StringBuilder sb = new StringBuilder();
-for (String s : list) sb.append(s).append(",");</code></pre>
-          <p>For Java 8+ with streams: <code>String.join(",", list)</code> or <code>list.stream().collect(Collectors.joining(","))</code> are even cleaner.</p>
+          <p class="answer-intro">All three represent character sequences, but they differ in <strong>mutability</strong>, <strong>thread safety</strong>, and <strong>performance</strong> — picking the wrong one in a loop can tank your service.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">String</span>
+              <span class="core-diff-val"><strong>Immutable</strong> — every change creates a new object.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">StringBuilder</span>
+              <span class="core-diff-val">Mutable, <strong>not thread-safe</strong>, fast.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">StringBuffer</span>
+              <span class="core-diff-val">Mutable, <strong>thread-safe</strong> (synchronized), slower.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Mutability</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> String</div>
+                <ul>
+                  <li>Immutable. <code>s = s + "x"</code> creates a brand-new String each time.</li>
+                  <li>O(n) per concat → O(n²) inside a loop.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> StringBuilder / StringBuffer</div>
+                <ul>
+                  <li>Mutable — internal <code>char[]</code> grows as needed.</li>
+                  <li><code>append</code> is amortized <strong>O(1)</strong>.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Thread Safety</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> StringBuilder</div>
+                <ul>
+                  <li class="cmp-mark-no">Not synchronized.</li>
+                  <li>Faster — use within a single thread (local variable, method body).</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> StringBuffer</div>
+                <ul>
+                  <li class="cmp-mark-yes">Every method is <code>synchronized</code>.</li>
+                  <li>Safer across threads but with synchronization overhead.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Performance</div>
+            <p style="margin:0 0 8px;">For building a string in a loop (10,000 iterations, rough order):</p>
+            <ul style="margin:0 0 6px;">
+              <li><strong>String <code>+</code> in loop</strong> → very slow (O(n²), heaps of garbage).</li>
+              <li><strong>StringBuilder</strong> → fastest. <strong>Default choice.</strong></li>
+              <li><strong>StringBuffer</strong> → ~10–20% slower than StringBuilder.</li>
+            </ul>
+            <pre><code>StringBuilder sb = new StringBuilder();
+for (String s : list) sb.append(s).append(",");
+String result = sb.toString();</code></pre>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Use Case</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> String</div>
+                <ul>
+                  <li>Constants, keys, returned values — anything that won't change.</li>
+                  <li>Map keys, equals/hashCode usage.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> StringBuilder / Buffer</div>
+                <ul>
+                  <li><strong>StringBuilder</strong> — building strings in loops, log messages, query construction.</li>
+                  <li><strong>StringBuffer</strong> — almost never used today; legacy code only.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>Modern alternative:</b> for joining a collection use <code>String.join(",", list)</code> or <code>list.stream().collect(Collectors.joining(","))</code> — cleanest and just as fast. Java 9+ <strong>compact strings</strong> made plain String even cheaper for ASCII text.
+          </div>
         </div>
       </details>
 
@@ -382,13 +1092,91 @@ for (String s : list) sb.append(s).append(",");</code></pre>
       </details>
 
       <details class="qa">
-        <summary>What is the Comparable vs Comparator interface?</summary>
+        <summary>Comparable vs Comparator</summary>
         <div class="qa-body">
-          <p><strong><code>Comparable&lt;T&gt;</code></strong> defines a <em>natural ordering</em> on a class — the class implements it and provides <code>compareTo(T other)</code>. <code>String</code>, <code>Integer</code>, <code>LocalDate</code> are all Comparable. Sorting a list of these requires no extra arguments: <code>list.sort(null)</code> or <code>Collections.sort(list)</code> uses the natural order.</p>
-          <p><strong><code>Comparator&lt;T&gt;</code></strong> is an <em>external</em> comparator — a separate object that compares two T instances. Use it when you want multiple orderings or when sorting a class you can't modify:</p>
-          <pre><code>list.sort(Comparator.comparing(Employee::getSalary)
+          <p class="answer-intro">Both define ordering for objects, but one is <strong>built into the class</strong> and the other lives <strong>outside</strong>. Picking the right one shapes your API.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Comparable</span>
+              <span class="core-diff-val"><strong>Natural ordering</strong> — implemented by the class itself.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Comparator</span>
+              <span class="core-diff-val"><strong>External</strong> ordering — separate strategy object.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Where it lives</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Comparable</div>
+                <ul>
+                  <li>The class <strong>implements <code>Comparable&lt;T&gt;</code></strong> and defines <code>compareTo(T)</code>.</li>
+                  <li>One ordering per class (the "natural" one).</li>
+                  <li>Examples: <code>String</code> (alphabetical), <code>Integer</code> (numeric), <code>LocalDate</code> (chronological).</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Comparator</div>
+                <ul>
+                  <li>A <strong>separate object</strong> (or lambda) implementing <code>Comparator&lt;T&gt;</code>.</li>
+                  <li>Many comparators per class — by name, salary, age, anything.</li>
+                  <li>Doesn't require modifying the class being compared.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Method</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Comparable</div>
+                <pre><code>class Employee implements Comparable&lt;Employee&gt; {
+    public int compareTo(Employee o) {
+        return this.id - o.id;
+    }
+}</code></pre>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Comparator</div>
+                <pre><code>Comparator&lt;Employee&gt; bySalary =
+    Comparator.comparingDouble(Employee::getSalary);
+
+list.sort(bySalary
     .thenComparing(Employee::getName));</code></pre>
-          <p>Modern code lives almost entirely on Comparator with method references and chaining. Both must return negative / zero / positive, must be consistent with equals (or sorted maps will misbehave), and must be transitive — otherwise the sort throws IllegalArgumentException in Java 7+.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Use Case</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Comparable</div>
+                <ul>
+                  <li>When there is one obvious "natural" order for the class.</li>
+                  <li>Required for keys of <code>TreeMap</code> / <code>TreeSet</code> (unless you supply a Comparator).</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Comparator</div>
+                <ul>
+                  <li>Multiple orderings (by salary, then by name).</li>
+                  <li>Sorting a class you don't own.</li>
+                  <li>Reversed / case-insensitive / locale-aware sorts.</li>
+                  <li>Modern code lives <strong>almost entirely</strong> on Comparator with method references and <code>.thenComparing</code>.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>Contract for both:</b> return <strong>negative / zero / positive</strong>, be <strong>transitive</strong>, and ideally <strong>consistent with equals</strong> (otherwise <code>TreeSet</code>/<code>TreeMap</code> behave oddly). Inconsistent comparisons can even throw <code>IllegalArgumentException</code> from the sort in Java 7+.
+          </div>
         </div>
       </details>
 

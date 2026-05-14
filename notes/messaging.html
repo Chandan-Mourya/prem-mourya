@@ -46,11 +46,130 @@
     <div class="qa-list">
 
       <details class="qa">
-        <summary>Kafka vs RabbitMQ — when to choose which? <span class="qa-tag must">must</span></summary>
+        <summary>Kafka vs RabbitMQ <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p><strong>RabbitMQ</strong> is a traditional <em>message broker</em> with smart routing — exchanges (direct, topic, fanout) route messages to queues, consumers ack and the message is deleted. Great for <strong>task distribution</strong>: jobs go to one worker out of many; supports priorities and per-message TTLs. Push-based delivery.</p>
-          <p><strong>Kafka</strong> is a <em>distributed log</em> — producers append to topics partitioned across brokers; consumers <strong>pull</strong> and track their position (offset). Messages stay around for a retention period, so multiple consumer groups can replay independently. Built for <strong>high-throughput streaming</strong>, event sourcing, log aggregation, CDC.</p>
-          <p>Rule of thumb: <strong>RabbitMQ for work queues</strong> (process this email, retry this job), <strong>Kafka for event streams</strong> (every domain event published once, consumed by many subscribers). At OneXtel we used Kafka for SMS event streams (millions/day) and RabbitMQ for per-customer notification jobs.</p>
+          <p class="answer-intro">Both move messages between services, but they were designed for very different problems — a <strong>distributed log</strong> versus a <strong>smart broker</strong>. Picking the right one shapes your architecture.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">RabbitMQ</span>
+              <span class="core-diff-val"><strong>Message broker</strong> — smart routing, push-based, message deleted after ack.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Kafka</span>
+              <span class="core-diff-val"><strong>Distributed log</strong> — durable, append-only, pull-based, replayable.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Data Model</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> RabbitMQ</div>
+                <ul>
+                  <li><strong>Exchanges → Queues</strong>. Smart routing (direct, topic, fanout, headers).</li>
+                  <li>Once consumed and acked, the message is gone.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Kafka</div>
+                <ul>
+                  <li><strong>Topics → Partitions</strong>. Each partition is an ordered append-only log.</li>
+                  <li>Messages stay for a retention period (days/weeks) — replayable.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Delivery Model</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> RabbitMQ</div>
+                <ul>
+                  <li><strong>Push</strong> — broker pushes to consumers.</li>
+                  <li>Per-message ack; redelivers on failure.</li>
+                  <li>Supports priorities, per-message TTL, dead-letter exchanges.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Kafka</div>
+                <ul>
+                  <li><strong>Pull</strong> — consumer polls at its own pace.</li>
+                  <li>Tracks position via <strong>offsets</strong>; consumer controls progress.</li>
+                  <li>Many consumer groups can read the same topic independently.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Throughput &amp; Scale</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> RabbitMQ</div>
+                <ul>
+                  <li>Tens of thousands msg/s per node.</li>
+                  <li>Scales vertically; cluster mode exists but is complex.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Kafka</div>
+                <ul>
+                  <li><strong>Millions msg/s</strong> on a small cluster.</li>
+                  <li>Horizontally scaled by adding partitions and brokers.</li>
+                  <li>Built for throughput from day one.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Ordering &amp; Replay</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> RabbitMQ</div>
+                <ul>
+                  <li>Per-queue ordering only with a single consumer.</li>
+                  <li>No native replay — once acked, it's gone.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Kafka</div>
+                <ul>
+                  <li><strong>Ordering per partition</strong> guaranteed.</li>
+                  <li><strong>Replay by offset</strong> — perfect for event sourcing, debugging, new consumers backfilling history.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Use Case</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> RabbitMQ</div>
+                <ul>
+                  <li><strong>Work queues</strong> — emails, image processing, retry jobs.</li>
+                  <li>Request/response, RPC, fan-out to specific routing keys.</li>
+                  <li>Priorities, delays, complex routing rules.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Kafka</div>
+                <ul>
+                  <li><strong>Event streams</strong> — every domain event published once, consumed by many.</li>
+                  <li>Log aggregation, CDC (Change Data Capture), metrics pipelines.</li>
+                  <li>Event sourcing, stream processing (Kafka Streams, Flink).</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>Rule of thumb:</b> use <strong>RabbitMQ for work queues</strong> (jobs to be done) and <strong>Kafka for event streams</strong> (facts to be published once and read by many). At OneXtel I used Kafka for SMS event streams (millions/day, replayable) and RabbitMQ for per-customer notification jobs (priority + per-message TTL).
+          </div>
         </div>
       </details>
 

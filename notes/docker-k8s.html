@@ -46,17 +46,110 @@
     <div class="qa-list">
 
       <details class="qa">
-        <summary>What is Docker and how does it differ from a VM? <span class="qa-tag must">must</span></summary>
+        <summary>Docker (Container) vs Virtual Machine <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p>A <strong>VM</strong> runs a full guest OS on top of a hypervisor — large (GBs), slow to boot, but strongly isolated.</p>
-          <p>A <strong>container</strong> packages just the app + its dependencies, sharing the host's kernel. It uses Linux primitives — <strong>namespaces</strong> (isolate process tree, network, mounts, users) and <strong>cgroups</strong> (limit CPU, memory, IO) — to give the illusion of isolation while staying lightweight.</p>
-          <p>Practical differences:</p>
-          <ul>
-            <li>Containers: MBs in size, milliseconds to start, hundreds per host.</li>
-            <li>VMs: GBs in size, seconds-minutes to start, tens per host.</li>
-            <li>Containers share the host kernel — slightly weaker isolation than VMs.</li>
-          </ul>
-          <p><strong>Docker</strong> is the most popular container runtime + image format + build tool. Kubernetes can run containers via any OCI-compliant runtime (containerd, CRI-O). I haven't shipped a Java service without a container in years.</p>
+          <p class="answer-intro">Both isolate workloads, but at very different layers of the stack — that single difference explains everything about their size, speed, and density.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">VM</span>
+              <span class="core-diff-val">Runs a <strong>full guest OS</strong> on a hypervisor — strong isolation, heavy.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Container</span>
+              <span class="core-diff-val"><strong>Shares the host kernel</strong> — isolated via namespaces + cgroups; lightweight.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Architecture</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> VM</div>
+                <ul>
+                  <li>Hardware → Hypervisor (KVM, VMware, Hyper-V) → Guest OS → App.</li>
+                  <li>Each VM bundles its own kernel.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Container</div>
+                <ul>
+                  <li>Hardware → Host OS → Container runtime → App.</li>
+                  <li>Uses Linux <strong>namespaces</strong> (PID, network, mount, user) and <strong>cgroups</strong> (CPU, memory limits).</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Size &amp; Start Time</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> VM</div>
+                <ul>
+                  <li>Images: <strong>GBs</strong> (full OS).</li>
+                  <li>Boot: <strong>seconds to minutes</strong>.</li>
+                  <li>Density: <strong>tens</strong> per host.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Container</div>
+                <ul>
+                  <li>Images: <strong>MBs to a few hundred MB</strong>.</li>
+                  <li>Start: <strong>milliseconds</strong>.</li>
+                  <li>Density: <strong>hundreds</strong> per host.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Isolation &amp; Security</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> VM</div>
+                <ul>
+                  <li class="cmp-mark-yes">Strong hardware-level isolation.</li>
+                  <li>Different OS family per VM (Windows + Linux on one host).</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Container</div>
+                <ul>
+                  <li>Shared kernel — isolation weaker than VMs.</li>
+                  <li>All containers on a Linux host must use the Linux kernel.</li>
+                  <li>For untrusted code use additional sandboxing (gVisor, Kata, Firecracker).</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Use Case</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> VM</div>
+                <ul>
+                  <li>Multi-tenant infrastructure where isolation matters.</li>
+                  <li>Running different OSes on the same host.</li>
+                  <li>Legacy workloads tied to specific kernel versions.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Container</div>
+                <ul>
+                  <li>Microservices, dev/prod parity, CI runners.</li>
+                  <li>Kubernetes, ECS, Cloud Run — modern orchestrators.</li>
+                  <li>Fast scaling and rolling deploys.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>In practice:</b> the two compose well — cloud providers run <strong>containers on top of VMs</strong> (EKS nodes are EC2 instances). <strong>Docker</strong> is the most popular container runtime/image format/build tool; Kubernetes works with any OCI-compliant runtime (containerd, CRI-O).
+          </div>
         </div>
       </details>
 

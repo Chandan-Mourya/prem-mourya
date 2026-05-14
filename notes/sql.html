@@ -227,12 +227,111 @@ for (Order o : orders) o.getItems().size();   // N queries — bad</code></pre>
       </details>
 
       <details class="qa">
-        <summary>Optimistic vs pessimistic locking</summary>
+        <summary>Optimistic vs Pessimistic locking</summary>
         <div class="qa-body">
-          <p>Both prevent lost updates when multiple users edit the same row.</p>
-          <p><strong>Pessimistic</strong> — lock the row at read time (<code>SELECT ... FOR UPDATE</code>); others wait. Strong correctness, but holds locks while you think — bad for contention. Risk of deadlocks.</p>
-          <p><strong>Optimistic</strong> — read without locking, include a <code>version</code> column. On update: <code>UPDATE ... WHERE id = ? AND version = ?</code>. If 0 rows affected, someone else wrote first — retry or surface a 409 Conflict. JPA's <code>@Version</code> annotation gives you this declaratively.</p>
-          <p>I prefer <strong>optimistic</strong> for most CRUD on the web — low contention, no held locks, clear conflict semantics for users. Pessimistic for short, transactional sections where contention is high (inventory decrement at sale time).</p>
+          <p class="answer-intro">Two strategies to prevent <strong>lost updates</strong> when multiple users edit the same row at the same time. The right choice depends on contention.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Pessimistic</span>
+              <span class="core-diff-val"><strong>Lock the row up-front</strong> — others wait until you're done.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Optimistic</span>
+              <span class="core-diff-val"><strong>No lock</strong> — check on update; if someone else changed it, you fail and retry.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> How it Works</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Pessimistic</div>
+                <ul>
+                  <li><code>SELECT ... FOR UPDATE</code> takes a row-level lock immediately.</li>
+                  <li>Other transactions block until the lock is released (commit/rollback).</li>
+                  <li>JPA: <code>@Lock(LockModeType.PESSIMISTIC_WRITE)</code>.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Optimistic</div>
+                <ul>
+                  <li>Read without locking, include a <code>version</code> column.</li>
+                  <li>On update: <code>UPDATE ... WHERE id = ? AND version = ?</code>.</li>
+                  <li>0 rows affected → someone else wrote first → retry or 409.</li>
+                  <li>JPA: <code>@Version</code> field.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Performance under Contention</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Pessimistic</div>
+                <ul>
+                  <li>Predictable — first writer wins, others wait.</li>
+                  <li>Holds locks while user "thinks" — bad for long edit sessions.</li>
+                  <li>Risk of <strong>deadlocks</strong>.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Optimistic</div>
+                <ul>
+                  <li>No locks held — high concurrency under low contention.</li>
+                  <li>Under high contention, retries pile up and can become wasteful.</li>
+                  <li>No deadlocks.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Conflict Handling</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Pessimistic</div>
+                <ul>
+                  <li>No conflicts at write time — second writer simply waited.</li>
+                  <li>User may not realize they were blocked.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Optimistic</div>
+                <ul>
+                  <li>Conflicts surface as <code>OptimisticLockException</code> / 0 rows updated.</li>
+                  <li>Caller chooses: retry transparently, or return <strong>409 Conflict</strong> for the user to refresh and re-submit.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Use Case</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Pessimistic</div>
+                <ul>
+                  <li>Short critical sections with <strong>high contention</strong>.</li>
+                  <li>Inventory decrement at sale time, financial postings.</li>
+                  <li>When losing a write is worse than blocking briefly.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Optimistic</div>
+                <ul>
+                  <li>Default for <strong>most web CRUD</strong> — profile updates, settings, orders.</li>
+                  <li>Long edit sessions where you don't want to hold a row lock.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>My default:</b> <strong>optimistic</strong> for general CRUD — clean conflict semantics, no held locks, scales well. Reach for <strong>pessimistic</strong> in narrow, short, high-contention sections (inventory, balance updates). And on the user side, show a clear "this record was changed by someone else — please refresh" message.
+          </div>
         </div>
       </details>
 

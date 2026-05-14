@@ -74,15 +74,89 @@ public class OrderService {
       <details class="qa">
         <summary>BeanFactory vs ApplicationContext</summary>
         <div class="qa-body">
-          <p><strong><code>BeanFactory</code></strong> is the root IoC container interface — basic bean creation and dependency injection. Beans are lazily instantiated.</p>
-          <p><strong><code>ApplicationContext</code></strong> extends BeanFactory with enterprise features:</p>
-          <ul>
-            <li><strong>Eager instantiation</strong> of singleton beans by default (fail-fast at startup).</li>
-            <li><strong>Event publication</strong> via <code>ApplicationEvent</code>.</li>
-            <li><strong>Internationalization</strong> (MessageSource).</li>
-            <li><strong>AOP integration</strong>, environment abstraction (profiles, properties), resource loading.</li>
-          </ul>
-          <p>You almost never use BeanFactory directly today. Spring Boot bootstraps a <code>ConfigurableApplicationContext</code> (specifically <code>AnnotationConfigServletWebServerApplicationContext</code> for web apps). When people say "the Spring container" in practice, they mean ApplicationContext.</p>
+          <p class="answer-intro">Both are Spring IoC containers, but <code>ApplicationContext</code> is the superset you actually use day-to-day.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">BeanFactory</span>
+              <span class="core-diff-val">The <strong>root IoC interface</strong> — bare-bones DI, lazy bean creation.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">ApplicationContext</span>
+              <span class="core-diff-val"><strong>Extends BeanFactory</strong> with enterprise features (events, i18n, AOP, profiles).</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Bean Instantiation</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> BeanFactory</div>
+                <ul>
+                  <li><strong>Lazy</strong> — beans created when first requested.</li>
+                  <li>Lower startup memory.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> ApplicationContext</div>
+                <ul>
+                  <li><strong>Eager</strong> — singletons created at startup by default.</li>
+                  <li>Fails fast on misconfiguration (missing beans, circular deps).</li>
+                  <li>Lazy can be opted in with <code>@Lazy</code>.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Enterprise Features</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> BeanFactory</div>
+                <ul>
+                  <li>Just DI and bean lifecycle.</li>
+                  <li>No events, no i18n, no env, no AOP wiring.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> ApplicationContext</div>
+                <ul>
+                  <li><strong>Events</strong> — <code>ApplicationEventPublisher</code>, <code>@EventListener</code>.</li>
+                  <li><strong>i18n</strong> — <code>MessageSource</code>.</li>
+                  <li><strong>Environment / profiles / properties</strong>.</li>
+                  <li><strong>AOP integration</strong> for <code>@Transactional</code>, <code>@Async</code>, etc.</li>
+                  <li><strong>Resource loading</strong> — classpath / file / URL.</li>
+                  <li><strong>BeanPostProcessor</strong> auto-registration.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Implementations</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> BeanFactory</div>
+                <ul>
+                  <li><code>DefaultListableBeanFactory</code>.</li>
+                  <li>Used internally by ApplicationContext — rarely instantiated directly.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> ApplicationContext</div>
+                <ul>
+                  <li><code>AnnotationConfigApplicationContext</code> — non-web.</li>
+                  <li><code>AnnotationConfigServletWebServerApplicationContext</code> — what Spring Boot creates for web apps.</li>
+                  <li><code>ClassPathXmlApplicationContext</code> — legacy XML config.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>Takeaway:</b> when people say "the Spring container" they mean <strong>ApplicationContext</strong>. Spring Boot bootstraps one for you — you rarely care which exact subclass. Reach for BeanFactory directly only in very specialized library code where you want lazy-only DI.
+          </div>
         </div>
       </details>
 
@@ -138,14 +212,92 @@ public class OrderService {
       <details class="qa">
         <summary>@Component vs @Service vs @Repository vs @Controller</summary>
         <div class="qa-body">
-          <p>All four register the class as a Spring bean. They are semantically distinct stereotypes that document <em>layer</em>:</p>
-          <ul>
-            <li><strong><code>@Component</code></strong> — generic catch-all.</li>
-            <li><strong><code>@Service</code></strong> — business / domain layer. No technical behavior added, but signals intent.</li>
-            <li><strong><code>@Repository</code></strong> — persistence layer. <strong>Adds technical behavior</strong>: Spring wraps it with a translator that converts vendor-specific exceptions (SQL, JPA) into <code>DataAccessException</code> hierarchy.</li>
-            <li><strong><code>@Controller</code></strong> / <strong><code>@RestController</code></strong> — web layer; participates in MVC handler mapping. <code>@RestController</code> = <code>@Controller</code> + <code>@ResponseBody</code> on every method.</li>
-          </ul>
-          <p>Picking the right one helps readers, static analysis tools, and AOP pointcuts (e.g., apply something only to <code>@Service</code>).</p>
+          <p class="answer-intro">All four are <strong>stereotype annotations</strong> — they register the class as a Spring bean via component scanning. Functionally they're almost identical, but the right choice signals architectural <em>intent</em>.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">@Component</span>
+              <span class="core-diff-val">Generic — any Spring-managed bean.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">@Service</span>
+              <span class="core-diff-val">Business / domain layer.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">@Repository</span>
+              <span class="core-diff-val">Persistence layer — <strong>adds exception translation</strong>.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">@Controller / @RestController</span>
+              <span class="core-diff-val">Web layer — participates in MVC handler mapping.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> @Component vs the Others</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> @Component</div>
+                <ul>
+                  <li>Generic catch-all stereotype.</li>
+                  <li>Use for utilities, configuration helpers, anything that doesn't fit a specific layer.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> @Service / @Repository / @Controller</div>
+                <ul>
+                  <li>Specializations of <code>@Component</code> (each is meta-annotated with it).</li>
+                  <li>Communicate architectural intent.</li>
+                  <li>Help static analysis tools and AOP pointcuts (e.g., apply something only to <code>@Service</code>).</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> @Repository — Extra Behavior</div>
+            <ul style="margin:0;">
+              <li><strong>Only</strong> stereotype that adds <em>real technical behavior</em> beyond bean registration.</li>
+              <li>Spring wraps it with a <code>PersistenceExceptionTranslationPostProcessor</code>.</li>
+              <li>Converts vendor-specific exceptions (SQL, JPA, MongoDB) into Spring's unified <code>DataAccessException</code> hierarchy.</li>
+              <li>This lets your service layer catch one consistent exception family regardless of underlying DB tech.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> @Controller vs @RestController</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> @Controller</div>
+                <ul>
+                  <li>Returns a <strong>view name</strong> by default (resolved by ViewResolver).</li>
+                  <li>Used with Thymeleaf, JSP, server-rendered HTML.</li>
+                  <li>Add <code>@ResponseBody</code> on a method to return JSON instead.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> @RestController</div>
+                <ul>
+                  <li>Shortcut for <code>@Controller</code> + <code>@ResponseBody</code> on every method.</li>
+                  <li>Every method returns the body directly — typically JSON via Jackson.</li>
+                  <li>Default choice for REST APIs.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Typical Layer Mapping</div>
+            <pre><code>@RestController         // /api/users
+└─ @Service             // UserService — business logic
+   └─ @Repository       // UserRepository — DB access (JPA/Mongo)
+   └─ @Component        // UserMapper, validation helpers</code></pre>
+          </div>
+
+          <div class="takeaway">
+            <b>Rule of thumb:</b> always pick the most <strong>specific</strong> stereotype available. It costs nothing and pays off in readability, tooling, and the one real behavioral perk — <code>@Repository</code>'s exception translation.
+          </div>
         </div>
       </details>
 

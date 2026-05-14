@@ -46,16 +46,95 @@
     <div class="qa-list">
 
       <details class="qa">
-        <summary>IaaS vs PaaS vs SaaS — explain with examples</summary>
+        <summary>IaaS vs PaaS vs SaaS</summary>
         <div class="qa-body">
-          <p>Three layers of "cloud abstraction".</p>
-          <ul>
-            <li><strong>IaaS (Infrastructure as a Service)</strong> — virtual machines, networks, storage. You manage the OS, runtime, app. Examples: AWS EC2, Azure VMs, GCP Compute Engine. Maximum control, most ops work.</li>
-            <li><strong>PaaS (Platform as a Service)</strong> — managed runtime; you deploy code, the platform handles servers, scaling, patching. Examples: AWS Elastic Beanstalk, Azure App Service, Heroku, Google App Engine, AWS ECS Fargate. Less ops; some flexibility lost.</li>
-            <li><strong>SaaS (Software as a Service)</strong> — finished software you consume. Gmail, Salesforce, Datadog. No ops, no code.</li>
-          </ul>
-          <p>Also: <strong>FaaS (Function as a Service)</strong> / serverless — Lambda, Azure Functions. Per-invocation pricing, cold starts, stateless.</p>
-          <p>Most modern teams mix: containers on K8s (somewhere between IaaS and PaaS) + managed DBs (PaaS) + SaaS for observability.</p>
+          <p class="answer-intro">Three layers of "cloud abstraction" — each one hands more of the stack to the provider and leaves less for you to manage.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">IaaS</span>
+              <span class="core-diff-val"><strong>Infrastructure</strong> — you get VMs and networks; you manage the OS, runtime, app.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">PaaS</span>
+              <span class="core-diff-val"><strong>Platform</strong> — you deploy code; the provider runs it.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">SaaS</span>
+              <span class="core-diff-val"><strong>Software</strong> — you just use the app over the internet.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> What You Manage</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> IaaS</div>
+                <ul>
+                  <li>OS, runtime, middleware, app, data.</li>
+                  <li>Provider gives you VM, network, storage.</li>
+                  <li>Maximum control, maximum ops work.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> PaaS / SaaS</div>
+                <ul>
+                  <li><strong>PaaS</strong> — you just push code. App + data are yours, infra + runtime + scaling are theirs.</li>
+                  <li><strong>SaaS</strong> — you just log in. Everything else is theirs.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Examples</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> IaaS</div>
+                <ul>
+                  <li>AWS EC2, Azure VMs, GCP Compute Engine.</li>
+                  <li>S3 / EBS for storage. VPC for networking.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> PaaS / SaaS</div>
+                <ul>
+                  <li><strong>PaaS</strong> — AWS Elastic Beanstalk, App Service, Heroku, App Engine, ECS Fargate.</li>
+                  <li><strong>SaaS</strong> — Gmail, Salesforce, Slack, Datadog, GitHub.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Tradeoffs</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> IaaS</div>
+                <ul>
+                  <li class="cmp-mark-yes">Maximum flexibility — any tech stack, any OS.</li>
+                  <li class="cmp-mark-no">You patch, secure, monitor, and scale everything.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> PaaS / SaaS</div>
+                <ul>
+                  <li class="cmp-mark-yes">Less ops, faster to ship.</li>
+                  <li class="cmp-mark-no">Vendor lock-in, limited customization.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Bonus: FaaS / Serverless</div>
+            <p style="margin:0;">A fourth layer often called out separately: <strong>FaaS</strong> (Function as a Service) — write a function, deploy it, pay per invocation. Examples: <strong>AWS Lambda</strong>, <strong>Azure Functions</strong>, <strong>GCP Cloud Functions</strong>. Stateless, auto-scaled to zero, but with cold starts and a 15-min max runtime.</p>
+          </div>
+
+          <div class="takeaway">
+            <b>In practice:</b> most modern teams mix all four — containers on K8s (between IaaS and PaaS) + managed DBs/queues (PaaS) + Lambdas for event-driven glue (FaaS) + SaaS for observability and dev tools. Pick the highest-level abstraction that still gives you what you need.
+          </div>
         </div>
       </details>
 

@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>DSA Interview Set · Notes</title>
+  <link rel="icon" href="../assets/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+      <div class="search-wrap">
+        <i class="bi bi-search"></i>
+        <input id="search" type="search" placeholder="Search DSA problems..." autocomplete="off" spellcheck="false">
+        <span class="search-shortcut">/</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="topic-page">
+
+    <div class="topic-page-header">
+      <div class="topic-page-eyebrow">19 · DSA Interview Set</div>
+      <h1>DSA — 40 most-asked problems</h1>
+      <p class="topic-page-desc">Curated for 4–5 yrs backend engineers at product &amp; BFSI companies. Each problem ships with a <strong style="color:var(--amber)">brute force</strong> for reasoning + the <strong style="color:var(--green)">optimal</strong> interview answer + complexity.</p>
+      <div class="topic-page-meta">
+        <span><strong>40</strong> problems</span>
+        <span>11 categories</span>
+        <span>Press <span class="hint-kbd">/</span> to search · <span class="hint-kbd">E</span> expand all</span>
+      </div>
+    </div>
+
+    <div class="must-list">
+      <h3><i class="bi bi-bullseye"></i> Must-do before any interview (15)</h3>
+      <ol>
+        <li>Two Sum</li>
+        <li>Longest Substring Without Repeating Characters</li>
+        <li>Valid Parentheses</li>
+        <li>Reverse Linked List</li>
+        <li>Merge Intervals</li>
+        <li>Binary Search</li>
+        <li>LRU Cache</li>
+        <li>Kth Largest Element</li>
+        <li>Number of Islands</li>
+        <li>Top K Frequent Elements</li>
+        <li>Detect Cycle in Linked List</li>
+        <li>Product of Array Except Self</li>
+        <li>Search in Rotated Sorted Array</li>
+        <li>Maximum Subarray</li>
+        <li>Merge K Sorted Lists</li>
+      </ol>
+    </div>
+
+    <div class="no-results" id="noResults">No matches.</div>
+
+    <div class="qa-list">
+
+      <!-- ============================================================
+           1. ARRAYS & HASHMAP
+           ============================================================ -->
+      <div class="section-divider">Arrays &amp; HashMap</div>
+
+      <details class="qa">
+        <summary>1. Two Sum <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="problem-statement">Given an array of integers and a target, return the indices of the two numbers that add up to the target. Exactly one valid answer; can't use the same element twice.</p>
+          <div class="problem-example"><b>Input:</b>  nums = [2, 7, 11, 15], target = 9
+<b>Output:</b> [0, 1]    // nums[0] + nums[1] = 9</div>
+          <div class="topic-pills"><span class="topic-pill">array</span><span class="topic-pill">hashmap</span></div>
+
+          <div class="solution brute">
+            <div class="solution-head"><span class="label">Brute Force</span>
+              <span class="complexity"><span class="time">O(n²) time</span><span class="space">O(1) space</span></span>
+            </div>
+            <p class="solution-desc">Check every pair with two nested loops. Works but quadratic — fine for n ≤ 1000, slow beyond that.</p>
+            <pre><code>public int[] twoSum(int[] nums, int target) {
+    for (int i = 0; i &lt; nums.length; i++)
+        for (int j = i + 1; j &lt; nums.length; j++)
+            if (nums[i] + nums[j] == target)
+                return new int[]{i, j};
+    return new int[]{};
+}</code></pre>
+          </div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — HashMap</span>
+              <span class="complexity"><span class="time">O(n) time</span><span class="space">O(n) space</span></span>
+            </div>
+            <p class="solution-desc">For each number, check if its <em>complement</em> (target − num) is already in the map. One pass. The classic "trade space for time" pattern.</p>
+            <pre><code>public int[] twoSum(int[] nums, int target) {
+    Map&lt;Integer, Integer&gt; seen = new HashMap&lt;&gt;();
+    for (int i = 0; i &lt; nums.length; i++) {
+        int complement = target - nums[i];
+        if (seen.containsKey(complement))
+            return new int[]{seen.get(complement), i};
+        seen.put(nums[i], i);
+    }
+    return new int[]{};
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>2. Contains Duplicate</summary>
+        <div class="qa-body">
+          <p class="problem-statement">Return <code>true</code> if any value appears at least twice in the array; <code>false</code> if every element is distinct.</p>
+          <div class="problem-example"><b>Input:</b>  [1, 2, 3, 1]
+<b>Output:</b> true</div>
+          <div class="topic-pills"><span class="topic-pill">array</span><span class="topic-pill">hashset</span></div>
+
+          <div class="solution brute">
+            <div class="solution-head"><span class="label">Brute / Sort</span>
+              <span class="complexity"><span class="time">O(n log n) time</span><span class="space">O(1) space</span></span>
+            </div>
+            <p class="solution-desc">Sort the array and check adjacent pairs.</p>
+            <pre><code>public boolean containsDuplicate(int[] nums) {
+    Arrays.sort(nums);
+    for (int i = 1; i &lt; nums.length; i++)
+        if (nums[i] == nums[i - 1]) return true;
+    return false;
+}</code></pre>
+          </div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — HashSet</span>
+              <span class="complexity"><span class="time">O(n) time</span><span class="space">O(n) space</span></span>
+            </div>
+            <p class="solution-desc">Walk once and try to add to a set; if <code>add()</code> returns false, we've seen it before.</p>
+            <pre><code>public boolean containsDuplicate(int[] nums) {
+    Set&lt;Integer&gt; seen = new HashSet&lt;&gt;();
+    for (int n : nums)
+        if (!seen.add(n)) return true;
+    return false;
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>3. Best Time to Buy and Sell Stock</summary>
+        <div class="qa-body">
+          <p class="problem-statement">Given prices on day i, find the max profit from one buy + one sell. You must buy before you sell.</p>
+          <div class="problem-example"><b>Input:</b>  [7, 1, 5, 3, 6, 4]
+<b>Output:</b> 5    // buy on day 2 (price 1), sell on day 5 (price 6)</div>
+          <div class="topic-pills"><span class="topic-pill">array</span><span class="topic-pill">greedy</span></div>
+
+          <div class="solution brute">
+            <div class="solution-head"><span class="label">Brute Force</span>
+              <span class="complexity"><span class="time">O(n²) time</span><span class="space">O(1) space</span></span>
+            </div>
+            <p class="solution-desc">Try every pair (buy day, sell day) and track the max difference.</p>
+            <pre><code>public int maxProfit(int[] p) {
+    int max = 0;
+    for (int i = 0; i &lt; p.length; i++)
+        for (int j = i + 1; j &lt; p.length; j++)
+            max = Math.max(max, p[j] - p[i]);
+    return max;
+}</code></pre>
+          </div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — single pass</span>
+              <span class="complexity"><span class="time">O(n) time</span><span class="space">O(1) space</span></span>
+            </div>
+            <p class="solution-desc">Track the <strong>lowest price so far</strong>. At each day, profit if sold today = current − minSoFar. Update the max.</p>
+            <pre><code>public int maxProfit(int[] prices) {
+    int minPrice = Integer.MAX_VALUE, maxProfit = 0;
+    for (int p : prices) {
+        if (p &lt; minPrice) minPrice = p;
+        else maxProfit = Math.max(maxProfit, p - minPrice);
+    }
+    return maxProfit;
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>4. Product of Array Except Self <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="problem-statement">Return an array where <code>output[i]</code> equals the product of every element except <code>nums[i]</code>. <strong>Cannot use division.</strong></p>
+          <div class="problem-example"><b>Input:</b>  [1, 2, 3, 4]
+<b>Output:</b> [24, 12, 8, 6]</div>
+          <div class="topic-pills"><span class="topic-pill">array</span><span class="topic-pill">prefix-suffix</span></div>
+
+          <div class="solution brute">
+            <div class="solution-head"><span class="label">Brute Force</span>
+              <span class="complexity"><span class="time">O(n²) time</span><span class="space">O(n) space</span></span>
+            </div>
+            <p class="solution-desc">For each i, multiply every other element.</p>
+            <pre><code>public int[] productExceptSelf(int[] nums) {
+    int n = nums.length;
+    int[] ans = new int[n];
+    for (int i = 0; i &lt; n; i++) {
+        int prod = 1;
+        for (int j = 0; j &lt; n; j++)
+            if (i != j) prod *= nums[j];
+        ans[i] = prod;
+    }
+    return ans;
+}</code></pre>
+          </div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — prefix &amp; suffix</span>
+              <span class="complexity"><span class="time">O(n) time</span><span class="space">O(1) extra</span></span>
+            </div>
+            <p class="solution-desc">For each index, the answer is <em>(product of everything to the left) × (product of everything to the right)</em>. Two passes: left to right storing prefix products, then right to left multiplying by running suffix.</p>
+            <pre><code>public int[] productExceptSelf(int[] nums) {
+    int n = nums.length;
+    int[] ans = new int[n];
+
+    ans[0] = 1;
+    for (int i = 1; i &lt; n; i++)
+        ans[i] = ans[i - 1] * nums[i - 1];     // prefix
+
+    int right = 1;
+    for (int i = n - 1; i &gt;= 0; i--) {
+        ans[i] *= right;                       // multiply by suffix
+        right *= nums[i];
+    }
+    return ans;
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>5. Maximum Subarray (Kadane's Algorithm) <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="problem-statement">Find the contiguous subarray with the largest sum.</p>
+          <div class="problem-example"><b>Input:</b>  [-2, 1, -3, 4, -1, 2, 1, -5, 4]
+<b>Output:</b> 6    // subarray [4, -1, 2, 1]</div>
+          <div class="topic-pills"><span class="topic-pill">array</span><span class="topic-pill">DP</span><span class="topic-pill">kadane</span></div>
+
+          <div class="solution brute">
+            <div class="solution-head"><span class="label">Brute Force</span>
+              <span class="complexity"><span class="time">O(n²) time</span><span class="space">O(1) space</span></span>
+            </div>
+            <p class="solution-desc">Try every starting index, extend, track max.</p>
+            <pre><code>public int maxSubArray(int[] nums) {
+    int max = Integer.MIN_VALUE;
+    for (int i = 0; i &lt; nums.length; i++) {
+        int sum = 0;
+        for (int j = i; j &lt; nums.length; j++) {
+            sum += nums[j];
+            max = Math.max(max, sum);
+        }
+    }
+    return max;
+}</code></pre>
+          </div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — Kadane</span>
+              <span class="complexity"><span class="time">O(n) time</span><span class="space">O(1) space</span></span>
+            </div>
+            <p class="solution-desc">At each index decide: extend the previous best, or start fresh from here. Formula: <code>f(i) = max(nums[i], f(i-1) + nums[i])</code>.</p>
+            <pre><code>public int maxSubArray(int[] nums) {
+    int curr = nums[0], best = nums[0];
+    for (int i = 1; i &lt; nums.length; i++) {
+        curr = Math.max(nums[i], curr + nums[i]);
+        best = Math.max(best, curr);
+    }
+    return best;
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <!-- ============================================================
+           2. STRINGS
+           ============================================================ -->
+      <div class="section-divider">Strings</div>
+
+      <details class="qa">
+        <summary>6. Valid Anagram</summary>
+        <div class="qa-body">
+          <p class="problem-statement">Return true if <code>t</code> is an anagram of <code>s</code> — same letters, same counts.</p>
+          <div class="problem-example"><b>Input:</b>  s = "anagram", t = "nagaram"
+<b>Output:</b> true</div>
+          <div class="topic-pills"><span class="topic-pill">string</span><span class="topic-pill">frequency</span></div>
+
+          <div class="solution brute">
+            <div class="solution-head"><span class="label">Sort &amp; Compare</span>
+              <span class="complexity"><span class="time">O(n log n) time</span><span class="space">O(n) space</span></span>
+            </div>
+            <pre><code>public boolean isAnagram(String s, String t) {
+    if (s.length() != t.length()) return false;
+    char[] a = s.toCharArray(), b = t.toCharArray();
+    Arrays.sort(a); Arrays.sort(b);
+    return Arrays.equals(a, b);
+}</code></pre>
+          </div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — frequency count</span>
+              <span class="complexity"><span class="time">O(n) time</span><span class="space">O(1) space</span></span>
+            </div>
+            <p class="solution-desc">Increment for chars in <code>s</code>, decrement for chars in <code>t</code>. If every bucket is zero, it's an anagram. Fixed-size array (26) → O(1) space.</p>
+            <pre><code>public boolean isAnagram(String s, String t) {
+    if (s.length() != t.length()) return false;
+    int[] count = new int[26];
+    for (int i = 0; i &lt; s.length(); i++) {
+        count[s.charAt(i) - 'a']++;
+        count[t.charAt(i) - 'a']--;
+    }
+    for (int c : count) if (c != 0) return false;
+    return true;
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>7. Longest Substring Without Repeating Characters <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="problem-statement">Find the length of the longest substring with all unique characters.</p>
+          <div class="problem-example"><b>Input:</b>  "abcabcbb"
+<b>Output:</b> 3    // "abc"</div>
+          <div class="topic-pills"><span class="topic-pill">string</span><span class="topic-pill">sliding-window</span></div>
+
+          <div class="solution brute">
+            <div class="solution-head"><span class="label">Brute Force</span>
+              <span class="complexity"><span class="time">O(n³) time</span><span class="space">O(n) space</span></span>
+            </div>
+            <p class="solution-desc">Generate every substring, check uniqueness with a set.</p>
+            <pre><code>public int lengthOfLongestSubstring(String s) {
+    int max = 0;
+    for (int i = 0; i &lt; s.length(); i++)
+        for (int j = i + 1; j &lt;= s.length(); j++)
+            if (allUnique(s, i, j)) max = Math.max(max, j - i);
+    return max;
+}
+private boolean allUnique(String s, int i, int j) {
+    Set&lt;Character&gt; set = new HashSet&lt;&gt;();
+    for (int k = i; k &lt; j; k++)
+        if (!set.add(s.charAt(k))) return false;
+    return true;
+}</code></pre>
+          </div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — sliding window</span>
+              <span class="complexity"><span class="time">O(n) time</span><span class="space">O(k) space</span></span>
+            </div>
+            <p class="solution-desc">Expand the right edge; if we hit a duplicate, jump the left edge past its last position. Map stores the latest index of each char.</p>
+            <pre><code>public int lengthOfLongestSubstring(String s) {
+    Map&lt;Character, Integer&gt; lastIdx = new HashMap&lt;&gt;();
+    int max = 0, left = 0;
+    for (int right = 0; right &lt; s.length(); right++) {
+        char c = s.charAt(right);
+        if (lastIdx.containsKey(c) &amp;&amp; lastIdx.get(c) &gt;= left)
+            left = lastIdx.get(c) + 1;
+        lastIdx.put(c, right);
+        max = Math.max(max, right - left + 1);
+    }
+    return max;
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>8. Group Anagrams</summary>
+        <div class="qa-body">
+          <p class="problem-statement">Group strings that are anagrams of each other.</p>
+          <div class="problem-example"><b>Input:</b>  ["eat","tea","tan","ate","nat","bat"]
+<b>Output:</b> [["eat","tea","ate"], ["tan","nat"], ["bat"]]</div>
+          <div class="topic-pills"><span class="topic-pill">string</span><span class="topic-pill">hashmap</span></div>
+
+          <div class="solution brute">
+            <div class="solution-head"><span class="label">Sort key — readable</span>
+              <span class="complexity"><span class="time">O(n·k log k)</span><span class="space">O(n·k)</span></span>
+            </div>
+            <p class="solution-desc">Sort each word's characters to form a canonical key, then group.</p>
+            <pre><code>public List&lt;List&lt;String&gt;&gt; groupAnagrams(String[] strs) {
+    Map&lt;String, List&lt;String&gt;&gt; map = new HashMap&lt;&gt;();
+    for (String s : strs) {
+        char[] c = s.toCharArray();
+        Arrays.sort(c);
+        map.computeIfAbsent(new String(c), k -&gt; new ArrayList&lt;&gt;()).add(s);
+    }
+    return new ArrayList&lt;&gt;(map.values());
+}</code></pre>
+          </div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — count key</span>
+              <span class="complexity"><span class="time">O(n·k) time</span><span class="space">O(n·k)</span></span>
+            </div>
+            <p class="solution-desc">Build a 26-int key from each word's char frequencies — no sorting. k = avg word length.</p>
+            <pre><code>public List&lt;List&lt;String&gt;&gt; groupAnagrams(String[] strs) {
+    Map&lt;String, List&lt;String&gt;&gt; map = new HashMap&lt;&gt;();
+    for (String s : strs) {
+        int[] count = new int[26];
+        for (char ch : s.toCharArray()) count[ch - 'a']++;
+        String key = Arrays.toString(count);
+        map.computeIfAbsent(key, k -&gt; new ArrayList&lt;&gt;()).add(s);
+    }
+    return new ArrayList&lt;&gt;(map.values());
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>9. Valid Parentheses <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="problem-statement">Given a string of <code>()</code>, <code>[]</code>, <code>{}</code> — return true if every open bracket has a matching close in the right order.</p>
+          <div class="problem-example"><b>Input:</b>  "([{}])"
+<b>Output:</b> true
+
+<b>Input:</b>  "([)]"
+<b>Output:</b> false</div>
+          <div class="topic-pills"><span class="topic-pill">string</span><span class="topic-pill">stack</span></div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — Stack</span>
+              <span class="complexity"><span class="time">O(n) time</span><span class="space">O(n) space</span></span>
+            </div>
+            <p class="solution-desc">Push opens, on close pop and check it matches. Empty stack at the end → valid.</p>
+            <pre><code>public boolean isValid(String s) {
+    Deque&lt;Character&gt; stack = new ArrayDeque&lt;&gt;();
+    for (char c : s.toCharArray()) {
+        if (c == '(' || c == '[' || c == '{') stack.push(c);
+        else {
+            if (stack.isEmpty()) return false;
+            char top = stack.pop();
+            if (c == ')' &amp;&amp; top != '(') return false;
+            if (c == ']' &amp;&amp; top != '[') return false;
+            if (c == '}' &amp;&amp; top != '{') return false;
+        }
+    }
+    return stack.isEmpty();
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>10. Longest Palindromic Substring</summary>
+        <div class="qa-body">
+          <p class="problem-statement">Return the longest substring that reads the same forward and backward.</p>
+          <div class="problem-example"><b>Input:</b>  "babad"
+<b>Output:</b> "bab" or "aba"</div>
+          <div class="topic-pills"><span class="topic-pill">string</span><span class="topic-pill">two-pointer</span></div>
+
+          <div class="solution brute">
+            <div class="solution-head"><span class="label">Brute Force</span>
+              <span class="complexity"><span class="time">O(n³) time</span><span class="space">O(1) space</span></span>
+            </div>
+            <p class="solution-desc">Check every substring for palindrome.</p>
+            <pre><code>// for each (i, j) check s.substring(i,j) is palindrome,
+// track the longest. O(n²) substrings × O(n) palindrome check.</code></pre>
+          </div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — Expand Around Center</span>
+              <span class="complexity"><span class="time">O(n²) time</span><span class="space">O(1) space</span></span>
+            </div>
+            <p class="solution-desc">Every palindrome has a center (one char for odd, gap for even). For each of the 2n−1 centers, expand outward while characters match.</p>
+            <pre><code>public String longestPalindrome(String s) {
+    if (s.isEmpty()) return "";
+    int start = 0, end = 0;
+    for (int i = 0; i &lt; s.length(); i++) {
+        int len1 = expand(s, i, i);     // odd centre
+        int len2 = expand(s, i, i + 1); // even centre
+        int len = Math.max(len1, len2);
+        if (len &gt; end - start) {
+            start = i - (len - 1) / 2;
+            end   = i + len / 2;
+        }
+    }
+    return s.substring(start, end + 1);
+}
+private int expand(String s, int l, int r) {
+    while (l &gt;= 0 &amp;&amp; r &lt; s.length() &amp;&amp; s.charAt(l) == s.charAt(r)) { l--; r++; }
+    return r - l - 1;
+}</code></pre>
+            <p class="solution-desc" style="margin-top: 6px;"><em>Manacher's algorithm gives O(n) but is rarely expected in interviews.</em></p>
+          </div>
+        </div>
+      </details>
+
+      <!-- ============================================================
+           3. SLIDING WINDOW
+           ============================================================ -->
+      <div class="section-divider">Sliding Window</div>
+
+      <details class="qa">
+        <summary>11. Maximum Sum Subarray of Size K</summary>
+        <div class="qa-body">
+          <p class="problem-statement">Find the maximum sum of any contiguous subarray of size <code>k</code>.</p>
+          <div class="problem-example"><b>Input:</b>  nums = [2, 1, 5, 1, 3, 2], k = 3
+<b>Output:</b> 9    // [5, 1, 3]</div>
+          <div class="topic-pills"><span class="topic-pill">array</span><span class="topic-pill">sliding-window</span></div>
+
+          <div class="solution brute">
+            <div class="solution-head"><span class="label">Brute Force</span>
+              <span class="complexity"><span class="time">O(n·k) time</span><span class="space">O(1) space</span></span>
+            </div>
+            <pre><code>public int maxSum(int[] nums, int k) {
+    int max = Integer.MIN_VALUE;
+    for (int i = 0; i + k &lt;= nums.length; i++) {
+        int sum = 0;
+        for (int j = i; j &lt; i + k; j++) sum += nums[j];
+        max = Math.max(max, sum);
+    }
+    return max;
+}</code></pre>
+          </div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — fixed window</span>
+              <span class="complexity"><span class="time">O(n) time</span><span class="space">O(1) space</span></span>
+            </div>
+            <p class="solution-desc">Compute the first window's sum, then slide: subtract the element leaving, add the element entering.</p>
+            <pre><code>public int maxSum(int[] nums, int k) {
+    int sum = 0;
+    for (int i = 0; i &lt; k; i++) sum += nums[i];
+    int max = sum;
+    for (int i = k; i &lt; nums.length; i++) {
+        sum += nums[i] - nums[i - k];
+        max = Math.max(max, sum);
+    }
+    return max;
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>12. Minimum Window Substring <span class="qa-tag hot">hot</span></summary>
+        <div class="qa-body">
+          <p class="problem-statement">Given strings <code>s</code> and <code>t</code>, find the smallest substring of <code>s</code> that contains every character of <code>t</code> (including duplicates).</p>
+          <div class="problem-example"><b>Input:</b>  s = "ADOBECODEBANC", t = "ABC"
+<b>Output:</b> "BANC"</div>
+          <div class="topic-pills"><span class="topic-pill">string</span><span class="topic-pill">sliding-window</span></div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — expand-shrink window</span>
+              <span class="complexity"><span class="time">O(n) time</span><span class="space">O(k) space</span></span>
+            </div>
+            <p class="solution-desc">Two pointers. Expand right until the window contains all of <code>t</code>, then shrink left as long as it still does. Track the smallest valid window.</p>
+            <pre><code>public String minWindow(String s, String t) {
+    if (t.isEmpty() || s.length() &lt; t.length()) return "";
+    Map&lt;Character, Integer&gt; need = new HashMap&lt;&gt;();
+    for (char c : t.toCharArray()) need.merge(c, 1, Integer::sum);
+
+    int required = need.size(), formed = 0;
+    Map&lt;Character, Integer&gt; window = new HashMap&lt;&gt;();
+    int left = 0, bestLen = Integer.MAX_VALUE, bestL = 0;
+
+    for (int right = 0; right &lt; s.length(); right++) {
+        char c = s.charAt(right);
+        window.merge(c, 1, Integer::sum);
+        if (need.containsKey(c) &amp;&amp; window.get(c).intValue() == need.get(c).intValue())
+            formed++;
+
+        while (formed == required) {
+            if (right - left + 1 &lt; bestLen) {
+                bestLen = right - left + 1;
+                bestL = left;
+            }
+            char lc = s.charAt(left);
+            window.merge(lc, -1, Integer::sum);
+            if (need.containsKey(lc) &amp;&amp; window.get(lc) &lt; need.get(lc))
+                formed--;
+            left++;
+        }
+    }
+    return bestLen == Integer.MAX_VALUE ? "" : s.substring(bestL, bestL + bestLen);
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <!-- ============================================================
+           4. LINKED LIST
+           ============================================================ -->
+      <div class="section-divider">Linked List</div>
+
+      <details class="qa">
+        <summary>13. Reverse Linked List <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="problem-statement">Reverse a singly linked list.</p>
+          <div class="problem-example"><b>Input:</b>  1 → 2 → 3 → 4 → 5
+<b>Output:</b> 5 → 4 → 3 → 2 → 1</div>
+          <div class="topic-pills"><span class="topic-pill">linked-list</span><span class="topic-pill">two-pointer</span></div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — iterative</span>
+              <span class="complexity"><span class="time">O(n) time</span><span class="space">O(1) space</span></span>
+            </div>
+            <p class="solution-desc">Walk the list flipping each <code>next</code> pointer. Three references: prev, curr, next.</p>
+            <pre><code>public ListNode reverseList(ListNode head) {
+    ListNode prev = null, curr = head;
+    while (curr != null) {
+        ListNode next = curr.next;
+        curr.next = prev;
+        prev = curr;
+        curr = next;
+    }
+    return prev;
+}</code></pre>
+          </div>
+
+          <div class="solution brute">
+            <div class="solution-head"><span class="label">Alternative — recursive</span>
+              <span class="complexity"><span class="time">O(n) time</span><span class="space">O(n) stack</span></span>
+            </div>
+            <pre><code>public ListNode reverseList(ListNode head) {
+    if (head == null || head.next == null) return head;
+    ListNode rest = reverseList(head.next);
+    head.next.next = head;
+    head.next = null;
+    return rest;
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>14. Detect Cycle in Linked List <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="problem-statement">Return true if the linked list contains a cycle.</p>
+          <div class="topic-pills"><span class="topic-pill">linked-list</span><span class="topic-pill">two-pointer</span><span class="topic-pill">floyd</span></div>
+
+          <div class="solution brute">
+            <div class="solution-head"><span class="label">HashSet</span>
+              <span class="complexity"><span class="time">O(n) time</span><span class="space">O(n) space</span></span>
+            </div>
+            <pre><code>public boolean hasCycle(ListNode head) {
+    Set&lt;ListNode&gt; seen = new HashSet&lt;&gt;();
+    while (head != null) {
+        if (!seen.add(head)) return true;
+        head = head.next;
+    }
+    return false;
+}</code></pre>
+          </div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — Floyd's Tortoise &amp; Hare</span>
+              <span class="complexity"><span class="time">O(n) time</span><span class="space">O(1) space</span></span>
+            </div>
+            <p class="solution-desc">Slow pointer moves 1 step; fast pointer moves 2. If there's a cycle, fast eventually laps slow and they meet. Otherwise fast hits null.</p>
+            <pre><code>public boolean hasCycle(ListNode head) {
+    ListNode slow = head, fast = head;
+    while (fast != null &amp;&amp; fast.next != null) {
+        slow = slow.next;
+        fast = fast.next.next;
+        if (slow == fast) return true;
+    }
+    return false;
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>15. Merge Two Sorted Linked Lists</summary>
+        <div class="qa-body">
+          <p class="problem-statement">Merge two sorted lists into one sorted list.</p>
+          <div class="problem-example"><b>Input:</b>  l1 = 1→2→4, l2 = 1→3→4
+<b>Output:</b> 1→1→2→3→4→4</div>
+          <div class="topic-pills"><span class="topic-pill">linked-list</span><span class="topic-pill">two-pointer</span></div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — dummy head + two pointers</span>
+              <span class="complexity"><span class="time">O(n + m) time</span><span class="space">O(1) space</span></span>
+            </div>
+            <p class="solution-desc">Use a dummy node so we don't special-case the head. Walk both lists, append the smaller one each step.</p>
+            <pre><code>public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+    ListNode dummy = new ListNode(0), tail = dummy;
+    while (l1 != null &amp;&amp; l2 != null) {
+        if (l1.val &lt;= l2.val) { tail.next = l1; l1 = l1.next; }
+        else                  { tail.next = l2; l2 = l2.next; }
+        tail = tail.next;
+    }
+    tail.next = (l1 != null) ? l1 : l2;
+    return dummy.next;
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <!-- ============================================================
+           5. STACK & QUEUE
+           ============================================================ -->
+      <div class="section-divider">Stack &amp; Queue</div>
+
+      <details class="qa">
+        <summary>16. Min Stack</summary>
+        <div class="qa-body">
+          <p class="problem-statement">Design a stack supporting <code>push</code>, <code>pop</code>, <code>top</code>, and <code>getMin</code> — all in O(1).</p>
+          <div class="topic-pills"><span class="topic-pill">stack</span><span class="topic-pill">design</span></div>
+
+          <div class="solution brute">
+            <div class="solution-head"><span class="label">Naive — scan on getMin</span>
+              <span class="complexity"><span class="time">getMin O(n)</span><span class="space">O(n)</span></span>
+            </div>
+            <p class="solution-desc">Plain stack; <code>getMin</code> scans the whole stack each time.</p>
+          </div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — auxiliary min-stack</span>
+              <span class="complexity"><span class="time">all O(1)</span><span class="space">O(n)</span></span>
+            </div>
+            <p class="solution-desc">Keep a second stack of running minimums. Push to it only when the new value ≤ current min; pop in sync.</p>
+            <pre><code>class MinStack {
+    Deque&lt;Integer&gt; data = new ArrayDeque&lt;&gt;();
+    Deque&lt;Integer&gt; mins = new ArrayDeque&lt;&gt;();
+
+    public void push(int x) {
+        data.push(x);
+        if (mins.isEmpty() || x &lt;= mins.peek()) mins.push(x);
+    }
+    public void pop() {
+        int x = data.pop();
+        if (x == mins.peek()) mins.pop();
+    }
+    public int top()    { return data.peek(); }
+    public int getMin() { return mins.peek(); }
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>17. Implement Queue Using Stacks</summary>
+        <div class="qa-body">
+          <p class="problem-statement">Implement a FIFO queue using only two LIFO stacks.</p>
+          <div class="topic-pills"><span class="topic-pill">stack</span><span class="topic-pill">queue</span><span class="topic-pill">design</span></div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — amortized O(1)</span>
+              <span class="complexity"><span class="time">amortized O(1)</span><span class="space">O(n)</span></span>
+            </div>
+            <p class="solution-desc">Two stacks: <code>in</code> for pushes, <code>out</code> for pops. When <code>out</code> is empty, drain <code>in</code> into <code>out</code> — each element moves at most twice, so amortized O(1).</p>
+            <pre><code>class MyQueue {
+    Deque&lt;Integer&gt; in  = new ArrayDeque&lt;&gt;();
+    Deque&lt;Integer&gt; out = new ArrayDeque&lt;&gt;();
+
+    public void push(int x) { in.push(x); }
+
+    public int pop() {
+        shift();
+        return out.pop();
+    }
+    public int peek() {
+        shift();
+        return out.peek();
+    }
+    public boolean empty() { return in.isEmpty() &amp;&amp; out.isEmpty(); }
+
+    private void shift() {
+        if (out.isEmpty())
+            while (!in.isEmpty()) out.push(in.pop());
+    }
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>18. Next Greater Element</summary>
+        <div class="qa-body">
+          <p class="problem-statement">For each element, find the first greater element to its right. If none, return −1.</p>
+          <div class="problem-example"><b>Input:</b>  [2, 1, 2, 4, 3]
+<b>Output:</b> [4, 2, 4, -1, -1]</div>
+          <div class="topic-pills"><span class="topic-pill">stack</span><span class="topic-pill">monotonic</span></div>
+
+          <div class="solution brute">
+            <div class="solution-head"><span class="label">Brute Force</span>
+              <span class="complexity"><span class="time">O(n²) time</span><span class="space">O(n) space</span></span>
+            </div>
+            <pre><code>public int[] nextGreater(int[] a) {
+    int n = a.length;
+    int[] ans = new int[n];
+    for (int i = 0; i &lt; n; i++) {
+        ans[i] = -1;
+        for (int j = i + 1; j &lt; n; j++)
+            if (a[j] &gt; a[i]) { ans[i] = a[j]; break; }
+    }
+    return ans;
+}</code></pre>
+          </div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — Monotonic Stack</span>
+              <span class="complexity"><span class="time">O(n) time</span><span class="space">O(n) space</span></span>
+            </div>
+            <p class="solution-desc">Walk <strong>right to left</strong>, keep a stack of "candidates" in decreasing order. Pop everything ≤ current — the top is the answer. Then push current.</p>
+            <pre><code>public int[] nextGreater(int[] a) {
+    int n = a.length;
+    int[] ans = new int[n];
+    Deque&lt;Integer&gt; stack = new ArrayDeque&lt;&gt;();
+    for (int i = n - 1; i &gt;= 0; i--) {
+        while (!stack.isEmpty() &amp;&amp; stack.peek() &lt;= a[i]) stack.pop();
+        ans[i] = stack.isEmpty() ? -1 : stack.peek();
+        stack.push(a[i]);
+    }
+    return ans;
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <!-- ============================================================
+           6. BINARY SEARCH
+           ============================================================ -->
+      <div class="section-divider">Binary Search</div>
+
+      <details class="qa">
+        <summary>19. Binary Search <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="problem-statement">Find a target in a sorted array. Return its index or −1.</p>
+          <div class="topic-pills"><span class="topic-pill">array</span><span class="topic-pill">binary-search</span></div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Iterative</span>
+              <span class="complexity"><span class="time">O(log n) time</span><span class="space">O(1) space</span></span>
+            </div>
+            <p class="solution-desc">Use <code>mid = left + (right - left) / 2</code> to avoid integer overflow.</p>
+            <pre><code>public int binarySearch(int[] nums, int target) {
+    int left = 0, right = nums.length - 1;
+    while (left &lt;= right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] == target) return mid;
+        if (nums[mid] &lt; target)  left = mid + 1;
+        else                     right = mid - 1;
+    }
+    return -1;
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>20. Search in Rotated Sorted Array <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="problem-statement">A sorted array was rotated at an unknown pivot. Find a target in O(log n).</p>
+          <div class="problem-example"><b>Input:</b>  nums = [4, 5, 6, 7, 0, 1, 2], target = 0
+<b>Output:</b> 4</div>
+          <div class="topic-pills"><span class="topic-pill">array</span><span class="topic-pill">binary-search</span></div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — modified binary search</span>
+              <span class="complexity"><span class="time">O(log n) time</span><span class="space">O(1) space</span></span>
+            </div>
+            <p class="solution-desc">At each mid, one half is guaranteed sorted. Decide whether the target lies in that half (compare endpoints), then search there.</p>
+            <pre><code>public int search(int[] nums, int target) {
+    int left = 0, right = nums.length - 1;
+    while (left &lt;= right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] == target) return mid;
+
+        if (nums[left] &lt;= nums[mid]) {      // left half is sorted
+            if (target &gt;= nums[left] &amp;&amp; target &lt; nums[mid]) right = mid - 1;
+            else                                              left  = mid + 1;
+        } else {                            // right half is sorted
+            if (target &gt; nums[mid] &amp;&amp; target &lt;= nums[right]) left  = mid + 1;
+            else                                              right = mid - 1;
+        }
+    }
+    return -1;
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <!-- ============================================================
+           7. TREES
+           ============================================================ -->
+      <div class="section-divider">Trees</div>
+
+      <details class="qa">
+        <summary>21. Binary Tree Level Order Traversal</summary>
+        <div class="qa-body">
+          <p class="problem-statement">Return the values of the tree level by level (BFS).</p>
+          <div class="problem-example"><b>Input:</b>  [3, 9, 20, null, null, 15, 7]
+<b>Output:</b> [[3], [9, 20], [15, 7]]</div>
+          <div class="topic-pills"><span class="topic-pill">tree</span><span class="topic-pill">BFS</span><span class="topic-pill">queue</span></div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — BFS with queue</span>
+              <span class="complexity"><span class="time">O(n) time</span><span class="space">O(n) space</span></span>
+            </div>
+            <p class="solution-desc">For each level, snapshot the queue size and process exactly that many nodes — those are this level's nodes. Add children to the queue for next level.</p>
+            <pre><code>public List&lt;List&lt;Integer&gt;&gt; levelOrder(TreeNode root) {
+    List&lt;List&lt;Integer&gt;&gt; result = new ArrayList&lt;&gt;();
+    if (root == null) return result;
+    Queue&lt;TreeNode&gt; q = new LinkedList&lt;&gt;();
+    q.offer(root);
+    while (!q.isEmpty()) {
+        int size = q.size();
+        List&lt;Integer&gt; level = new ArrayList&lt;&gt;();
+        for (int i = 0; i &lt; size; i++) {
+            TreeNode n = q.poll();
+            level.add(n.val);
+            if (n.left != null)  q.offer(n.left);
+            if (n.right != null) q.offer(n.right);
+        }
+        result.add(level);
+    }
+    return result;
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>22. Maximum Depth of Binary Tree</summary>
+        <div class="qa-body">
+          <p class="problem-statement">Return the height of the tree (number of nodes on the longest root-to-leaf path).</p>
+          <div class="topic-pills"><span class="topic-pill">tree</span><span class="topic-pill">DFS</span><span class="topic-pill">recursion</span></div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — recursion</span>
+              <span class="complexity"><span class="time">O(n) time</span><span class="space">O(h) stack</span></span>
+            </div>
+            <pre><code>public int maxDepth(TreeNode root) {
+    if (root == null) return 0;
+    return 1 + Math.max(maxDepth(root.left), maxDepth(root.right));
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>23. Lowest Common Ancestor of Binary Tree <span class="qa-tag hot">hot</span></summary>
+        <div class="qa-body">
+          <p class="problem-statement">Find the lowest node in the tree that is an ancestor of both <code>p</code> and <code>q</code>.</p>
+          <div class="topic-pills"><span class="topic-pill">tree</span><span class="topic-pill">DFS</span><span class="topic-pill">recursion</span></div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — recursive DFS</span>
+              <span class="complexity"><span class="time">O(n) time</span><span class="space">O(h) stack</span></span>
+            </div>
+            <p class="solution-desc">If the current node is <code>p</code> or <code>q</code>, return it. Otherwise recurse into both subtrees: if both return non-null, this node is the LCA. Else return whichever side found one.</p>
+            <pre><code>public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+    if (root == null || root == p || root == q) return root;
+    TreeNode left  = lowestCommonAncestor(root.left,  p, q);
+    TreeNode right = lowestCommonAncestor(root.right, p, q);
+    if (left != null &amp;&amp; right != null) return root;
+    return left != null ? left : right;
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>24. Validate Binary Search Tree</summary>
+        <div class="qa-body">
+          <p class="problem-statement">Return true if a binary tree is a valid BST — every node's left subtree contains only smaller values, right subtree only larger.</p>
+          <div class="topic-pills"><span class="topic-pill">tree</span><span class="topic-pill">BST</span><span class="topic-pill">DFS</span></div>
+
+          <div class="solution brute">
+            <div class="solution-head"><span class="label">Naive — check at each node</span>
+              <span class="complexity"><span class="time">O(n²) worst</span><span class="space">O(h)</span></span>
+            </div>
+            <p class="solution-desc">At each node check max of left subtree &lt; node &lt; min of right subtree — but this re-traverses subtrees.</p>
+          </div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — pass min/max bounds</span>
+              <span class="complexity"><span class="time">O(n) time</span><span class="space">O(h)</span></span>
+            </div>
+            <p class="solution-desc">Pass valid range (min, max) down. Every node must lie within it. Use <code>Long</code> to handle <code>Integer.MIN/MAX</code> values cleanly.</p>
+            <pre><code>public boolean isValidBST(TreeNode root) {
+    return validate(root, Long.MIN_VALUE, Long.MAX_VALUE);
+}
+private boolean validate(TreeNode n, long min, long max) {
+    if (n == null) return true;
+    if (n.val &lt;= min || n.val &gt;= max) return false;
+    return validate(n.left, min, n.val) &amp;&amp; validate(n.right, n.val, max);
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <!-- ============================================================
+           8. HEAP / PRIORITY QUEUE
+           ============================================================ -->
+      <div class="section-divider">Heap / Priority Queue</div>
+
+      <details class="qa">
+        <summary>25. Kth Largest Element in Array <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="problem-statement">Find the k-th largest element in an unsorted array.</p>
+          <div class="problem-example"><b>Input:</b>  nums = [3, 2, 1, 5, 6, 4], k = 2
+<b>Output:</b> 5</div>
+          <div class="topic-pills"><span class="topic-pill">array</span><span class="topic-pill">heap</span><span class="topic-pill">quickselect</span></div>
+
+          <div class="solution brute">
+            <div class="solution-head"><span class="label">Sort</span>
+              <span class="complexity"><span class="time">O(n log n)</span><span class="space">O(1)</span></span>
+            </div>
+            <pre><code>public int findKthLargest(int[] nums, int k) {
+    Arrays.sort(nums);
+    return nums[nums.length - k];
+}</code></pre>
+          </div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — Min-heap of size k</span>
+              <span class="complexity"><span class="time">O(n log k)</span><span class="space">O(k)</span></span>
+            </div>
+            <p class="solution-desc">Maintain a min-heap of the top k largest seen so far. After the scan, the heap's root is the k-th largest.</p>
+            <pre><code>public int findKthLargest(int[] nums, int k) {
+    PriorityQueue&lt;Integer&gt; minHeap = new PriorityQueue&lt;&gt;();
+    for (int n : nums) {
+        minHeap.offer(n);
+        if (minHeap.size() &gt; k) minHeap.poll();
+    }
+    return minHeap.peek();
+}</code></pre>
+            <p class="solution-desc" style="margin-top: 6px;"><em>For O(n) average use Quickselect (randomized partition).</em></p>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>26. Top K Frequent Elements <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="problem-statement">Return the k most frequent elements.</p>
+          <div class="problem-example"><b>Input:</b>  nums = [1, 1, 1, 2, 2, 3], k = 2
+<b>Output:</b> [1, 2]</div>
+          <div class="topic-pills"><span class="topic-pill">heap</span><span class="topic-pill">hashmap</span><span class="topic-pill">bucket</span></div>
+
+          <div class="solution brute">
+            <div class="solution-head"><span class="label">HashMap + Sort</span>
+              <span class="complexity"><span class="time">O(n log n)</span><span class="space">O(n)</span></span>
+            </div>
+            <pre><code>// Count frequencies, sort entries by count desc, take first k.</code></pre>
+          </div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — Min-heap of size k</span>
+              <span class="complexity"><span class="time">O(n log k)</span><span class="space">O(n)</span></span>
+            </div>
+            <p class="solution-desc">Count frequencies, then keep a min-heap of size k ordered by frequency.</p>
+            <pre><code>public int[] topKFrequent(int[] nums, int k) {
+    Map&lt;Integer, Integer&gt; freq = new HashMap&lt;&gt;();
+    for (int n : nums) freq.merge(n, 1, Integer::sum);
+
+    PriorityQueue&lt;int[]&gt; heap = new PriorityQueue&lt;&gt;((a, b) -&gt; a[1] - b[1]);
+    for (var e : freq.entrySet()) {
+        heap.offer(new int[]{e.getKey(), e.getValue()});
+        if (heap.size() &gt; k) heap.poll();
+    }
+    int[] ans = new int[k];
+    for (int i = k - 1; i &gt;= 0; i--) ans[i] = heap.poll()[0];
+    return ans;
+}</code></pre>
+            <p class="solution-desc" style="margin-top: 6px;"><em>Bucket sort gives O(n): create n buckets keyed by frequency.</em></p>
+          </div>
+        </div>
+      </details>
+
+      <!-- ============================================================
+           9. INTERVALS
+           ============================================================ -->
+      <div class="section-divider">Intervals</div>
+
+      <details class="qa">
+        <summary>27. Merge Intervals <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="problem-statement">Merge all overlapping intervals.</p>
+          <div class="problem-example"><b>Input:</b>  [[1,3],[2,6],[8,10],[15,18]]
+<b>Output:</b> [[1,6],[8,10],[15,18]]</div>
+          <div class="topic-pills"><span class="topic-pill">array</span><span class="topic-pill">interval</span><span class="topic-pill">sort</span></div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — sort + sweep</span>
+              <span class="complexity"><span class="time">O(n log n)</span><span class="space">O(n)</span></span>
+            </div>
+            <p class="solution-desc">Sort by start. Walk through: if the current interval starts before the previous one ends, merge by extending the end. Otherwise add a new interval.</p>
+            <pre><code>public int[][] merge(int[][] intervals) {
+    Arrays.sort(intervals, (a, b) -&gt; a[0] - b[0]);
+    List&lt;int[]&gt; result = new ArrayList&lt;&gt;();
+    int[] curr = intervals[0];
+    result.add(curr);
+    for (int i = 1; i &lt; intervals.length; i++) {
+        if (intervals[i][0] &lt;= curr[1])
+            curr[1] = Math.max(curr[1], intervals[i][1]);   // merge
+        else {
+            curr = intervals[i];
+            result.add(curr);
+        }
+    }
+    return result.toArray(new int[0][]);
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>28. Meeting Rooms II — minimum rooms needed</summary>
+        <div class="qa-body">
+          <p class="problem-statement">Given meeting time intervals, find the minimum number of rooms required.</p>
+          <div class="problem-example"><b>Input:</b>  [[0,30],[5,10],[15,20]]
+<b>Output:</b> 2</div>
+          <div class="topic-pills"><span class="topic-pill">interval</span><span class="topic-pill">heap</span><span class="topic-pill">greedy</span></div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — Min-heap of end times</span>
+              <span class="complexity"><span class="time">O(n log n)</span><span class="space">O(n)</span></span>
+            </div>
+            <p class="solution-desc">Sort meetings by start. Heap stores currently-ongoing meeting end times. For each meeting, if the earliest-ending one has already finished, reuse that room (poll); otherwise we need a new room. Heap size at the end = answer.</p>
+            <pre><code>public int minMeetingRooms(int[][] intervals) {
+    Arrays.sort(intervals, (a, b) -&gt; a[0] - b[0]);
+    PriorityQueue&lt;Integer&gt; heap = new PriorityQueue&lt;&gt;();
+    for (int[] meeting : intervals) {
+        if (!heap.isEmpty() &amp;&amp; heap.peek() &lt;= meeting[0]) heap.poll();
+        heap.offer(meeting[1]);
+    }
+    return heap.size();
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <!-- ============================================================
+           10. DP
+           ============================================================ -->
+      <div class="section-divider">Dynamic Programming</div>
+
+      <details class="qa">
+        <summary>29. Climbing Stairs</summary>
+        <div class="qa-body">
+          <p class="problem-statement">You can climb 1 or 2 steps at a time. How many ways to reach the top of <code>n</code> steps?</p>
+          <div class="problem-example"><b>Input:</b>  n = 4
+<b>Output:</b> 5    // 1+1+1+1, 1+1+2, 1+2+1, 2+1+1, 2+2</div>
+          <div class="topic-pills"><span class="topic-pill">DP</span><span class="topic-pill">fibonacci</span></div>
+
+          <div class="solution brute">
+            <div class="solution-head"><span class="label">Naive recursion</span>
+              <span class="complexity"><span class="time">O(2ⁿ) time</span><span class="space">O(n)</span></span>
+            </div>
+            <pre><code>public int climbStairs(int n) {
+    if (n &lt;= 2) return n;
+    return climbStairs(n - 1) + climbStairs(n - 2);
+}</code></pre>
+          </div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — iterative DP</span>
+              <span class="complexity"><span class="time">O(n) time</span><span class="space">O(1) space</span></span>
+            </div>
+            <p class="solution-desc">It's Fibonacci. <code>f(n) = f(n-1) + f(n-2)</code>. Only the last two values matter.</p>
+            <pre><code>public int climbStairs(int n) {
+    if (n &lt;= 2) return n;
+    int prev2 = 1, prev1 = 2;
+    for (int i = 3; i &lt;= n; i++) {
+        int curr = prev1 + prev2;
+        prev2 = prev1;
+        prev1 = curr;
+    }
+    return prev1;
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>30. Coin Change — fewest coins to make amount</summary>
+        <div class="qa-body">
+          <p class="problem-statement">Given coin denominations and an amount, return the fewest coins needed (or −1 if impossible). Unlimited supply.</p>
+          <div class="problem-example"><b>Input:</b>  coins = [1, 2, 5], amount = 11
+<b>Output:</b> 3    // 5 + 5 + 1</div>
+          <div class="topic-pills"><span class="topic-pill">DP</span></div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — bottom-up DP</span>
+              <span class="complexity"><span class="time">O(amount × coins)</span><span class="space">O(amount)</span></span>
+            </div>
+            <p class="solution-desc"><code>dp[i]</code> = fewest coins to make amount <code>i</code>. For each amount, try every coin and take the min.</p>
+            <pre><code>public int coinChange(int[] coins, int amount) {
+    int[] dp = new int[amount + 1];
+    Arrays.fill(dp, amount + 1);
+    dp[0] = 0;
+    for (int i = 1; i &lt;= amount; i++)
+        for (int c : coins)
+            if (c &lt;= i) dp[i] = Math.min(dp[i], dp[i - c] + 1);
+    return dp[amount] &gt; amount ? -1 : dp[amount];
+}</code></pre>
+            <p class="solution-desc" style="margin-top: 6px;"><em>Greedy doesn't work in general (e.g., coins = [1, 3, 4], amount = 6 — greedy picks 4+1+1, optimal is 3+3).</em></p>
+          </div>
+        </div>
+      </details>
+
+      <!-- ============================================================
+           11. GRAPHS
+           ============================================================ -->
+      <div class="section-divider">Graphs</div>
+
+      <details class="qa">
+        <summary>31. Number of Islands <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="problem-statement">Count connected groups of <code>'1'</code>s in a 2D grid (4-directional).</p>
+          <div class="problem-example"><b>Input:</b>  [["1","1","0","0"],
+        ["1","1","0","0"],
+        ["0","0","1","0"],
+        ["0","0","0","1"]]
+<b>Output:</b> 3</div>
+          <div class="topic-pills"><span class="topic-pill">graph</span><span class="topic-pill">DFS</span><span class="topic-pill">BFS</span></div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — DFS sinking</span>
+              <span class="complexity"><span class="time">O(m × n)</span><span class="space">O(m × n) recursion</span></span>
+            </div>
+            <p class="solution-desc">Scan the grid; on every unvisited <code>'1'</code>, DFS to sink the whole island (turn <code>'1'</code> → <code>'0'</code>), increment counter.</p>
+            <pre><code>public int numIslands(char[][] grid) {
+    int count = 0;
+    for (int i = 0; i &lt; grid.length; i++)
+        for (int j = 0; j &lt; grid[0].length; j++)
+            if (grid[i][j] == '1') { dfs(grid, i, j); count++; }
+    return count;
+}
+private void dfs(char[][] g, int i, int j) {
+    if (i &lt; 0 || j &lt; 0 || i &gt;= g.length || j &gt;= g[0].length || g[i][j] != '1') return;
+    g[i][j] = '0';
+    dfs(g, i + 1, j); dfs(g, i - 1, j);
+    dfs(g, i, j + 1); dfs(g, i, j - 1);
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>32. Clone Graph</summary>
+        <div class="qa-body">
+          <p class="problem-statement">Deep-copy a connected undirected graph. Each node has a value + a list of neighbors.</p>
+          <div class="topic-pills"><span class="topic-pill">graph</span><span class="topic-pill">DFS</span><span class="topic-pill">hashmap</span></div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — DFS + visited map</span>
+              <span class="complexity"><span class="time">O(V + E)</span><span class="space">O(V)</span></span>
+            </div>
+            <p class="solution-desc">Map original → clone. For each neighbor, recurse if not yet cloned, otherwise reuse the existing clone. The map prevents infinite loops on cycles.</p>
+            <pre><code>private Map&lt;Node, Node&gt; map = new HashMap&lt;&gt;();
+
+public Node cloneGraph(Node node) {
+    if (node == null) return null;
+    if (map.containsKey(node)) return map.get(node);
+
+    Node copy = new Node(node.val);
+    map.put(node, copy);
+    for (Node nb : node.neighbors)
+        copy.neighbors.add(cloneGraph(nb));
+    return copy;
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <!-- ============================================================
+           12. BFSI / BANKING-STYLE
+           ============================================================ -->
+      <div class="section-divider">BFSI / Banking-style</div>
+
+      <details class="qa">
+        <summary>33. LRU Cache <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="problem-statement">Design an LRU cache with O(1) <code>get</code> and <code>put</code>. Evict the least recently used item when capacity is exceeded.</p>
+          <div class="topic-pills"><span class="topic-pill">design</span><span class="topic-pill">hashmap</span><span class="topic-pill">doubly-linked-list</span></div>
+
+          <div class="solution brute">
+            <div class="solution-head"><span class="label">LinkedHashMap shortcut</span>
+              <span class="complexity"><span class="time">O(1) amortized</span><span class="space">O(capacity)</span></span>
+            </div>
+            <p class="solution-desc">Java's <code>LinkedHashMap</code> with access-order does this in 5 lines — fine for general use, but the interviewer almost always wants the manual version.</p>
+            <pre><code>class LRUCache extends LinkedHashMap&lt;Integer, Integer&gt; {
+    private final int cap;
+    public LRUCache(int capacity) {
+        super(capacity, 0.75f, true);
+        this.cap = capacity;
+    }
+    public int get(int key) { return super.getOrDefault(key, -1); }
+    public void put(int k, int v) { super.put(k, v); }
+    protected boolean removeEldestEntry(Map.Entry&lt;Integer, Integer&gt; e) {
+        return size() &gt; cap;
+    }
+}</code></pre>
+          </div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — HashMap + Doubly Linked List</span>
+              <span class="complexity"><span class="time">O(1)</span><span class="space">O(capacity)</span></span>
+            </div>
+            <p class="solution-desc">HashMap gives O(1) lookup. Doubly linked list gives O(1) move-to-head and tail eviction. Sentinel head/tail nodes simplify edge cases.</p>
+            <pre><code>class LRUCache {
+    class Node { int key, val; Node prev, next;
+        Node(int k, int v) { key = k; val = v; }
+    }
+    private final Map&lt;Integer, Node&gt; map = new HashMap&lt;&gt;();
+    private final int capacity;
+    private final Node head = new Node(0, 0), tail = new Node(0, 0);
+
+    public LRUCache(int capacity) {
+        this.capacity = capacity;
+        head.next = tail; tail.prev = head;
+    }
+
+    public int get(int key) {
+        Node n = map.get(key);
+        if (n == null) return -1;
+        remove(n); addToHead(n);
+        return n.val;
+    }
+
+    public void put(int key, int value) {
+        Node n = map.get(key);
+        if (n != null) { n.val = value; remove(n); addToHead(n); return; }
+        if (map.size() == capacity) {
+            map.remove(tail.prev.key);
+            remove(tail.prev);
+        }
+        Node fresh = new Node(key, value);
+        map.put(key, fresh);
+        addToHead(fresh);
+    }
+
+    private void addToHead(Node n) {
+        n.next = head.next; n.prev = head;
+        head.next.prev = n; head.next = n;
+    }
+    private void remove(Node n) {
+        n.prev.next = n.next; n.next.prev = n.prev;
+    }
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>34. Rate Limiter (Sliding Window)</summary>
+        <div class="qa-body">
+          <p class="problem-statement">Allow at most <code>N</code> requests per user within any <code>W</code>-second window. Return true if a new request should be allowed.</p>
+          <div class="topic-pills"><span class="topic-pill">design</span><span class="topic-pill">queue</span><span class="topic-pill">sliding-window</span></div>
+
+          <div class="solution brute">
+            <div class="solution-head"><span class="label">Fixed window — simple but unfair</span>
+              <span class="complexity"><span class="time">O(1)</span><span class="space">O(users)</span></span>
+            </div>
+            <p class="solution-desc">Keep a counter per (user, currentMinute). Resets every minute. Cheap but allows 2N requests across a window boundary.</p>
+          </div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — Sliding window with timestamp queue</span>
+              <span class="complexity"><span class="time">O(N) per call</span><span class="space">O(N) per user</span></span>
+            </div>
+            <p class="solution-desc">Queue of request timestamps per user. On each call, evict timestamps older than <code>now - W</code>, then check size &lt; N.</p>
+            <pre><code>class RateLimiter {
+    private final int limit;
+    private final long windowMs;
+    private final Map&lt;String, Deque&lt;Long&gt;&gt; userHits = new ConcurrentHashMap&lt;&gt;();
+
+    public RateLimiter(int limit, long windowMs) {
+        this.limit = limit; this.windowMs = windowMs;
+    }
+
+    public boolean allow(String user) {
+        long now = System.currentTimeMillis();
+        Deque&lt;Long&gt; hits = userHits.computeIfAbsent(user, k -&gt; new ArrayDeque&lt;&gt;());
+        synchronized (hits) {
+            while (!hits.isEmpty() &amp;&amp; hits.peekFirst() &lt;= now - windowMs)
+                hits.pollFirst();
+            if (hits.size() &gt;= limit) return false;
+            hits.offerLast(now);
+            return true;
+        }
+    }
+}</code></pre>
+            <p class="solution-desc" style="margin-top: 6px;"><em>In production: Redis with INCR + EXPIRE per (user, window-key) for distributed limits. Token bucket is another classic choice for bursty traffic.</em></p>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>35. Sliding Window Fraud Detection</summary>
+        <div class="qa-body">
+          <p class="problem-statement">Flag a card as suspicious if it has more than K transactions exceeding amount X within a moving window of T seconds.</p>
+          <div class="topic-pills"><span class="topic-pill">sliding-window</span><span class="topic-pill">queue</span><span class="topic-pill">design</span></div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — per-card queue of (time, amount)</span>
+              <span class="complexity"><span class="time">amortized O(1)</span><span class="space">O(K) per card</span></span>
+            </div>
+            <p class="solution-desc">Maintain a deque of recent qualifying transactions per card; drop the front while it's outside the window. Flag when size crosses K.</p>
+            <pre><code>class FraudDetector {
+    private final long windowMs;
+    private final long threshold;
+    private final int  limit;
+    private final Map&lt;String, Deque&lt;long[]&gt;&gt; tx = new ConcurrentHashMap&lt;&gt;();
+
+    public FraudDetector(long windowMs, long threshold, int limit) {
+        this.windowMs = windowMs; this.threshold = threshold; this.limit = limit;
+    }
+
+    public boolean isSuspicious(String card, long time, long amount) {
+        if (amount &lt; threshold) return false;
+        Deque&lt;long[]&gt; q = tx.computeIfAbsent(card, k -&gt; new ArrayDeque&lt;&gt;());
+        synchronized (q) {
+            while (!q.isEmpty() &amp;&amp; q.peekFirst()[0] &lt;= time - windowMs)
+                q.pollFirst();
+            q.offerLast(new long[]{time, amount});
+            return q.size() &gt; limit;
+        }
+    }
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>36. Transaction Deduplication</summary>
+        <div class="qa-body">
+          <p class="problem-statement">Process payment requests with idempotency keys — duplicates within a TTL should be ignored (return the original result).</p>
+          <div class="topic-pills"><span class="topic-pill">hashmap</span><span class="topic-pill">idempotency</span><span class="topic-pill">design</span></div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — ConcurrentHashMap with TTL</span>
+              <span class="complexity"><span class="time">O(1)</span><span class="space">O(active keys)</span></span>
+            </div>
+            <p class="solution-desc">Store seen idempotency keys with timestamp; periodically evict expired ones. <code>putIfAbsent</code> gives atomic dedupe.</p>
+            <pre><code>class IdempotencyStore {
+    private final long ttlMs;
+    private final Map&lt;String, Long&gt; seen = new ConcurrentHashMap&lt;&gt;();
+
+    public IdempotencyStore(long ttlMs) { this.ttlMs = ttlMs; }
+
+    public boolean isNew(String key) {
+        long now = System.currentTimeMillis();
+        Long existing = seen.putIfAbsent(key, now);
+        if (existing == null) return true;
+        if (now - existing &gt; ttlMs) {
+            seen.put(key, now);
+            return true;
+        }
+        return false;
+    }
+}</code></pre>
+            <p class="solution-desc" style="margin-top: 6px;"><em>In production: Redis with <code>SET key value NX EX ttl</code> — single atomic operation across all app instances.</em></p>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>37. Merge K Sorted Lists <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="problem-statement">Merge <code>k</code> sorted linked lists into one sorted list.</p>
+          <div class="problem-example"><b>Input:</b>  [[1,4,5], [1,3,4], [2,6]]
+<b>Output:</b> [1,1,2,3,4,4,5,6]</div>
+          <div class="topic-pills"><span class="topic-pill">linked-list</span><span class="topic-pill">heap</span><span class="topic-pill">divide-conquer</span></div>
+
+          <div class="solution brute">
+            <div class="solution-head"><span class="label">Merge pairwise</span>
+              <span class="complexity"><span class="time">O(N × k)</span><span class="space">O(1)</span></span>
+            </div>
+            <p class="solution-desc">Merge list 1 with 2, then result with 3, etc. Wasteful — early elements get compared many times.</p>
+          </div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — Min-heap of heads</span>
+              <span class="complexity"><span class="time">O(N log k)</span><span class="space">O(k)</span></span>
+            </div>
+            <p class="solution-desc">Put all list heads into a min-heap. Repeatedly pop the smallest, append to result, push its next.</p>
+            <pre><code>public ListNode mergeKLists(ListNode[] lists) {
+    PriorityQueue&lt;ListNode&gt; heap = new PriorityQueue&lt;&gt;((a, b) -&gt; a.val - b.val);
+    for (ListNode l : lists) if (l != null) heap.offer(l);
+
+    ListNode dummy = new ListNode(0), tail = dummy;
+    while (!heap.isEmpty()) {
+        ListNode min = heap.poll();
+        tail.next = min;
+        tail = tail.next;
+        if (min.next != null) heap.offer(min.next);
+    }
+    return dummy.next;
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>38. Top K Transactions by Amount</summary>
+        <div class="qa-body">
+          <p class="problem-statement">From a stream of transactions, maintain the top K by amount in O(log K) per insert.</p>
+          <div class="topic-pills"><span class="topic-pill">heap</span><span class="topic-pill">priority-queue</span><span class="topic-pill">stream</span></div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — Bounded Min-heap</span>
+              <span class="complexity"><span class="time">O(log K) per insert</span><span class="space">O(K)</span></span>
+            </div>
+            <p class="solution-desc">Min-heap of size K keyed by amount. On insert, push; if size &gt; K, poll. The heap always holds the K largest; the root is the smallest of the "top K".</p>
+            <pre><code>class TopKTransactions {
+    private final int k;
+    private final PriorityQueue&lt;Transaction&gt; heap;
+
+    public TopKTransactions(int k) {
+        this.k = k;
+        this.heap = new PriorityQueue&lt;&gt;((a, b) -&gt; Long.compare(a.amount, b.amount));
+    }
+
+    public synchronized void add(Transaction t) {
+        if (heap.size() &lt; k) heap.offer(t);
+        else if (t.amount &gt; heap.peek().amount) {
+            heap.poll();
+            heap.offer(t);
+        }
+    }
+
+    public synchronized List&lt;Transaction&gt; topK() {
+        return new ArrayList&lt;&gt;(heap);
+    }
+}</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>39. Detect Duplicate Transactions in Stream</summary>
+        <div class="qa-body">
+          <p class="problem-statement">A transaction is a duplicate if the same <code>(user, amount, merchant)</code> occurs more than once within the last <code>T</code> seconds.</p>
+          <div class="topic-pills"><span class="topic-pill">hashmap</span><span class="topic-pill">sliding-window</span><span class="topic-pill">stream</span></div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Optimal — HashMap of last-seen timestamps</span>
+              <span class="complexity"><span class="time">O(1) amortized</span><span class="space">O(active keys)</span></span>
+            </div>
+            <p class="solution-desc">Map composite key → last timestamp. New transaction is a dup if last-seen within window. Periodic cleanup or lazy expiry keeps memory bounded.</p>
+            <pre><code>class DuplicateTxDetector {
+    private final long windowMs;
+    private final Map&lt;String, Long&gt; lastSeen = new ConcurrentHashMap&lt;&gt;();
+
+    public DuplicateTxDetector(long windowMs) { this.windowMs = windowMs; }
+
+    public boolean isDuplicate(String user, long amount, String merchant, long ts) {
+        String key = user + "|" + amount + "|" + merchant;
+        Long prev = lastSeen.put(key, ts);
+        return prev != null &amp;&amp; ts - prev &lt;= windowMs;
+    }
+}</code></pre>
+            <p class="solution-desc" style="margin-top: 6px;"><em>For strict accuracy across replicas use Redis with TTL'd keys. This pattern is the backbone of payment-gateway "double-tap" protection.</em></p>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>40. Design Parking Lot / ATM / Payment System (LLD + DSA)</summary>
+        <div class="qa-body">
+          <p class="problem-statement">A classic open-ended question — interviewer wants to see <strong>OOP design</strong>, the right <strong>data structures</strong>, and concurrency awareness, not a perfect implementation.</p>
+          <div class="topic-pills"><span class="topic-pill">design</span><span class="topic-pill">LLD</span><span class="topic-pill">OOP</span></div>
+
+          <div class="solution optimal">
+            <div class="solution-head"><span class="label">Approach &amp; Structure</span>
+              <span class="complexity"><span class="time">depends on op</span><span class="space">O(slots)</span></span>
+            </div>
+            <p class="solution-desc">Walk the interviewer through these phases:</p>
+            <p class="solution-desc"><strong>1. Clarify scope</strong> — multi-floor lot? Vehicle types? Pricing model? Capacity?</p>
+            <p class="solution-desc"><strong>2. Core entities</strong>:</p>
+            <pre><code>enum VehicleType { BIKE, CAR, TRUCK }
+abstract class Vehicle { String plate; VehicleType type; }
+
+class ParkingSpot {
+    int floor, number;
+    VehicleType allowedType;
+    Vehicle occupant;          // null if free
+}
+
+class Ticket {
+    String id;
+    Vehicle vehicle;
+    ParkingSpot spot;
+    Instant entryTime, exitTime;
+    BigDecimal amount;
+}
+
+class ParkingLot {
+    Map&lt;VehicleType, PriorityQueue&lt;ParkingSpot&gt;&gt; freeSpots;
+    Map&lt;String, Ticket&gt; activeTickets;
+    PricingStrategy pricing;
+}</code></pre>
+            <p class="solution-desc"><strong>3. Key operations</strong>:</p>
+            <ul style="margin: 0 0 8px;">
+              <li><code>enter(Vehicle)</code> — poll the right type's free queue → O(log slots).</li>
+              <li><code>exit(ticketId)</code> — release spot back to its queue, compute price.</li>
+            </ul>
+            <p class="solution-desc"><strong>4. Data structures &amp; why</strong>:</p>
+            <ul style="margin: 0 0 8px;">
+              <li><strong>PriorityQueue per vehicle type</strong> — always assign nearest free spot in O(log n).</li>
+              <li><strong>HashMap of active tickets</strong> — O(1) lookup on exit.</li>
+              <li><strong>Strategy pattern</strong> for <code>PricingStrategy</code> — hourly, flat, time-of-day.</li>
+            </ul>
+            <p class="solution-desc"><strong>5. Concurrency</strong> — multiple gates allocate spots in parallel. Synchronize on the per-type queue or use <code>ConcurrentLinkedDeque</code> with CAS.</p>
+            <p class="solution-desc"><strong>6. Extensions</strong>:</p>
+            <ul style="margin: 0;">
+              <li>Reservations → add <code>reserve(ts, type)</code> with a TTL.</li>
+              <li>Persistence → DB layer; ticket IDs are UUIDs.</li>
+              <li>Distributed multi-lot → Redis-backed spot counts per lot.</li>
+            </ul>
+            <p class="solution-desc" style="margin-top: 10px;"><strong>ATM / Payment systems</strong> follow the same shape — entities, key DS choices, concurrency, extensions. The DS for an ATM is usually <em>state machine</em> + <em>transaction log</em> (queue/Kafka).</p>
+          </div>
+        </div>
+      </details>
+
+    </div>
+
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>

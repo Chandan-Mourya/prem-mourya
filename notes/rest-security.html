@@ -126,10 +126,107 @@ Idempotency-Key: 5f3b...
       <details class="qa">
         <summary>Authentication vs Authorization</summary>
         <div class="qa-body">
-          <p><strong>Authentication (AuthN)</strong> — proving who you are. Username/password, MFA, OAuth, SSO. The result is an authenticated principal.</p>
-          <p><strong>Authorization (AuthZ)</strong> — deciding what an authenticated user is allowed to do. Roles, permissions, scopes, policies. <code>@PreAuthorize("hasRole('ADMIN')")</code>, attribute-based access control, OPA, Casbin.</p>
-          <p>The mnemonic: AuthN = "who", AuthZ = "what can". They're often discussed together but solved separately. Common mistake: relying on AuthN alone — once a user is logged in, they can access everything. Always layer AuthZ on top, ideally on the server (never trust the client to hide a button).</p>
-          <p>In Spring Security: AuthN populates <code>SecurityContext</code> with an <code>Authentication</code> object; AuthZ rules (method security, request-matcher rules) consume it.</p>
+          <p class="answer-intro">Two distinct security concerns that always get mentioned together. Mixing them up is a common security bug.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Authentication (AuthN)</span>
+              <span class="core-diff-val"><strong>Who are you?</strong> — proves identity.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Authorization (AuthZ)</span>
+              <span class="core-diff-val"><strong>What can you do?</strong> — checks permissions.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Order &amp; Dependency</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> AuthN</div>
+                <ul>
+                  <li>Comes <strong>first</strong>.</li>
+                  <li>Establishes a verified principal (user identity).</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> AuthZ</div>
+                <ul>
+                  <li>Comes <strong>after</strong> authentication.</li>
+                  <li>Decides if the authenticated user can perform the requested action.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Mechanisms</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> AuthN</div>
+                <ul>
+                  <li>Username + password.</li>
+                  <li>MFA / OTP / passkeys.</li>
+                  <li>OAuth 2 / OIDC / SSO.</li>
+                  <li>API keys, JWT tokens, mTLS for services.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> AuthZ</div>
+                <ul>
+                  <li>Roles (RBAC): admin / user / viewer.</li>
+                  <li>Permissions (ACL): can_edit_order.</li>
+                  <li>OAuth scopes.</li>
+                  <li>Attribute-based (ABAC), policy engines (OPA, Casbin).</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> HTTP Status Codes</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> AuthN failed</div>
+                <ul>
+                  <li><strong>401 Unauthorized</strong> — no / invalid credentials.</li>
+                  <li>"You haven't proved who you are."</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> AuthZ failed</div>
+                <ul>
+                  <li><strong>403 Forbidden</strong> — authenticated but not allowed.</li>
+                  <li>"You're known, but you can't do this."</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> In Spring Security</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> AuthN</div>
+                <ul>
+                  <li>Filters validate credentials / tokens.</li>
+                  <li>Populates <code>SecurityContext</code> with an <code>Authentication</code> object.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> AuthZ</div>
+                <ul>
+                  <li><code>http.authorizeHttpRequests(...).hasRole("ADMIN")</code>.</li>
+                  <li><code>@PreAuthorize("hasAuthority('orders:write')")</code> on methods.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>Mnemonic:</b> <strong>AuthN = "who"</strong>, <strong>AuthZ = "what can"</strong>. The biggest real-world bug is <strong>Broken Object Level Authorization (BOLA)</strong> — you authenticate the user but forget to check whether they own the resource. Always check ownership/scope on every endpoint that returns user data.
+          </div>
         </div>
       </details>
 
