@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Spring Core · Notes</title>
+  <link rel="icon" href="../assets/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+      <div class="search-wrap">
+        <i class="bi bi-search"></i>
+        <input id="search" type="search" placeholder="Search within Spring Core..." autocomplete="off" spellcheck="false">
+        <span class="search-shortcut">/</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="topic-page">
+
+    <div class="topic-page-header">
+      <div class="topic-page-eyebrow">04 · Spring Core</div>
+      <h1>Spring Core — IoC, DI, lifecycle &amp; AOP</h1>
+      <p class="topic-page-desc">The framework that powers your daily work. Master IoC, the bean lifecycle, and AOP — they're the foundation every Spring Boot question rests on.</p>
+      <div class="topic-page-meta">
+        <span><strong>11</strong> questions</span>
+        <span>Press <span class="hint-kbd">/</span> to search</span>
+      </div>
+    </div>
+
+    <div class="no-results" id="noResults">No matches.</div>
+
+    <div class="qa-list">
+
+      <details class="qa">
+        <summary>What is the Spring Framework? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p><strong>Spring</strong> is a comprehensive Java framework whose core idea is <strong>Inversion of Control (IoC)</strong> — instead of objects creating their dependencies (<code>new UserService()</code>), a container <em>injects</em> them. The framework manages object lifecycle, wiring, and cross-cutting concerns (transactions, security, logging) declaratively via annotations.</p>
+          <p>Around that core, Spring grew into a platform: <strong>Spring MVC</strong> for web APIs, <strong>Spring Data</strong> for persistence (JPA, MongoDB, Elasticsearch), <strong>Spring Security</strong>, <strong>Spring Cloud</strong> for microservices, <strong>Spring Batch</strong> for ETL. <strong>Spring Boot</strong> sits on top with opinionated auto-configuration so you don't write XML or write 200 lines of bean wiring.</p>
+          <p>Every backend role I've held used Spring — it's the de-facto enterprise Java stack.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Explain Inversion of Control and Dependency Injection <span class="qa-tag hot">hot</span></summary>
+        <div class="qa-body">
+          <p><strong>IoC</strong> means the framework controls the flow — it decides when to create objects and how to wire them. Your code becomes mostly declarative.</p>
+          <p><strong>Dependency Injection</strong> is the specific mechanism: dependencies are <em>provided</em> to a class rather than the class creating them.</p>
+          <pre><code>@Service
+public class OrderService {
+    private final PaymentClient payment;
+
+    public OrderService(PaymentClient payment) {
+        this.payment = payment;  // injected by Spring
+    }
+}</code></pre>
+          <p>Benefits: <strong>testability</strong> (inject a mock <code>PaymentClient</code> in tests), <strong>loose coupling</strong> (depend on an interface, swap implementations via config), <strong>configurability</strong> (pick beans by profile). I use <strong>constructor injection</strong> everywhere — fields can be <code>final</code>, dependencies are explicit, and the bean can't be in an inconsistent state.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>BeanFactory vs ApplicationContext</summary>
+        <div class="qa-body">
+          <p><strong><code>BeanFactory</code></strong> is the root IoC container interface — basic bean creation and dependency injection. Beans are lazily instantiated.</p>
+          <p><strong><code>ApplicationContext</code></strong> extends BeanFactory with enterprise features:</p>
+          <ul>
+            <li><strong>Eager instantiation</strong> of singleton beans by default (fail-fast at startup).</li>
+            <li><strong>Event publication</strong> via <code>ApplicationEvent</code>.</li>
+            <li><strong>Internationalization</strong> (MessageSource).</li>
+            <li><strong>AOP integration</strong>, environment abstraction (profiles, properties), resource loading.</li>
+          </ul>
+          <p>You almost never use BeanFactory directly today. Spring Boot bootstraps a <code>ConfigurableApplicationContext</code> (specifically <code>AnnotationConfigServletWebServerApplicationContext</code> for web apps). When people say "the Spring container" in practice, they mean ApplicationContext.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Bean lifecycle — from create to destroy</summary>
+        <div class="qa-body">
+          <p>For a typical singleton bean:</p>
+          <ol>
+            <li>Spring instantiates the bean (constructor or factory method).</li>
+            <li><strong>Populate properties</strong> — fields/setters injected.</li>
+            <li><strong><code>BeanNameAware</code>, <code>BeanFactoryAware</code></strong> callbacks if implemented.</li>
+            <li><strong><code>BeanPostProcessor.postProcessBeforeInitialization()</code></strong> for every registered processor.</li>
+            <li><strong><code>@PostConstruct</code></strong> or <code>InitializingBean.afterPropertiesSet()</code> or the <code>initMethod</code>.</li>
+            <li><strong><code>BeanPostProcessor.postProcessAfterInitialization()</code></strong> — this is where AOP proxies are wrapped around your bean.</li>
+            <li>Bean is ready and added to the container.</li>
+            <li>On shutdown: <strong><code>@PreDestroy</code></strong> or <code>DisposableBean.destroy()</code> or <code>destroyMethod</code>.</li>
+          </ol>
+          <p>I use <code>@PostConstruct</code> for one-time init (warm caches, register listeners) and <code>@PreDestroy</code> for cleanup (close pools, flush buffers).</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Bean scopes — singleton, prototype, request, session</summary>
+        <div class="qa-body">
+          <p><strong>singleton</strong> (default) — one instance per Spring container, shared everywhere. Almost all services and repositories are singletons. <strong>Must be stateless or carefully synchronized.</strong></p>
+          <p><strong>prototype</strong> — a new instance every time the bean is requested. Spring doesn't manage its lifecycle after creation — no destroy callback. Use rarely; if you find yourself injecting prototype-into-singleton, you need <code>ObjectFactory&lt;T&gt;</code> or <code>Provider&lt;T&gt;</code> to get a fresh instance each time.</p>
+          <p>Web-aware scopes (only in web app context):</p>
+          <ul>
+            <li><strong>request</strong> — one per HTTP request.</li>
+            <li><strong>session</strong> — one per HTTP session.</li>
+            <li><strong>application</strong> — one per ServletContext.</li>
+            <li><strong>websocket</strong> — one per WebSocket session.</li>
+          </ul>
+          <p>In 5 years I've used 95% singleton and a small fraction of prototype/request for very specific cases.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>@Autowired — field, setter, or constructor?</summary>
+        <div class="qa-body">
+          <p><strong>Constructor injection</strong> (preferred):</p>
+          <pre><code>@Service
+public class OrderService {
+    private final PaymentClient payment;
+    public OrderService(PaymentClient payment) { this.payment = payment; }
+}</code></pre>
+          <p>Benefits: fields can be <code>final</code> (immutable, thread-safe), dependencies are explicit, easy to instantiate in tests without Spring, fails fast on missing beans. Spring 4.3+ doesn't even need <code>@Autowired</code> if there's only one constructor.</p>
+          <p><strong>Setter injection</strong> — for optional dependencies. Use sparingly.</p>
+          <p><strong>Field injection</strong> (<code>@Autowired</code> on a private field) — convenient but discouraged. Hard to test without reflection, can't be <code>final</code>, hides circular dependencies, and signals you have too many dependencies. I never write field injection in new code, and convert legacy field injection to constructor injection during refactors.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>@Component vs @Service vs @Repository vs @Controller</summary>
+        <div class="qa-body">
+          <p>All four register the class as a Spring bean. They are semantically distinct stereotypes that document <em>layer</em>:</p>
+          <ul>
+            <li><strong><code>@Component</code></strong> — generic catch-all.</li>
+            <li><strong><code>@Service</code></strong> — business / domain layer. No technical behavior added, but signals intent.</li>
+            <li><strong><code>@Repository</code></strong> — persistence layer. <strong>Adds technical behavior</strong>: Spring wraps it with a translator that converts vendor-specific exceptions (SQL, JPA) into <code>DataAccessException</code> hierarchy.</li>
+            <li><strong><code>@Controller</code></strong> / <strong><code>@RestController</code></strong> — web layer; participates in MVC handler mapping. <code>@RestController</code> = <code>@Controller</code> + <code>@ResponseBody</code> on every method.</li>
+          </ul>
+          <p>Picking the right one helps readers, static analysis tools, and AOP pointcuts (e.g., apply something only to <code>@Service</code>).</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>@Configuration vs @Component — how is @Configuration special?</summary>
+        <div class="qa-body">
+          <p><strong><code>@Configuration</code></strong> declares a class containing <code>@Bean</code> methods — explicit bean definitions. It's special because Spring wraps the class in a <strong>CGLIB proxy</strong>:</p>
+          <pre><code>@Configuration
+public class AppConfig {
+    @Bean public DataSource ds() { return new HikariDataSource(); }
+    @Bean public JdbcTemplate jdbc() { return new JdbcTemplate(ds()); }
+}</code></pre>
+          <p>Inside <code>jdbc()</code>, the call <code>ds()</code> is intercepted by the proxy — it returns the <em>same</em> singleton DataSource, not a new one. That's "Full" mode.</p>
+          <p>With <code>@Configuration(proxyBeanMethods=false)</code> (or just using <code>@Component</code> with <code>@Bean</code>), it's "Lite" mode — each <code>ds()</code> call is a plain method call returning a new instance, which is faster but you must inject dependencies as parameters instead. Lite mode is what Spring Boot increasingly uses internally.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Circular dependencies — what causes them, how to fix?</summary>
+        <div class="qa-body">
+          <p>A <strong>circular dependency</strong> is when bean A depends on B, and B depends on A. With <strong>constructor injection</strong>, Spring can't build either (chicken-and-egg) and throws <code>BeanCurrentlyInCreationException</code> at startup. With field/setter injection, it can sometimes resolve via early references — but Spring Boot 2.6+ disables this by default; you'd need to set <code>spring.main.allow-circular-references=true</code> (don't).</p>
+          <p>Fixes (in order of preference):</p>
+          <ul>
+            <li><strong>Redesign</strong> — usually the cycle indicates a missing third class; extract shared logic to a new bean.</li>
+            <li>Use <strong>events</strong> (<code>ApplicationEventPublisher</code>) to decouple direction.</li>
+            <li>Inject <code>ObjectProvider&lt;B&gt;</code> for lazy lookup.</li>
+            <li><code>@Lazy</code> on one side — fixes the symptom, but lazy proxies have their own gotchas.</li>
+          </ul>
+          <p>I treat a circular dependency as a design smell rather than a wiring problem.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What is AOP and how does Spring implement it? <span class="qa-tag hot">hot</span></summary>
+        <div class="qa-body">
+          <p><strong>AOP (Aspect-Oriented Programming)</strong> separates cross-cutting concerns — logging, security, transactions, caching, metrics — from business logic. Instead of sprinkling <code>tx.begin/commit</code> everywhere, you declare an <em>aspect</em> that runs around methods matching a <em>pointcut</em>.</p>
+          <p>Spring AOP uses <strong>proxies</strong>:</p>
+          <ul>
+            <li><strong>JDK dynamic proxy</strong> when the bean implements an interface.</li>
+            <li><strong>CGLIB</strong> (subclass-based) when it doesn't.</li>
+          </ul>
+          <p>Spring intercepts calls <em>through the proxy</em>. Important consequence: <strong>self-invocation doesn't trigger the aspect</strong> — if <code>methodA</code> in the same class calls <code>methodB</code> directly, the <code>@Transactional</code> on methodB is bypassed. You'd inject the bean into itself or use <code>AspectJ</code> weaving.</p>
+          <p>Spring uses AOP under the hood for <code>@Transactional</code>, <code>@Cacheable</code>, <code>@Async</code>, <code>@PreAuthorize</code>, and metrics.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>@Transactional — how does it actually work?</summary>
+        <div class="qa-body">
+          <p><strong><code>@Transactional</code></strong> wraps a method in a database transaction via AOP. On method entry, the transaction interceptor begins a tx (or joins an existing one); on success it commits; on exception it rolls back.</p>
+          <p>Key parameters:</p>
+          <ul>
+            <li><strong>propagation</strong> — REQUIRED (default; join or create), REQUIRES_NEW (always new), NESTED, SUPPORTS, NEVER, etc.</li>
+            <li><strong>isolation</strong> — READ_COMMITTED, REPEATABLE_READ, SERIALIZABLE — controls visibility of concurrent changes.</li>
+            <li><strong>rollbackFor</strong> — by default rolls back only on <strong>unchecked</strong> exceptions; checked exceptions commit unless you set <code>rollbackFor = Exception.class</code>.</li>
+            <li><strong>readOnly</strong> — hints to the driver/Hibernate for optimizations.</li>
+          </ul>
+          <p>Common bugs: self-invocation skipping the proxy (no transaction), missing <code>rollbackFor</code> on checked exceptions, putting <code>@Transactional</code> on private methods (proxy can't intercept). I almost always put it on the public service layer method, not on repositories.</p>
+        </div>
+      </details>
+
+    </div>
+
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>

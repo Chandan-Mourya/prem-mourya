@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>System Design · Notes</title>
+  <link rel="icon" href="../assets/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+      <div class="search-wrap">
+        <i class="bi bi-search"></i>
+        <input id="search" type="search" placeholder="Search within System Design..." autocomplete="off" spellcheck="false">
+        <span class="search-shortcut">/</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="topic-page">
+
+    <div class="topic-page-header">
+      <div class="topic-page-eyebrow">12 · System Design</div>
+      <h1>System design — fundamentals &amp; classics</h1>
+      <p class="topic-page-desc">Walk through any system design with a structured approach: requirements, capacity, high-level design, deep-dives, tradeoffs.</p>
+      <div class="topic-page-meta">
+        <span><strong>11</strong> questions</span>
+        <span>Press <span class="hint-kbd">/</span> to search</span>
+      </div>
+    </div>
+
+    <div class="no-results" id="noResults">No matches.</div>
+
+    <div class="qa-list">
+
+      <details class="qa">
+        <summary>How do you approach a system design question? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p>My structure for any 45-minute design interview:</p>
+          <ol>
+            <li><strong>Clarify requirements</strong> (5 min) — functional (what does it do?) and non-functional (scale, latency, consistency, availability). Don't assume — ask numbers.</li>
+            <li><strong>Capacity estimation</strong> (5 min) — back-of-envelope: DAU, QPS, storage growth, bandwidth. Helps justify decisions later.</li>
+            <li><strong>API design</strong> (5 min) — define the main endpoints / events.</li>
+            <li><strong>High-level architecture</strong> (10 min) — draw boxes: clients, LB, app servers, DB, cache, queue, CDN. State the data flow.</li>
+            <li><strong>Deep dive</strong> (15 min) — pick 1–2 critical components and detail data model, scaling, failure modes. The interviewer guides you here.</li>
+            <li><strong>Bottlenecks &amp; tradeoffs</strong> (5 min) — where it can break, what you'd add next.</li>
+          </ol>
+          <p>The interview is about communication and tradeoffs, not a "correct" answer. Stay structured, think out loud, ask before assuming.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Vertical vs horizontal scaling</summary>
+        <div class="qa-body">
+          <p><strong>Vertical scaling</strong> — make one box bigger (more CPU, RAM, faster disks). Simple, no app changes. Limited by single-machine ceiling and downtime to resize. Cost grows non-linearly at the high end.</p>
+          <p><strong>Horizontal scaling</strong> — add more boxes. Scales nearly linearly if your app is stateless and shardable. Requires a load balancer in front and architectural discipline — no in-memory session state, no local file caches.</p>
+          <p>My defaults: <strong>app tier horizontal</strong> (stateless services behind LB, auto-scaling in K8s/AWS), <strong>cache horizontal</strong> (Redis cluster), <strong>DB primary vertical first then horizontal</strong> (read replicas, then sharding when really needed).</p>
+          <p>The 12-Factor approach makes horizontal scaling natural — keep services stateless and let the orchestrator scale them.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Load balancing — strategies and where</summary>
+        <div class="qa-body">
+          <p>A <strong>load balancer</strong> distributes incoming requests across backend instances. Layers:</p>
+          <ul>
+            <li><strong>L4 (TCP/UDP)</strong> — routes by IP/port; faster, no app awareness. AWS NLB, HAProxy.</li>
+            <li><strong>L7 (HTTP)</strong> — routes by URL, headers, cookies; can do SSL termination, sticky sessions, content-based routing. AWS ALB, Nginx, Envoy.</li>
+          </ul>
+          <p>Algorithms: <strong>Round-robin</strong> (simple), <strong>Least connections</strong> (favors free instances), <strong>Weighted</strong> (mixed instance sizes), <strong>IP hash</strong> (session stickiness), <strong>Consistent hashing</strong> (cache-friendly routing).</p>
+          <p>Modern setups have load balancers at multiple layers: edge LB (cloud), service-mesh sidecar (Istio, Linkerd) for service-to-service. <strong>Always have health checks</strong> — unhealthy instances must be drained quickly.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Caching strategies <span class="qa-tag hot">hot</span></summary>
+        <div class="qa-body">
+          <p>Cache reduces latency and DB load. Patterns:</p>
+          <ul>
+            <li><strong>Cache-aside (lazy loading)</strong> — app checks cache; on miss, reads DB and populates. Most common. Risk: stale data on writes.</li>
+            <li><strong>Read-through</strong> — cache handles DB read on miss transparently.</li>
+            <li><strong>Write-through</strong> — every write goes to cache + DB synchronously. Consistent but slow.</li>
+            <li><strong>Write-behind</strong> — writes go to cache, async flush to DB. Fast but risky on cache loss.</li>
+            <li><strong>Write-around</strong> — writes skip cache; reads populate it. Good when writes aren't read soon.</li>
+          </ul>
+          <p>Layers: <strong>browser/CDN</strong> for static, <strong>API gateway</strong> for hot GETs, <strong>Redis</strong> for app-level, <strong>local in-process (Caffeine)</strong> for tiny ultra-hot data.</p>
+          <p>Always set TTLs. Invalidate on write or accept brief staleness. Watch out for <strong>cache stampede</strong> (single-flight or lock-on-miss) and <strong>thundering herd</strong> on restarts (pre-warm or use probabilistic refresh).</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Consistent hashing — what and why?</summary>
+        <div class="qa-body">
+          <p>Plain hashing distributes keys with <code>hash(key) % n</code> — but if <code>n</code> changes (a node added/removed), almost every key moves to a different node. For a cache cluster that's catastrophic.</p>
+          <p><strong>Consistent hashing</strong> places servers on a ring keyed by hash, and each key goes to the next server clockwise. Adding or removing one node only reassigns the keys belonging to the affected arc — average ~<code>K/N</code> keys move, not <code>K</code>.</p>
+          <p>To avoid hotspots from unlucky hash distributions, each physical node owns multiple <strong>virtual nodes (vnodes)</strong> on the ring — spreads load evenly.</p>
+          <p>Used by: Cassandra, DynamoDB, memcached clients, CDNs, Akamai. In Kafka/RabbitMQ the same idea appears in partition assignment with consistent semantics. Knowing it shows you understand why distributed systems can rebalance gracefully.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Design a URL shortener (bit.ly)</summary>
+        <div class="qa-body">
+          <p><strong>Requirements</strong>: shorten a URL, redirect short → long, ~100M new URLs/day, redirect under 100 ms.</p>
+          <p><strong>Capacity</strong>: 100M × 30 days × 5 years ≈ 18B URLs total. 6–7 chars in base62 = 56–62 billion combinations — enough.</p>
+          <p><strong>API</strong>: <code>POST /shorten {long}</code> → <code>{short}</code>. <code>GET /:code</code> → 301 to long.</p>
+          <p><strong>Architecture</strong>:</p>
+          <ul>
+            <li>App service generates short codes (counter-based or hash-based) and stores <code>short → long</code> in a KV store (DynamoDB, Cassandra).</li>
+            <li><strong>Counter approach</strong>: distributed counter (Redis INCR) → base62 encode. Predictable, no collisions.</li>
+            <li><strong>Cache</strong>: Redis caches hot codes (~80% of traffic is recent URLs).</li>
+            <li><strong>CDN</strong> in front for global redirect.</li>
+            <li>Analytics events to Kafka for click tracking.</li>
+          </ul>
+          <p><strong>Bottlenecks</strong>: counter contention (shard counters per region), CDN cache hit rate, analytics throughput (async). Discuss custom alias support, abuse / spam detection, rate limiting.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Design a rate limiter</summary>
+        <div class="qa-body">
+          <p><strong>Requirements</strong>: limit each user/IP/key to N requests per time window. Must work across multiple app instances.</p>
+          <p><strong>Algorithms</strong>: Token bucket is the standard — N tokens, refilled at rate r, each request consumes one. Allows bursts. (See REST &amp; Security topic for full list.)</p>
+          <p><strong>Architecture</strong>:</p>
+          <ul>
+            <li>Store counters in <strong>Redis</strong> — fast, atomic INCR / EXPIRE.</li>
+            <li>Key: <code>rl:&lt;user&gt;:&lt;window&gt;</code>.</li>
+            <li>Implement at the <strong>API gateway</strong> for global limits; per-service for fine-grained.</li>
+            <li>Distributed atomicity: use Lua scripts or Redis MULTI/EXEC for "check + increment" atomicity.</li>
+            <li>Respond with <strong>429 Too Many Requests</strong> + <code>Retry-After</code>.</li>
+          </ul>
+          <p><strong>Tradeoffs</strong>: Redis is SPOF — use Redis cluster or local fallback (lossy but available). Network call adds latency — keep Redis close. For very high QPS, sharded counters reduce contention.</p>
+          <p>Libraries: <strong>Bucket4j</strong> (Java + Redis), <strong>Envoy rate-limit</strong>, <strong>Kong</strong> plugin.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Design a chat application (WhatsApp-lite)</summary>
+        <div class="qa-body">
+          <p><strong>Requirements</strong>: 1-to-1 + group chat, online presence, message delivery + read receipts, push notifications.</p>
+          <p><strong>Architecture</strong>:</p>
+          <ul>
+            <li><strong>Connection layer</strong> — WebSocket gateway servers maintain persistent connections per user. Sticky routing or a session-to-server lookup in Redis.</li>
+            <li><strong>Message service</strong> — receives messages, writes to DB, fans out to recipients via WebSocket or push.</li>
+            <li><strong>Database</strong> — Cassandra or DynamoDB for messages partitioned by <code>(chatId, timestamp)</code>; sharded for write throughput.</li>
+            <li><strong>Queue</strong> — Kafka for async fan-out, delivery to offline users via push (APNs/FCM).</li>
+            <li><strong>Presence</strong> — Redis with TTL heartbeats from each connected client.</li>
+            <li><strong>Media</strong> — uploads to S3 with signed URLs; only metadata in messages.</li>
+          </ul>
+          <p><strong>Tricky parts</strong>: exactly-once delivery (idempotent message IDs), ordering across devices, end-to-end encryption (Signal protocol), connection rebalancing during deployments.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Design a news feed / timeline</summary>
+        <div class="qa-body">
+          <p><strong>Requirements</strong>: each user sees a feed of posts from people they follow, sorted by recency or relevance.</p>
+          <p>Two strategies:</p>
+          <p><strong>Pull (fan-out on read)</strong> — at read time, query posts from all the user's followees, merge, sort. Simple but slow at scale.</p>
+          <p><strong>Push (fan-out on write)</strong> — when a user posts, write into each follower's pre-computed timeline. Fast reads, but a celebrity with 10M followers triggers a write storm.</p>
+          <p><strong>Hybrid (used by Twitter, Instagram)</strong> — push for normal users, pull for celebrities. At read time, merge precomputed timeline with on-the-fly fetch of celebrity posts.</p>
+          <p><strong>Components</strong>: Posts in a write-optimized store (Cassandra), timeline in Redis sorted sets keyed by userId, ranking service for ML-driven sorting, CDN for media. Use Kafka for fan-out workers.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Design a notification system</summary>
+        <div class="qa-body">
+          <p><strong>Requirements</strong>: deliver notifications across channels (push, email, SMS, in-app); respect user preferences; high throughput.</p>
+          <p><strong>Architecture</strong>:</p>
+          <ul>
+            <li><strong>Event ingress</strong> — services publish events ("OrderShipped") to Kafka.</li>
+            <li><strong>Notification orchestrator</strong> — subscribes to events, applies templates and user preferences, decides channels.</li>
+            <li><strong>Channel workers</strong> — separate consumers per channel (push worker, email worker, SMS worker). Each uses provider SDKs (FCM, SendGrid, Twilio).</li>
+            <li><strong>Provider abstraction</strong> — swap providers via config.</li>
+            <li><strong>Retry + DLQ</strong> per channel — provider hiccups don't lose notifications.</li>
+            <li><strong>Rate limit per user</strong> — avoid notification spam.</li>
+            <li><strong>Audit log</strong> — what was sent when, for debugging and compliance.</li>
+          </ul>
+          <p>Tradeoffs: real-time push vs digest emails, deduplication (don't send the same notification twice across channels), localization, GDPR/unsubscribe handling. At OneXtel I built a similar SMS notification pipeline.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Caching invalidation — the "two hard problems"</summary>
+        <div class="qa-body">
+          <p>"There are only two hard things in computer science: cache invalidation and naming things." Three practical approaches:</p>
+          <ul>
+            <li><strong>TTL-based</strong> — every entry expires after N seconds. Simple, eventual consistency. Pick TTL based on staleness tolerance. Works for 80% of use cases.</li>
+            <li><strong>Write-through invalidation</strong> — on every write, delete or update the cached entry. Strong consistency but more code, and race conditions between reader-fills and writer-invalidations need care (use versioning or invalidate twice with a gap).</li>
+            <li><strong>Event-driven invalidation</strong> — subscribe to a change stream (Kafka, CDC) and invalidate. Decouples writers from cache, scales across services.</li>
+          </ul>
+          <p>Patterns that bite: <strong>cache stampede</strong> (use single-flight locks), <strong>negative caching</strong> (cache "not found" briefly to absorb floods), <strong>cache-coherency in clusters</strong> (consistent hashing + Redis cluster).</p>
+        </div>
+      </details>
+
+    </div>
+
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>

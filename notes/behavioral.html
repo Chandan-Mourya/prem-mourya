@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Behavioral · Notes</title>
+  <link rel="icon" href="../assets/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+      <div class="search-wrap">
+        <i class="bi bi-search"></i>
+        <input id="search" type="search" placeholder="Search within Behavioral..." autocomplete="off" spellcheck="false">
+        <span class="search-shortcut">/</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="action-btn" id="expandAll" title="Expand all (E)"><i class="bi bi-arrows-expand"></i> Expand</button>
+        <button class="action-btn" id="collapseAll" title="Collapse all (C)"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="topic-page">
+
+    <div class="topic-page-header">
+      <div class="topic-page-eyebrow">01 · Behavioral</div>
+      <h1>Tell me about yourself &amp; soft questions</h1>
+      <p class="topic-page-desc">Story-based answers tuned to your resume — Indus Net, OneXtel, Punctuations.ai, MongoDB+ES, and 5 years of microservices. Speak 30–60 seconds per answer.</p>
+      <div class="topic-page-meta">
+        <span><strong>15</strong> questions</span>
+        <span>Press <span class="hint-kbd">/</span> to search · <span class="hint-kbd">E</span> expand all</span>
+      </div>
+    </div>
+
+    <div class="no-results" id="noResults">No matches. Try a different keyword.</div>
+
+    <div class="qa-list">
+
+      <details class="qa">
+        <summary>Tell me about yourself <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p>I'm Chandan Mourya, a Senior Software Engineer with around 5 years of experience building scalable backend systems in Java, Spring Boot, and microservices. I'm currently at <strong>Indus Net Technologies</strong>, where I work on the <strong>Punctuations.ai</strong> platform — an AI-driven HR &amp; recruitment product. There I built features like resume parsing, AI-powered candidate matching using embeddings, and a search layer on top of <strong>MongoDB and Elasticsearch</strong> handling thousands of profiles.</p>
+          <p>Before that, I was at <strong>OneXtel Media</strong>, working on telecom &amp; messaging products — services for SMS, voice, and bulk campaigns at scale, integrating with operator APIs and Kafka. Across both roles I've also handled production debugging, AWS deployments, Docker/Kubernetes, and CI/CD. Outside work I've solved <strong>450+ DSA problems</strong> and write engineering articles on Medium.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Walk me through your most recent project <span class="qa-tag hot">hot</span></summary>
+        <div class="qa-body">
+          <p>The most recent one is <strong>Punctuations.ai</strong> at Indus Net — an AI hiring platform. Recruiters upload thousands of resumes, and we extract structured data, match candidates to job descriptions using embeddings, and let recruiters search via natural language. I designed the <strong>resume-parsing microservice</strong> using Spring Boot, with async processing through Kafka so heavy LLM calls don't block the API.</p>
+          <p>For storage I used MongoDB for the raw documents and Elasticsearch for searchable fields plus dense vectors for semantic match. The biggest engineering win was reducing match latency from 4 seconds to under 600 ms by caching JD embeddings in Redis and using kNN on Elasticsearch. We also added circuit breakers around the LLM provider so a vendor outage didn't take the platform down.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What's the most challenging problem you've solved?</summary>
+        <div class="qa-body">
+          <p>At OneXtel we had an SMS-gateway service that started timing out during peak hours — about 5 p.m. when campaigns ran. From outside it looked like a database issue, but DB metrics were fine. I took thread dumps from the JVM and saw most threads stuck on a <strong>synchronized block around a connection pool</strong> we had wrapped for logging — a classic case of accidental lock contention.</p>
+          <p>I replaced the synchronized wrapper with HikariCP's native instrumentation and moved logging to an async appender. Throughput went from 200 to 1,200 messages per second on the same hardware, and p99 latency dropped from 4 s to 80 ms. That experience taught me to always reach for thread dumps and async-profiler before blaming the database.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Why are you looking to switch?</summary>
+        <div class="qa-body">
+          <p>I've grown a lot at Indus Net — I lead the backend for Punctuations.ai and own end-to-end design. But the product is at an early stage where the team is small and tech decisions repeat. I'm looking for a place where I can work on <strong>larger-scale distributed systems</strong>, learn from senior engineers who've built systems at scale, and operate in a stronger engineering culture with mature CI/CD, observability, and code-review practices.</p>
+          <p>I'm not running away from anything — my current team and managers have been supportive. I'm pulling toward a role where the scale, mentorship, and product impact match where I want to be in the next 2–3 years.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Tell me about a conflict with a teammate</summary>
+        <div class="qa-body">
+          <p>At Indus Net, a frontend teammate and I disagreed on whether the resume-upload API should return parsed fields synchronously or push to a queue. He wanted a synchronous response so the UI could show extracted data immediately; I argued an async pipeline was safer because parsing involved a 3-second LLM call and we couldn't hold an HTTP thread that long under load.</p>
+          <p>Instead of escalating, we built a quick prototype. I added a polling endpoint plus a WebSocket fallback, and he agreed once he saw the UX. We shipped the async approach and added a "parsing..." state. The lesson for me was that "disagree and prototype" beats "disagree and argue" — within a day we had data instead of opinions.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Describe a time you failed</summary>
+        <div class="qa-body">
+          <p>Early in my OneXtel days I pushed a Kafka consumer change without enough load testing. I assumed the new consumer group would catch up quickly after deployment, but it processed messages 4× slower because I'd serialized JSON inefficiently. The lag piled up to 2 million messages overnight and woke up the on-call engineer.</p>
+          <p>I owned the rollback the same hour and stayed late to drain the backlog. After that I made <strong>load testing mandatory</strong> in our team's deployment checklist for any consumer change, and I added <strong>Grafana alerts on consumer lag</strong>. We never had that class of issue again. The takeaway: my speed of fixing it mattered, but preventing the next person from making the same mistake mattered more.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What's your biggest strength?</summary>
+        <div class="qa-body">
+          <p>My biggest strength is <strong>going deep when something is broken</strong>. I don't stop at the first plausible explanation — I take thread dumps, read logs, write small reproducers, and validate the actual root cause. The SMS-gateway lock-contention bug at OneXtel is one example; another was a JVM memory leak at Indus Net that I traced to a ThreadLocal we never cleared inside a filter.</p>
+          <p>That habit pays off in two ways. First, we fix issues correctly the first time. Second, when I share the writeup, the team learns — I've written 4 internal post-mortems and a few Medium articles based on these debugging sessions. It's also why I enjoy mentoring juniors on debugging skills.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What's your biggest weakness?</summary>
+        <div class="qa-body">
+          <p>Earlier in my career I struggled with <strong>over-engineering</strong>. I'd add abstractions and "future-proofing" before the product needed them — extra interfaces, generic frameworks, configuration files for things that never changed. It slowed down both me and reviewers.</p>
+          <p>I've been working on it by asking three questions before adding abstraction: is there a second caller today, is the change concrete or speculative, and can I refactor later in under an hour? Most of the time the simple version wins. I now ship smaller PRs, get faster reviews, and refactor only when the actual second use case appears. I still catch myself sometimes, but feedback in code reviews has improved noticeably.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Describe a time you mentored or led someone</summary>
+        <div class="qa-body">
+          <p>At Indus Net I mentored a junior engineer who'd just joined the Punctuations.ai team. He was strong on Java syntax but unsure about Spring Boot patterns, transactional boundaries, and writing tests. I paired with him daily for the first two weeks — we did design walk-throughs, I reviewed his PRs in detail, and we worked through a small feature together end-to-end.</p>
+          <p>Within a month he was shipping production code independently, and after three months he was reviewing other people's PRs. The proudest moment was when he found a subtle bug in <em>my</em> code during a review. Mentoring also made me a better engineer — explaining why I made a choice forced me to question whether the choice was actually right.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Why should we hire you?</summary>
+        <div class="qa-body">
+          <p>Three reasons. First, I bring <strong>5 years of production experience</strong> across backend, AI integration, and distributed systems — I've shipped real features at OneXtel and Indus Net, not just side projects. Second, I'm someone who <strong>owns problems end-to-end</strong> — from design and code to deployment, observability, and debugging at 2 a.m. when needed.</p>
+          <p>Third, I keep learning publicly — 450+ DSA problems, Medium articles, and 7 certifications show I invest in the craft. If you hire me, you get an engineer who can ramp up quickly, ask good design questions, and help juniors level up. I'm looking for a place where I can do that work for the long term, and from what I've seen of your team, this looks like the right fit.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Where do you see yourself in 3–5 years?</summary>
+        <div class="qa-body">
+          <p>In 3–5 years I want to be a <strong>technical lead or staff-level engineer</strong> — someone who owns the architecture of a non-trivial product area, mentors several engineers, and is the go-to person when there's a hard production problem. I want to be deep on distributed systems and platform work, with credibility built on shipped systems rather than just titles.</p>
+          <p>I'm not chasing management for its own sake; I prefer the technical track. But I do enjoy mentoring and design reviews, so a tech-lead role that mixes both is ideal. Concretely, I'd love to be the person on a team who designs a service from scratch, ships it, and is still around two years later to see how it held up — and improve it.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How do you handle tight deadlines?</summary>
+        <div class="qa-body">
+          <p>My approach has three steps. First, I <strong>cut scope</strong> with the product owner — I list what's strictly needed for the deadline versus what's nice-to-have, and we agree on a minimum cut. Second, I <strong>parallelize work</strong> — I unblock teammates by sharing API contracts and mock data first, so frontend and QA can start while I finish the backend.</p>
+          <p>Third, I'm honest about risk. If I sense we're slipping, I raise it early — not on the day before launch. At Punctuations.ai we had a 2-week deadline for the candidate-match feature; by cutting fancy filters from V1 and shipping a working core, we hit the date, and added the filters in V2 the next sprint. Cutting scope cleanly is usually cheaper than rushing low-quality code.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Tell me about a time you disagreed with your manager</summary>
+        <div class="qa-body">
+          <p>At Indus Net my manager wanted to add a new microservice for every feature we shipped. I felt we were creating <strong>distributed monoliths</strong> — too many tiny services tightly coupled through synchronous calls, all sharing the same database under the hood. Each one added deployment overhead without real isolation.</p>
+          <p>I prepared a one-pager comparing the existing approach with a modular monolith plus carve-outs only for the LLM-calling parts. I walked him through deployment time, on-call burden, and observability overhead with real numbers. He pushed back, we discussed for a week, and we settled on a hybrid: consolidate the CRUD-heavy services and keep async/LLM workloads as separate services. Result was faster deploys and clearer ownership.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Describe a time you took ownership beyond your role</summary>
+        <div class="qa-body">
+          <p>At Indus Net we had recurring deploy failures — every Friday someone's PR would break the build because we had no consistent CI. It wasn't strictly my role, but I volunteered to fix it. I spent a week setting up <strong>GitHub Actions</strong> with a proper pipeline: lint, unit tests, integration tests against a Mongo + ES test container, then a staging deploy with smoke tests.</p>
+          <p>I wrote a short doc on how to use it and ran a 30-minute team session. After rollout, broken-build incidents dropped to nearly zero, deploys became boring (in a good way), and juniors felt safer pushing code. The work was outside my JD but it made the whole team faster — and it's now a standard pattern across our other repos.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How do you handle stress and burnout?</summary>
+        <div class="qa-body">
+          <p>I treat stress as a signal, not a badge. When I notice it building up — usually as poor sleep or short patience — I take three actions. <strong>One:</strong> shrink the scope of what I'm trying to do in a day; I pick two or three real wins instead of ten. <strong>Two:</strong> I ask for help or escalate early — I've learned that silently struggling is worse for everyone than a 5-minute conversation with my manager.</p>
+          <p><strong>Three:</strong> I protect non-work time. I do DSA practice and reading on weekends because they recharge me, not because I have to. After tough on-call weeks I take a real break. I've seen burnout slow people down for months — preventing it is part of being a senior engineer, not a luxury.</p>
+        </div>
+      </details>
+
+    </div>
+
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>

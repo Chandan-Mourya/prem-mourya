@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Messaging · Notes</title>
+  <link rel="icon" href="../assets/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+      <div class="search-wrap">
+        <i class="bi bi-search"></i>
+        <input id="search" type="search" placeholder="Search within Messaging..." autocomplete="off" spellcheck="false">
+        <span class="search-shortcut">/</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="topic-page">
+
+    <div class="topic-page-header">
+      <div class="topic-page-eyebrow">11 · Messaging</div>
+      <h1>Messaging — Kafka, queues, events</h1>
+      <p class="topic-page-desc">The backbone of async microservices. Talk about Kafka producers/consumers, delivery guarantees, DLQs — bring OneXtel SMS-platform stories.</p>
+      <div class="topic-page-meta">
+        <span><strong>7</strong> questions</span>
+        <span>Press <span class="hint-kbd">/</span> to search</span>
+      </div>
+    </div>
+
+    <div class="no-results" id="noResults">No matches.</div>
+
+    <div class="qa-list">
+
+      <details class="qa">
+        <summary>Kafka vs RabbitMQ — when to choose which? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p><strong>RabbitMQ</strong> is a traditional <em>message broker</em> with smart routing — exchanges (direct, topic, fanout) route messages to queues, consumers ack and the message is deleted. Great for <strong>task distribution</strong>: jobs go to one worker out of many; supports priorities and per-message TTLs. Push-based delivery.</p>
+          <p><strong>Kafka</strong> is a <em>distributed log</em> — producers append to topics partitioned across brokers; consumers <strong>pull</strong> and track their position (offset). Messages stay around for a retention period, so multiple consumer groups can replay independently. Built for <strong>high-throughput streaming</strong>, event sourcing, log aggregation, CDC.</p>
+          <p>Rule of thumb: <strong>RabbitMQ for work queues</strong> (process this email, retry this job), <strong>Kafka for event streams</strong> (every domain event published once, consumed by many subscribers). At OneXtel we used Kafka for SMS event streams (millions/day) and RabbitMQ for per-customer notification jobs.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How does Kafka work under the hood?</summary>
+        <div class="qa-body">
+          <p>A Kafka cluster has <strong>brokers</strong>. Data is organized into <strong>topics</strong>, each split into <strong>partitions</strong> (the unit of parallelism). Each partition is an ordered, immutable log appended to disk.</p>
+          <p>Producers send messages with a key — Kafka hashes the key to pick a partition, so messages with the same key always land on the same partition (preserving order per key). Each message gets an <strong>offset</strong>.</p>
+          <p>Consumers belong to a <strong>consumer group</strong>. Kafka assigns each partition to exactly one consumer in the group — so n partitions support up to n parallel consumers per group. Consumers commit offsets back to Kafka.</p>
+          <p>Each partition has a <strong>leader replica</strong> + follower replicas across brokers for fault tolerance. Producers write to the leader; ISR (in-sync replicas) replicate. If a leader dies, a follower is promoted. Modern Kafka uses <strong>KRaft</strong> (no Zookeeper) for cluster metadata.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Delivery guarantees — at-most-once, at-least-once, exactly-once <span class="qa-tag hot">hot</span></summary>
+        <div class="qa-body">
+          <p>Three levels of guarantee for messaging.</p>
+          <p><strong>At-most-once</strong> — fire-and-forget. Message may be lost but never duplicated. Used for metrics/logs where occasional loss is OK.</p>
+          <p><strong>At-least-once</strong> — every message is delivered, possibly multiple times. The default, and what almost every production pipeline does. <strong>Consumers must be idempotent</strong> — process the same message twice with the same effect (use natural keys, version checks, or idempotency-key tables).</p>
+          <p><strong>Exactly-once</strong> — every message processed exactly once. Hard. Kafka supports it within Kafka's own boundaries (<code>enable.idempotence=true</code> + transactional producer); end-to-end (Kafka → DB → Kafka) requires care. <em>Stripe's CTO once said: "exactly-once is at-least-once + idempotency on the consumer."</em></p>
+          <p>I design for <strong>at-least-once + idempotent consumers</strong>. Simpler, robust, and gives effective exactly-once semantics in practice.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Kafka consumer offsets and rebalancing</summary>
+        <div class="qa-body">
+          <p>Each consumer in a group tracks its current <strong>offset</strong> per partition — the next message to read. Offsets are committed back to Kafka periodically (auto-commit) or manually (more reliable).</p>
+          <p>When a consumer joins or leaves the group, Kafka triggers a <strong>rebalance</strong> — partitions are redistributed. The classic gotcha: if processing is slow and the consumer doesn't poll within <code>max.poll.interval.ms</code>, Kafka assumes it's dead and reassigns its partitions → duplicate processing.</p>
+          <p>Practices I follow:</p>
+          <ul>
+            <li><strong>Manual commit</strong> after successful processing — auto-commit can lose messages on crash.</li>
+            <li>Tune <code>max.poll.records</code> and <code>max.poll.interval.ms</code> so a batch finishes well before the timeout.</li>
+            <li>Use Kafka's <strong>cooperative rebalancing</strong> (incremental) instead of eager stop-the-world.</li>
+            <li>Idempotent processing so reprocessing on rebalance is safe.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Dead Letter Queue — what and why?</summary>
+        <div class="qa-body">
+          <p>A <strong>Dead Letter Queue (DLQ)</strong> is a separate queue where you park messages that repeatedly fail to be processed. Without one, a poison message blocks the partition or causes endless retries that waste resources.</p>
+          <p>Typical pattern: try to process N times with backoff; if still failing, move to <code>topic.DLQ</code> with metadata (original topic, partition, offset, error message, attempt count). Operations can inspect, fix data, and replay from DLQ.</p>
+          <p>In Spring Kafka, a <code>DefaultErrorHandler</code> + <code>DeadLetterPublishingRecoverer</code> wires this up declaratively. With RabbitMQ, declare a queue with a <code>dead-letter-exchange</code> argument.</p>
+          <p>At OneXtel we had a DLQ for SMS that failed delivery — operators could see them in a UI, fix the carrier mapping, and replay. Without that, a single bad operator config would have backed up the entire queue.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How do you ensure message ordering?</summary>
+        <div class="qa-body">
+          <p>Kafka guarantees order <strong>within a partition</strong>, not across partitions. To preserve ordering for a specific entity, send all its messages with the same key — they go to the same partition.</p>
+          <pre><code>// All events for the same orderId stay in order
+producer.send(new ProducerRecord("orders", orderId, event));</code></pre>
+          <p>Two consequences. <strong>(1)</strong> Per-partition processing is sequential — if one entity is hot, you can't parallelize <em>its</em> processing. Watch for hot keys. <strong>(2)</strong> If you need to <em>retry</em> messages, retrying out-of-order breaks ordering — sometimes you must pause the partition during retry or accept brief out-of-order processing.</p>
+          <p>Cross-partition ordering needs an external sequence in each event (Lamport timestamps, vector clocks) and reordering on the consumer side. Usually not worth the complexity — design so per-entity order in one partition is sufficient.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Event-driven architecture — what's the win?</summary>
+        <div class="qa-body">
+          <p><strong>Event-driven architecture (EDA)</strong>: services publish domain events ("OrderPlaced", "UserSignedUp") to a stream; other services subscribe and react. No service knows who consumes its events.</p>
+          <p>Wins:</p>
+          <ul>
+            <li><strong>Loose coupling</strong> — add a new consumer without touching producers. The Inventory team can build a "track popularity" service from <code>OrderPlaced</code> without coordinating with Checkout.</li>
+            <li><strong>Resilience</strong> — consumer outages don't fail producers; events buffer in Kafka.</li>
+            <li><strong>Auditability</strong> — events are a permanent record; replay rebuilds state.</li>
+            <li><strong>Multiple read models</strong> — same event drives DB updates, ES indexing, analytics, notifications.</li>
+          </ul>
+          <p>Costs: eventual consistency in UI, harder debugging, schema evolution discipline (use a schema registry — Avro/Protobuf with backward-compat rules). On Punctuations.ai we made EDA core — resume changes flow as events into ES, analytics, audit, and notifications.</p>
+        </div>
+      </details>
+
+    </div>
+
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>

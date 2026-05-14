@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Microservices · Notes</title>
+  <link rel="icon" href="../assets/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+      <div class="search-wrap">
+        <i class="bi bi-search"></i>
+        <input id="search" type="search" placeholder="Search within Microservices..." autocomplete="off" spellcheck="false">
+        <span class="search-shortcut">/</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="topic-page">
+
+    <div class="topic-page-header">
+      <div class="topic-page-eyebrow">10 · Microservices</div>
+      <h1>Microservices architecture</h1>
+      <p class="topic-page-desc">Why split a monolith, how services communicate, where it goes wrong. Bring your OneXtel SMS-platform and Punctuations.ai stories.</p>
+      <div class="topic-page-meta">
+        <span><strong>13</strong> questions</span>
+        <span>Press <span class="hint-kbd">/</span> to search</span>
+      </div>
+    </div>
+
+    <div class="no-results" id="noResults">No matches.</div>
+
+    <div class="qa-list">
+
+      <details class="qa">
+        <summary>Monolith vs microservices — when to choose? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p>A <strong>monolith</strong> ships as one deployable unit — one DB, one repo, one process. <strong>Microservices</strong> split functionality into independently deployable services, usually with their own DB.</p>
+          <p>Monoliths win when: team is small (&lt;15 engineers), product is still finding fit, transactional boundaries are unclear. They're <em>fast to ship</em>. Most failed microservices migrations started in this phase too early.</p>
+          <p>Microservices win when: team scales beyond a single squad, parts of the system have very different scaling/release profiles, organizational boundaries demand independent deploys, or specific subsystems need different tech (Python ML vs Java web).</p>
+          <p>My take after 5 years: <strong>start with a modular monolith</strong>, extract services only when monolith pain is real — slow deploys, team-blocking PRs, distinct scaling needs. Premature split = distributed monolith, the worst of both worlds.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What is a "distributed monolith" and how to avoid it?</summary>
+        <div class="qa-body">
+          <p>A <strong>distributed monolith</strong> is microservices in name only — services tightly coupled by synchronous calls, shared databases, shared deployment timing, or shared models. Symptoms:</p>
+          <ul>
+            <li>Deploying service A requires also deploying service B.</li>
+            <li>A typical user request touches 8 services synchronously.</li>
+            <li>You can't change a field without coordinating across teams.</li>
+            <li>One service's outage takes down "unrelated" features.</li>
+          </ul>
+          <p>You get all the complexity of distributed systems with none of the independence benefits.</p>
+          <p>Avoidance: <strong>per-service database</strong>, <strong>API contracts via OpenAPI/proto with backward compatibility</strong>, <strong>async events</strong> where possible (Kafka), <strong>tolerant readers</strong>, careful Domain-Driven Design with explicit bounded contexts. At Indus Net I pushed back on splitting CRUD-heavy modules — they stayed in one service and we only carved out async/LLM workloads.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How do microservices communicate?</summary>
+        <div class="qa-body">
+          <p>Two broad categories:</p>
+          <p><strong>Synchronous</strong> — caller waits for a response.</p>
+          <ul>
+            <li><strong>REST over HTTP</strong> — most common; easy debugging, language-agnostic.</li>
+            <li><strong>gRPC</strong> — typed (protobuf), faster, streaming. Good for internal service-to-service.</li>
+            <li><strong>GraphQL</strong> — single endpoint, client-driven schema; good for BFFs.</li>
+          </ul>
+          <p><strong>Asynchronous</strong> — caller doesn't wait.</p>
+          <ul>
+            <li><strong>Message queues</strong> (RabbitMQ, SQS) — point-to-point work distribution.</li>
+            <li><strong>Event streams</strong> (Kafka) — pub/sub, replayable.</li>
+          </ul>
+          <p>Best practice: <strong>sync where the caller really needs the result</strong>, <strong>async for everything else</strong> — state changes that other services react to. Async decouples deployment timing and isolates failures. On Punctuations.ai, resume upload returns immediately, then Kafka triggers parsing, indexing, and notifications independently.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Service discovery — how do services find each other? <span class="qa-tag hot">hot</span></summary>
+        <div class="qa-body">
+          <p>Services in a microservice architecture have dynamic IPs (containers come and go). <strong>Service discovery</strong> lets clients find healthy instances by name.</p>
+          <p>Two patterns:</p>
+          <ul>
+            <li><strong>Client-side discovery</strong> — clients query a registry (Eureka, Consul) and pick an instance. Spring Cloud LoadBalancer does this. Smart but requires client logic.</li>
+            <li><strong>Server-side discovery</strong> — a load balancer / proxy in front of each service handles routing. Kubernetes Services + kube-proxy work this way; AWS ALB + target groups too. Dumb client, smart infrastructure.</li>
+          </ul>
+          <p>In Kubernetes — which is where most of my services run — discovery is essentially built in: <code>my-service.my-namespace.svc.cluster.local</code> resolves via CoreDNS, and the Service object load-balances over Pod IPs. No Eureka needed. For external traffic, an Ingress + LB handle it.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>API Gateway — what does it do?</summary>
+        <div class="qa-body">
+          <p>An <strong>API Gateway</strong> is a single entry point in front of your services. Responsibilities:</p>
+          <ul>
+            <li><strong>Routing</strong> — map paths/hosts to backend services.</li>
+            <li><strong>Authentication</strong> — verify tokens before requests reach services.</li>
+            <li><strong>Rate limiting</strong> &amp; throttling.</li>
+            <li><strong>Request/response transformation</strong> — versioning, header rewriting.</li>
+            <li><strong>Aggregation</strong> — combine multiple service calls into one client response (BFF pattern).</li>
+            <li><strong>SSL termination</strong>, logging, metrics, CORS.</li>
+          </ul>
+          <p>Tools I've used: <strong>Spring Cloud Gateway</strong> (Java/Project Reactor), <strong>Kong</strong>, <strong>AWS API Gateway</strong>, <strong>Nginx</strong>, <strong>Envoy</strong> (often via Istio in K8s).</p>
+          <p>Pitfall: don't put business logic in the gateway. It should be thin. Heavy aggregation belongs in a BFF service. At Indus Net we use Spring Cloud Gateway for auth + routing; service-to-service calls inside the cluster skip the gateway.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What is the Saga pattern? <span class="qa-tag hot">hot</span></summary>
+        <div class="qa-body">
+          <p>Distributed transactions across microservices are hard — 2PC is slow and brittle. The <strong>Saga pattern</strong> is the standard alternative: model the transaction as a sequence of local transactions in each service, with <strong>compensating actions</strong> if a step fails.</p>
+          <p>Example — booking flow: <code>reserveSeat → chargeCard → confirmBooking</code>. If <code>chargeCard</code> fails, run <code>cancelReservation</code> compensation.</p>
+          <p>Two coordination styles:</p>
+          <ul>
+            <li><strong>Choreography</strong> — services react to events from each other; no central coordinator. Loose coupling, but flow is implicit and hard to trace.</li>
+            <li><strong>Orchestration</strong> — a coordinator service explicitly drives the saga. Easier to observe and modify. Tools: <strong>Camunda</strong>, <strong>Temporal</strong>, <strong>AWS Step Functions</strong>.</li>
+          </ul>
+          <p>I lean orchestration for non-trivial flows — observability and recoverability are worth the central service. Always ensure all steps and compensations are <strong>idempotent</strong>.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Eventual consistency — explain it</summary>
+        <div class="qa-body">
+          <p><strong>Eventual consistency</strong> means: if updates stop, all replicas will eventually converge to the same value — but not at the exact same instant. The opposite of strong consistency, which guarantees every read sees the latest write.</p>
+          <p>It's the consistency model most distributed systems choose because CAP forces a tradeoff during partitions, and pure strong consistency limits scale and availability.</p>
+          <p>Practical implications:</p>
+          <ul>
+            <li>A user might update their profile and see the old value on the next page load (read-your-writes problem) — fix by routing to primary for that user briefly.</li>
+            <li>UI design needs to communicate "processing" states.</li>
+            <li>Background jobs eventually reconcile — for instance, a CDC pipeline updating Elasticsearch from MongoDB takes a few hundred milliseconds.</li>
+          </ul>
+          <p>It's a design choice, not a bug. Most user-facing features tolerate it gracefully if you build for it.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>CAP theorem — and PACELC</summary>
+        <div class="qa-body">
+          <p><strong>CAP theorem</strong>: in a distributed system you can have at most two of <strong>Consistency</strong>, <strong>Availability</strong>, <strong>Partition tolerance</strong>. Partitions are inevitable in real networks, so the real choice is between <strong>CP</strong> (refuse requests during partition for consistency) and <strong>AP</strong> (serve possibly-stale data for availability).</p>
+          <ul>
+            <li><strong>CP</strong> — HBase, MongoDB (with majority writes), Zookeeper, etcd.</li>
+            <li><strong>AP</strong> — Cassandra, DynamoDB, Couchbase by default.</li>
+          </ul>
+          <p><strong>PACELC</strong> extends this: even when there's no Partition, you choose between Latency and Consistency. A "PA/EL" system favors availability during partition and low latency otherwise; "PC/EC" favors consistency in both cases.</p>
+          <p>This is useful framing in design interviews — interviewers love when you frame a system's tradeoffs as PACELC rather than just CAP.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How do you handle distributed transactions?</summary>
+        <div class="qa-body">
+          <p>Three practical patterns:</p>
+          <ul>
+            <li><strong>Saga</strong> (see earlier) — sequence of local transactions with compensations. Best for multi-service workflows.</li>
+            <li><strong>Outbox pattern</strong> — write the business state and an outbox row in the same local DB transaction; a separate process publishes outbox rows to Kafka. Guarantees "if the DB says it happened, the event will be published."</li>
+            <li><strong>Transactional messaging</strong> — Kafka transactions (within the same producer) for exactly-once semantics across topics; useful when you produce to multiple topics atomically.</li>
+          </ul>
+          <p>What I <strong>don't</strong> use: 2PC across microservices — it's slow, fragile, and most modern DBs/queues don't support XA well together. The combination of <strong>outbox + idempotent consumers + saga</strong> covers nearly every real-world distributed-transaction need.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Inter-service communication failures — how to handle?</summary>
+        <div class="qa-body">
+          <p>The fundamental rule: <strong>networks fail, downstreams slow down</strong> — your service must remain healthy when its dependencies aren't.</p>
+          <p>My toolkit:</p>
+          <ul>
+            <li><strong>Timeouts</strong> on every outbound call — never block forever. Set them generous-but-realistic.</li>
+            <li><strong>Retries with exponential backoff + jitter</strong> for transient errors only. Make calls idempotent.</li>
+            <li><strong>Circuit breaker</strong> — fail fast when a downstream is unhealthy.</li>
+            <li><strong>Bulkheads</strong> — separate thread pools / connection pools per downstream so one slow dependency doesn't starve the rest.</li>
+            <li><strong>Fallbacks</strong> — return cached / degraded responses where possible.</li>
+            <li><strong>Async over sync</strong> — if the caller doesn't need the result immediately, send an event instead.</li>
+          </ul>
+          <p>All of this is Resilience4j in Spring Boot. Combined with timeouts at the HTTP client level, this stack has saved my services through multiple downstream outages.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Database per service — really?</summary>
+        <div class="qa-body">
+          <p>Yes — it's the most important rule that makes microservices actually independent. <strong>Each service owns its data and is the only one that writes to its database.</strong> Other services consume via APIs or events.</p>
+          <p>Why it matters: shared databases create the worst kind of coupling — schema changes block all consumers, performance issues in one service affect everyone, transactional boundaries blur. A "microservice" reading from another service's tables is a distributed monolith in disguise.</p>
+          <p>Costs you accept:</p>
+          <ul>
+            <li>Cross-service queries become API calls or async data replication.</li>
+            <li>Reporting/analytics need a separate data warehouse (CDC → Snowflake/BigQuery).</li>
+            <li>Distributed transactions need Saga or Outbox.</li>
+          </ul>
+          <p>The tradeoff is worth it. At Indus Net we have a single Mongo cluster, but each service uses its own database (logical separation) — close enough to db-per-service for a small team.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Centralized configuration — Spring Cloud Config / Consul</summary>
+        <div class="qa-body">
+          <p>Hard-coding config in YAML doesn't scale across many services × multiple environments. <strong>Centralized config</strong> stores all config in one place — services pull on startup (and optionally refresh at runtime).</p>
+          <p>Options:</p>
+          <ul>
+            <li><strong>Spring Cloud Config Server</strong> — git-backed, integrates with Spring Boot.</li>
+            <li><strong>Consul KV</strong> or <strong>etcd</strong> — distributed KV stores.</li>
+            <li><strong>AWS Parameter Store</strong> / <strong>Secrets Manager</strong> / <strong>HashiCorp Vault</strong> for secrets.</li>
+            <li><strong>Kubernetes ConfigMaps + Secrets</strong> — what I use most now; mounted into pods.</li>
+          </ul>
+          <p>Runtime refresh via <code>@RefreshScope</code> + <code>/actuator/refresh</code> in Spring Cloud — useful for toggles and log levels. <strong>Never commit secrets to git.</strong> Audit log changes. Pair with a feature-flag service (LaunchDarkly, Unleash) for behavioral toggles.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Twelve-Factor App — what are the key principles?</summary>
+        <div class="qa-body">
+          <p>A 2011 manifesto that's aged surprisingly well for cloud-native apps. The 12 factors:</p>
+          <ol>
+            <li><strong>Codebase</strong> — one repo per app, many deploys.</li>
+            <li><strong>Dependencies</strong> — declared explicitly, isolated.</li>
+            <li><strong>Config</strong> — in environment, not code.</li>
+            <li><strong>Backing services</strong> — DBs/queues as attached resources, swappable via config.</li>
+            <li><strong>Build/release/run</strong> — strictly separate stages.</li>
+            <li><strong>Processes</strong> — stateless, share-nothing (state in DB).</li>
+            <li><strong>Port binding</strong> — app exports HTTP via a port.</li>
+            <li><strong>Concurrency</strong> — scale out by process model.</li>
+            <li><strong>Disposability</strong> — fast startup, graceful shutdown.</li>
+            <li><strong>Dev/prod parity</strong> — minimize gaps.</li>
+            <li><strong>Logs</strong> — write to stdout; let the platform aggregate.</li>
+            <li><strong>Admin processes</strong> — run one-off tasks (migrations) in the same environment.</li>
+          </ol>
+          <p>Every Spring Boot service I ship follows these — they're the foundation for Kubernetes-friendly apps.</p>
+        </div>
+      </details>
+
+    </div>
+
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>

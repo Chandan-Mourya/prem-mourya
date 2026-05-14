@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Docker &amp; Kubernetes · Notes</title>
+  <link rel="icon" href="../assets/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+      <div class="search-wrap">
+        <i class="bi bi-search"></i>
+        <input id="search" type="search" placeholder="Search within Docker &amp; K8s..." autocomplete="off" spellcheck="false">
+        <span class="search-shortcut">/</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="topic-page">
+
+    <div class="topic-page-header">
+      <div class="topic-page-eyebrow">14 · Docker &amp; Kubernetes</div>
+      <h1>Containers &amp; orchestration</h1>
+      <p class="topic-page-desc">Docker basics, image best practices, K8s core objects, probes, autoscaling, networking. Bring K8s deployment stories from your services.</p>
+      <div class="topic-page-meta">
+        <span><strong>13</strong> questions</span>
+        <span>Press <span class="hint-kbd">/</span> to search</span>
+      </div>
+    </div>
+
+    <div class="no-results" id="noResults">No matches.</div>
+
+    <div class="qa-list">
+
+      <details class="qa">
+        <summary>What is Docker and how does it differ from a VM? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p>A <strong>VM</strong> runs a full guest OS on top of a hypervisor — large (GBs), slow to boot, but strongly isolated.</p>
+          <p>A <strong>container</strong> packages just the app + its dependencies, sharing the host's kernel. It uses Linux primitives — <strong>namespaces</strong> (isolate process tree, network, mounts, users) and <strong>cgroups</strong> (limit CPU, memory, IO) — to give the illusion of isolation while staying lightweight.</p>
+          <p>Practical differences:</p>
+          <ul>
+            <li>Containers: MBs in size, milliseconds to start, hundreds per host.</li>
+            <li>VMs: GBs in size, seconds-minutes to start, tens per host.</li>
+            <li>Containers share the host kernel — slightly weaker isolation than VMs.</li>
+          </ul>
+          <p><strong>Docker</strong> is the most popular container runtime + image format + build tool. Kubernetes can run containers via any OCI-compliant runtime (containerd, CRI-O). I haven't shipped a Java service without a container in years.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Dockerfile best practices for a Java app</summary>
+        <div class="qa-body">
+          <p>Things I always do:</p>
+          <ul>
+            <li><strong>Multi-stage build</strong> — build with the JDK image, run with a smaller JRE base. Final image is much smaller.</li>
+            <li><strong>Use specific base image tags</strong> — never <code>:latest</code>. Eclipse Temurin or distroless for security.</li>
+            <li><strong>Layer caching</strong> — copy <code>pom.xml</code> and run <code>mvn dependency:go-offline</code> before copying source. Code changes don't bust the deps cache.</li>
+            <li><strong>Non-root user</strong> — <code>USER 1001</code> for security.</li>
+            <li><strong>Healthcheck</strong> hitting <code>/actuator/health</code>.</li>
+            <li><strong>.dockerignore</strong> to exclude <code>target/</code>, <code>.git</code>, IDE files.</li>
+            <li><strong>Pin JVM flags</strong> — heap %, GC settings.</li>
+          </ul>
+          <pre><code>FROM eclipse-temurin:21-jdk AS build
+WORKDIR /app
+COPY pom.xml ./
+RUN mvn -B dependency:go-offline
+COPY src ./src
+RUN mvn -B clean package -DskipTests
+
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
+USER 1001
+EXPOSE 8080
+ENTRYPOINT ["java","-jar","/app/app.jar"]</code></pre>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Docker image layers and caching</summary>
+        <div class="qa-body">
+          <p>A Docker image is built as a stack of <strong>layers</strong> — each instruction in a Dockerfile (<code>COPY</code>, <code>RUN</code>, <code>ADD</code>) creates an immutable layer. Layers are content-addressed and cached.</p>
+          <p>If a layer changes, all layers <em>after</em> it are rebuilt. So <strong>order matters</strong>: put the least frequently changing things first.</p>
+          <p>Layered correctly, a small source change rebuilds in seconds because Maven dependencies, base image, and OS packages are all cached. Done wrong, every change downloads everything again.</p>
+          <p>Other tips:</p>
+          <ul>
+            <li><strong>Combine RUN commands</strong> with <code>&amp;&amp;</code> and clean up apt caches in the same layer — uncleaned cache stays in the layer forever.</li>
+            <li><strong>Multi-stage builds</strong> let you discard build-time layers entirely.</li>
+            <li><strong>BuildKit</strong> (Docker 23+) has parallel layer building and cache mounts (<code>--mount=type=cache</code>) for Maven/Gradle/npm dirs.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What is Kubernetes and why use it? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p><strong>Kubernetes</strong> is an open-source container orchestrator. You declare desired state ("run 5 replicas of this app, expose port 8080, restart on failure") and the control plane reconciles reality with that state.</p>
+          <p>What it provides out of the box:</p>
+          <ul>
+            <li><strong>Scheduling</strong> — place pods on nodes with capacity.</li>
+            <li><strong>Self-healing</strong> — restart crashed containers, replace dead nodes.</li>
+            <li><strong>Service discovery + load balancing</strong> — built-in DNS and Service objects.</li>
+            <li><strong>Rolling updates and rollbacks</strong>.</li>
+            <li><strong>Autoscaling</strong> — HPA, VPA, cluster autoscaler.</li>
+            <li><strong>Secret &amp; config management</strong>.</li>
+            <li><strong>Storage abstraction</strong> via PersistentVolumes.</li>
+          </ul>
+          <p>It's complex, but at &gt;3 services with multiple environments, hand-managing containers becomes painful. Kubernetes is the cloud-native standard — multi-cloud portable, huge ecosystem (Helm, Istio, ArgoCD, Prometheus).</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Pod vs Deployment vs Service vs Ingress</summary>
+        <div class="qa-body">
+          <p>The core K8s objects you touch daily:</p>
+          <ul>
+            <li><strong>Pod</strong> — smallest deployable unit, one or more co-located containers sharing network and storage. You rarely create pods directly.</li>
+            <li><strong>ReplicaSet</strong> — keeps N pods running. Created by Deployment.</li>
+            <li><strong>Deployment</strong> — desired state for a stateless app: image, replicas, rolling update strategy. Manages ReplicaSets to safely transition versions.</li>
+            <li><strong>StatefulSet</strong> — for stateful apps (DBs, Kafka). Stable network identity, ordered scaling, persistent storage per pod.</li>
+            <li><strong>Service</strong> — stable virtual IP + DNS that load-balances to a set of pods. Types: ClusterIP (internal), NodePort, LoadBalancer (cloud LB), Headless.</li>
+            <li><strong>Ingress</strong> — HTTP/HTTPS routing rules from outside the cluster to Services. Implemented by an ingress controller (Nginx, AWS ALB, Traefik).</li>
+            <li><strong>Job/CronJob</strong> — one-shot or scheduled batch work.</li>
+          </ul>
+          <p>Typical service: Deployment + Service + Ingress + ConfigMap + Secret + HPA.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Liveness, readiness, startup probes — differences</summary>
+        <div class="qa-body">
+          <p>(Also covered in Spring Boot.) Three K8s probes:</p>
+          <ul>
+            <li><strong>Liveness</strong> — is the container alive? Failure → K8s <strong>restarts</strong> the pod. Should check only fatal in-process state. Wrong checks cause restart loops.</li>
+            <li><strong>Readiness</strong> — is it ready to serve traffic? Failure → K8s <strong>removes</strong> from Service endpoints. Should check downstream dependencies. Used to gate traffic during startup or temporary unhealthiness.</li>
+            <li><strong>Startup</strong> — slow-start apps. Once it passes, liveness/readiness take over. Lets you set generous startup time without making liveness too lax later.</li>
+          </ul>
+          <p>For Java services I use <code>/actuator/health/liveness</code> and <code>/health/readiness</code>. Tune <code>initialDelaySeconds</code>, <code>periodSeconds</code>, <code>failureThreshold</code> based on real startup time. Misconfiguring probes is one of the top causes of production incidents — I always check them in PRs.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Resource requests vs limits</summary>
+        <div class="qa-body">
+          <p>Every container can declare <strong>requests</strong> (minimum guaranteed CPU/memory) and <strong>limits</strong> (maximum allowed).</p>
+          <ul>
+            <li><strong>CPU request</strong> — used by the scheduler to find a node with capacity. Used for fair sharing under contention.</li>
+            <li><strong>CPU limit</strong> — throttled if exceeded. Aggressive throttling is often the root cause of "slow service" mystery.</li>
+            <li><strong>Memory request</strong> — guaranteed; used by scheduler.</li>
+            <li><strong>Memory limit</strong> — exceeding it → OOMKilled by the kernel. Hard kill.</li>
+          </ul>
+          <p>For Java: heap should be well under the memory limit (leave room for metaspace, threads, native memory). I set <code>-XX:MaxRAMPercentage=70</code> with a slightly higher container memory limit so JVM has headroom.</p>
+          <p>Quality of Service classes: <strong>Guaranteed</strong> (request==limit), <strong>Burstable</strong>, <strong>BestEffort</strong>. Production services should be Guaranteed or Burstable; BestEffort gets evicted first.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>ConfigMap vs Secret — what's the difference?</summary>
+        <div class="qa-body">
+          <p>Both store key-value data and can be mounted as env vars or files in pods.</p>
+          <p><strong>ConfigMap</strong> is for non-sensitive config (feature flags, URLs, log levels). Stored as plain text in etcd.</p>
+          <p><strong>Secret</strong> is for sensitive data (DB passwords, API keys). Stored base64-encoded in etcd — which is <strong>not encryption</strong>. The security comes from RBAC (who can read secrets) and from enabling <strong>encryption-at-rest</strong> for etcd.</p>
+          <p>In production I use external secrets stores:</p>
+          <ul>
+            <li><strong>AWS Secrets Manager / Parameter Store</strong> + <strong>External Secrets Operator</strong> (ESO) to sync into K8s Secrets.</li>
+            <li><strong>HashiCorp Vault</strong> + Vault Agent injector.</li>
+            <li><strong>Sealed Secrets</strong> if you want secrets in git encrypted with a cluster public key.</li>
+          </ul>
+          <p>Never commit raw secrets to git; never log secret env vars. Rotate regularly.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Horizontal Pod Autoscaler (HPA)</summary>
+        <div class="qa-body">
+          <p><strong>HPA</strong> automatically scales pod replicas based on metrics. Typical metrics:</p>
+          <ul>
+            <li><strong>CPU utilization</strong> — most common. Target ~60–70%.</li>
+            <li><strong>Memory utilization</strong> — for memory-bound apps.</li>
+            <li><strong>Custom metrics</strong> via Prometheus Adapter — e.g., requests-per-second, Kafka consumer lag, queue depth. <strong>This is what really matters in production</strong>.</li>
+          </ul>
+          <pre><code>apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+spec:
+  scaleTargetRef: { kind: Deployment, name: my-app }
+  minReplicas: 3
+  maxReplicas: 30
+  metrics:
+  - type: Resource
+    resource: { name: cpu, target: { type: Utilization, averageUtilization: 60 } }</code></pre>
+          <p>Sizing: minReplicas should survive a single-AZ outage. Tune <code>behavior</code> stabilization windows to avoid flapping. Pair with cluster autoscaler so adding pods triggers node growth. At Indus Net I scaled the resume-parsing service on Kafka lag rather than CPU — more responsive to actual demand.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How does service discovery work in K8s?</summary>
+        <div class="qa-body">
+          <p>K8s ships service discovery out of the box.</p>
+          <p>When you create a <strong>Service</strong>, K8s assigns it a stable <strong>cluster IP</strong> and a DNS name: <code>my-service.my-namespace.svc.cluster.local</code> (or just <code>my-service</code> within the same namespace). CoreDNS resolves these to the cluster IP.</p>
+          <p>Behind the cluster IP, kube-proxy programs iptables (or IPVS) rules that load-balance to the actual pod IPs. Pod IPs change on every restart, but the Service IP and DNS are stable.</p>
+          <p>For headless services (<code>clusterIP: None</code>), DNS returns all pod IPs directly — useful for clients that want to do their own LB (e.g., gRPC client-side balancing, StatefulSet members talking to each other).</p>
+          <p>Modern setups add a <strong>service mesh</strong> (Istio, Linkerd) on top for mTLS, traffic splitting, retries, and observability — sidecar proxies (Envoy) handle service-to-service calls.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Rolling updates and rollbacks in K8s</summary>
+        <div class="qa-body">
+          <p>K8s Deployments handle rolling updates declaratively. You update the pod template (e.g., new image tag); K8s creates a new ReplicaSet and gradually shifts pods from old to new.</p>
+          <p>Knobs:</p>
+          <ul>
+            <li><strong><code>maxSurge</code></strong> — how many extra pods can run during update (default 25%).</li>
+            <li><strong><code>maxUnavailable</code></strong> — how many old pods can be down (default 25%).</li>
+            <li><strong>Readiness probe</strong> — new pods must pass before old ones are killed.</li>
+          </ul>
+          <p>Rollback is simple: <code>kubectl rollout undo deployment/my-app</code>. K8s keeps ReplicaSet history (configurable <code>revisionHistoryLimit</code>).</p>
+          <p>For higher-risk changes I use <strong>Argo Rollouts</strong> or <strong>Flagger</strong> on top — they add canary, blue/green, and automated metric-based rollback. At Indus Net we use Argo Rollouts to canary 5% → 25% → 100% over 10 minutes, watching error rate and p99 latency, and auto-rolling back if either spikes.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How do you debug a failing pod?</summary>
+        <div class="qa-body">
+          <p>My triage sequence:</p>
+          <ol>
+            <li><code>kubectl get pods -n ns</code> — what's the status? <em>Pending, ImagePullBackOff, CrashLoopBackOff, Error?</em></li>
+            <li><code>kubectl describe pod &lt;name&gt;</code> — events at the bottom usually tell you exactly what's wrong (scheduling failure, probe failure, OOMKilled, image issue).</li>
+            <li><code>kubectl logs &lt;name&gt; --previous</code> — logs from the previous container instance (essential for CrashLoopBackOff).</li>
+            <li><code>kubectl logs &lt;name&gt; -c &lt;container&gt;</code> — multi-container pods need the container name.</li>
+            <li><code>kubectl exec -it &lt;pod&gt; -- sh</code> — exec into the pod for live inspection (curl localhost, check files).</li>
+            <li><code>kubectl get events --sort-by=.lastTimestamp -n ns</code> — broader cluster events.</li>
+            <li><code>kubectl top pod</code> — current resource usage.</li>
+            <li>For "service unreachable": check Service endpoints (<code>kubectl get endpoints</code>) — empty means no pods are <em>Ready</em>.</li>
+          </ol>
+          <p>Common culprits: OOM (raise limit or fix leak), probe misconfigured, missing config, image tag typo, network policy blocking traffic.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Helm — what is it and why?</summary>
+        <div class="qa-body">
+          <p>Plain YAML manifests don't scale: same Deployment + Service + Ingress + ConfigMap repeated across services and environments, with small differences. <strong>Helm</strong> is the package manager for Kubernetes — templates YAML with Go templating, packaging the result as a <strong>chart</strong>.</p>
+          <p>A chart has:</p>
+          <ul>
+            <li><strong>Templates</strong> — parameterized YAML.</li>
+            <li><strong>values.yaml</strong> — defaults, overridden per environment with <code>values-prod.yaml</code>, <code>values-staging.yaml</code>.</li>
+            <li><strong>Chart.yaml</strong> — metadata, versioning.</li>
+          </ul>
+          <p>Run <code>helm install / upgrade / rollback</code> — Helm tracks releases and supports rollback.</p>
+          <p>I use Helm for: (a) installing off-the-shelf software (Prometheus, ingress-nginx, Argo CD) — the community charts are mature; (b) packaging our own services. For tighter control / kustomize-style, some teams prefer <strong>Kustomize</strong>. Both are fine; pick one and be consistent.</p>
+        </div>
+      </details>
+
+    </div>
+
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>REST &amp; Security · Notes</title>
+  <link rel="icon" href="../assets/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+      <div class="search-wrap">
+        <i class="bi bi-search"></i>
+        <input id="search" type="search" placeholder="Search within REST &amp; Security..." autocomplete="off" spellcheck="false">
+        <span class="search-shortcut">/</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="topic-page">
+
+    <div class="topic-page-header">
+      <div class="topic-page-eyebrow">06 · REST &amp; Security</div>
+      <h1>REST APIs &amp; security</h1>
+      <p class="topic-page-desc">HTTP semantics, status codes, idempotency, JWT, OAuth2, CORS — cross-cutting knowledge every backend engineer needs.</p>
+      <div class="topic-page-meta">
+        <span><strong>11</strong> questions</span>
+        <span>Press <span class="hint-kbd">/</span> to search</span>
+      </div>
+    </div>
+
+    <div class="no-results" id="noResults">No matches.</div>
+
+    <div class="qa-list">
+
+      <details class="qa">
+        <summary>What does "RESTful" actually mean? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p><strong>REST (Representational State Transfer)</strong> is an architectural style from Roy Fielding's 2000 thesis. The core constraints:</p>
+          <ul>
+            <li><strong>Client–server</strong> separation.</li>
+            <li><strong>Stateless</strong> — every request carries all info needed; the server holds no session state about the client (one of the most important).</li>
+            <li><strong>Cacheable</strong> responses where appropriate.</li>
+            <li><strong>Uniform interface</strong> — identify resources via URIs, manipulate via standard methods (GET, POST, PUT, PATCH, DELETE), self-descriptive messages, HATEOAS (links in responses, rarely fully applied).</li>
+            <li><strong>Layered</strong> system, optional code-on-demand.</li>
+          </ul>
+          <p>In practice "RESTful" today usually means: JSON over HTTP, resource-oriented URIs (<code>/users/{id}</code>, not <code>/getUser?id=</code>), correct verbs and status codes, stateless auth via tokens. Most real APIs are <em>RESTish</em> — pragmatic, not religious about HATEOAS.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>HTTP methods — GET / POST / PUT / PATCH / DELETE</summary>
+        <div class="qa-body">
+          <p>Each has semantic meaning that matters for caching, retries, and idempotency:</p>
+          <ul>
+            <li><strong>GET</strong> — read. <em>Safe and idempotent.</em> No body. Cacheable.</li>
+            <li><strong>POST</strong> — create or "operation". <em>Not idempotent.</em> Body carries the payload.</li>
+            <li><strong>PUT</strong> — full replace of a resource at a known URI. <em>Idempotent.</em></li>
+            <li><strong>PATCH</strong> — partial update. <em>Not guaranteed idempotent.</em></li>
+            <li><strong>DELETE</strong> — remove. <em>Idempotent</em> (deleting an already-deleted resource is a no-op or 404, but state is the same).</li>
+          </ul>
+          <p>The idempotency property matters: clients (and proxies) can safely retry GET/PUT/DELETE on network errors, but POST retries can create duplicates — hence idempotency keys.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Important status codes</summary>
+        <div class="qa-body">
+          <p>Categories: 1xx info, 2xx success, 3xx redirect, 4xx client error, 5xx server error. The ones I use most:</p>
+          <ul>
+            <li><strong>200 OK</strong> — success with body. <strong>201 Created</strong> — POST that creates a resource; include <code>Location</code> header. <strong>204 No Content</strong> — success with no body (DELETE, PUT idempotent updates).</li>
+            <li><strong>301</strong> permanent redirect, <strong>302</strong> temporary, <strong>304 Not Modified</strong> for conditional GETs.</li>
+            <li><strong>400 Bad Request</strong> — validation. <strong>401 Unauthorized</strong> — not authenticated. <strong>403 Forbidden</strong> — authenticated but no permission. <strong>404 Not Found</strong>. <strong>409 Conflict</strong> — version/state conflict. <strong>422 Unprocessable Entity</strong> — semantic validation. <strong>429 Too Many Requests</strong> — rate-limited.</li>
+            <li><strong>500</strong> — generic server error (avoid; be specific). <strong>502/503/504</strong> — upstream/availability/timeout — important to distinguish for retry decisions.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Idempotency — why and how to implement?</summary>
+        <div class="qa-body">
+          <p><strong>Idempotent</strong>: making the same request many times has the same effect as making it once. Critical for POST endpoints that handle money, orders, or external integrations — clients retry on network errors and you don't want duplicate charges.</p>
+          <p>Pattern: client sends an <code>Idempotency-Key</code> header (UUID). Server stores the key + first response in a fast store (Redis/Postgres) with a TTL. On retry: same key → return the stored response instead of re-executing.</p>
+          <pre><code>POST /payments
+Idempotency-Key: 5f3b...
+{ "amount": 1000, "card": "..." }</code></pre>
+          <p>Stripe popularised this and it's now the industry standard. At Indus Net I added it on the resume-upload endpoint to prevent duplicate parsing when mobile clients retried over flaky networks.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>JWT — what is it, how does it work? <span class="qa-tag hot">hot</span></summary>
+        <div class="qa-body">
+          <p><strong>JWT (JSON Web Token)</strong> is a compact, URL-safe token format with three base64-encoded parts: <strong>header</strong> (algorithm), <strong>payload</strong> (claims like <code>sub</code>, <code>exp</code>, <code>roles</code>), and <strong>signature</strong> (HMAC or RSA over the first two). Format: <code>header.payload.signature</code>.</p>
+          <p>It's <strong>self-contained</strong> — the server doesn't need to look up session state. To validate: verify the signature with the secret/public key, check <code>exp</code>, then trust the claims.</p>
+          <p>Tradeoffs: stateless and scales horizontally, but <strong>can't be revoked</strong> before expiry without a denylist. Keep tokens <strong>short-lived</strong> (5–15 min for access tokens) and pair with longer-lived <strong>refresh tokens</strong>. <strong>Never put secrets in the payload</strong> — it's signed, not encrypted. Always validate signature on the server; never trust client claims.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>OAuth2 — flows and use cases</summary>
+        <div class="qa-body">
+          <p><strong>OAuth2</strong> is a delegation framework: let a third-party app act on your behalf without sharing your password. Four main flows:</p>
+          <ul>
+            <li><strong>Authorization Code</strong> — server-side web apps. Redirect user to login, get a code, exchange code+secret for tokens. <strong>With PKCE</strong> for mobile/SPA — most secure modern flow.</li>
+            <li><strong>Client Credentials</strong> — machine-to-machine; no user. Used for service-to-service auth with a client ID + secret.</li>
+            <li><strong>Refresh Token</strong> — get a new access token without re-auth.</li>
+            <li><strong>Implicit and Password</strong> — legacy, no longer recommended.</li>
+          </ul>
+          <p><strong>OpenID Connect (OIDC)</strong> is a thin identity layer on top of OAuth2 that adds the ID token (a JWT identifying the user). Most "Sign in with Google" buttons are OIDC. In Spring Boot I use <code>spring-boot-starter-oauth2-resource-server</code> to validate access tokens from an identity provider like Keycloak, Auth0, or AWS Cognito.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Authentication vs Authorization</summary>
+        <div class="qa-body">
+          <p><strong>Authentication (AuthN)</strong> — proving who you are. Username/password, MFA, OAuth, SSO. The result is an authenticated principal.</p>
+          <p><strong>Authorization (AuthZ)</strong> — deciding what an authenticated user is allowed to do. Roles, permissions, scopes, policies. <code>@PreAuthorize("hasRole('ADMIN')")</code>, attribute-based access control, OPA, Casbin.</p>
+          <p>The mnemonic: AuthN = "who", AuthZ = "what can". They're often discussed together but solved separately. Common mistake: relying on AuthN alone — once a user is logged in, they can access everything. Always layer AuthZ on top, ideally on the server (never trust the client to hide a button).</p>
+          <p>In Spring Security: AuthN populates <code>SecurityContext</code> with an <code>Authentication</code> object; AuthZ rules (method security, request-matcher rules) consume it.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>CORS — what's the actual problem?</summary>
+        <div class="qa-body">
+          <p><strong>Same-Origin Policy</strong> is a browser security feature: a script on <code>a.com</code> can't read responses from <code>b.com</code> by default. This is what prevents a malicious site from reading your bank balance via an iframe.</p>
+          <p><strong>CORS (Cross-Origin Resource Sharing)</strong> is the controlled relaxation — servers send headers telling browsers it's safe to share specific origins. Key headers: <code>Access-Control-Allow-Origin</code>, <code>-Allow-Methods</code>, <code>-Allow-Headers</code>, <code>-Allow-Credentials</code>.</p>
+          <p>For "non-simple" requests (custom headers, content types) the browser does a <strong>preflight</strong> OPTIONS request first. If the server doesn't respond correctly, the real request never happens.</p>
+          <p>In Spring Boot: <code>@CrossOrigin</code> per controller, or a global <code>CorsConfiguration</code>. Pitfalls: don't use <code>*</code> with credentials, and remember CORS is enforced by the <em>browser</em> — server-to-server calls ignore it.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>API versioning strategies</summary>
+        <div class="qa-body">
+          <p>Once an API has external clients, breaking changes need versioning. Common approaches:</p>
+          <ul>
+            <li><strong>URI versioning</strong> — <code>/v1/users</code>, <code>/v2/users</code>. Simple, very visible, easy routing. Most popular.</li>
+            <li><strong>Header versioning</strong> — <code>Accept: application/vnd.app.v2+json</code>. Cleaner URLs, but invisible in logs and harder to test in browser.</li>
+            <li><strong>Query param</strong> — <code>?v=2</code>. Easy but messy.</li>
+            <li><strong>Media-type / content negotiation</strong> — used by GitHub and other strict APIs.</li>
+          </ul>
+          <p>Best practice — regardless of style — is to <strong>avoid versioning when you can</strong> by making additive changes (new fields, new endpoints) and using feature flags. When a breaking change is unavoidable, give at least one quarter of overlap with a clear deprecation header (<code>Sunset</code>, <code>Deprecation</code>) and migration guide.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Rate limiting — strategies</summary>
+        <div class="qa-body">
+          <p>Protects APIs from abuse, runaway clients, and DOS. Common algorithms:</p>
+          <ul>
+            <li><strong>Token bucket</strong> — a bucket of N tokens refilled at rate r; each request consumes one. Allows bursts up to bucket size. Most popular.</li>
+            <li><strong>Leaky bucket</strong> — fixed outflow rate, requests queue up. Smooths bursts.</li>
+            <li><strong>Fixed window</strong> — N per minute; simple but edge-of-window bursts double up.</li>
+            <li><strong>Sliding window</strong> — fairer; counts requests in a moving window.</li>
+          </ul>
+          <p>Where to implement: <strong>API Gateway</strong> (Kong, AWS API Gateway, NGINX) for global limits, plus per-service for fine-grained. In Spring Boot I use <strong>Bucket4j</strong> backed by Redis for distributed counting. Respond with <strong>429 Too Many Requests</strong> + <code>Retry-After</code> header. Always exempt or boost limits for authenticated/internal traffic.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Common API security risks (OWASP Top 10)</summary>
+        <div class="qa-body">
+          <p>OWASP API Security Top 10 highlights:</p>
+          <ul>
+            <li><strong>Broken Object Level Authorization (BOLA)</strong> — endpoint <code>/orders/{id}</code> doesn't check ownership; user can read others' orders. <strong>The most common vulnerability.</strong></li>
+            <li><strong>Broken Authentication</strong> — weak tokens, missing MFA, exposed credentials.</li>
+            <li><strong>Excessive Data Exposure</strong> — returning entire entity when API only needs a subset (e.g., password hash or internal flags).</li>
+            <li><strong>Lack of Rate Limiting</strong> — leads to scraping, brute force.</li>
+            <li><strong>Mass Assignment</strong> — auto-binding request JSON to entity lets attackers set <code>isAdmin: true</code>. Use DTOs, never bind to entities.</li>
+            <li><strong>Injection</strong> — SQL, NoSQL, LDAP, OS command. Always use parameterized queries.</li>
+            <li><strong>Improper Asset Management</strong> — old API versions still live.</li>
+            <li><strong>Insufficient Logging &amp; Monitoring</strong> — can't detect or investigate attacks.</li>
+          </ul>
+          <p>I bake security review into every PR for endpoints touching auth, money, or PII.</p>
+        </div>
+      </details>
+
+    </div>
+
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Core Java · Notes</title>
+  <link rel="icon" href="../assets/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+      <div class="search-wrap">
+        <i class="bi bi-search"></i>
+        <input id="search" type="search" placeholder="Search within Core Java..." autocomplete="off" spellcheck="false">
+        <span class="search-shortcut">/</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="topic-page">
+
+    <div class="topic-page-header">
+      <div class="topic-page-eyebrow">02 · Core Java</div>
+      <h1>Core Java — JVM, Collections, OOP, Java 8+</h1>
+      <p class="topic-page-desc">The fundamentals that every backend interviewer probes. Master HashMap, equals/hashCode, GC, and Streams — they show up in 9 of 10 interviews.</p>
+      <div class="topic-page-meta">
+        <span><strong>30</strong> questions</span>
+        <span>Press <span class="hint-kbd">/</span> to search · <span class="hint-kbd">E</span> expand all</span>
+      </div>
+    </div>
+
+    <div class="no-results" id="noResults">No matches.</div>
+
+    <div class="qa-list">
+
+      <div class="section-divider">JVM &amp; Memory</div>
+
+      <details class="qa">
+        <summary>What is the JVM, JRE, and JDK? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p>The <strong>JVM (Java Virtual Machine)</strong> is the runtime that loads <code>.class</code> files, verifies bytecode, and executes it on the host OS. It also handles memory management, JIT compilation, and security. The JVM is what makes Java "write once, run anywhere".</p>
+          <p>The <strong>JRE (Java Runtime Environment)</strong> = JVM + core class libraries (java.lang, java.util, etc.) — everything needed to <em>run</em> Java programs. The <strong>JDK (Java Development Kit)</strong> = JRE + development tools like <code>javac</code>, <code>jlink</code>, <code>jstack</code>, <code>jmap</code>. As a developer I install the JDK; production servers used to ship the JRE, but since Java 11 the standalone JRE is gone — we ship a custom runtime via <code>jlink</code> or a full JDK image.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Explain the JVM memory model <span class="qa-tag hot">hot</span></summary>
+        <div class="qa-body">
+          <p>JVM memory is split into several areas. <strong>Heap</strong> stores all objects and is shared across threads; it's divided into Young Generation (Eden + 2 Survivor spaces) and Old Generation. <strong>Stack</strong> is per-thread and holds method frames with local variables and partial results. <strong>Metaspace</strong> (replaced PermGen in Java 8) holds class metadata in native memory. <strong>PC Register</strong> per thread tracks the current instruction. <strong>Native Method Stack</strong> is for JNI calls.</p>
+          <p>Most allocations happen in Eden. When Eden fills, a <em>minor GC</em> runs — surviving objects move to a Survivor space, then eventually to the Old Gen. The Old Gen is collected by a <em>major / full GC</em>, which is more expensive. Knowing this model is the first step to reading <code>jstat</code> output and diagnosing memory issues.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How does garbage collection work? G1 vs ZGC?</summary>
+        <div class="qa-body">
+          <p>GC reclaims memory by identifying unreachable objects starting from <em>GC roots</em> (active stack frames, static fields, JNI references) and freeing the rest. Modern collectors are <strong>generational</strong> — they exploit the fact that most objects die young, so collecting Eden frequently is cheap, while old-gen collections are rarer but heavier.</p>
+          <p><strong>G1 (Garbage First)</strong>, default since Java 9, divides the heap into ~2 MB regions and collects regions with the most garbage first, aiming for predictable pause times (e.g. 200 ms target). <strong>ZGC</strong> and <strong>Shenandoah</strong> are concurrent low-latency collectors — pause times under 10 ms even on multi-TB heaps, at a small throughput cost. I default to G1 for normal services; ZGC for latency-sensitive APIs (financial, real-time).</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Stack vs Heap — where do primitives live?</summary>
+        <div class="qa-body">
+          <p>The <strong>stack</strong> is per-thread, LIFO, and holds method frames. Each frame contains local variables, including <strong>primitive values</strong> (int, long, boolean) and <strong>references</strong> to objects. The stack is small (default ~512 KB–1 MB) and fast — allocation and deallocation are simply moving the stack pointer.</p>
+          <p>The <strong>heap</strong> is shared across all threads and stores <strong>objects</strong> (including arrays and wrappers like Integer). When you write <code>Integer i = 5</code>, the variable <code>i</code> sits on the stack but the Integer object lives on the heap. Primitives inside an object also live on the heap as part of that object. If recursion goes too deep you get <code>StackOverflowError</code>; if heap fills you get <code>OutOfMemoryError: Java heap space</code>.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What is the String pool and why does it exist?</summary>
+        <div class="qa-body">
+          <p>The <strong>String pool</strong> (interned strings) is a special area in the heap (since Java 7) where the JVM stores <strong>unique string literals</strong>. When you write <code>String a = "hello"</code> twice, both variables point to the same pooled instance, saving memory.</p>
+          <p>Compare: <code>String a = "hi"; String b = "hi"; a == b</code> returns <strong>true</strong>. But <code>String c = new String("hi"); a == c</code> returns <strong>false</strong> — <code>new</code> forces a fresh heap object. You can manually intern with <code>c.intern()</code>. Be careful interning user input — it grows the pool and used to leak into PermGen (pre-Java 7). Pool size is configurable via <code>-XX:StringTableSize</code>. The pool is why <code>equals()</code> exists — never use <code>==</code> for string comparison.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Diagnosing a memory leak — your process? <span class="qa-tag hot">hot</span></summary>
+        <div class="qa-body">
+          <p>My checklist: <strong>(1)</strong> confirm with <code>jstat -gc &lt;pid&gt;</code> that Old Gen keeps growing across full GCs — that's the signature of a leak versus high allocation. <strong>(2)</strong> capture a <strong>heap dump</strong> with <code>jmap -dump:live</code> or set <code>-XX:+HeapDumpOnOutOfMemoryError</code> in production.</p>
+          <p><strong>(3)</strong> open the dump in <strong>Eclipse MAT</strong> and run the Leak Suspects report — it identifies dominator trees, the largest retained sizes, and likely culprits. <strong>(4)</strong> Common offenders: static collections that grow unbounded, ThreadLocals not cleared after use (caught one at Indus Net inside a Spring filter), unclosed resources, listener registrations not removed. <strong>(5)</strong> Once fixed, re-run the load test and verify Old Gen stabilizes after full GCs.</p>
+        </div>
+      </details>
+
+      <div class="section-divider">Collections</div>
+
+      <details class="qa">
+        <summary>HashMap internals — how does it work? <span class="qa-tag hot">hot</span></summary>
+        <div class="qa-body">
+          <p>A <strong>HashMap</strong> is backed by an array of buckets (default size 16). When you <code>put(key, value)</code>: (1) compute <code>hashCode()</code>, (2) apply the hash spreading function <code>(h = hashCode) ^ (h &gt;&gt;&gt; 16)</code>, (3) take <code>hash &amp; (capacity - 1)</code> to get the bucket index. Multiple keys can hit the same bucket — that's a <strong>collision</strong>.</p>
+          <p>Collisions are stored as a <strong>linked list</strong>. Since Java 8, if a bucket exceeds 8 entries <strong>and</strong> the table has at least 64 entries, it's converted to a <strong>red-black tree</strong> — lookup goes from O(n) to O(log n). When load factor (default 0.75) is hit, the table doubles and entries are rehashed. Average get/put is <strong>O(1)</strong>, worst case O(log n) with tree bins. Important: HashMap is <strong>not thread-safe</strong>.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>HashMap vs ConcurrentHashMap vs Hashtable</summary>
+        <div class="qa-body">
+          <p><strong>HashMap</strong> — fast, not thread-safe, allows one null key, multiple null values. Use it in single-threaded contexts.</p>
+          <p><strong>Hashtable</strong> — legacy, synchronized on every method (whole-map lock). Slow under contention. Don't use in new code.</p>
+          <p><strong>ConcurrentHashMap</strong> — thread-safe, no whole-map lock. In Java 8+ it uses CAS on individual bucket heads and synchronized blocks only on collision chains, giving very high concurrency. Read operations are mostly lock-free. Compound operations need atomic helpers: use <code>computeIfAbsent</code>, <code>merge</code>, <code>compute</code> rather than <code>get</code>+<code>put</code> sequences. Iteration is weakly consistent — no ConcurrentModificationException, but you may see stale entries. <strong>Doesn't allow null keys/values</strong>. This is the default for any multithreaded map in modern code.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>ArrayList vs LinkedList — when to use which?</summary>
+        <div class="qa-body">
+          <p><strong>ArrayList</strong> is backed by a resizable array. Random access (<code>get(i)</code>) is <strong>O(1)</strong>. Adding at the end is amortized O(1); inserting/removing in the middle is O(n) because of array shifts. Better cache locality, so iteration is fast.</p>
+          <p><strong>LinkedList</strong> is a doubly-linked list. Add/remove at the ends is <strong>O(1)</strong> if you have the reference; <code>get(i)</code> in the middle is O(n) because it walks pointers. Memory overhead is higher — each node has prev/next pointers. Poor cache locality.</p>
+          <p><strong>In practice, use ArrayList 95% of the time.</strong> The only times LinkedList wins are queue/deque patterns at both ends without random access — and even then <code>ArrayDeque</code> beats LinkedList. Many seniors I've met say they haven't used LinkedList in years.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>HashSet vs TreeSet vs LinkedHashSet</summary>
+        <div class="qa-body">
+          <p><strong>HashSet</strong> — backed by a HashMap; O(1) add/contains/remove on average; <strong>no ordering</strong>. Default choice when you just need uniqueness.</p>
+          <p><strong>LinkedHashSet</strong> — HashSet + a doubly-linked list of entries; same O(1) performance but preserves <strong>insertion order</strong> on iteration. Slightly more memory.</p>
+          <p><strong>TreeSet</strong> — backed by a Red-Black tree; <strong>sorted</strong> by natural order or a Comparator; O(log n) operations. Use when you need range queries (<code>headSet</code>, <code>tailSet</code>, <code>subSet</code>) or always-sorted iteration.</p>
+          <p>The same hierarchy exists for Maps (HashMap / LinkedHashMap / TreeMap). Choose by ordering need first, then performance — most production code uses HashMap/HashSet.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>fail-fast vs fail-safe iterators</summary>
+        <div class="qa-body">
+          <p><strong>Fail-fast</strong> iterators throw <code>ConcurrentModificationException</code> as soon as they detect the underlying collection was modified after the iterator was created (via a <em>modCount</em> counter). All <code>java.util</code> collections (ArrayList, HashMap, HashSet) are fail-fast. The detection is best-effort — it's not a synchronization guarantee, it's a bug-finding aid.</p>
+          <p><strong>Fail-safe</strong> iterators don't throw; they iterate over a snapshot or a thread-safe structure. <code>CopyOnWriteArrayList</code> copies the array on every write, so iteration is on the old snapshot. <code>ConcurrentHashMap</code> uses weakly consistent iterators — they see some but not necessarily all updates that happen during iteration, and never throw CME.</p>
+          <p>Rule: never modify a fail-fast collection while iterating it (use <code>iterator.remove()</code> or stream filtering).</p>
+        </div>
+      </details>
+
+      <div class="section-divider">OOP &amp; Language</div>
+
+      <details class="qa">
+        <summary>equals() and hashCode() — the contract <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p>The contract has three rules. <strong>(1)</strong> If <code>a.equals(b)</code> is true, then <code>a.hashCode() == b.hashCode()</code> must be true. <strong>(2)</strong> If two objects have the same hashCode they are NOT required to be equal. <strong>(3)</strong> Both methods must be consistent — for the lifetime of an object the results shouldn't change (assuming used fields don't change).</p>
+          <p>Breaking the contract breaks HashMap/HashSet badly — entries become invisible because they're placed in one bucket but looked up in another. Always override both together. Use IDE-generated or <code>Objects.hash(field1, field2)</code>. For mutable objects, be careful — if a field used in equals/hashCode changes after insertion, you'll lose the entry. That's why <strong>immutable keys are safest</strong>.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Why are Strings immutable in Java?</summary>
+        <div class="qa-body">
+          <p>Four reasons. <strong>(1) Security</strong> — strings are used for class names, URLs, file paths, DB passwords. If they were mutable, attacker code could change a string after a security check passed but before it was used. <strong>(2) Thread safety</strong> — immutable objects are inherently thread-safe and can be shared freely.</p>
+          <p><strong>(3) String pool</strong> — pooling and interning are only safe because strings can't change after creation. <strong>(4) HashCode caching</strong> — <code>String.hashCode()</code> is cached after first call (the <code>hash</code> field), making it cheap to use strings as HashMap keys. The cost is that string mutation creates new objects, hence <code>StringBuilder</code> for heavy concatenation in loops.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How do you build an immutable class?</summary>
+        <div class="qa-body">
+          <p>Five rules. <strong>(1)</strong> Mark the class <code>final</code> so it can't be subclassed (subclasses could add mutable state). <strong>(2)</strong> Make all fields <code>private final</code>. <strong>(3)</strong> No setters; set everything in the constructor. <strong>(4)</strong> If you hold references to mutable objects (lists, dates), <strong>defensively copy</strong> in the constructor and getters — otherwise callers can mutate your internal state.</p>
+          <p><strong>(5)</strong> Don't expose anything that lets a subclass or external code mutate. Java 14+ <strong><code>record</code></strong> classes give you immutable value objects almost for free — final fields, accessors, equals/hashCode/toString. I use records for DTOs, Java events, and config snapshots. <code>java.time</code> types (LocalDate, Instant) are great examples of immutable design in the JDK.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>final, finally, finalize() — explain all three</summary>
+        <div class="qa-body">
+          <p><strong><code>final</code></strong> is a modifier. On a variable it means assigned once (effectively constant); on a method it can't be overridden; on a class it can't be extended. It's a tool for safety and intent — I mark all DTO fields and most local variables final.</p>
+          <p><strong><code>finally</code></strong> is a block in try/catch/finally that always runs after try, even if an exception was thrown or a <code>return</code> executed — used to release resources. Java 7+ try-with-resources covers most use cases.</p>
+          <p><strong><code>finalize()</code></strong> was a callback invoked by GC before reclaiming an object. <strong>Deprecated since Java 9, removed in Java 18.</strong> It was unreliable, could resurrect objects, and slowed GC. Use <strong>Cleaner</strong> or try-with-resources / AutoCloseable instead. If you see finalize() in code, treat it as a smell.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Method overloading vs overriding</summary>
+        <div class="qa-body">
+          <p><strong>Overloading</strong> is having multiple methods in the <em>same class</em> with the same name but different parameter lists. The compiler picks which to call based on argument types — <strong>compile-time / static polymorphism</strong>. Return type alone is not enough to distinguish overloads.</p>
+          <p><strong>Overriding</strong> is when a subclass provides a new implementation of a method declared in its superclass with the same signature. Resolution happens at <em>runtime</em> based on the actual object type — <strong>runtime / dynamic polymorphism</strong>. The <code>@Override</code> annotation catches typos. Rules: the overriding method can't reduce visibility, can't throw broader checked exceptions, and the return type must be the same or a covariant subtype. Overriding is what makes interfaces and abstract classes useful.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Abstract class vs interface (post Java 8)</summary>
+        <div class="qa-body">
+          <p>Java 8 blurred the line by adding <strong><code>default</code></strong> methods to interfaces. Key differences today:</p>
+          <p><strong>Abstract class</strong> can have constructors, instance state (fields), and any access modifier on members. A class can extend only one. Use when you have common state or constructor logic to share.</p>
+          <p><strong>Interface</strong> can have default and static methods, but only public abstract method signatures by default and only <code>public static final</code> fields. A class can implement many. Java 9 added private interface methods for helper logic. Use interfaces to declare a <em>capability</em> (Runnable, Comparable) that many unrelated classes can implement.</p>
+          <p>Modern guidance: <strong>prefer interfaces with defaults</strong>; reach for abstract classes only when you need shared state.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Checked vs unchecked exceptions — which to use?</summary>
+        <div class="qa-body">
+          <p><strong>Checked</strong> exceptions extend <code>Exception</code> (but not RuntimeException). The compiler forces you to either declare them with <code>throws</code> or handle them. Examples: <code>IOException</code>, <code>SQLException</code>. Intended for <em>recoverable</em> conditions the caller might react to.</p>
+          <p><strong>Unchecked</strong> exceptions extend <code>RuntimeException</code> — no compile-time enforcement. Examples: <code>NullPointerException</code>, <code>IllegalArgumentException</code>. Intended for programming bugs.</p>
+          <p>Modern practice — and the Spring ecosystem agrees — leans <strong>heavily toward unchecked</strong>. Checked exceptions create noisy method signatures, encourage wrap-and-rethrow boilerplate, and don't compose well with lambdas. I usually wrap checked into unchecked at the boundary (e.g., <code>UncheckedIOException</code>) and use unchecked custom types like <code>ResourceNotFoundException</code> across services.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>== vs equals() — including for Integer cache</summary>
+        <div class="qa-body">
+          <p><strong><code>==</code></strong> compares <em>references</em> for objects (same memory address) and <em>values</em> for primitives. <strong><code>equals()</code></strong> compares <em>logical equality</em> as defined by the class.</p>
+          <p>The tricky case is <strong>Integer cache</strong>: <code>Integer.valueOf(i)</code> caches values from -128 to 127. So:</p>
+          <pre><code>Integer a = 100, b = 100;
+Integer c = 200, d = 200;
+a == b; // true  — both point to the cached 100
+c == d; // false — outside cache, new objects
+a.equals(b) &amp;&amp; c.equals(d); // both true</code></pre>
+          <p>This catches juniors all the time. Rule: <strong>never use <code>==</code> on wrapper types or Strings</strong> — always <code>equals()</code> or <code>Objects.equals()</code>.</p>
+        </div>
+      </details>
+
+      <div class="section-divider">Java 8+ Features</div>
+
+      <details class="qa">
+        <summary>Stream API — explain with an example <span class="qa-tag hot">hot</span></summary>
+        <div class="qa-body">
+          <p>The Stream API (Java 8) provides a functional pipeline for processing collections: <strong>source → intermediate operations → terminal operation</strong>. Intermediate ops (<code>filter</code>, <code>map</code>, <code>sorted</code>) are <strong>lazy</strong> — they're only executed when a terminal op (<code>collect</code>, <code>count</code>, <code>forEach</code>) runs.</p>
+          <pre><code>Map&lt;String, Long&gt; activeByDept = employees.stream()
+    .filter(Employee::isActive)
+    .collect(Collectors.groupingBy(
+         Employee::getDepartment,
+         Collectors.counting()));</code></pre>
+          <p>Benefits: declarative, parallelizable with <code>.parallelStream()</code>, composable. Watch-outs: streams are single-use, don't use parallel streams blindly (overhead and shared-state bugs), and remember they're not collections — calling <code>.stream()</code> twice on the same Stream throws.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Optional — proper usage</summary>
+        <div class="qa-body">
+          <p><strong><code>Optional&lt;T&gt;</code></strong> represents a value that may or may not be present. It's a container designed for <strong>return types</strong> — to make the absence of a value explicit instead of returning null and crashing downstream.</p>
+          <p>Good usage: <code>Optional&lt;User&gt; findById(Long id)</code>. Callers can compose: <code>findById(id).map(User::getEmail).orElse("unknown")</code> or <code>.orElseThrow(() -&gt; new NotFoundException())</code>.</p>
+          <p>Bad usage: <strong>don't use Optional as a field, parameter, or in collections.</strong> Don't call <code>get()</code> without first checking <code>isPresent()</code> — that's just <code>null</code> with extra steps. Don't return <code>Optional</code> for collections — return an empty list. Treat it as a return-type-only signaling device.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Functional interfaces and lambdas</summary>
+        <div class="qa-body">
+          <p>A <strong>functional interface</strong> has exactly one abstract method (SAM — Single Abstract Method). Examples: <code>Runnable</code>, <code>Comparator</code>, and the <code>java.util.function</code> family: <code>Function&lt;T,R&gt;</code>, <code>Predicate&lt;T&gt;</code>, <code>Consumer&lt;T&gt;</code>, <code>Supplier&lt;T&gt;</code>. The <code>@FunctionalInterface</code> annotation is optional but lets the compiler enforce the SAM rule.</p>
+          <p>A <strong>lambda</strong> is concise syntax for an instance of a functional interface:</p>
+          <pre><code>Comparator&lt;String&gt; byLength = (a, b) -&gt; a.length() - b.length();
+list.forEach(s -&gt; System.out.println(s));
+list.sort(Comparator.comparingInt(String::length));</code></pre>
+          <p>Method references (<code>String::length</code>) are even more concise. Lambdas capture effectively-final local variables — you can't mutate them inside the lambda, but you can read them.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What's new in Java 17 / 21 (LTS)?</summary>
+        <div class="qa-body">
+          <p><strong>Java 17 (LTS)</strong> highlights: <strong>sealed classes</strong> for closed hierarchies, <strong>records</strong> finalized, <strong>pattern matching for instanceof</strong> (<code>if (obj instanceof String s) { use(s); }</code>), <strong>text blocks</strong> (multiline strings), <strong>switch expressions</strong>.</p>
+          <p><strong>Java 21 (LTS)</strong> brings the big-ticket items: <strong>Virtual Threads</strong> (Project Loom) — millions of lightweight threads scheduled by the JVM, perfect for I/O-bound microservices; <strong>pattern matching for switch</strong> (deconstruction); <strong>sequenced collections</strong> (first/last on any ordered collection); <strong>structured concurrency</strong> as a preview API.</p>
+          <p>The biggest practical change: virtual threads replace most reactive code. You can write blocking style code in Spring 6 / Spring Boot 3 on JDK 21 and get reactive-like scalability without the cognitive cost.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Records — what are they and when to use?</summary>
+        <div class="qa-body">
+          <p><strong>Records</strong> (Java 16+) are compact syntax for <strong>immutable data carriers</strong>:</p>
+          <pre><code>public record User(Long id, String email, Instant createdAt) {}</code></pre>
+          <p>This single line gives you: a public canonical constructor, private final fields, public accessors (<code>id()</code>, <code>email()</code>), and correct <code>equals</code>/<code>hashCode</code>/<code>toString</code>. You can add validation in a compact constructor and add methods, but state is immutable.</p>
+          <p>I use records for: DTOs in API layers, event payloads on Kafka, query result projections from JPA, value objects in DDD. Don't use them when you need inheritance (records are final), framework lifecycle hooks, or mutable state. They've removed thousands of lines of getter/setter boilerplate from our codebase.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>CompletableFuture — chaining async work</summary>
+        <div class="qa-body">
+          <p><strong><code>CompletableFuture&lt;T&gt;</code></strong> represents an async computation that you can compose with callbacks — far more flexible than the original <code>Future</code>.</p>
+          <pre><code>CompletableFuture.supplyAsync(() -&gt; fetchUser(id))
+    .thenApply(this::enrichProfile)
+    .thenCombine(loadOrders(id), this::merge)
+    .exceptionally(ex -&gt; fallback(ex))
+    .thenAccept(this::sendResponse);</code></pre>
+          <p>Key methods: <code>thenApply</code> (map), <code>thenCompose</code> (flatMap), <code>thenCombine</code> (zip), <code>allOf</code>, <code>anyOf</code>. Always pass a <strong>custom ThreadPool</strong> — the default <code>ForkJoinPool.commonPool</code> is shared with the JVM and small. Also always add <code>exceptionally</code> or <code>handle</code>, otherwise exceptions get swallowed. I use it for fan-out calls to multiple downstreams, like enriching a user with orders + recommendations + recent activity in parallel.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Date/Time API (java.time) — why switch from Date?</summary>
+        <div class="qa-body">
+          <p>The old <code>java.util.Date</code> and <code>Calendar</code> were notoriously bad: mutable (Date is thread-unsafe), poorly designed (months are 0-indexed in Calendar), and missing timezone handling. The new <strong><code>java.time</code></strong> (JSR-310) replaces them cleanly.</p>
+          <p>Key types: <strong><code>LocalDate</code></strong> (date without time), <strong><code>LocalTime</code></strong>, <strong><code>LocalDateTime</code></strong> (no timezone — risky for cross-region apps), <strong><code>ZonedDateTime</code></strong> (with zone), <strong><code>Instant</code></strong> (UTC instant, used internally), <strong><code>Duration</code></strong>, <strong><code>Period</code></strong>. All are <strong>immutable and thread-safe</strong>.</p>
+          <p>Rule for production services: <strong>store Instants in UTC</strong>, convert to user timezone only at the edge. This avoids the entire class of DST and zone-shift bugs I've debugged at OneXtel.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Try-with-resources and AutoCloseable</summary>
+        <div class="qa-body">
+          <p><strong>Try-with-resources</strong> (Java 7+) ensures resources are closed automatically:</p>
+          <pre><code>try (var conn = ds.getConnection();
+     var stmt = conn.prepareStatement(sql);
+     var rs = stmt.executeQuery()) {
+    while (rs.next()) { ... }
+} // close() called in reverse order, even on exception</code></pre>
+          <p>The resource must implement <strong><code>AutoCloseable</code></strong>. If both the try block and <code>close()</code> throw, the close exception is added as a <em>suppressed exception</em> — you don't lose either, and Throwable.getSuppressed() retrieves it.</p>
+          <p>This replaces the old try/finally pattern that was easy to get wrong (forgetting null checks in finally, swallowing the original exception with a close failure). I use it for every DB connection, file stream, HTTP client, and Kafka consumer in modern code.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What is type erasure in generics?</summary>
+        <div class="qa-body">
+          <p>Java generics are implemented via <strong>type erasure</strong>: at compile time the compiler enforces type safety, but at runtime the generic type information is <em>erased</em> — a <code>List&lt;String&gt;</code> and <code>List&lt;Integer&gt;</code> are both just <code>List</code> in bytecode. The compiler inserts casts where needed.</p>
+          <p>This was a backwards-compatibility decision for Java 5 — generic code had to interoperate with pre-generic code. Consequences:</p>
+          <ul>
+            <li>You can't do <code>new T()</code> or <code>T.class</code> — type information isn't there at runtime.</li>
+            <li>You can't have <code>List&lt;String&gt;[]</code> arrays directly.</li>
+            <li>You can't overload methods that differ only in their generic parameter (both erase to the same signature).</li>
+            <li>Workarounds: pass <code>Class&lt;T&gt; clazz</code> as a parameter (Spring, Jackson do this).</li>
+          </ul>
+          <p>Kotlin and reified generics in inline functions get around this; Java doesn't (yet).</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Serialization — and why you avoid it now</summary>
+        <div class="qa-body">
+          <p><strong>Java serialization</strong> (<code>Serializable</code> marker interface) writes object state to a binary format and reads it back via <code>ObjectInputStream</code>. It powers RMI and was used for session replication, caching, and queue payloads.</p>
+          <p><strong>Why we avoid it:</strong> security holes (deserialization gadgets are a major CVE source — Apache Commons Collections, Log4Shell-class issues), brittle (any class change can break old data — <code>serialVersionUID</code> hell), slow, verbose, Java-only (can't be consumed by Python/Node services).</p>
+          <p>Modern alternatives I use: <strong>JSON</strong> (Jackson) for REST and Kafka payloads, <strong>Protobuf</strong> or <strong>Avro</strong> with schema registry for high-throughput typed messaging, and <strong>UUID/string-based</strong> session tokens instead of session replication. The official Java team also wants to remove serialization eventually (JEP 154 / Project Amber).</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Reflection — when do you use it?</summary>
+        <div class="qa-body">
+          <p><strong>Reflection</strong> (<code>java.lang.reflect</code>) lets you inspect and modify classes, methods, fields at runtime. <code>Class&lt;?&gt; c = obj.getClass(); Method m = c.getMethod("save"); m.invoke(obj);</code> — calling methods by name dynamically.</p>
+          <p>I rarely use it directly in application code, but it underpins almost every framework I use: <strong>Spring</strong> autowires beans via reflection, <strong>Jackson</strong> maps JSON to fields, <strong>Hibernate</strong> populates entities, <strong>Mockito</strong> creates mocks, <strong>JUnit</strong> finds <code>@Test</code> methods. Direct usage is justified for: generic serializers, plugin frameworks, dependency-injection containers, test helpers.</p>
+          <p>Costs: slower than direct calls (though JIT helps), breaks encapsulation (accesses private fields), and the security manager can block it. Prefer interfaces/strategy pattern when possible.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Annotations — how do they work under the hood?</summary>
+        <div class="qa-body">
+          <p>An annotation is metadata attached to code — classes, methods, fields, parameters. Each has a <strong>retention policy</strong>: <code>SOURCE</code> (compiler only, like <code>@Override</code>), <code>CLASS</code> (in bytecode but not at runtime), or <code>RUNTIME</code> (available via reflection — what Spring/JPA use).</p>
+          <p>At runtime, frameworks scan classes via reflection or class-path scanning, find annotations like <code>@Service</code>, <code>@Transactional</code>, <code>@RestController</code>, and act on them — registering beans, wiring proxies for transactions, mapping URLs.</p>
+          <p>Source-level annotations can be processed by <strong>annotation processors</strong> at compile time (Lombok, MapStruct generate code this way). I write custom runtime annotations occasionally for cross-cutting concerns — e.g., <code>@AuditLog</code> processed by a Spring AOP aspect to log user actions automatically.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What is the ClassLoader and how does it work?</summary>
+        <div class="qa-body">
+          <p>A <strong>ClassLoader</strong> loads <code>.class</code> bytecode into the JVM. Java has a hierarchy with <strong>delegation</strong> — a child loader first asks its parent before loading itself.</p>
+          <p><strong>Bootstrap</strong> loads core classes (java.lang.*) from the JDK. <strong>Platform</strong> (formerly Extension) loads JDK modules. <strong>Application / System</strong> loads from the classpath. Apps can define their own — e.g., Tomcat has a per-webapp loader so two apps can use different versions of the same library.</p>
+          <p>Common interview gotcha: <code>String.class.getClassLoader()</code> returns <strong>null</strong> because bootstrap is native. <code>ClassNotFoundException</code> means the loader couldn't find a class; <code>NoClassDefFoundError</code> means it found it once but can't now — usually a deployment/classpath issue. Modules in Java 9+ added another layer of class visibility on top.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>String, StringBuilder, StringBuffer — performance</summary>
+        <div class="qa-body">
+          <p><strong>String</strong> is immutable — every concatenation (<code>+</code>) in a loop creates a new object. Bad for performance.</p>
+          <p><strong>StringBuilder</strong> is a mutable, <strong>not thread-safe</strong> sequence of characters with amortized O(1) append. The compiler often optimizes simple <code>+</code> outside loops into StringBuilder automatically, but inside loops or complex builds you should use it explicitly.</p>
+          <p><strong>StringBuffer</strong> is the older, <strong>thread-safe</strong> version — every method is synchronized. Rarely needed today; if you need thread-safe building, build per-thread and combine, or use locks externally.</p>
+          <pre><code>StringBuilder sb = new StringBuilder();
+for (String s : list) sb.append(s).append(",");</code></pre>
+          <p>For Java 8+ with streams: <code>String.join(",", list)</code> or <code>list.stream().collect(Collectors.joining(","))</code> are even cleaner.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How does autoboxing work — and its pitfalls?</summary>
+        <div class="qa-body">
+          <p><strong>Autoboxing</strong> automatically wraps primitives into their object types: <code>Integer i = 5</code> compiles to <code>Integer.valueOf(5)</code>. <strong>Unboxing</strong> is the reverse: <code>int n = i</code> compiles to <code>i.intValue()</code>.</p>
+          <p>Pitfalls: <strong>(1) NullPointerException</strong> on unboxing a null wrapper — <code>Integer a = null; int b = a;</code> throws NPE at runtime, not a clear "null" error. <strong>(2) Performance</strong> — using <code>Integer</code> in tight loops or large collections creates millions of boxed objects, hurting both heap and GC. <strong>(3) <code>==</code> trap</strong> — Integer cache makes <code>Integer.valueOf(100) == Integer.valueOf(100)</code> true but <code>Integer.valueOf(200) == Integer.valueOf(200)</code> false (-128 to 127 cached).</p>
+          <p>Rule: use primitives in hot paths and inside data structures; reach for wrappers only when you need null or generics.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What is the Comparable vs Comparator interface?</summary>
+        <div class="qa-body">
+          <p><strong><code>Comparable&lt;T&gt;</code></strong> defines a <em>natural ordering</em> on a class — the class implements it and provides <code>compareTo(T other)</code>. <code>String</code>, <code>Integer</code>, <code>LocalDate</code> are all Comparable. Sorting a list of these requires no extra arguments: <code>list.sort(null)</code> or <code>Collections.sort(list)</code> uses the natural order.</p>
+          <p><strong><code>Comparator&lt;T&gt;</code></strong> is an <em>external</em> comparator — a separate object that compares two T instances. Use it when you want multiple orderings or when sorting a class you can't modify:</p>
+          <pre><code>list.sort(Comparator.comparing(Employee::getSalary)
+    .thenComparing(Employee::getName));</code></pre>
+          <p>Modern code lives almost entirely on Comparator with method references and chaining. Both must return negative / zero / positive, must be consistent with equals (or sorted maps will misbehave), and must be transitive — otherwise the sort throws IllegalArgumentException in Java 7+.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What are sealed classes (Java 17)?</summary>
+        <div class="qa-body">
+          <p><strong>Sealed classes/interfaces</strong> restrict which classes can extend or implement them — you list the allowed subclasses explicitly:</p>
+          <pre><code>public sealed interface PaymentResult
+    permits Success, Failure, Pending {}
+
+public record Success(String txnId) implements PaymentResult {}
+public record Failure(String reason) implements PaymentResult {}
+public record Pending(String trackingId) implements PaymentResult {}</code></pre>
+          <p>Two big wins. <strong>(1) Closed hierarchies</strong> — the compiler knows the set of subtypes, so pattern matching switches can be <em>exhaustive</em>: forget a case and you get a compile error. <strong>(2) Domain modeling</strong> — sealed + records is Java's closest equivalent to algebraic data types (Kotlin's sealed classes, Scala's case classes). I use them for command/result hierarchies and domain events where I want strong compile-time guarantees on handled cases.</p>
+        </div>
+      </details>
+
+    </div>
+
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>

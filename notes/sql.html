@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>SQL &amp; RDBMS · Notes</title>
+  <link rel="icon" href="../assets/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+      <div class="search-wrap">
+        <i class="bi bi-search"></i>
+        <input id="search" type="search" placeholder="Search within SQL..." autocomplete="off" spellcheck="false">
+        <span class="search-shortcut">/</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="topic-page">
+
+    <div class="topic-page-header">
+      <div class="topic-page-eyebrow">07 · SQL &amp; RDBMS</div>
+      <h1>SQL — joins, transactions, indexes</h1>
+      <p class="topic-page-desc">The questions every backend interview hits. Master joins, ACID, indexing, and EXPLAIN — they decide whether you pass.</p>
+      <div class="topic-page-meta">
+        <span><strong>15</strong> questions</span>
+        <span>Press <span class="hint-kbd">/</span> to search</span>
+      </div>
+    </div>
+
+    <div class="no-results" id="noResults">No matches.</div>
+
+    <div class="qa-list">
+
+      <details class="qa">
+        <summary>Types of joins — INNER, LEFT, RIGHT, FULL, CROSS <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p>Joins combine rows from two tables based on a condition.</p>
+          <ul>
+            <li><strong>INNER JOIN</strong> — only rows that match in both tables.</li>
+            <li><strong>LEFT JOIN</strong> — all rows from left table; matching rows from right (or NULLs).</li>
+            <li><strong>RIGHT JOIN</strong> — opposite of LEFT. Rare in practice; rewrite as LEFT for readability.</li>
+            <li><strong>FULL OUTER JOIN</strong> — all rows from both sides; unmatched cells are NULL. Not supported in MySQL natively (use UNION).</li>
+            <li><strong>CROSS JOIN</strong> — Cartesian product; M × N rows. Used intentionally for generating combinations.</li>
+            <li><strong>SELF JOIN</strong> — a table joined to itself, e.g., employees + their managers from the same employees table.</li>
+          </ul>
+          <p>Watch out: <code>LEFT JOIN ... WHERE right.col IS NOT NULL</code> turns it back into an INNER JOIN. Put filters on the right table in the <code>ON</code> clause, not <code>WHERE</code>.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Primary key vs unique key vs foreign key</summary>
+        <div class="qa-body">
+          <p><strong>Primary key</strong> uniquely identifies a row. Implicit constraints: NOT NULL, unique, one per table. Usually backed by a clustered index in InnoDB / SQL Server (table physically ordered by PK). Choose stable, narrow values — synthetic IDs (BIGINT, UUID v7) usually beat natural keys.</p>
+          <p><strong>Unique key / unique constraint</strong> also enforces uniqueness but allows NULLs (one per column in most DBs). You can have many unique keys per table — e.g., email and phone both unique on a users table.</p>
+          <p><strong>Foreign key</strong> references the primary (or unique) key of another table and enforces <em>referential integrity</em>. The DB rejects inserts that reference non-existent parents, and you can cascade on delete/update. Some teams skip FKs at scale for write throughput; I prefer keeping them on for OLTP and only relaxing in event-sourced or sharded systems.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>ACID properties <span class="qa-tag hot">hot</span></summary>
+        <div class="qa-body">
+          <p><strong>A — Atomicity</strong>. A transaction is all-or-nothing. Either every statement commits or every change is rolled back. Implemented via undo logs (e.g., InnoDB's undo segments).</p>
+          <p><strong>C — Consistency</strong>. The DB moves from one valid state to another. Constraints (FK, unique, CHECK) and triggers stay satisfied at commit time.</p>
+          <p><strong>I — Isolation</strong>. Concurrent transactions don't see each other's intermediate state. The strictness is configurable via isolation levels — see next question.</p>
+          <p><strong>D — Durability</strong>. Once committed, changes survive crashes. Implemented via write-ahead logs (WAL / redo logs) flushed to disk before commit returns.</p>
+          <p>ACID is the contract that lets you trust a relational database. NoSQL stores trade ACID for scale; modern systems like CockroachDB or Spanner reclaim much of it across distributed nodes.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Transaction isolation levels</summary>
+        <div class="qa-body">
+          <p>Standard isolation levels from weakest to strongest:</p>
+          <ul>
+            <li><strong>READ UNCOMMITTED</strong> — can see uncommitted changes (dirty reads). Rarely used.</li>
+            <li><strong>READ COMMITTED</strong> — only sees committed data. Each statement gets a fresh view. <em>Default in Postgres, Oracle, SQL Server.</em> Allows non-repeatable reads (same query, different results in same tx).</li>
+            <li><strong>REPEATABLE READ</strong> — same row reads the same value throughout the tx. Allows phantom reads (new rows appear) in standard, but InnoDB's gap locks prevent them. <em>Default in MySQL/InnoDB.</em></li>
+            <li><strong>SERIALIZABLE</strong> — strongest; transactions execute as if serial. Usually implemented via predicate locks or 2PL.</li>
+          </ul>
+          <p>Picking the level is a perf/correctness tradeoff. I default to READ COMMITTED and reach for higher only when I see real concurrency bugs.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Indexes — what kinds and when?</summary>
+        <div class="qa-body">
+          <p>An <strong>index</strong> is an auxiliary data structure that speeds up lookups in exchange for slower writes and extra storage.</p>
+          <ul>
+            <li><strong>B-tree (B+tree)</strong> — default; balanced tree giving O(log n) lookups, range scans, and ordered reads. Good for equality and range queries.</li>
+            <li><strong>Hash</strong> — O(1) equality only; no range, no ORDER BY. Used by some engines for in-memory tables.</li>
+            <li><strong>Composite (multi-column)</strong> — order matters: <code>(a, b)</code> helps queries on <code>a</code> or <code>(a, b)</code>, but not <code>b</code> alone (leftmost prefix rule).</li>
+            <li><strong>Covering</strong> — includes all columns the query needs; the DB never has to touch the row.</li>
+            <li><strong>Partial / filtered</strong> — index only rows matching a predicate (Postgres, SQL Server).</li>
+            <li><strong>Full-text, GIN/GIST</strong> — specialized for text and JSON.</li>
+          </ul>
+          <p>Rule: index columns in WHERE, JOIN, and ORDER BY. Don't over-index — every INSERT/UPDATE pays.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Clustered vs non-clustered index</summary>
+        <div class="qa-body">
+          <p>A <strong>clustered index</strong> determines the <em>physical order</em> of rows on disk. A table has at most one — typically the primary key. In InnoDB and SQL Server the PK is automatically clustered. Range scans on the PK are very fast because the rows are adjacent.</p>
+          <p>A <strong>non-clustered (secondary) index</strong> is a separate structure that stores the indexed column(s) plus a pointer back to the row. In InnoDB the pointer is the PK value (so PK lookups are an extra hop unless the index is covering).</p>
+          <p>Implication: a wide PK (long UUID v4 strings) bloats every secondary index. That's why <strong>UUID v7</strong> (time-ordered) or sequential BIGINT IDs are preferred for high-write tables — narrow and locality-friendly.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>EXPLAIN / query plans — how do you read them?</summary>
+        <div class="qa-body">
+          <p><strong><code>EXPLAIN</code></strong> shows how the optimizer plans to execute a query. Things I look for:</p>
+          <ul>
+            <li><strong>Access type</strong> — <code>const</code>/<code>ref</code>/<code>range</code> are fine; <code>ALL</code> means full table scan (red flag on big tables).</li>
+            <li><strong>Index used</strong> (<code>key</code>) — is it the one you expected?</li>
+            <li><strong>Rows examined</strong> vs returned — high ratio means the query reads too much.</li>
+            <li><strong>Extra</strong> — "Using filesort" (sort on disk if needed), "Using temporary" (temp table), "Using index" (covering index — good).</li>
+            <li><strong>Cost</strong> — Postgres shows actual cost; MySQL has <code>EXPLAIN FORMAT=JSON</code>.</li>
+          </ul>
+          <p>I prefer <strong><code>EXPLAIN ANALYZE</code></strong> (Postgres) or <code>EXPLAIN FORMAT=TREE</code> (MySQL 8) which actually run the query and show timing per step. Combined with <code>auto_explain</code> in production, it tells you which queries are slow and why.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Normalization vs denormalization</summary>
+        <div class="qa-body">
+          <p><strong>Normalization</strong> organizes data to reduce redundancy. The levels build on each other:</p>
+          <ul>
+            <li><strong>1NF</strong> — atomic columns, no repeating groups.</li>
+            <li><strong>2NF</strong> — no partial dependency on a composite key.</li>
+            <li><strong>3NF</strong> — no transitive dependency.</li>
+          </ul>
+          <p>3NF is the practical sweet spot for OLTP — fewer anomalies on update.</p>
+          <p><strong>Denormalization</strong> deliberately duplicates data for read performance — caching computed totals, embedding lookup names, materialized views. Common in OLAP, search indices, and high-read services.</p>
+          <p>My approach: design normalized (3NF), then denormalize <em>specific</em> reads if profiling shows pain. Don't pre-optimize. Async pipelines (CDC → ES) often beat in-table denormalization because they can be rebuilt safely.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>WHERE vs HAVING — and aggregate order of execution</summary>
+        <div class="qa-body">
+          <p>The logical order of a SELECT statement: FROM → JOIN → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT.</p>
+          <p><strong>WHERE</strong> filters rows <em>before</em> aggregation. <strong>HAVING</strong> filters <em>after</em> aggregation — it operates on grouped/aggregated values.</p>
+          <pre><code>SELECT dept, COUNT(*) AS cnt
+FROM employees
+WHERE active = TRUE          -- pre-filter
+GROUP BY dept
+HAVING COUNT(*) &gt; 10;        -- post-filter on aggregate</code></pre>
+          <p>You can't put <code>COUNT(*) &gt; 10</code> in WHERE — aggregates aren't computed yet. Common interview trick: which clause filters which stage?</p>
+          <p>Bonus: column aliases from SELECT aren't usable in WHERE or HAVING in most DBs (MySQL is loose); subquery or CTE if you need that.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Window functions — ROW_NUMBER, RANK, LAG</summary>
+        <div class="qa-body">
+          <p><strong>Window functions</strong> compute over a "window" of rows related to the current row, without collapsing them like GROUP BY does. They make many complex queries simple:</p>
+          <pre><code>-- Top 3 paid employees per department
+SELECT * FROM (
+  SELECT name, dept, salary,
+    ROW_NUMBER() OVER (PARTITION BY dept ORDER BY salary DESC) AS rn
+  FROM employees
+) t WHERE rn &lt;= 3;</code></pre>
+          <p>Key functions: <strong>ROW_NUMBER</strong> (always unique within window), <strong>RANK</strong> (ties share rank, leaves gaps), <strong>DENSE_RANK</strong> (no gaps), <strong>LAG</strong>/<strong>LEAD</strong> (previous/next row), <strong>SUM/AVG OVER (...)</strong> running totals, moving averages.</p>
+          <p>Modern OLTP queries I write lean on these heavily — they replace the "self-join with subquery" patterns from older SQL.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Subquery vs CTE vs JOIN</summary>
+        <div class="qa-body">
+          <p>All three combine data, but with different readability and performance characteristics.</p>
+          <p><strong>JOIN</strong> — the optimizer's first choice for combining tables. Almost always rewriteable from a subquery.</p>
+          <p><strong>Correlated subquery</strong> — runs per-row of the outer query. Easy to write but can be slow (N+1 in SQL form). Modern optimizers often unnest them automatically.</p>
+          <p><strong>CTE (WITH clause)</strong> — names a result set for reuse and readability. Recent versions of Postgres/MySQL/SQL Server <em>inline</em> CTEs into the plan (so they're usually free); older Postgres used to materialize them, which sometimes hurt. <strong>Recursive CTEs</strong> let you query hierarchies (org tree, comments tree).</p>
+          <p>I write CTEs over deeply nested subqueries for readability, and trust the optimizer. <code>EXPLAIN ANALYZE</code> shows whether a CTE is inlined or materialized.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>N+1 query problem — and how to fix it</summary>
+        <div class="qa-body">
+          <p>The N+1 query problem: fetching a list of N parents (1 query), then fetching children for each (N more queries) = N+1 round trips. Common with JPA/Hibernate lazy associations:</p>
+          <pre><code>List&lt;Order&gt; orders = orderRepo.findAll();   // 1 query
+for (Order o : orders) o.getItems().size();   // N queries — bad</code></pre>
+          <p>Fixes:</p>
+          <ul>
+            <li><strong>JOIN FETCH</strong> in JPQL — one query with a JOIN.</li>
+            <li><strong>@EntityGraph</strong> on Spring Data repos — declarative eager fetch per query.</li>
+            <li><strong>Batch fetch</strong> — Hibernate <code>@BatchSize</code> groups child queries.</li>
+            <li>Two queries: parents + WHERE IN (parentIds) for children, assembled in code — often the cleanest at scale.</li>
+          </ul>
+          <p>I've fixed dozens of N+1 issues in production — they're invisible in unit tests and lethal under load. Always enable SQL logging in dev and watch the query count for any list endpoint.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How would you optimize a slow query? <span class="qa-tag hot">hot</span></summary>
+        <div class="qa-body">
+          <p>My playbook:</p>
+          <ol>
+            <li><strong>Reproduce and measure.</strong> Get the real query and run <code>EXPLAIN ANALYZE</code>. Don't guess.</li>
+            <li><strong>Read the plan.</strong> Are we scanning whole tables? Doing filesort? Using the index I expect?</li>
+            <li><strong>Add or fix indexes.</strong> The most common win. Mind the leftmost-prefix rule on composites. Use covering indexes for hot read paths.</li>
+            <li><strong>Rewrite the query.</strong> Replace correlated subqueries with joins, push filters early, select only needed columns.</li>
+            <li><strong>Avoid N+1</strong> (see previous answer).</li>
+            <li><strong>Cache</strong> hot read-only data in Redis or app-level when DB tuning hits limits.</li>
+            <li><strong>Partition or shard</strong> tables that don't fit in working set anymore.</li>
+            <li><strong>Async pre-compute</strong> heavy aggregations (materialized views, refresh jobs).</li>
+          </ol>
+          <p>One Indus Net example: a dashboard query took 12 s. <code>EXPLAIN</code> showed a missing index on <code>(tenant_id, created_at)</code>. Adding it brought the query to 80 ms.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Optimistic vs pessimistic locking</summary>
+        <div class="qa-body">
+          <p>Both prevent lost updates when multiple users edit the same row.</p>
+          <p><strong>Pessimistic</strong> — lock the row at read time (<code>SELECT ... FOR UPDATE</code>); others wait. Strong correctness, but holds locks while you think — bad for contention. Risk of deadlocks.</p>
+          <p><strong>Optimistic</strong> — read without locking, include a <code>version</code> column. On update: <code>UPDATE ... WHERE id = ? AND version = ?</code>. If 0 rows affected, someone else wrote first — retry or surface a 409 Conflict. JPA's <code>@Version</code> annotation gives you this declaratively.</p>
+          <p>I prefer <strong>optimistic</strong> for most CRUD on the web — low contention, no held locks, clear conflict semantics for users. Pessimistic for short, transactional sections where contention is high (inventory decrement at sale time).</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Sharding vs partitioning vs replication</summary>
+        <div class="qa-body">
+          <p>All three split or copy data, but for different reasons.</p>
+          <p><strong>Replication</strong> — copy the entire data to one or more replicas. Adds read capacity (read replicas) and fault tolerance (failover). Doesn't help write throughput. Asynchronous replication has lag; synchronous is slower but consistent.</p>
+          <p><strong>Partitioning</strong> — split a single table into chunks <em>within the same database</em> by range (date), list (region), or hash. Each partition is a separate physical structure. Smaller indexes per partition, can drop old partitions cheaply. Postgres has declarative partitioning; MySQL supports it natively.</p>
+          <p><strong>Sharding</strong> — split data <em>across multiple databases/servers</em> by a shard key. Adds write throughput. Complex: cross-shard joins are hard, rebalancing is painful, you need a router. Reach for it only when you've exhausted vertical scaling and replication.</p>
+        </div>
+      </details>
+
+    </div>
+
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>

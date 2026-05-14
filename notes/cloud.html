@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Cloud · Notes</title>
+  <link rel="icon" href="../assets/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+      <div class="search-wrap">
+        <i class="bi bi-search"></i>
+        <input id="search" type="search" placeholder="Search within Cloud..." autocomplete="off" spellcheck="false">
+        <span class="search-shortcut">/</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="topic-page">
+
+    <div class="topic-page-header">
+      <div class="topic-page-eyebrow">13 · Cloud</div>
+      <h1>Cloud (AWS / Azure)</h1>
+      <p class="topic-page-desc">IaaS/PaaS/SaaS, compute, storage, networking, IAM, deployments. Bring stories from the AWS deployments at OneXtel and Indus Net.</p>
+      <div class="topic-page-meta">
+        <span><strong>10</strong> questions</span>
+        <span>Press <span class="hint-kbd">/</span> to search</span>
+      </div>
+    </div>
+
+    <div class="no-results" id="noResults">No matches.</div>
+
+    <div class="qa-list">
+
+      <details class="qa">
+        <summary>IaaS vs PaaS vs SaaS — explain with examples</summary>
+        <div class="qa-body">
+          <p>Three layers of "cloud abstraction".</p>
+          <ul>
+            <li><strong>IaaS (Infrastructure as a Service)</strong> — virtual machines, networks, storage. You manage the OS, runtime, app. Examples: AWS EC2, Azure VMs, GCP Compute Engine. Maximum control, most ops work.</li>
+            <li><strong>PaaS (Platform as a Service)</strong> — managed runtime; you deploy code, the platform handles servers, scaling, patching. Examples: AWS Elastic Beanstalk, Azure App Service, Heroku, Google App Engine, AWS ECS Fargate. Less ops; some flexibility lost.</li>
+            <li><strong>SaaS (Software as a Service)</strong> — finished software you consume. Gmail, Salesforce, Datadog. No ops, no code.</li>
+          </ul>
+          <p>Also: <strong>FaaS (Function as a Service)</strong> / serverless — Lambda, Azure Functions. Per-invocation pricing, cold starts, stateless.</p>
+          <p>Most modern teams mix: containers on K8s (somewhere between IaaS and PaaS) + managed DBs (PaaS) + SaaS for observability.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>AWS core services you'd use for a typical backend <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p>For a typical Java/Spring Boot microservice:</p>
+          <ul>
+            <li><strong>Compute</strong>: EKS (Kubernetes) or ECS Fargate; Lambda for event-driven work.</li>
+            <li><strong>Database</strong>: RDS (Postgres/MySQL) or Aurora; DynamoDB for KV; DocumentDB for Mongo-compatible; ElastiCache (Redis) for cache.</li>
+            <li><strong>Search</strong>: OpenSearch (managed Elasticsearch).</li>
+            <li><strong>Messaging</strong>: MSK (managed Kafka), SQS for queues, SNS for fan-out.</li>
+            <li><strong>Storage</strong>: S3 for objects/files, EFS for shared file storage.</li>
+            <li><strong>Networking</strong>: VPC, ALB/NLB, Route 53 (DNS), CloudFront (CDN).</li>
+            <li><strong>Secrets &amp; config</strong>: Secrets Manager, Parameter Store, KMS.</li>
+            <li><strong>Observability</strong>: CloudWatch (logs/metrics), X-Ray (tracing).</li>
+            <li><strong>IAM</strong>: roles for least-privilege, IRSA for K8s service accounts.</li>
+            <li><strong>CI/CD</strong>: CodePipeline / CodeBuild, or external (GitHub Actions, GitLab).</li>
+          </ul>
+          <p>I've shipped services using almost all of these — naming them in interviews signals real experience.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>EC2 vs ECS vs EKS vs Lambda — when?</summary>
+        <div class="qa-body">
+          <p><strong>EC2</strong> — raw VMs. Maximum control. I rarely run apps directly on EC2 anymore; mostly worker nodes under EKS.</p>
+          <p><strong>ECS (Fargate)</strong> — managed container orchestration. Great for small/medium teams: no nodes to manage. Less ecosystem than Kubernetes.</p>
+          <p><strong>EKS</strong> — managed Kubernetes. Standard for teams with multiple services, Helm, custom operators, multi-cloud portability. What I use most in production.</p>
+          <p><strong>Lambda</strong> — event-driven, no servers, scales to zero. Best for: short-lived tasks (image resizing), event handlers (S3 upload → process), low-traffic APIs, glue code. Watch: cold starts, max 15 min, fragmented observability, harder local dev.</p>
+          <p>Rule of thumb: <strong>EKS for long-running services</strong>, <strong>Lambda for bursty/event-driven</strong>, <strong>Fargate as a Kubernetes-lite option</strong> for small teams.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>S3 — what makes it special?</summary>
+        <div class="qa-body">
+          <p><strong>S3</strong> is object storage: store any blob (file, image, video, backup) under a key in a bucket. Not a filesystem — flat keys with "/" used as a delimiter for prefix queries.</p>
+          <p>Properties: <strong>11 nines of durability</strong> (99.999999999%), virtually unlimited, multi-region replication, lifecycle policies (move to Glacier after 90 days). Storage classes range from Standard (hot) to Glacier Deep Archive (cents per TB-month).</p>
+          <p>Common patterns:</p>
+          <ul>
+            <li><strong>Pre-signed URLs</strong> — clients upload/download directly to S3 without proxying through your service.</li>
+            <li><strong>Event-driven</strong> — S3 → SQS/Lambda on object create (image processing, indexing).</li>
+            <li><strong>Static site</strong> — host SPAs behind CloudFront.</li>
+            <li><strong>Versioning + MFA delete</strong> for protection against accidental overwrites.</li>
+            <li><strong>Server-side encryption</strong> with KMS keys.</li>
+          </ul>
+          <p>On Punctuations.ai I use S3 for original resume files and pre-signed URLs for upload — never proxy large files through your API.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>IAM — the model in 60 seconds</summary>
+        <div class="qa-body">
+          <p>AWS <strong>IAM (Identity and Access Management)</strong> controls who can do what on which resource. Four building blocks:</p>
+          <ul>
+            <li><strong>Users</strong> — human identities (login + access keys).</li>
+            <li><strong>Roles</strong> — assumed by services or other accounts; temporary credentials. Used by EC2, Lambda, EKS pods (via IRSA — IAM Roles for Service Accounts).</li>
+            <li><strong>Groups</strong> — collections of users for shared permissions.</li>
+            <li><strong>Policies</strong> — JSON documents defining allowed/denied actions.</li>
+          </ul>
+          <p>Best practices: <strong>least privilege</strong> — start with deny, grant minimal actions. <strong>No long-lived access keys for services</strong> — use roles. <strong>MFA</strong> on human accounts. <strong>Resource-based policies</strong> on S3 buckets, KMS keys for who can use them. <strong>Use AWS Organizations + SCPs</strong> for guardrails across accounts. Periodically run <code>iam-access-analyzer</code> or third-party tools to find over-permissive roles.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>VPC basics — subnets, security groups, NACLs</summary>
+        <div class="qa-body">
+          <p>A <strong>VPC</strong> is your private network in AWS. Composed of:</p>
+          <ul>
+            <li><strong>Subnets</strong> — segments tied to an AZ. <strong>Public</strong> (route to Internet Gateway), <strong>private</strong> (no direct internet; outbound via NAT Gateway).</li>
+            <li><strong>Route tables</strong> — control traffic flow between subnets and gateways.</li>
+            <li><strong>Internet Gateway</strong> — public internet ingress/egress.</li>
+            <li><strong>NAT Gateway</strong> — outbound internet from private subnets.</li>
+            <li><strong>Security Groups</strong> — stateful firewall at instance/ENI level. Default: deny all inbound, allow all outbound.</li>
+            <li><strong>NACLs</strong> — stateless firewall at subnet level; rarely customized in most apps.</li>
+          </ul>
+          <p>Pattern I use: <strong>multi-AZ</strong> public subnets for load balancers, private subnets for app pods, isolated subnets for DBs. Never put DBs in public subnets. Use <strong>VPC endpoints</strong> for S3/DynamoDB to avoid NAT traffic costs.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Auto-scaling — how does it actually work?</summary>
+        <div class="qa-body">
+          <p>AWS Auto Scaling Groups (ASG) maintain a target count of instances. Triggers:</p>
+          <ul>
+            <li><strong>Target tracking</strong> — keep average CPU at 60%. Simple and effective.</li>
+            <li><strong>Step scaling</strong> — add N instances if metric crosses threshold.</li>
+            <li><strong>Scheduled</strong> — scale up before known peaks (campaigns, daily peaks).</li>
+            <li><strong>Predictive</strong> — ML-based forecast.</li>
+          </ul>
+          <p>For Kubernetes: <strong>Horizontal Pod Autoscaler (HPA)</strong> scales pods based on CPU/mem/custom metrics; <strong>Cluster Autoscaler</strong> or <strong>Karpenter</strong> adds/removes EC2 nodes.</p>
+          <p>Gotchas: scale-out is fast (seconds–minutes); pod startup may bottleneck (slow JVM warmup, image pulls). Use <strong>readiness probes</strong> so traffic only hits ready pods. Scale-in needs <strong>graceful shutdown</strong> — terminate gracefully so in-flight requests complete. At Indus Net I tuned JVM startup with CDS to make Spring Boot pods ready in &lt;10s, which made HPA much more responsive.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Blue-green vs canary vs rolling deployments</summary>
+        <div class="qa-body">
+          <p>Three strategies for shipping new versions without downtime.</p>
+          <p><strong>Rolling</strong> — replace instances one batch at a time. K8s default for Deployments. Simple, gradual, but old and new run simultaneously.</p>
+          <p><strong>Blue-green</strong> — keep two full environments (blue = current, green = new). Cut over traffic at the LB once green is verified. Instant rollback (flip back). Doubles infra cost during deploy.</p>
+          <p><strong>Canary</strong> — send a small % of traffic to the new version, watch metrics, gradually ramp. Lowest risk for big changes. Needs traffic splitting (Istio, Linkerd, AWS App Mesh, or weighted ALB target groups).</p>
+          <p>For most services I use rolling deploys with proper readiness/liveness probes. For high-risk changes (new ML model, payment integration) I use canary with Argo Rollouts or Flagger, watching error rate and latency.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>High availability vs disaster recovery — the difference</summary>
+        <div class="qa-body">
+          <p>Both about resilience, different scales of failure.</p>
+          <p><strong>High Availability (HA)</strong> handles routine failures (one instance crashes, an AZ becomes unhealthy). Achieved within a region: multi-AZ deployments, load balancers, replicated databases, auto-healing. Goal: minutes of degradation max.</p>
+          <p><strong>Disaster Recovery (DR)</strong> handles catastrophic failures — region-wide outage, data corruption, ransomware. Achieved across regions: cross-region replication, periodic backups, runbook drills. Measured by:</p>
+          <ul>
+            <li><strong>RTO (Recovery Time Objective)</strong> — how fast we restore.</li>
+            <li><strong>RPO (Recovery Point Objective)</strong> — how much data we can afford to lose.</li>
+          </ul>
+          <p>Tiered DR: <strong>Backup &amp; restore</strong> (hours RTO), <strong>Pilot light</strong> (warm core, scale up), <strong>Warm standby</strong> (scaled-down full env), <strong>Multi-region active-active</strong> (zero RTO). Cost rises with each tier. Test DR regularly — un-rehearsed plans fail.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Cost optimization — practical levers</summary>
+        <div class="qa-body">
+          <p>Where cloud bills blow up and how I've cut them:</p>
+          <ul>
+            <li><strong>Right-size compute</strong> — most EC2/EKS workloads run at 10–20% CPU. Migrate to smaller instances or use ARM (Graviton, 20–40% cheaper).</li>
+            <li><strong>Spot / preemptible</strong> instances for batch/build jobs (up to 90% off).</li>
+            <li><strong>Reserved instances / Savings Plans</strong> for steady-state production (30–60% off).</li>
+            <li><strong>S3 lifecycle policies</strong> — Standard → IA → Glacier as data ages.</li>
+            <li><strong>NAT Gateway egress</strong> is often the silent killer; use VPC endpoints for S3/DynamoDB.</li>
+            <li><strong>Right-size RDS</strong> — auto-stop dev DBs at night.</li>
+            <li><strong>CloudWatch logs</strong> — set retention; logs at default forever are expensive.</li>
+            <li><strong>Tag everything</strong> and run cost-explorer + budgets per team.</li>
+          </ul>
+          <p>At Indus Net I cut a non-prod environment's bill ~45% by ARM, scheduled stop/start, and S3 lifecycle policies. FinOps mindset is a real skill.</p>
+        </div>
+      </details>
+
+    </div>
+
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Production Debugging · Notes</title>
+  <link rel="icon" href="../assets/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+      <div class="search-wrap">
+        <i class="bi bi-search"></i>
+        <input id="search" type="search" placeholder="Search within Production..." autocomplete="off" spellcheck="false">
+        <span class="search-shortcut">/</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="topic-page">
+
+    <div class="topic-page-header">
+      <div class="topic-page-eyebrow">16 · Production Debugging</div>
+      <h1>Production debugging &amp; observability</h1>
+      <p class="topic-page-desc">The senior-engineer skill. Walk through real incidents you've handled — OOM, deadlock, latency spike — with a structured method.</p>
+      <div class="topic-page-meta">
+        <span><strong>10</strong> questions</span>
+        <span>Press <span class="hint-kbd">/</span> to search</span>
+      </div>
+    </div>
+
+    <div class="no-results" id="noResults">No matches.</div>
+
+    <div class="qa-list">
+
+      <details class="qa">
+        <summary>Your approach to a production incident <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p>My structured approach to any production issue:</p>
+          <ol>
+            <li><strong>Stabilize first, RCA later.</strong> Mitigate (rollback, scale up, fail over) before deep-diving. Customers come first.</li>
+            <li><strong>Acknowledge in the on-call channel</strong> — others know it's being handled. Loop in stakeholders.</li>
+            <li><strong>Form a hypothesis from metrics</strong> — what changed? Recent deploys, traffic spike, downstream issue?</li>
+            <li><strong>Look at the data</strong> — dashboards (RED metrics), logs, traces, error tracker. Don't guess.</li>
+            <li><strong>Reproduce or narrow</strong> — one user, one region, one host? Confine the blast radius.</li>
+            <li><strong>Fix or mitigate</strong> — rollback is your friend if the cause isn't obvious.</li>
+            <li><strong>Verify</strong> with the same metrics that showed the problem.</li>
+            <li><strong>Blameless post-mortem</strong> — root cause, contributing factors, action items, owners.</li>
+          </ol>
+          <p>The goal of a post-mortem isn't "who broke it" — it's "how do we prevent this class of failure?"</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Three pillars of observability</summary>
+        <div class="qa-body">
+          <p>Modern observability rests on three complementary signal types:</p>
+          <ul>
+            <li><strong>Metrics</strong> — numerical time series. Aggregated, cheap, great for dashboards and alerts. Tools: Prometheus, Datadog, CloudWatch, Micrometer. Best for "is something wrong overall?"</li>
+            <li><strong>Logs</strong> — discrete events with detail. High cardinality, expensive at scale. Tools: ELK, Loki, CloudWatch Logs. Best for "what exactly happened to this request?"</li>
+            <li><strong>Traces</strong> — request-level timing across services. Shows where time was spent. Tools: Jaeger, Zipkin, AWS X-Ray, Tempo. Best for "where in the request did the latency live?"</li>
+          </ul>
+          <p>I add a 4th: <strong>events</strong> — deploys, config changes, feature flag flips — overlaid on dashboards so I can see correlations.</p>
+          <p>The trio interlinks: metrics alert me, traces narrow to a service, logs reveal the exact failure. Without all three I'm guessing.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Diagnosing a memory leak in production <span class="qa-tag hot">hot</span></summary>
+        <div class="qa-body">
+          <p>Symptom: memory grows over time, full GCs run frequently, eventually OOM.</p>
+          <p>My playbook:</p>
+          <ol>
+            <li><strong>Confirm it's a leak</strong> with <code>jstat -gc &lt;pid&gt;</code> — Old Gen keeps growing across full GCs. (If it shrinks after full GC, it's churn, not a leak.)</li>
+            <li><strong>Capture a heap dump</strong> — <code>jmap -dump:live</code> or set <code>-XX:+HeapDumpOnOutOfMemoryError</code> + <code>-XX:HeapDumpPath</code> so we get one automatically.</li>
+            <li><strong>Open in Eclipse MAT</strong> — Leak Suspects report names the dominant objects.</li>
+            <li><strong>Look at dominator tree</strong> — which object holds the most retained heap?</li>
+          </ol>
+          <p>Common culprits: unbounded static caches, ThreadLocals not removed in pool threads, listener registrations not cleaned up, log appenders buffering forever.</p>
+          <p>At Indus Net I traced one to a Spring filter that put a large session object into a ThreadLocal but never called <code>.remove()</code> on the way out — fix was one line. Memory leveled off after deploy.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How do you read a thread dump?</summary>
+        <div class="qa-body">
+          <p>A thread dump shows every thread's stack at the moment of capture (<code>jstack &lt;pid&gt;</code> or <code>/actuator/threaddump</code>). What I look for:</p>
+          <ul>
+            <li><strong>Deadlocks</strong> — <code>jstack</code> explicitly says "Found one Java-level deadlock" at the bottom.</li>
+            <li><strong>Hot spots</strong> — take 3 dumps a few seconds apart. Threads stuck in the same place are the candidates.</li>
+            <li><strong>Lock contention</strong> — many threads BLOCKED waiting for one monitor. The blocked-on lock ID points to the holder.</li>
+            <li><strong>Pool exhaustion</strong> — all DB/HTTP pool threads busy. Means downstream is slow or you're starved.</li>
+            <li><strong>Synchronous external calls</strong> — threads parked in <code>Socket.read</code> on a downstream service. Add timeouts.</li>
+          </ul>
+          <p>Real example at OneXtel: 200 worker threads stuck waiting for one synchronized block around logging code. Took 3 thread dumps, saw the pattern, replaced with async logger, throughput went up 5×.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Investigating a latency spike</summary>
+        <div class="qa-body">
+          <p>"P99 jumped from 200 ms to 4 s." My approach:</p>
+          <ol>
+            <li><strong>Confirm where</strong> — is it one endpoint, one region, one downstream? Slice dashboards by route, dependency, instance, region.</li>
+            <li><strong>Check correlated events</strong> — recent deploy? config change? traffic spike? Look at the timeline.</li>
+            <li><strong>Trace a slow request</strong> — distributed tracing usually points within minutes. "Spent 3.8 s waiting on the user-service /lookup."</li>
+            <li><strong>Inspect downstream</strong> — is the slow dependency itself slow (its metrics) or are we just hitting it harder?</li>
+            <li><strong>Common culprits</strong> — DB without an index, N+1 query, GC pauses, thread pool exhaustion, downstream cascade, cold caches after deploy, hot key on cache/DB.</li>
+            <li><strong>Mitigate</strong> — rollback recent change, add cache, increase pool, scale out, circuit breaker on slow downstream.</li>
+            <li><strong>Verify and root-cause</strong> properly later.</li>
+          </ol>
+          <p>Don't fix what you can't measure — always have RED metrics per endpoint before you need them.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What is the difference between a heap dump and a thread dump?</summary>
+        <div class="qa-body">
+          <p>Two different snapshots of a running JVM.</p>
+          <p><strong>Thread dump</strong> — current state of every thread: its name, state, stack trace, locks held, locks waited on. Cheap (milliseconds), no impact on the running app. Tools: <code>jstack</code>, <code>kill -3</code>, Actuator <code>/threaddump</code>. Use for <strong>concurrency issues</strong>: deadlocks, contention, hangs.</p>
+          <p><strong>Heap dump</strong> — snapshot of every live object in heap memory. Large (= heap size, often GBs), takes seconds, briefly STW. Tools: <code>jmap -dump</code>, JFR, <code>HeapDumpOnOutOfMemoryError</code>. Use for <strong>memory issues</strong>: leaks, OOM, oversized caches.</p>
+          <p>Analyze with: Eclipse MAT, VisualVM, JProfiler, async-profiler (for live profiling). Always grab a heap dump <em>before</em> restarting an OOM'd container — restart loses the evidence.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What metrics do you alert on?</summary>
+        <div class="qa-body">
+          <p>I follow the <strong>Four Golden Signals</strong> (Google SRE):</p>
+          <ul>
+            <li><strong>Latency</strong> — alert on p95/p99 above SLO for a sustained window. Average is misleading.</li>
+            <li><strong>Traffic</strong> — alert on unusual changes (sudden drops can mean upstream issues; spikes can mean abuse).</li>
+            <li><strong>Errors</strong> — error rate or count of 5xx, retries, circuit breaker opens.</li>
+            <li><strong>Saturation</strong> — how full is the service? CPU/memory utilization, queue depth, thread pool busy %, DB pool utilization, Kafka consumer lag.</li>
+          </ul>
+          <p>Plus business-specific: failed payments, churning users, abandoned cart rate.</p>
+          <p>Alert design rules: <strong>alert on symptoms, not causes</strong> (slow checkout matters; high CPU on box A doesn't). <strong>Make every alert actionable</strong> with a runbook link. <strong>Tune ruthlessly</strong> — every false page erodes trust.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What's a post-mortem and what makes a good one?</summary>
+        <div class="qa-body">
+          <p>A <strong>post-mortem</strong> documents an incident — what happened, why, what changes to prevent recurrence. The principle is <strong>blameless</strong>: focus on systems, not individuals.</p>
+          <p>Sections I include:</p>
+          <ul>
+            <li><strong>Summary</strong> — one paragraph for execs.</li>
+            <li><strong>Impact</strong> — users affected, duration, business impact in numbers.</li>
+            <li><strong>Timeline</strong> — minute-by-minute, with detection and mitigation timestamps.</li>
+            <li><strong>Root cause analysis</strong> — five whys, often with multiple contributing factors.</li>
+            <li><strong>What went well</strong> — fast detection, good runbook, etc.</li>
+            <li><strong>What went poorly</strong> — gaps in monitoring, slow rollback, unclear ownership.</li>
+            <li><strong>Action items</strong> — specific tasks with owners and due dates. Track them like tickets.</li>
+          </ul>
+          <p>The biggest mistake is action items that never get done. I treat them as P1 tickets and follow up. At Indus Net every post-mortem ends with 3–5 specific PRs created within a week.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How do you find a slow query in production?</summary>
+        <div class="qa-body">
+          <p>Steps:</p>
+          <ol>
+            <li><strong>Enable slow-query logging</strong> on the DB — Postgres <code>auto_explain</code>, MySQL <code>slow_query_log</code>. Pick a sensible threshold (e.g., 500 ms).</li>
+            <li><strong>Use APM tracing</strong> — Datadog, New Relic, AWS X-Ray all attribute DB time to specific SQL statements per endpoint. This is the fastest way to find the culprit.</li>
+            <li><strong>Check <code>pg_stat_statements</code></strong> (Postgres) or MySQL Performance Schema — ranks queries by cumulative time, calls, and avg time. The top 5 are usually the ones to fix.</li>
+            <li><strong>EXPLAIN ANALYZE</strong> the suspect — look for sequential scans, missing indexes, bad join order.</li>
+            <li><strong>Look for N+1</strong> in app logs (count queries per request).</li>
+          </ol>
+          <p>Fixes: add index, rewrite query, batch, cache, denormalize. Usually one missing index resolves 80% of slow queries — that's been my experience repeatedly.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Graceful shutdown — why does it matter?</summary>
+        <div class="qa-body">
+          <p>When a pod gets a SIGTERM (deploy, scale-in, eviction), Kubernetes gives it a grace period (default 30 s) to clean up before SIGKILL.</p>
+          <p>Without graceful shutdown:</p>
+          <ul>
+            <li>In-flight HTTP requests get cut mid-response → 502s to users.</li>
+            <li>Open DB transactions abort (rollback or hang on the DB side).</li>
+            <li>Kafka consumer crashes mid-message → duplicate processing on rebalance.</li>
+            <li>Background jobs lose partial work.</li>
+          </ul>
+          <p>Implementation in Spring Boot:</p>
+          <ul>
+            <li><strong><code>server.shutdown=graceful</code></strong> — Tomcat finishes in-flight requests before exiting.</li>
+            <li><strong><code>spring.lifecycle.timeout-per-shutdown-phase=25s</code></strong> — must be &lt; pod terminationGracePeriodSeconds.</li>
+            <li>Readiness probe should fail immediately on shutdown so the load balancer stops sending new traffic.</li>
+            <li><code>@PreDestroy</code> hooks to close Kafka consumers, drain executors, flush metrics.</li>
+            <li>Add a <code>preStop</code> hook on the pod with a small sleep to let endpoints propagate before SIGTERM lands.</li>
+          </ul>
+          <p>Done right, rolling deploys are invisible to users — no 5xx blip in the dashboards.</p>
+        </div>
+      </details>
+
+    </div>
+
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Spring Boot · Notes</title>
+  <link rel="icon" href="../assets/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+      <div class="search-wrap">
+        <i class="bi bi-search"></i>
+        <input id="search" type="search" placeholder="Search within Spring Boot..." autocomplete="off" spellcheck="false">
+        <span class="search-shortcut">/</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="topic-page">
+
+    <div class="topic-page-header">
+      <div class="topic-page-eyebrow">05 · Spring Boot</div>
+      <h1>Spring Boot — your daily stack</h1>
+      <p class="topic-page-desc">Auto-configuration, starters, profiles, Actuator, resilience patterns. Bring stories from Punctuations.ai and OneXtel here.</p>
+      <div class="topic-page-meta">
+        <span><strong>21</strong> questions</span>
+        <span>Press <span class="hint-kbd">/</span> to search</span>
+      </div>
+    </div>
+
+    <div class="no-results" id="noResults">No matches.</div>
+
+    <div class="qa-list">
+
+      <div class="section-divider">Fundamentals</div>
+
+      <details class="qa">
+        <summary>What is Spring Boot? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p><strong>Spring Boot</strong> is an opinionated layer on top of the Spring Framework that lets you build production-ready Java apps with minimal boilerplate. The big ideas:</p>
+          <ul>
+            <li><strong>Auto-configuration</strong> — sensible defaults based on what's on the classpath.</li>
+            <li><strong>Starters</strong> — curated dependency bundles (<code>spring-boot-starter-web</code>, <code>-data-jpa</code>, etc.).</li>
+            <li><strong>Embedded servers</strong> — Tomcat/Jetty/Undertow built in; deploy a fat JAR with <code>java -jar</code>.</li>
+            <li><strong>Externalized config</strong> via <code>application.yml</code> + profiles + environment variables.</li>
+            <li><strong>Actuator</strong> for production endpoints (health, metrics, info).</li>
+          </ul>
+          <p>Before Spring Boot we spent days on XML config and packaging. Today I bootstrap a new service from start.spring.io in 10 minutes. It's the standard for Java microservices.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How does auto-configuration work?</summary>
+        <div class="qa-body">
+          <p><strong>Auto-configuration</strong> = conditional bean definitions that activate based on what's on the classpath and what's already configured.</p>
+          <p>Mechanically: <code>@SpringBootApplication</code> includes <code>@EnableAutoConfiguration</code>, which loads classes listed in <code>META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports</code> (formerly <code>spring.factories</code>). Each auto-config class uses <strong><code>@Conditional</code></strong> annotations:</p>
+          <ul>
+            <li><code>@ConditionalOnClass(DataSource.class)</code> — only if class is present.</li>
+            <li><code>@ConditionalOnMissingBean</code> — only if user hasn't defined one.</li>
+            <li><code>@ConditionalOnProperty</code> — only if config flag set.</li>
+          </ul>
+          <p>Example: add <code>spring-boot-starter-data-jpa</code> and Hibernate, plus an H2 driver, and Spring auto-creates a DataSource, EntityManagerFactory, TransactionManager. You override any of them by declaring your own bean — your bean wins. Add <code>--debug</code> at startup to see the auto-configuration report.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What are starters and why do they exist?</summary>
+        <div class="qa-body">
+          <p><strong>Starters</strong> are curated POMs that pull in a set of compatible dependencies for a use case. <code>spring-boot-starter-web</code> brings in Spring MVC, Tomcat embedded, Jackson, Validation — everything you need for a REST API, with versions tested together.</p>
+          <p>Why they matter: in pre-Boot days, picking compatible versions of Spring + Hibernate + Jackson + Servlet API was a mini-project. Starters solve that. Common ones I use:</p>
+          <ul>
+            <li><code>-starter-web</code> — REST/MVC.</li>
+            <li><code>-starter-data-jpa</code>, <code>-data-mongodb</code>, <code>-data-elasticsearch</code>.</li>
+            <li><code>-starter-security</code>, <code>-oauth2-resource-server</code>.</li>
+            <li><code>-starter-actuator</code> — production endpoints.</li>
+            <li><code>-starter-validation</code> — Bean Validation.</li>
+            <li><code>-starter-test</code> — JUnit, Mockito, AssertJ.</li>
+          </ul>
+          <p>You can also build a <strong>custom internal starter</strong> for shared cross-team configuration.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>application.properties vs application.yml — profiles</summary>
+        <div class="qa-body">
+          <p>Both store externalized configuration; YAML is hierarchical and cleaner for nested config. Spring Boot loads in a precise order: <code>application.yml</code>, then profile-specific <code>application-{profile}.yml</code>, then environment variables, then command-line args — later wins.</p>
+          <p><strong>Profiles</strong> partition configuration: <code>application-dev.yml</code>, <code>application-staging.yml</code>, <code>application-prod.yml</code>. Activate via <code>SPRING_PROFILES_ACTIVE=prod</code> environment variable.</p>
+          <p>Beans can also be profile-scoped: <code>@Profile("prod")</code> on a bean means it loads only in prod. I use this for in-memory message brokers in dev vs real Kafka in prod, or different log levels.</p>
+          <p>For secrets I never put values in YAML — placeholders only: <code>password: ${DB_PASSWORD}</code> sourced from env vars, AWS Parameter Store, or Vault.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>@SpringBootApplication — what's inside it?</summary>
+        <div class="qa-body">
+          <p>It's a composed annotation equivalent to three:</p>
+          <ul>
+            <li><strong><code>@SpringBootConfiguration</code></strong> — same as <code>@Configuration</code> but marks the class as the primary config.</li>
+            <li><strong><code>@EnableAutoConfiguration</code></strong> — turns on Spring Boot's conditional auto-config.</li>
+            <li><strong><code>@ComponentScan</code></strong> — scans the package of the annotated class and all sub-packages for <code>@Component</code>/<code>@Service</code>/<code>@Repository</code>/<code>@Controller</code>.</li>
+          </ul>
+          <p>That's why your main class should be in the <strong>root package</strong> — scanning starts from there. You can customize: <code>@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)</code> to opt out of auto-configuring a DB, or <code>scanBasePackages = {"com.foo", "com.shared"}</code> to scan additional packages.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Embedded server — Tomcat, Jetty, Undertow?</summary>
+        <div class="qa-body">
+          <p>Spring Boot ships <strong>Tomcat</strong> by default — battle-tested, well-documented, fine for most loads. <strong>Jetty</strong> is the long-standing alternative — slightly lower memory, used historically by Eclipse and many cloud platforms. <strong>Undertow</strong> (Red Hat) is the most performant and lowest memory of the three, especially for high-concurrency workloads with many idle connections.</p>
+          <p>Switching is one dependency change:</p>
+          <pre><code>&lt;exclusion&gt;spring-boot-starter-tomcat&lt;/exclusion&gt;
+&lt;dependency&gt;spring-boot-starter-undertow&lt;/dependency&gt;</code></pre>
+          <p>I've defaulted to Tomcat in every prod service I've shipped — its tooling and observability story is best. With Spring Boot 3 + Virtual Threads on Tomcat, the throughput is excellent and I don't feel the need to switch. For reactive workloads, Spring WebFlux uses <strong>Netty</strong> by default instead.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Actuator — production endpoints</summary>
+        <div class="qa-body">
+          <p><strong>Spring Boot Actuator</strong> exposes ops endpoints over HTTP (or JMX) for monitoring and management. Add the starter and key endpoints appear under <code>/actuator</code>:</p>
+          <ul>
+            <li><strong><code>/health</code></strong> — liveness/readiness for Kubernetes probes; aggregates health indicators (DB, Mongo, ES, custom checks).</li>
+            <li><strong><code>/metrics</code></strong> + <strong><code>/prometheus</code></strong> — Micrometer metrics: JVM, HTTP, DB pool, custom.</li>
+            <li><strong><code>/info</code></strong> — build info, git commit, custom info.</li>
+            <li><strong><code>/env</code></strong>, <strong><code>/configprops</code></strong> — running configuration (lock these down).</li>
+            <li><strong><code>/loggers</code></strong> — change log levels at runtime — invaluable for prod debugging.</li>
+            <li><strong><code>/threaddump</code></strong>, <strong><code>/heapdump</code></strong> — diagnostics.</li>
+          </ul>
+          <p>In prod I expose only <code>health</code>, <code>info</code>, <code>prometheus</code> publicly; everything else behind a management port and IAM rules.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Liveness vs readiness vs startup probes</summary>
+        <div class="qa-body">
+          <p>These map directly to Kubernetes probes. Spring Boot Actuator's <code>/health</code> exposes them as <code>/actuator/health/liveness</code> and <code>/actuator/health/readiness</code> by default since Spring Boot 2.3.</p>
+          <p><strong>Liveness</strong>: is the app alive? If this fails, K8s <strong>restarts</strong> the pod. Should check only fatal in-process states (e.g., out-of-memory flag) — not downstream dependencies.</p>
+          <p><strong>Readiness</strong>: is the app ready to serve traffic? If this fails, K8s <strong>removes it from the load balancer</strong> but doesn't restart it. Should check downstream dependencies (DB, Kafka, ES) so we don't route traffic to a partially-broken instance.</p>
+          <p><strong>Startup</strong>: a one-shot probe for slow-to-start apps so K8s doesn't kill them during boot. Once it passes, liveness takes over.</p>
+          <p>Getting these wrong causes restart loops or routing failures — a common production incident.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Logging — Logback, levels, structured logs</summary>
+        <div class="qa-body">
+          <p>Spring Boot uses <strong>Logback</strong> behind SLF4J by default. <code>logback-spring.xml</code> in <code>src/main/resources</code> lets you customize appenders, levels, and patterns; Spring's variant supports profile-specific blocks.</p>
+          <p>In production I always log <strong>structured JSON</strong> using <code>logstash-logback-encoder</code> — one line per event with fields like <code>level</code>, <code>logger</code>, <code>traceId</code>, <code>spanId</code>, <code>userId</code>. Easy to ingest into ELK, Loki, or CloudWatch.</p>
+          <p>Practices:</p>
+          <ul>
+            <li>Use SLF4J's parametrized form: <code>log.info("user {} placed order {}", userId, orderId)</code>.</li>
+            <li>Don't log inside hot loops without rate-limiting.</li>
+            <li>MDC (Mapped Diagnostic Context) for request-scoped fields — traceId, userId.</li>
+            <li>Pair with Sleuth/Micrometer Tracing for distributed tracing.</li>
+            <li>Use the Actuator <code>/loggers</code> endpoint to bump log levels without redeploy.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Spring Boot 2 vs 3 — what changed?</summary>
+        <div class="qa-body">
+          <p><strong>Spring Boot 3 (and Spring Framework 6)</strong> released late 2022 introduced several breaking changes:</p>
+          <ul>
+            <li><strong>Java 17 baseline</strong> (Boot 2 worked on Java 8/11/17).</li>
+            <li><strong>Jakarta EE namespace</strong> — every <code>javax.servlet.*</code> becomes <code>jakarta.servlet.*</code>. Big migration for code that uses Servlet API directly.</li>
+            <li><strong>Native image support</strong> (GraalVM) is first-class — build truly small/fast-start images with <code>-Pnative</code>.</li>
+            <li><strong>Observability overhaul</strong> — Micrometer Tracing replaces Spring Cloud Sleuth.</li>
+            <li><strong>Virtual threads support</strong> (Boot 3.2+) — set <code>spring.threads.virtual.enabled=true</code>.</li>
+          </ul>
+          <p>I migrated a Punctuations.ai service to Boot 3 — most of the work was the Jakarta rename and a few deprecated APIs. Worth it for native image options and the cleaner observability story.</p>
+        </div>
+      </details>
+
+      <div class="section-divider">REST &amp; Web</div>
+
+      <details class="qa">
+        <summary>@RestController vs @Controller — what's the difference?</summary>
+        <div class="qa-body">
+          <p>Both register the class as a Spring MVC handler. The difference: <strong><code>@Controller</code></strong> + <code>@ResponseBody</code> tells Spring to serialize the return value (typically to JSON via Jackson) instead of resolving a view name. <strong><code>@RestController</code></strong> is shorthand for <em>both</em> — every method implicitly returns the body directly.</p>
+          <pre><code>@RestController
+@RequestMapping("/api/users")
+public class UserController {
+    @GetMapping("/{id}")
+    public User get(@PathVariable Long id) { ... }
+}</code></pre>
+          <p>Use <code>@Controller</code> only when you serve server-rendered views (Thymeleaf, JSP) and need to return view names. For JSON APIs — which is 99% of what I write — always <code>@RestController</code>.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Path variable vs request param vs request body</summary>
+        <div class="qa-body">
+          <p>Three ways to read input in Spring MVC:</p>
+          <ul>
+            <li><strong><code>@PathVariable</code></strong> — part of the URL path: <code>/users/{id}</code> → <code>@PathVariable Long id</code>. Use for resource identifiers in REST.</li>
+            <li><strong><code>@RequestParam</code></strong> — query string: <code>/users?status=active&amp;limit=10</code>. Optional with defaults: <code>@RequestParam(defaultValue = "20") int limit</code>. Use for filters and pagination.</li>
+            <li><strong><code>@RequestBody</code></strong> — deserialize the HTTP body (JSON) into an object. Use for POST/PUT/PATCH payloads. Pair with <code>@Valid</code> for Bean Validation.</li>
+          </ul>
+          <p>Idiomatic REST: identify resources by path, filter/paginate by query params, send payloads in the body. Headers via <code>@RequestHeader</code> when you need them.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Global exception handling — @ControllerAdvice</summary>
+        <div class="qa-body">
+          <p>I use <strong><code>@ControllerAdvice</code></strong> + <strong><code>@ExceptionHandler</code></strong> to centralize error handling and return consistent JSON error responses:</p>
+          <pre><code>@RestControllerAdvice
+public class ApiExceptionHandler {
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity&lt;Problem&gt; notFound(NotFoundException ex) {
+        return ResponseEntity.status(404)
+            .body(new Problem("NOT_FOUND", ex.getMessage()));
+    }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity&lt;Problem&gt; validation(...) { ... }
+}</code></pre>
+          <p>Spring Boot 3 also provides <strong><code>ProblemDetail</code></strong> (RFC 7807) for standardized error bodies. I prefer that for new services. The big benefit is consistency — every endpoint returns the same error shape, which makes client code much simpler. Pair with structured logging so we capture the traceId in every error response.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Validation — Bean Validation + @Valid</summary>
+        <div class="qa-body">
+          <p><strong>Bean Validation</strong> (JSR-380, Jakarta Validation) lets you annotate fields with constraints — <code>@NotNull</code>, <code>@Size(min=1, max=100)</code>, <code>@Email</code>, <code>@Min</code>, <code>@Pattern</code> — and Spring runs them when you annotate the parameter with <strong><code>@Valid</code></strong>.</p>
+          <pre><code>public record CreateUserRequest(
+    @NotBlank String name,
+    @Email String email,
+    @Min(18) int age) {}
+
+@PostMapping
+public User create(@RequestBody @Valid CreateUserRequest req) { ... }</code></pre>
+          <p>Violations throw <code>MethodArgumentNotValidException</code>, which your <code>@ControllerAdvice</code> converts to a 400 response with field-level errors. For service-layer parameters use <code>@Validated</code> on the class plus <code>@Valid</code> on params. Custom constraints are easy: write a <code>@Constraint</code> annotation and a <code>ConstraintValidator</code>. I always validate at the API boundary — defense in depth.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>WebFlux — when would you use it over MVC?</summary>
+        <div class="qa-body">
+          <p><strong>Spring WebFlux</strong> is the reactive alternative to MVC — non-blocking, built on Project Reactor (Mono/Flux), running on Netty by default. Threads aren't blocked on I/O; they're parked and resumed when data arrives.</p>
+          <p>Use it when: you handle <strong>many concurrent slow connections</strong> (server-sent events, WebSockets, streaming responses), or when downstream calls are mostly I/O and you've hit thread-pool ceilings on MVC.</p>
+          <p>Costs: reactive code is harder to read, debug, and trace; you can't use blocking JDBC; learning curve for the team. Many "WebFlux for performance" projects end up slower because of code complexity and bugs.</p>
+          <p><strong>My current take in 2026:</strong> with <strong>Virtual Threads</strong> (Java 21 + Boot 3.2+), MVC gives you reactive-like scaling without reactive code complexity. I'd reach for WebFlux today only for streaming use cases.</p>
+        </div>
+      </details>
+
+      <div class="section-divider">Resilience &amp; Observability</div>
+
+      <details class="qa">
+        <summary>Circuit breaker — what and why? <span class="qa-tag hot">hot</span></summary>
+        <div class="qa-body">
+          <p>A <strong>circuit breaker</strong> wraps remote calls and short-circuits them when the downstream is failing — instead of waiting for every call to time out, we fail fast and recover quickly. States: <strong>CLOSED</strong> (all calls pass), <strong>OPEN</strong> (calls fail immediately for a wait period), <strong>HALF_OPEN</strong> (let a few probes through to test recovery).</p>
+          <p>In Spring Boot I use <strong>Resilience4j</strong> (the modern replacement for Hystrix):</p>
+          <pre><code>@CircuitBreaker(name = "paymentApi", fallbackMethod = "fallback")
+public PaymentResult charge(String id, BigDecimal amt) { ... }
+public PaymentResult fallback(String id, BigDecimal amt, Throwable t) {
+    return PaymentResult.deferred(id);
+}</code></pre>
+          <p>Configure failure-rate threshold, sliding window, wait duration. At Indus Net I wrapped the LLM API call with a circuit breaker — when the vendor had an outage, our service stayed up and returned cached / degraded results instead of cascading failures.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Retry strategies — when to retry?</summary>
+        <div class="qa-body">
+          <p>Retries help with <strong>transient</strong> failures: network blips, 502/503, throttling. They hurt with <strong>permanent</strong> failures (validation errors, 404, business errors) or <strong>side-effect-causing</strong> calls that aren't idempotent.</p>
+          <p>Three rules I follow:</p>
+          <ul>
+            <li>Retry only on retriable errors (timeouts, specific status codes). Don't retry 4xx.</li>
+            <li>Use <strong>exponential backoff with jitter</strong>: 100 ms, 200 ms, 400 ms + random — prevents thundering-herd reconnect storms.</li>
+            <li>Make the operation <strong>idempotent</strong> — use idempotency keys or natural keys so repeated requests don't double-charge or double-write.</li>
+          </ul>
+          <p>With Resilience4j: <code>@Retry(name = "paymentApi", fallbackMethod = "...")</code>. Combine with circuit breaker — retry first, open the breaker on persistent failure. Bound the total time so we don't blow request timeouts.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Distributed tracing — Sleuth, Zipkin, OpenTelemetry</summary>
+        <div class="qa-body">
+          <p>In microservices a single user request can touch 5+ services. <strong>Distributed tracing</strong> assigns a <code>traceId</code> at the edge that propagates through HTTP headers and message metadata to every hop. Each service adds spans; a collector reconstructs the timeline.</p>
+          <p>Spring Boot 2 used <strong>Spring Cloud Sleuth</strong>; Boot 3 uses <strong>Micrometer Tracing</strong> with bridges to Zipkin or OpenTelemetry. With one starter and <code>management.tracing.sampling.probability=1.0</code> in dev, every log line gets <code>traceId</code> and <code>spanId</code>, and we ship spans to a backend like Jaeger, Zipkin, or commercial APM.</p>
+          <p>At Indus Net this saved hours during a latency investigation — we saw a request spend 4 s waiting on a sync call to an internal service that should've been async. Tracing made the bottleneck obvious.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Metrics — Micrometer + Prometheus + Grafana</summary>
+        <div class="qa-body">
+          <p><strong>Micrometer</strong> is a metrics façade (think SLF4J for metrics) — write to it once, switch backends. Spring Boot Actuator wires it up automatically: JVM metrics, HTTP request timings, DB pool sizing, Kafka consumer lag — all out of the box.</p>
+          <p>Custom metrics in code:</p>
+          <pre><code>private final Counter charges = Counter.builder("payment.charges")
+    .tag("provider", "stripe").register(registry);
+charges.increment();
+Timer.builder("payment.charge.latency").register(registry)
+    .record(() -&gt; paymentClient.charge(...));</code></pre>
+          <p>Pair the <code>/actuator/prometheus</code> endpoint with Prometheus scraping, then dashboards in Grafana with alerts on p99 latency, error rate, and saturation. "RED" metrics (Rate, Errors, Duration) per endpoint is my baseline — if those four panels are healthy, the service is healthy.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Async processing — @Async and TaskExecutor</summary>
+        <div class="qa-body">
+          <p><strong><code>@Async</code></strong> runs a method on a separate thread without blocking the caller. Enable with <code>@EnableAsync</code> on a config class. The method must return <code>void</code>, <code>Future</code>, or <code>CompletableFuture</code> — the caller gets the future immediately.</p>
+          <p>Two production gotchas. <strong>(1)</strong> Define a <strong>named <code>TaskExecutor</code></strong> — the default is <code>SimpleAsyncTaskExecutor</code> which creates a new thread per call (bad). Inject a bounded <code>ThreadPoolTaskExecutor</code> sized for your workload. <strong>(2)</strong> <strong>Self-invocation</strong> doesn't trigger async — same proxy gotcha as <code>@Transactional</code>.</p>
+          <p>I use <code>@Async</code> for fire-and-forget side effects: sending welcome emails, recording analytics, writing to Elasticsearch. For more complex async pipelines I prefer explicit <code>CompletableFuture</code> chains or Kafka events for durability.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Scheduling — @Scheduled and pitfalls</summary>
+        <div class="qa-body">
+          <p><strong><code>@Scheduled</code></strong> runs a method on a schedule. Enable with <code>@EnableScheduling</code>. Three styles:</p>
+          <ul>
+            <li><code>@Scheduled(fixedRate = 30_000)</code> — every 30 s from start of last run.</li>
+            <li><code>@Scheduled(fixedDelay = 30_000)</code> — 30 s after the last finish.</li>
+            <li><code>@Scheduled(cron = "0 0 2 * * *")</code> — 2 a.m. daily.</li>
+          </ul>
+          <p>Pitfalls in production:</p>
+          <ul>
+            <li>By default Spring uses a <strong>single-threaded</strong> scheduler — long-running jobs block subsequent runs. Configure a <code>ThreadPoolTaskScheduler</code> with multiple threads.</li>
+            <li>If you run <strong>multiple instances</strong> of the service, every instance fires the job. Solve with leader election (ShedLock, Quartz cluster) or move to a real job scheduler.</li>
+            <li>Don't put heavy DB work in scheduled methods without proper transaction management.</li>
+          </ul>
+          <p>For non-trivial workloads I use <strong>Quartz</strong>, Kubernetes CronJobs, or Spring Batch.</p>
+        </div>
+      </details>
+
+    </div>
+
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>

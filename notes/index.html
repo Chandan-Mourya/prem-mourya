@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="no-referrer">
+  <title>Notes &amp; Reference</title>
+  <link rel="icon" href="../assets/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html">
+        <span class="brand-dot"></span>
+        <span>Notes</span>
+        <span class="brand-sub">· Reference</span>
+      </a>
+      <div class="search-wrap">
+        <i class="bi bi-search"></i>
+        <input id="search" type="search" placeholder="Search topics, e.g. java, kafka, system design..." autocomplete="off" spellcheck="false">
+        <span class="search-shortcut">/</span>
+      </div>
+      <div class="topbar-actions">
+        <a href="../index.html" class="back-link"><i class="bi bi-arrow-left"></i> <span>Portfolio</span></a>
+      </div>
+    </div>
+  </header>
+
+  <main class="hub">
+
+    <div class="hub-header">
+      <span class="tag"><i class="bi bi-bookmark-fill"></i> Personal · Private</span>
+      <h1>Interview &amp; Reference Notes</h1>
+      <p>Quick-access answers for backend, system design, and AI engineering interviews — every answer is sized to speak comfortably for 30 sec – 1 min, with real production stories woven in.</p>
+      <div class="hub-stats">
+        <span><strong>340+</strong> questions</span>
+        <span><strong>18</strong> topics</span>
+        <span>Press <span class="hint-kbd">/</span> to search</span>
+      </div>
+    </div>
+
+    <div class="no-results" id="noResults">No matches. Try a different keyword.</div>
+
+    <!-- =====================================================
+         FOUNDATIONS — must-know language + framework
+         ===================================================== -->
+    <section class="hub-section">
+      <h2 class="hub-section-title">Foundations · Java &amp; Spring</h2>
+      <div class="hub-grid">
+
+        <a href="behavioral.html" class="topic-card" data-color="amber">
+          <div class="topic-card-head">
+            <span class="topic-card-num">01</span>
+            <span class="topic-card-icon"><i class="bi bi-person-heart"></i></span>
+          </div>
+          <h3>Behavioral</h3>
+          <p>Tell me about yourself, projects, conflicts, leadership, weaknesses — tailored to your resume.</p>
+          <div class="topic-card-foot">
+            <span>15 questions</span>
+            <span class="topic-card-arrow">→</span>
+          </div>
+        </a>
+
+        <a href="core-java.html" class="topic-card">
+          <div class="topic-card-head">
+            <span class="topic-card-num">02</span>
+            <span class="topic-card-icon"><i class="bi bi-cup-hot"></i></span>
+          </div>
+          <h3>Core Java</h3>
+          <p>JVM internals, Collections, OOP, Java 8+ — HashMap and Streams come up in nearly every interview.</p>
+          <div class="topic-card-foot">
+            <span>45 questions</span>
+            <span class="topic-card-arrow">→</span>
+          </div>
+        </a>
+
+        <a href="concurrency.html" class="topic-card" data-color="pink">
+          <div class="topic-card-head">
+            <span class="topic-card-num">03</span>
+            <span class="topic-card-icon"><i class="bi bi-diagram-3"></i></span>
+          </div>
+          <h3>Concurrency</h3>
+          <p>Threads, locks, executors, java.util.concurrent. Where senior interviews dig hardest.</p>
+          <div class="topic-card-foot">
+            <span>15 questions</span>
+            <span class="topic-card-arrow">→</span>
+          </div>
+        </a>
+
+        <a href="spring-core.html" class="topic-card" data-color="green">
+          <div class="topic-card-head">
+            <span class="topic-card-num">04</span>
+            <span class="topic-card-icon"><i class="bi bi-flower1"></i></span>
+          </div>
+          <h3>Spring Core</h3>
+          <p>IoC, dependency injection, bean lifecycle, AOP. The foundation every interview probes.</p>
+          <div class="topic-card-foot">
+            <span>11 questions</span>
+            <span class="topic-card-arrow">→</span>
+          </div>
+        </a>
+
+        <a href="spring-boot.html" class="topic-card" data-color="green">
+          <div class="topic-card-head">
+            <span class="topic-card-num">05</span>
+            <span class="topic-card-icon"><i class="bi bi-boxes"></i></span>
+          </div>
+          <h3>Spring Boot</h3>
+          <p>Auto-config, starters, profiles, actuator, REST, resilience patterns. Your daily stack.</p>
+          <div class="topic-card-foot">
+            <span>30 questions</span>
+            <span class="topic-card-arrow">→</span>
+          </div>
+        </a>
+
+        <a href="rest-security.html" class="topic-card">
+          <div class="topic-card-head">
+            <span class="topic-card-num">06</span>
+            <span class="topic-card-icon"><i class="bi bi-shield-lock"></i></span>
+          </div>
+          <h3>REST &amp; Security</h3>
+          <p>HTTP, JWT, OAuth, CORS, idempotency, status codes. Cross-cutting API knowledge.</p>
+          <div class="topic-card-foot">
+            <span>11 questions</span>
+            <span class="topic-card-arrow">→</span>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- =====================================================
+         DATA — databases, search, caching
+         ===================================================== -->
+    <section class="hub-section">
+      <h2 class="hub-section-title">Data &amp; Storage</h2>
+      <div class="hub-grid">
+
+        <a href="sql.html" class="topic-card" data-color="teal">
+          <div class="topic-card-head">
+            <span class="topic-card-num">07</span>
+            <span class="topic-card-icon"><i class="bi bi-database"></i></span>
+          </div>
+          <h3>SQL &amp; RDBMS</h3>
+          <p>Joins, transactions, indexing, query optimization, ACID, sharding, scaling.</p>
+          <div class="topic-card-foot">
+            <span>25 questions</span>
+            <span class="topic-card-arrow">→</span>
+          </div>
+        </a>
+
+        <a href="mongodb.html" class="topic-card" data-color="green">
+          <div class="topic-card-head">
+            <span class="topic-card-num">08</span>
+            <span class="topic-card-icon"><i class="bi bi-tree"></i></span>
+          </div>
+          <h3>MongoDB</h3>
+          <p>Documents, aggregation pipeline, indexing, replication, sharding, transactions.</p>
+          <div class="topic-card-foot">
+            <span>9 questions</span>
+            <span class="topic-card-arrow">→</span>
+          </div>
+        </a>
+
+        <a href="elasticsearch.html" class="topic-card" data-color="amber">
+          <div class="topic-card-head">
+            <span class="topic-card-num">09</span>
+            <span class="topic-card-icon"><i class="bi bi-search"></i></span>
+          </div>
+          <h3>Elasticsearch</h3>
+          <p>Indexing, sharding, full-text + kNN search, analyzers. Bring your Punctuations.ai stories.</p>
+          <div class="topic-card-foot">
+            <span>9 questions</span>
+            <span class="topic-card-arrow">→</span>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- =====================================================
+         DISTRIBUTED — services, messaging, design
+         ===================================================== -->
+    <section class="hub-section">
+      <h2 class="hub-section-title">Distributed Systems</h2>
+      <div class="hub-grid">
+
+        <a href="microservices.html" class="topic-card" data-color="purple">
+          <div class="topic-card-head">
+            <span class="topic-card-num">10</span>
+            <span class="topic-card-icon"><i class="bi bi-grid-3x3-gap"></i></span>
+          </div>
+          <h3>Microservices</h3>
+          <p>Monolith vs micro, inter-service comms, patterns, anti-patterns, data consistency.</p>
+          <div class="topic-card-foot">
+            <span>13 questions</span>
+            <span class="topic-card-arrow">→</span>
+          </div>
+        </a>
+
+        <a href="messaging.html" class="topic-card" data-color="pink">
+          <div class="topic-card-head">
+            <span class="topic-card-num">11</span>
+            <span class="topic-card-icon"><i class="bi bi-arrow-left-right"></i></span>
+          </div>
+          <h3>Messaging</h3>
+          <p>Kafka vs RabbitMQ, queues, DLQ, delivery guarantees, ordering.</p>
+          <div class="topic-card-foot">
+            <span>4 questions</span>
+            <span class="topic-card-arrow">→</span>
+          </div>
+        </a>
+
+        <a href="system-design.html" class="topic-card" data-color="purple">
+          <div class="topic-card-head">
+            <span class="topic-card-num">12</span>
+            <span class="topic-card-icon"><i class="bi bi-bezier"></i></span>
+          </div>
+          <h3>System Design</h3>
+          <p>Scalability, load balancing, caching, rate limiting, common designs: URL shortener, chat, etc.</p>
+          <div class="topic-card-foot">
+            <span>15 questions</span>
+            <span class="topic-card-arrow">→</span>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- =====================================================
+         INFRA & OPS
+         ===================================================== -->
+    <section class="hub-section">
+      <h2 class="hub-section-title">Infrastructure &amp; Ops</h2>
+      <div class="hub-grid">
+
+        <a href="cloud.html" class="topic-card" data-color="teal">
+          <div class="topic-card-head">
+            <span class="topic-card-num">13</span>
+            <span class="topic-card-icon"><i class="bi bi-cloud"></i></span>
+          </div>
+          <h3>Cloud (AWS / Azure)</h3>
+          <p>IaaS/PaaS/SaaS, compute, storage, IAM, deployment strategies, autoscaling.</p>
+          <div class="topic-card-foot">
+            <span>10 questions</span>
+            <span class="topic-card-arrow">→</span>
+          </div>
+        </a>
+
+        <a href="docker-k8s.html" class="topic-card">
+          <div class="topic-card-head">
+            <span class="topic-card-num">14</span>
+            <span class="topic-card-icon"><i class="bi bi-hdd-stack"></i></span>
+          </div>
+          <h3>Docker &amp; Kubernetes</h3>
+          <p>Containers, images, pods, deployments, services, probes, autoscaling.</p>
+          <div class="topic-card-foot">
+            <span>13 questions</span>
+            <span class="topic-card-arrow">→</span>
+          </div>
+        </a>
+
+        <a href="cicd.html" class="topic-card" data-color="amber">
+          <div class="topic-card-head">
+            <span class="topic-card-num">15</span>
+            <span class="topic-card-icon"><i class="bi bi-git"></i></span>
+          </div>
+          <h3>CI/CD &amp; Git</h3>
+          <p>Pipelines, deploys, rollback, branching strategy, merge vs rebase, code reviews.</p>
+          <div class="topic-card-foot">
+            <span>9 questions</span>
+            <span class="topic-card-arrow">→</span>
+          </div>
+        </a>
+
+        <a href="production.html" class="topic-card" data-color="pink">
+          <div class="topic-card-head">
+            <span class="topic-card-num">16</span>
+            <span class="topic-card-icon"><i class="bi bi-bug"></i></span>
+          </div>
+          <h3>Production Debugging</h3>
+          <p>Root cause analysis, thread dumps, heap dumps, latency, observability.</p>
+          <div class="topic-card-foot">
+            <span>10 questions</span>
+            <span class="topic-card-arrow">→</span>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- =====================================================
+         MODERN — AI/LLM + puzzles
+         ===================================================== -->
+    <section class="hub-section">
+      <h2 class="hub-section-title">Specialised</h2>
+      <div class="hub-grid">
+
+        <a href="ai-llm.html" class="topic-card" data-color="purple">
+          <div class="topic-card-head">
+            <span class="topic-card-num">17</span>
+            <span class="topic-card-icon"><i class="bi bi-cpu"></i></span>
+          </div>
+          <h3>AI / LLM</h3>
+          <p>LLMs, RAG, embeddings, vector DBs, tool calling, AI cost &amp; latency optimization.</p>
+          <div class="topic-card-foot">
+            <span>12 questions</span>
+            <span class="topic-card-arrow">→</span>
+          </div>
+        </a>
+
+        <a href="puzzles.html" class="topic-card" data-color="amber">
+          <div class="topic-card-head">
+            <span class="topic-card-num">18</span>
+            <span class="topic-card-icon"><i class="bi bi-puzzle"></i></span>
+          </div>
+          <h3>Code Puzzles</h3>
+          <p>Tricky Java output puzzles — string pool, finally returns, Integer cache, deadlocks.</p>
+          <div class="topic-card-foot">
+            <span>30 puzzles</span>
+            <span class="topic-card-arrow">→</span>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>

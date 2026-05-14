@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>CI/CD &amp; Git · Notes</title>
+  <link rel="icon" href="../assets/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+      <div class="search-wrap">
+        <i class="bi bi-search"></i>
+        <input id="search" type="search" placeholder="Search within CI/CD..." autocomplete="off" spellcheck="false">
+        <span class="search-shortcut">/</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="topic-page">
+
+    <div class="topic-page-header">
+      <div class="topic-page-eyebrow">15 · CI/CD &amp; Git</div>
+      <h1>CI/CD &amp; Git workflows</h1>
+      <p class="topic-page-desc">Pipelines, deploys, branching strategies, code reviews. Talk about your GitHub Actions / Jenkins setup at Indus Net &amp; OneXtel.</p>
+      <div class="topic-page-meta">
+        <span><strong>9</strong> questions</span>
+        <span>Press <span class="hint-kbd">/</span> to search</span>
+      </div>
+    </div>
+
+    <div class="no-results" id="noResults">No matches.</div>
+
+    <div class="qa-list">
+
+      <details class="qa">
+        <summary>CI vs CD vs CD — what each one means <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p>The three CI/CD terms are confusingly similar:</p>
+          <ul>
+            <li><strong>Continuous Integration</strong> — every commit triggers automated build + tests. Goal: catch breakage within minutes, not days. Requires good test coverage and a healthy main branch.</li>
+            <li><strong>Continuous Delivery</strong> — every commit that passes CI is <em>deployable</em> — packaged and ready for staging/prod. Production deploys are a one-click manual gate.</li>
+            <li><strong>Continuous Deployment</strong> — every commit that passes goes <strong>automatically</strong> to production. No human gate. Requires very strong tests, feature flags, canary rollouts, automated rollback.</li>
+          </ul>
+          <p>Most teams aim for Delivery first; Deployment is for mature orgs with deep monitoring. At Indus Net we're at Delivery — staging deploys are auto, prod is one-click after a smoke check.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What does a good CI pipeline look like?</summary>
+        <div class="qa-body">
+          <p>For a typical Spring Boot service:</p>
+          <ol>
+            <li><strong>Checkout</strong> + cache dependencies (Maven/Gradle, Docker layer cache).</li>
+            <li><strong>Lint / format check</strong> — Spotless, Checkstyle, EditorConfig. Fast, fails first.</li>
+            <li><strong>Unit tests</strong> — fast, isolated.</li>
+            <li><strong>Integration tests</strong> — with Testcontainers spinning up Postgres, Kafka, Redis. Production-like, slower.</li>
+            <li><strong>Static analysis</strong> — SonarQube/Codacy, dependency vulnerabilities (Snyk, OWASP, Dependabot), SAST (CodeQL).</li>
+            <li><strong>Build container image</strong>, push to registry tagged with commit SHA.</li>
+            <li><strong>Sign + SBOM</strong> for supply-chain security (sigstore/cosign).</li>
+            <li><strong>Auto-deploy</strong> to dev/staging.</li>
+            <li><strong>Smoke tests / health checks</strong> post-deploy.</li>
+            <li><strong>Manual approval</strong> + canary to production.</li>
+          </ol>
+          <p>Total CI time target: &lt;10 min for typical PR; &lt;20 min for the full pipeline. Anything slower kills developer flow.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Trunk-based vs Git Flow vs GitHub Flow</summary>
+        <div class="qa-body">
+          <p>Three popular branching strategies.</p>
+          <p><strong>Git Flow</strong> — long-lived branches: <code>master</code>, <code>develop</code>, <code>feature/*</code>, <code>release/*</code>, <code>hotfix/*</code>. Designed for versioned releases (installable software). Heavy for web/SaaS — too much branch ceremony.</p>
+          <p><strong>GitHub Flow</strong> — one main branch + short-lived feature branches → PR → merge → deploy. Simple, works great for continuous delivery.</p>
+          <p><strong>Trunk-based development</strong> — everyone commits to main multiple times a day; very short-lived branches. Relies on feature flags to hide incomplete work in production. Used by Google, Facebook, Meta. Fastest velocity.</p>
+          <p>For web services I prefer <strong>GitHub Flow with trunk-based principles</strong>: feature branches live &lt;2 days, integrate often, use flags for unfinished features. Long-lived branches are where merge conflicts and bugs come from.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Merge vs rebase — which when?</summary>
+        <div class="qa-body">
+          <p>Two ways to integrate one branch's changes into another.</p>
+          <p><strong>Merge</strong> (<code>git merge feature</code>) creates a merge commit preserving full history. Pros: non-destructive, easy collaboration on a shared branch. Cons: history can get noisy.</p>
+          <p><strong>Rebase</strong> (<code>git rebase main</code>) replays your commits on top of the target. Pros: linear history, easier to read. Cons: rewrites commit SHAs — dangerous on shared branches.</p>
+          <p>Rules I follow:</p>
+          <ul>
+            <li><strong>Rebase your local feature branch onto main</strong> before pushing to keep PR clean.</li>
+            <li><strong>Never rebase commits that have been pushed</strong> and others may have pulled.</li>
+            <li>Use <strong>squash-and-merge</strong> on PRs — one logical commit per feature on main. Clean history without rewriting branches.</li>
+            <li>Reserve true merge commits for integrating long-lived release branches.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How do you handle hotfixes in production?</summary>
+        <div class="qa-body">
+          <p>The playbook:</p>
+          <ol>
+            <li><strong>Triage</strong> — confirm severity. If it's data loss or auth break, prioritize. Otherwise queue normally.</li>
+            <li><strong>Create a hotfix branch</strong> from the production tag (not main, in case main has unreleased changes).</li>
+            <li><strong>Minimal fix</strong> — smallest possible diff. Don't sneak unrelated changes in.</li>
+            <li><strong>Test</strong> — add a regression test that fails before the fix and passes after.</li>
+            <li><strong>Fast-track PR</strong> — same review standards, just expedited.</li>
+            <li><strong>Deploy</strong> — canary first if at all possible. Watch metrics.</li>
+            <li><strong>Cherry-pick / merge back to main</strong> immediately so the fix isn't lost on the next release.</li>
+            <li><strong>Post-mortem</strong> — what caused this? Add monitoring/tests/automation so the next one is caught earlier.</li>
+          </ol>
+          <p>One Indus Net case: a JSON parsing bug caused 500s for some resumes. Hotfix shipped in 30 minutes; the regression test we added has caught two similar bugs since.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Feature flags — why and how?</summary>
+        <div class="qa-body">
+          <p><strong>Feature flags</strong> let you turn features on/off without redeploying. Code is shipped to production behind a flag, then enabled gradually for specific users.</p>
+          <p>Use cases:</p>
+          <ul>
+            <li><strong>Trunk-based development</strong> — merge unfinished work behind a flag; flip it on when ready.</li>
+            <li><strong>Canary releases</strong> — enable for 5% of users, watch metrics, ramp up.</li>
+            <li><strong>A/B testing</strong> — show variant A to half, B to the other.</li>
+            <li><strong>Kill switches</strong> — disable a misbehaving feature without a deploy.</li>
+            <li><strong>Per-customer features</strong> in B2B SaaS.</li>
+          </ul>
+          <p>Tools: <strong>LaunchDarkly</strong>, <strong>Unleash</strong>, <strong>Split.io</strong>, <strong>Flagsmith</strong>, or roll your own. A simple <code>FeatureService.enabled("new-search", userId)</code> lookup with a config map and percentage rollouts gets you 80%.</p>
+          <p>Watch out for <strong>flag debt</strong>: clean up old flags monthly — they accumulate quickly.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What makes a good code review?</summary>
+        <div class="qa-body">
+          <p>What I look for as a reviewer:</p>
+          <ul>
+            <li><strong>Correctness</strong> — does it do what the PR says? Edge cases?</li>
+            <li><strong>Tests</strong> — meaningful coverage, including failure paths. Not just "happy path + 100% coverage".</li>
+            <li><strong>Design fit</strong> — does it belong here, or does it deserve its own module/service? Are abstractions earning their keep?</li>
+            <li><strong>Security</strong> — input validation, authz checks, secrets, SQL injection.</li>
+            <li><strong>Observability</strong> — logs, metrics, tracing for the new code paths.</li>
+            <li><strong>Performance</strong> — N+1 queries, missing indexes, hot-path allocations.</li>
+            <li><strong>Readability</strong> — naming, comments where needed, no clever tricks.</li>
+            <li><strong>Backward compatibility</strong> — DB migrations, API contracts.</li>
+          </ul>
+          <p>What I value as an author: small PRs (&lt;400 lines diff), clear description with context, screenshots/curl examples for API changes. Code review is mentorship — explain the "why", not just "no".</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How do you manage database migrations?</summary>
+        <div class="qa-body">
+          <p>Use a migration tool — <strong>Flyway</strong> or <strong>Liquibase</strong> — that versions schema changes as code in your repo, applied in order. <code>V1__create_users.sql</code>, <code>V2__add_status_to_users.sql</code>, etc.</p>
+          <p>Rules I follow for zero-downtime migrations:</p>
+          <ul>
+            <li><strong>Backward-compatible changes only.</strong> Old code must still work with the new schema for the duration of a deploy.</li>
+            <li><strong>Two-phase for breaking changes</strong>: add column (nullable) → deploy code that writes both old and new → backfill → deploy code that reads new only → drop old column later.</li>
+            <li><strong>Renames</strong> are two migrations + an interim code change.</li>
+            <li><strong>Long migrations</strong> (large tables) — run online; use tools like <code>pg_repack</code> or <code>gh-ost</code> for big alters.</li>
+            <li><strong>Apply migrations early</strong> in the deploy pipeline, before pod rollout — never on app startup in parallel.</li>
+          </ul>
+          <p>Always test migrations on a staging snapshot. Test rollback. Migration mistakes cause the worst incidents.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>GitOps — what and why?</summary>
+        <div class="qa-body">
+          <p><strong>GitOps</strong> declares infrastructure and app state as code in git, and a reconciler agent applies it. Git is the single source of truth — to change production, open a PR.</p>
+          <p>Tools: <strong>Argo CD</strong> and <strong>Flux</strong> for Kubernetes deploys. They watch a git repo containing manifests/Helm charts and continuously reconcile cluster state.</p>
+          <p>Wins:</p>
+          <ul>
+            <li><strong>Audit trail</strong> — every change is a commit by a named author.</li>
+            <li><strong>Easy rollback</strong> — revert the commit.</li>
+            <li><strong>Self-healing</strong> — if someone manually changes the cluster, the agent reverts it.</li>
+            <li><strong>Disaster recovery</strong> — recreate a cluster by pointing Argo at the repo.</li>
+            <li><strong>Separation of concerns</strong> — CI builds and tests; GitOps deploys. No CI agent has cluster credentials.</li>
+          </ul>
+          <p>Pattern: app code repo → CI builds image → bumps image tag in deploy repo → Argo CD picks it up and rolls out. We use Argo CD at Indus Net — production is a git revert away if anything breaks.</p>
+        </div>
+      </details>
+
+    </div>
+
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>

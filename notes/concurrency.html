@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Concurrency · Notes</title>
+  <link rel="icon" href="../assets/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+      <div class="search-wrap">
+        <i class="bi bi-search"></i>
+        <input id="search" type="search" placeholder="Search within Concurrency..." autocomplete="off" spellcheck="false">
+        <span class="search-shortcut">/</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="topic-page">
+
+    <div class="topic-page-header">
+      <div class="topic-page-eyebrow">03 · Concurrency</div>
+      <h1>Concurrency &amp; threads</h1>
+      <p class="topic-page-desc">The area senior interviews dig hardest. Know synchronized vs Lock, the executor framework, Atomic types, and Virtual Threads.</p>
+      <div class="topic-page-meta">
+        <span><strong>15</strong> questions</span>
+        <span>Press <span class="hint-kbd">/</span> to search</span>
+      </div>
+    </div>
+
+    <div class="no-results" id="noResults">No matches.</div>
+
+    <div class="qa-list">
+
+      <details class="qa">
+        <summary>Process vs thread vs virtual thread <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p>A <strong>process</strong> is an independent program execution with its own memory space — OS scheduled, expensive to create. A <strong>thread</strong> is a unit of execution <em>within</em> a process, sharing heap and code but with its own stack and PC. The OS scheduler manages threads — each Java thread maps 1:1 to an OS thread (a "platform thread").</p>
+          <p>A <strong>virtual thread</strong> (Java 21, Project Loom) is a lightweight thread managed by the JVM scheduler, not the OS. Millions can run concurrently with tiny memory footprint (~few KB vs MB for platform threads). They're perfect for I/O-bound work — a virtual thread parks instead of blocking the OS thread underneath. For modern microservices this is huge: you write blocking-style code and get reactive-like scalability without the cognitive cost.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Thread lifecycle states</summary>
+        <div class="qa-body">
+          <p>A Java thread moves through six states from <code>Thread.State</code>:</p>
+          <ul>
+            <li><strong>NEW</strong> — created but <code>start()</code> not called.</li>
+            <li><strong>RUNNABLE</strong> — eligible to run; OS schedules it. Note: "runnable" lumps together actually-running and ready-to-run.</li>
+            <li><strong>BLOCKED</strong> — waiting to acquire a monitor lock (someone else holds the synchronized).</li>
+            <li><strong>WAITING</strong> — waiting indefinitely for another thread (<code>wait()</code>, <code>join()</code>, <code>LockSupport.park()</code>).</li>
+            <li><strong>TIMED_WAITING</strong> — waiting with a timeout (<code>sleep(n)</code>, <code>wait(n)</code>, <code>parkNanos</code>).</li>
+            <li><strong>TERMINATED</strong> — finished.</li>
+          </ul>
+          <p>When debugging thread dumps, BLOCKED and WAITING are the states you care about — they tell you which threads are stuck and on what monitor or condition.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>synchronized — how does it actually work? <span class="qa-tag hot">hot</span></summary>
+        <div class="qa-body">
+          <p><strong><code>synchronized</code></strong> uses an <em>intrinsic monitor</em> attached to every Java object. <code>synchronized (obj) { ... }</code> acquires obj's monitor on entry and releases it on exit (even on exception). <code>synchronized</code> instance method = synchronized on <code>this</code>; on a static method = synchronized on <code>ClassName.class</code>.</p>
+          <p>It provides two guarantees: <strong>mutual exclusion</strong> (only one thread runs the block) and <strong>memory visibility</strong> via the happens-before relationship — changes made inside the block are visible to the next thread that acquires the same monitor. The JVM optimizes contention with biased locking, lightweight locking, and only escalates to heavyweight OS-level mutexes under real contention.</p>
+          <p>Modern guidance: prefer <code>ReentrantLock</code> when you need <code>tryLock</code>, timeouts, fairness, or interruptible locking; use <code>synchronized</code> for simple cases.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>wait() / notify() / notifyAll() — usage</summary>
+        <div class="qa-body">
+          <p>These are methods on <code>Object</code> for thread coordination. They <strong>must be called while holding the object's monitor</strong> — i.e., inside a synchronized block on that object — otherwise <code>IllegalMonitorStateException</code>.</p>
+          <p><code>wait()</code> releases the monitor and parks the thread; <code>notify()</code> wakes <em>one</em> waiting thread; <code>notifyAll()</code> wakes all of them. The woken thread re-acquires the monitor before returning from <code>wait()</code>.</p>
+          <p>Idiom — always wait in a loop, never an if:</p>
+          <pre><code>synchronized (lock) {
+    while (!condition) lock.wait();
+    // act on condition
+}</code></pre>
+          <p>This handles spurious wake-ups. In modern code I almost never write this — I use <code>BlockingQueue</code>, <code>CountDownLatch</code>, <code>Semaphore</code>, or <code>Condition</code> on a Lock, which are far cleaner.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>wait() vs sleep() — the difference</summary>
+        <div class="qa-body">
+          <p><strong><code>wait()</code></strong> is on <code>Object</code>, releases the monitor it holds, and parks until <code>notify()</code>/<code>notifyAll()</code> or a timeout. Used for inter-thread communication.</p>
+          <p><strong><code>sleep()</code></strong> is on <code>Thread</code> (static), <strong>does not release any locks</strong>, and just pauses the current thread for the given duration. Used to throttle or back off.</p>
+          <p>The lock-holding behavior is the key gotcha. If you call <code>sleep()</code> inside a synchronized block, the lock is still held — other threads stay blocked. <code>wait()</code> deliberately releases the lock so other threads can make progress. Both can be interrupted (throw <code>InterruptedException</code>) and both restore the interrupt status correctly — handle the exception or re-set it with <code>Thread.currentThread().interrupt()</code>.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What is a deadlock? How do you avoid it? <span class="qa-tag hot">hot</span></summary>
+        <div class="qa-body">
+          <p>A <strong>deadlock</strong> is when two or more threads each hold a resource the other needs and wait forever. Classic example: thread A holds lock 1 and wants lock 2; thread B holds lock 2 and wants lock 1.</p>
+          <p>Coffman's four conditions are all needed: mutual exclusion, hold and wait, no preemption, and circular wait. Break any one of them.</p>
+          <p>Prevention strategies:</p>
+          <ul>
+            <li><strong>Lock ordering</strong> — always acquire locks in the same global order (e.g., by account ID ascending). This is the most practical fix.</li>
+            <li><strong>tryLock with timeout</strong> — use <code>ReentrantLock.tryLock(t, unit)</code> and back off if the lock isn't acquired in time.</li>
+            <li><strong>Reduce lock scope</strong> — hold locks for the minimum critical section.</li>
+            <li>Avoid nested locks when possible.</li>
+          </ul>
+          <p>Diagnosis: take a thread dump (<code>jstack</code>); it explicitly says <em>"Found one Java-level deadlock"</em>.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>volatile keyword — what does it guarantee?</summary>
+        <div class="qa-body">
+          <p><strong><code>volatile</code></strong> on a field guarantees two things: <strong>(1) visibility</strong> — writes by one thread are immediately visible to reads by other threads (no thread-local cache), and <strong>(2) ordering</strong> — a write to a volatile field happens-before any subsequent read of it.</p>
+          <p>What it does <em>not</em> give you: atomicity for compound operations. <code>volatile int counter; counter++</code> is still racy because <code>counter++</code> is read–modify–write — three steps that can interleave. For that, use <code>AtomicInteger.incrementAndGet()</code>.</p>
+          <p>Typical use: a single boolean <code>volatile boolean running</code> for stop flags, or single-reference publication of an immutable config object. For anything more complex, reach for <code>java.util.concurrent</code> primitives.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>ExecutorService — why not raw threads?</summary>
+        <div class="qa-body">
+          <p>Raw threads (<code>new Thread(r).start()</code>) are expensive to create and uncontrolled — under load you can spawn thousands and exhaust memory. <strong><code>ExecutorService</code></strong> separates task submission from thread management: you submit tasks (<code>Runnable</code>/<code>Callable</code>), the pool runs them on a bounded set of worker threads.</p>
+          <p>Common factories in <code>Executors</code>:</p>
+          <ul>
+            <li><code>newFixedThreadPool(n)</code> — n workers; tasks queue when busy.</li>
+            <li><code>newCachedThreadPool()</code> — unbounded workers; reuses idle. <strong>Dangerous in production</strong> — can spawn thousands.</li>
+            <li><code>newScheduledThreadPool(n)</code> — for delayed/periodic tasks.</li>
+            <li><code>newVirtualThreadPerTaskExecutor()</code> — Java 21, one virtual thread per task.</li>
+          </ul>
+          <p>In production I prefer constructing <code>ThreadPoolExecutor</code> directly to control queue size, rejection policy, and core/max thread counts. Always shut down with <code>shutdown()</code> + <code>awaitTermination()</code>.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>ThreadPoolExecutor — sizing and parameters</summary>
+        <div class="qa-body">
+          <p>The full constructor: <code>new ThreadPoolExecutor(core, max, keepAlive, unit, queue, threadFactory, rejectionHandler)</code>.</p>
+          <p>How it actually behaves: tasks first fill up to <em>core</em> threads, then <em>queue up</em>, then create extra threads up to <em>max</em> when queue is full, then trigger the <strong>rejection handler</strong>. People expect "create more threads first, then queue" — it's the opposite, which is why <code>newFixedThreadPool</code> uses an unbounded queue (core == max).</p>
+          <p>Sizing rules of thumb:</p>
+          <ul>
+            <li><strong>CPU-bound</strong>: pool size ≈ number of cores.</li>
+            <li><strong>I/O-bound</strong>: cores × (1 + wait/compute ratio); often 50–200 threads.</li>
+            <li>Use a <strong>bounded queue</strong> and a sensible <strong>rejection policy</strong> (<code>CallerRunsPolicy</code> applies back-pressure on the submitter).</li>
+            <li>Name threads via <code>ThreadFactory</code> — invaluable in thread dumps.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Callable vs Runnable, Future, CompletableFuture</summary>
+        <div class="qa-body">
+          <p><strong><code>Runnable</code></strong> — <code>void run()</code>, can't throw checked exceptions, no return value. <strong><code>Callable&lt;V&gt;</code></strong> — <code>V call() throws Exception</code>, returns a value and can throw.</p>
+          <p>Submit a Callable to ExecutorService and get back a <strong><code>Future&lt;V&gt;</code></strong> — represents the pending result. <code>future.get()</code> blocks until done; <code>future.get(timeout)</code> blocks with timeout. Future is limited: no chaining, no composition, no callbacks.</p>
+          <p><strong><code>CompletableFuture&lt;V&gt;</code></strong> is the modern replacement. It can be composed (<code>thenApply</code>, <code>thenCompose</code>, <code>thenCombine</code>), supports callbacks (<code>thenAccept</code>), exception handling (<code>exceptionally</code>, <code>handle</code>), and waiting (<code>allOf</code>, <code>anyOf</code>). I use it for fan-out parallel calls to multiple downstreams.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Atomic classes — how do they work?</summary>
+        <div class="qa-body">
+          <p>Classes in <code>java.util.concurrent.atomic</code> — <code>AtomicInteger</code>, <code>AtomicLong</code>, <code>AtomicReference</code>, <code>AtomicBoolean</code> — provide lock-free thread-safe operations using <strong>Compare-And-Swap (CAS)</strong> instructions provided by the CPU.</p>
+          <p>Example: <code>AtomicInteger.incrementAndGet()</code> reads the value, computes value+1, then CAS — if no other thread has changed the value in the meantime, the write succeeds; otherwise it retries. No locks, no thread parking, very fast under low–moderate contention.</p>
+          <p>Under <em>very high</em> contention, retries dominate and performance drops. For hot counters, prefer <strong><code>LongAdder</code></strong> and <strong><code>LongAccumulator</code></strong> — they shard updates across multiple cells and sum on read. I used <code>LongAdder</code> for request-rate metrics at Indus Net and saw measurable throughput improvement under load.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Race condition vs data race — fixing one</summary>
+        <div class="qa-body">
+          <p>A <strong>data race</strong> is two threads accessing the same memory location concurrently, at least one writing, with no synchronization. It's a specific JMM violation that causes undefined behavior — torn writes, stale reads.</p>
+          <p>A <strong>race condition</strong> is a broader bug — program correctness depends on timing. Example: a check-then-act on a HashMap (<code>if (!map.contains(k)) map.put(k, v);</code>) — two threads might both see "not contains" and both put.</p>
+          <p>Fixes: <code>synchronized</code> blocks, <code>java.util.concurrent</code> atomic methods (<code>computeIfAbsent</code>), or atomic primitives. At Indus Net I had a race on a session cache — fixed by switching from <code>HashMap</code> with synchronized blocks to <code>ConcurrentHashMap.computeIfAbsent</code>. Always reach for <em>atomic</em> compound methods on concurrent collections rather than rolling your own.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>CountDownLatch vs CyclicBarrier vs Semaphore</summary>
+        <div class="qa-body">
+          <p><strong><code>CountDownLatch(n)</code></strong> — a one-shot counter. One or more threads <code>await()</code> until other threads have called <code>countDown()</code> n times. Use to wait for several initialization tasks to complete. Not reusable.</p>
+          <p><strong><code>CyclicBarrier(n)</code></strong> — n threads call <code>await()</code> and all block until the n-th arrives, then all proceed together. <strong>Reusable</strong> — it resets automatically. Use for repeated phased computations (like simulation rounds).</p>
+          <p><strong><code>Semaphore(n)</code></strong> — n permits. Threads <code>acquire()</code> a permit (blocking if none available) and <code>release()</code> when done. Use for rate-limiting or bounding concurrent access to a resource — e.g., limit concurrent HTTP calls to a downstream service.</p>
+          <p>Mnemonic: latch = wait for events, barrier = sync threads, semaphore = throttle access.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>ThreadLocal — when and what to watch for</summary>
+        <div class="qa-body">
+          <p><strong><code>ThreadLocal&lt;T&gt;</code></strong> gives each thread its own private copy of a value. Common uses: per-request context (user ID, trace ID, locale), <code>SimpleDateFormat</code> (which is not thread-safe), DB connections in legacy patterns.</p>
+          <p>Two big pitfalls. <strong>(1) Memory leaks in thread pools.</strong> Pool threads live forever; if you set a ThreadLocal and don't remove it, the value sticks around — and if it references a large object or a classloader, you've leaked memory. <strong>Always call <code>threadLocal.remove()</code> in a finally block</strong> (Spring's <code>RequestContextHolder</code> does this; custom code often doesn't).</p>
+          <p><strong>(2) Inheritance</strong> — child threads don't inherit. Use <code>InheritableThreadLocal</code> if needed, but be careful with thread pools where threads aren't really "children". Modern alternative: <strong>ScopedValue</strong> (Java 21, preview).</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Virtual threads — should I use them? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p><strong>Yes — for I/O-bound workloads</strong>, which is most server-side Java. Virtual threads (Java 21) are JVM-managed, ~few KB each, and the JVM unmounts them from a carrier OS thread when they block on I/O. You can run a million of them.</p>
+          <p>Where they win:</p>
+          <ul>
+            <li>Microservices doing remote calls (HTTP, DB, Kafka).</li>
+            <li>Replacing thread-pool sizing headaches — one virtual thread per task is fine.</li>
+            <li>Writing blocking-style code without reactive complexity.</li>
+          </ul>
+          <p>Where they don't help: <strong>CPU-bound</strong> work — still bounded by cores. <strong>Pinned threads</strong> — code inside <code>synchronized</code> doing I/O pins the carrier; use <code>ReentrantLock</code> instead. Also be careful with <code>ThreadLocal</code> in code that may run on millions of threads.</p>
+          <p>I've started using them on internal services with great results — sometimes 5–10× throughput.</p>
+        </div>
+      </details>
+
+    </div>
+
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>
