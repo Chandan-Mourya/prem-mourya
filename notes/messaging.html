@@ -241,7 +241,7 @@ producer.send(new ProducerRecord("orders", orderId, event));</code></pre>
             <li><strong>Auditability</strong> — events are a permanent record; replay rebuilds state.</li>
             <li><strong>Multiple read models</strong> — same event drives DB updates, ES indexing, analytics, notifications.</li>
           </ul>
-          <p>Costs: eventual consistency in UI, harder debugging, schema evolution discipline (use a schema registry — Avro/Protobuf with backward-compat rules). On Punctuations.ai we made EDA core — resume changes flow as events into ES, analytics, audit, and notifications.</p>
+          <p>Costs: eventual consistency in UI, harder debugging, schema evolution discipline (use a schema registry — Avro/Protobuf with backward-compat rules). In one platform I worked on we made EDA core — resume changes flow as events into ES, analytics, audit, and notifications.</p>
         </div>
       </details>
 

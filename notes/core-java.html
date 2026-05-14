@@ -48,18 +48,287 @@
       <div class="section-divider">JVM &amp; Memory</div>
 
       <details class="qa">
-        <summary>What is the JVM, JRE, and JDK? <span class="qa-tag must">must</span></summary>
+        <summary>What is the JDK, JRE, and JVM? <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p>The <strong>JVM (Java Virtual Machine)</strong> is the runtime that loads <code>.class</code> files, verifies bytecode, and executes it on the host OS. It also handles memory management, JIT compilation, and security. The JVM is what makes Java "write once, run anywhere".</p>
-          <p>The <strong>JRE (Java Runtime Environment)</strong> = JVM + core class libraries (java.lang, java.util, etc.) — everything needed to <em>run</em> Java programs. The <strong>JDK (Java Development Kit)</strong> = JRE + development tools like <code>javac</code>, <code>jlink</code>, <code>jstack</code>, <code>jmap</code>. As a developer I install the JDK; production servers used to ship the JRE, but since Java 11 the standalone JRE is gone — we ship a custom runtime via <code>jlink</code> or a full JDK image.</p>
+          <p class="answer-intro">Three terms that sound similar and are routinely mixed up. They are <strong>nested layers</strong> of the Java platform — each one contains the one below it.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Idea — they nest like Russian dolls</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">JDK</span>
+              <span class="core-diff-val"><strong>Java Development Kit</strong> — to <em>build</em> Java apps.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">JRE</span>
+              <span class="core-diff-val"><strong>Java Runtime Environment</strong> — to <em>run</em> Java apps.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">JVM</span>
+              <span class="core-diff-val"><strong>Java Virtual Machine</strong> — the engine that <em>executes</em> bytecode.</span>
+            </div>
+          </div>
+
+          <div class="nest-wrap">
+            <div class="nest-box nest-jdk">
+              <span class="nest-label">JDK</span>
+              <span class="nest-item">javac</span>
+              <span class="nest-item">jdb</span>
+              <span class="nest-item">jlink</span>
+              <span class="nest-item">jshell</span>
+              <span class="nest-item">jmap</span>
+              <span class="nest-item">jstack</span>
+              <div class="nest-box nest-jre">
+                <span class="nest-label">JRE</span>
+                <span class="nest-item">java.lang</span>
+                <span class="nest-item">java.util</span>
+                <span class="nest-item">java.io</span>
+                <span class="nest-item">java.net</span>
+                <div class="nest-box nest-jvm">
+                  <span class="nest-label">JVM</span>
+                  <span class="nest-item">Class Loader</span>
+                  <span class="nest-item">Bytecode Verifier</span>
+                  <span class="nest-item">Execution Engine</span>
+                  <span class="nest-item">JIT</span>
+                  <span class="nest-item">GC</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> JDK — Java Development Kit</div>
+            <p class="solution-desc">The complete package used to <strong>develop</strong> Java applications.</p>
+            <p class="solution-desc"><strong>Contains:</strong></p>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>JRE</strong> (which contains the JVM)</li>
+              <li><strong>Compiler</strong> — <code>javac</code></li>
+              <li><strong>Debugger</strong> — <code>jdb</code></li>
+              <li><strong>Dev utilities</strong> — <code>jshell</code>, <code>jlink</code>, <code>jmap</code>, <code>jstack</code>, <code>jdeps</code></li>
+            </ul>
+            <p class="solution-desc"><strong>Use case:</strong> if you want to <em>write</em> Java code, <em>compile</em> programs, or <em>build</em> applications — you need the JDK.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> JRE — Java Runtime Environment</div>
+            <p class="solution-desc">Everything needed to <strong>run</strong> Java applications — but no development tools.</p>
+            <p class="solution-desc"><strong>Contains:</strong></p>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>JVM</strong></li>
+              <li><strong>Core libraries</strong> — <code>java.lang</code>, <code>java.util</code>, <code>java.io</code>, <code>java.net</code>, etc.</li>
+              <li><strong>Supporting files</strong> — properties, resources, configuration</li>
+            </ul>
+            <p class="solution-desc"><strong>Does NOT contain:</strong> the compiler or any dev tools.</p>
+            <p class="solution-desc"><strong>Use case:</strong> if you only want to <em>run</em> an existing Java application (a JAR or WAR) — the JRE is enough.</p>
+            <p class="solution-desc" style="margin-top: 6px;"><em>Note: since Java 11 the standalone JRE is no longer shipped — you build a slim custom runtime with <code>jlink</code> instead.</em></p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> JVM — Java Virtual Machine</div>
+            <p class="solution-desc">The engine that actually <strong>executes</strong> Java programs. When you write Java code, <code>javac</code> compiles it into <strong>bytecode</strong> (<code>.class</code> files); the JVM reads that bytecode and runs it on your physical machine.</p>
+            <p class="solution-desc"><strong>Main responsibilities:</strong></p>
+            <ul style="margin: 0 0 10px;">
+              <li>Load and verify <code>.class</code> files (class loader, bytecode verifier)</li>
+              <li>Execute bytecode (interpreter + JIT compiler for hot methods)</li>
+              <li>Manage memory (heap, stack, metaspace)</li>
+              <li>Garbage collection</li>
+              <li>Provide <strong>platform independence</strong> — same bytecode runs on Linux, Windows, macOS, ARM, x86, because each OS has its own JVM implementation</li>
+            </ul>
+            <p class="solution-desc">Think of the JVM as <em>"the machine inside your computer that understands Java bytecode."</em></p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Compilation &amp; Execution Flow</div>
+            <div class="flow">
+              <div class="flow-step">Java source <span class="badge">Hello.java</span></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-note">compiled by <code>javac</code> (part of JDK)</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Bytecode <span class="badge">Hello.class</span></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-note">loaded &amp; verified by Class Loader</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step accent">JVM execution <span class="badge">interpret + JIT</span></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-note">runs on the underlying OS / hardware</div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> The Relationship — in one line each</div>
+            <div class="equations">
+              <div class="eq-row accent">
+                <span class="eq-left">JDK</span>
+                <span class="eq-sign">=</span>
+                <span class="eq-right">JRE <span class="plus">+</span> Development tools (javac, jdb, …)</span>
+              </div>
+              <div class="eq-row green">
+                <span class="eq-left">JRE</span>
+                <span class="eq-sign">=</span>
+                <span class="eq-right">JVM <span class="plus">+</span> Core libraries</span>
+              </div>
+              <div class="eq-row pink">
+                <span class="eq-left">JVM</span>
+                <span class="eq-sign">=</span>
+                <span class="eq-right">The bytecode execution engine itself</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>In practice:</b> as a developer I install the <strong>JDK</strong> — it gives me everything (compiler, runtime, debugger). Production servers used to ship the <strong>JRE</strong> only, but since Java 11 we either ship a custom slim runtime built with <code>jlink</code>, or just use a full JDK container image. The <strong>JVM</strong> is the part that gives Java its famous <em>"Write Once, Run Anywhere"</em> property — same <code>.class</code> file runs on any OS that has a JVM.
+          </div>
         </div>
       </details>
 
       <details class="qa">
-        <summary>Explain the JVM memory model <span class="qa-tag hot">hot</span></summary>
+        <summary>Explain the JVM Memory Model <span class="qa-tag hot">hot</span></summary>
         <div class="qa-body">
-          <p>JVM memory is split into several areas. <strong>Heap</strong> stores all objects and is shared across threads; it's divided into Young Generation (Eden + 2 Survivor spaces) and Old Generation. <strong>Stack</strong> is per-thread and holds method frames with local variables and partial results. <strong>Metaspace</strong> (replaced PermGen in Java 8) holds class metadata in native memory. <strong>PC Register</strong> per thread tracks the current instruction. <strong>Native Method Stack</strong> is for JNI calls.</p>
-          <p>Most allocations happen in Eden. When Eden fills, a <em>minor GC</em> runs — surviving objects move to a Survivor space, then eventually to the Old Gen. The Old Gen is collected by a <em>major / full GC</em>, which is more expensive. Knowing this model is the first step to reading <code>jstat</code> output and diagnosing memory issues.</p>
+          <p class="answer-intro">At runtime the JVM splits memory into <strong>5 distinct areas</strong>. Some are <em>shared</em> across all threads, others are <em>created per-thread</em>. Understanding this is the first step before reading <code>jstat</code> output, analyzing a heap dump, or debugging a memory leak.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-diagram-3-fill"></i> The 5 Runtime Memory Areas</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Heap</span>
+              <span class="core-diff-val">Stores all <strong>objects</strong> and instance variables — shared.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Stack</span>
+              <span class="core-diff-val">Stores <strong>method frames</strong> — local vars, partial results, references.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Method Area</span>
+              <span class="core-diff-val">Class metadata, static variables, bytecode of methods (since Java 8 → <strong>Metaspace</strong> in native memory).</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">PC Register</span>
+              <span class="core-diff-val">Address of the <strong>current instruction</strong> being executed.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Native Stack</span>
+              <span class="core-diff-val">For methods written in <strong>C/C++</strong> (via JNI).</span>
+            </div>
+          </div>
+
+          <div class="mem-zones">
+            <div class="mem-zone shared">
+              <span class="mem-zone-label">SHARED BY ALL THREADS</span>
+              <div class="mem-areas">
+                <div class="mem-area">
+                  <b>Heap</b>
+                  <span>Young Gen (Eden + 2 Survivors) + Old Gen. All objects live here. GC operates here.</span>
+                </div>
+                <div class="mem-area">
+                  <b>Method Area / Metaspace</b>
+                  <span>Class metadata, static fields, runtime constant pool, bytecode of methods.</span>
+                </div>
+              </div>
+            </div>
+            <div class="mem-zone thread">
+              <span class="mem-zone-label">PER-THREAD (one copy per thread)</span>
+              <div class="mem-areas">
+                <div class="mem-area">
+                  <b>Stack</b>
+                  <span>Method frames — local variables, parameters, references to heap objects. LIFO. Pops on return.</span>
+                </div>
+                <div class="mem-area">
+                  <b>PC Register</b>
+                  <span>Holds the address of the next bytecode instruction this thread will execute.</span>
+                </div>
+                <div class="mem-area">
+                  <b>Native Method Stack</b>
+                  <span>Separate stack used when a thread calls a native (JNI / C, C++) method.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Tree View — at a glance</div>
+            <pre><code>JVM Memory
+│
+├── Heap          → Objects, instance vars        (shared, GC'd)
+├── Stack         → Method frames, local vars     (per-thread)
+├── Method Area   → Class info, static data       (shared)
+├── PC Register   → Current instruction address   (per-thread)
+└── Native Stack  → JNI / native method calls     (per-thread)</code></pre>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Worked Example — where things end up</div>
+            <p class="solution-desc">When you write:</p>
+            <pre><code>void run() {
+    int count = 10;                    // primitive
+    Student s = new Student("Alice");  // reference + object
+}</code></pre>
+            <p class="solution-desc"><strong>What actually happens:</strong></p>
+            <ul style="margin: 0 0 10px;">
+              <li><code>count</code> (primitive <code>int</code>) — lives directly in the method's <strong>stack frame</strong>.</li>
+              <li><code>s</code> (the reference variable) — lives in the <strong>stack frame</strong> too. It's just a pointer.</li>
+              <li><code>new Student("Alice")</code> — the actual <code>Student</code> object is allocated on the <strong>Heap</strong>.</li>
+              <li>The <code>Student</code> <em>class</em> itself (its bytecode, methods, static fields) lives in the <strong>Method Area / Metaspace</strong>.</li>
+              <li>When <code>run()</code> returns, its stack frame is popped — <code>count</code> and the reference <code>s</code> vanish. The <code>Student</code> object on the heap will be reclaimed by GC <em>later</em> when nothing else references it.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Heap vs Stack — the quick comparison</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-collection-fill"></i>
+                  <span>Heap</span>
+                </div>
+                <ul>
+                  <li><b>Stores:</b> objects, arrays, instance variables</li>
+                  <li><b>Scope:</b> <strong>shared</strong> across all threads</li>
+                  <li><b>Lifetime:</b> until no references → freed by <strong>GC</strong></li>
+                  <li><b>Size:</b> large, configurable (<code>-Xms</code> / <code>-Xmx</code>)</li>
+                  <li><b>Errors:</b> <code>OutOfMemoryError: Java heap space</code></li>
+                  <li><b>Access:</b> slower (cache misses, indirection)</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-stack"></i>
+                  <span>Stack</span>
+                </div>
+                <ul>
+                  <li><b>Stores:</b> method frames — local vars, refs, primitives</li>
+                  <li><b>Scope:</b> <strong>per-thread</strong> (one stack per thread)</li>
+                  <li><b>Lifetime:</b> auto-freed when method <em>returns</em> (LIFO pop)</li>
+                  <li><b>Size:</b> small, fixed per thread (<code>-Xss</code>)</li>
+                  <li><b>Errors:</b> <code>StackOverflowError</code> (e.g. infinite recursion)</li>
+                  <li><b>Access:</b> very fast (just pointer math)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Heap Sub-structure — what GC actually walks</div>
+            <p class="solution-desc">The Heap itself is split for generational GC:</p>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>Young Generation</strong> = <code>Eden</code> + 2 <code>Survivor</code> spaces (S0, S1). Most new objects are born in <strong>Eden</strong>.</li>
+              <li>When Eden fills → <strong>Minor GC</strong>: survivors move to a Survivor space; long-lived ones get promoted.</li>
+              <li><strong>Old Generation</strong> — long-lived objects end up here. Cleaned by a <strong>Major / Full GC</strong>, which is more expensive.</li>
+              <li>The premise: <em>most objects die young</em> — so collecting Eden frequently and cheaply is a huge win.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Key Rules to Remember</div>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>Heap</strong> is shared → needs synchronization when multiple threads mutate the same object.</li>
+              <li><strong>Stack</strong> is thread-local → local variables are inherently thread-safe.</li>
+              <li>Garbage Collector works mainly on the <strong>Heap</strong>, not the Stack.</li>
+              <li>Since Java 8, <strong>PermGen</strong> is gone → class metadata lives in <strong>Metaspace</strong>, which grows in native memory.</li>
+              <li><code>OutOfMemoryError</code> → heap exhausted. <code>StackOverflowError</code> → stack exhausted (usually runaway recursion).</li>
+            </ul>
+          </div>
+
+          <div class="takeaway">
+            <b>In one line:</b> the JVM has <strong>5 runtime areas</strong> — <em>Heap</em> and <em>Method Area</em> are shared across threads; <em>Stack</em>, <em>PC Register</em>, and <em>Native Stack</em> are per-thread. Objects live on the Heap (managed by GC), references and primitives live on the Stack (auto-freed on method return), and class-level info lives in the Method Area (Metaspace since Java 8). That mental model is enough to debug <code>OutOfMemoryError</code>, <code>StackOverflowError</code>, and most heap-dump investigations.
+          </div>
         </div>
       </details>
 
@@ -434,6 +703,877 @@
 
           <div class="takeaway">
             <b>Takeaway:</b> the same hierarchy applies to maps — <strong>HashMap / LinkedHashMap / TreeMap</strong>. Choose by ordering need first, then performance. Most production code defaults to <code>HashSet</code> / <code>HashMap</code>.
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What is a Binary Tree? (foundation for BST, Heap, Trie) <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">A <strong>Binary Tree</strong> is a hierarchical data structure where every node has <strong>at most two children</strong> — a <em>left</em> child and a <em>right</em> child. It's the foundation for many other structures: BST, AVL, Red-Black, Heaps, Tries, expression trees, parse trees.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-diagram-3"></i> Core Idea</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Structure</span>
+              <span class="core-diff-val">Each node holds a value + at most 2 child pointers (left, right). One node is the <em>root</em>.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Why</span>
+              <span class="core-diff-val">Hierarchical relationships, divide-and-conquer, log-n search (when balanced).</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Cost</span>
+              <span class="core-diff-val">Search/insert/delete is O(log n) only when the tree stays balanced — O(n) worst case if it's skewed.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Structure — a worked example</div>
+            <div class="tree-viz">        10        <span style="color: var(--text-muted)">// root</span>
+       /  \
+      5    20    <span style="color: var(--text-muted)">// 5 = left child, 20 = right child</span>
+     / \
+    2   8       <span style="color: var(--text-muted)">// leaf nodes (no children)</span></div>
+            <p class="solution-desc">Here <code>10</code> is the <strong>root</strong>, <code>5</code> and <code>20</code> are children of 10, and <code>2</code>, <code>8</code>, <code>20</code> are <strong>leaves</strong>.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Key Terminology</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Term</th><th>Meaning</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Root</td><td>Top node of the tree — has no parent.</td></tr>
+                  <tr><td>Parent</td><td>A node that has at least one child.</td></tr>
+                  <tr><td>Child</td><td>A node directly connected below another node.</td></tr>
+                  <tr><td>Leaf</td><td>A node with no children.</td></tr>
+                  <tr><td>Subtree</td><td>A node together with all its descendants forms a smaller tree.</td></tr>
+                  <tr><td>Height</td><td>Number of edges on the longest path from a node down to a leaf.</td></tr>
+                  <tr><td>Depth</td><td>Number of edges from the root down to that node.</td></tr>
+                  <tr><td>Level</td><td>All nodes at the same depth — root is level 0.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Types of Binary Trees</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Type</th><th>Definition</th><th>Used for</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Full</td>
+                    <td>Every node has either <strong>0 or 2</strong> children — never just one.</td>
+                    <td>Expression trees, decision trees.</td>
+                  </tr>
+                  <tr>
+                    <td>Complete</td>
+                    <td>All levels are completely filled <em>except possibly the last</em>, which fills left-to-right.</td>
+                    <td><strong>Heaps</strong> (PriorityQueue) — enables array-backed storage.</td>
+                  </tr>
+                  <tr>
+                    <td>Perfect</td>
+                    <td>All internal nodes have 2 children <em>and</em> all leaves are at the same level.</td>
+                    <td>Theoretical analysis, segment trees.</td>
+                  </tr>
+                  <tr>
+                    <td>Balanced</td>
+                    <td>Height of left and right subtrees differs by at most a small constant (usually 1).</td>
+                    <td>Guarantees O(log n) — AVL, Red-Black.</td>
+                  </tr>
+                  <tr>
+                    <td>Binary Search Tree (BST)</td>
+                    <td><strong>Left subtree &lt; node &lt; right subtree</strong> — for every node.</td>
+                    <td>Ordered lookups, range queries (<code>TreeMap</code>, <code>TreeSet</code>).</td>
+                  </tr>
+                  <tr>
+                    <td>Degenerate / Skewed</td>
+                    <td>Each parent has only one child — basically a linked list.</td>
+                    <td>The worst case you want to avoid.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> BST — the most useful variant</div>
+            <p class="solution-desc">A <strong>Binary Search Tree</strong> adds one ordering rule on top of a binary tree: <em>left &lt; root &lt; right</em>. That single rule turns it into an O(log n) lookup structure (when balanced).</p>
+            <div class="tree-viz">        15
+       /  \
+     10    20
+     / \   / \
+    7  12 17  25     <span style="color: var(--text-muted)">// every left node &lt; parent, every right node &gt; parent</span></div>
+            <p class="solution-desc">To search for <code>17</code>: at 15, go right (17 &gt; 15); at 20, go left (17 &lt; 20); found it — 2 comparisons instead of scanning all 7 nodes.</p>
+            <p class="solution-desc"><strong>Catch:</strong> if you insert sorted data into a plain BST, it degenerates into a skewed chain (O(n)). That's exactly why <strong>self-balancing BSTs</strong> like AVL and Red-Black trees exist — they keep the tree balanced automatically.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Time Complexity</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Operation</th><th>Balanced</th><th>Skewed (worst)</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Search</td><td>O(log n)</td><td>O(n)</td></tr>
+                  <tr><td>Insert</td><td>O(log n)</td><td>O(n)</td></tr>
+                  <tr><td>Delete</td><td>O(log n)</td><td>O(n)</td></tr>
+                  <tr><td>Traversal (in/pre/post-order)</td><td>O(n)</td><td>O(n)</td></tr>
+                  <tr><td>Space</td><td>O(n)</td><td>O(n)</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="solution-desc">The key takeaway: a plain BST can hit O(n) in the worst case. Balanced variants (AVL, Red-Black) guarantee O(log n).</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Where Binary Trees are used</div>
+            <div class="use-cases">
+              <div class="use-case">
+                <h4><i class="bi bi-search"></i> Searching &amp; Indexing</h4>
+                <ul>
+                  <li><code>TreeMap</code>, <code>TreeSet</code> (Red-Black tree)</li>
+                  <li>Database in-memory indexes</li>
+                  <li>Range queries (<code>floorKey</code>, <code>ceilingKey</code>)</li>
+                </ul>
+                <div class="examples"><b>Why:</b> O(log n) ordered lookups.</div>
+              </div>
+              <div class="use-case green">
+                <h4><i class="bi bi-bar-chart-fill"></i> Heaps / Priority Queues</h4>
+                <ul>
+                  <li>Java <code>PriorityQueue</code></li>
+                  <li>Dijkstra, A*, Kafka offset tracking</li>
+                  <li>Top-K problems</li>
+                </ul>
+                <div class="examples"><b>Why:</b> heap = complete binary tree → can be stored in a simple array.</div>
+              </div>
+              <div class="use-case pink">
+                <h4><i class="bi bi-code-square"></i> Compilers / Parsers</h4>
+                <ul>
+                  <li>Expression trees (<code>(a+b) * c</code>)</li>
+                  <li>Abstract Syntax Trees (AST)</li>
+                  <li>Operator precedence</li>
+                </ul>
+                <div class="examples"><b>Tools:</b> ANTLR, JavaC, every interpreter.</div>
+              </div>
+              <div class="use-case orange">
+                <h4><i class="bi bi-folder-fill"></i> File Systems &amp; OS</h4>
+                <ul>
+                  <li>Directory hierarchies</li>
+                  <li>Process trees</li>
+                  <li>Decision trees in ML / rules engines</li>
+                </ul>
+                <div class="examples"><b>Why:</b> hierarchical data is naturally a tree.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>One-liner:</b> A Binary Tree is a hierarchical structure where each node has at most two children. The most useful specialization is the <strong>BST</strong> (left &lt; root &lt; right) which enables O(log n) ordered lookups — provided the tree stays balanced. Real-world systems use balanced variants like <strong>AVL</strong> and <strong>Red-Black</strong> trees (Java's <code>TreeMap</code>/<code>TreeSet</code>, Linux kernel scheduler), or complete binary trees as the basis for <strong>heaps</strong> (PriorityQueue).
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What is a Min Heap and Max Heap? (the engine behind PriorityQueue) <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">A <strong>Heap</strong> is a special <strong>Complete Binary Tree</strong> that satisfies one ordering rule between every parent and its children. It gives you O(1) access to the min (or max) element — exactly what you need for priority queues, scheduling, and "top-K" problems. There are two flavors: <strong>Min Heap</strong> and <strong>Max Heap</strong>.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-bar-chart-fill"></i> Core Idea</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Shape</span>
+              <span class="core-diff-val">Always a <strong>complete binary tree</strong> — fills left-to-right, no gaps.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Order</span>
+              <span class="core-diff-val">Min Heap: parent ≤ children. Max Heap: parent ≥ children. (Only parent-child — siblings are unordered.)</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Storage</span>
+              <span class="core-diff-val">Stored as a flat <strong>array</strong> (no pointers) — index math gives you parent/children in O(1).</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Min Heap — smallest sits at the root</div>
+            <p class="solution-desc"><strong>Rule:</strong> every parent ≤ its children. The root is therefore the minimum of the whole heap.</p>
+            <div class="tree-viz">        10        <span style="color: var(--text-muted)">// root = smallest</span>
+       /  \
+     20    30
+    / \
+   40 50</div>
+            <p class="solution-desc"><strong>Use case:</strong> get the smallest element fast — task with the earliest deadline, shortest distance in Dijkstra, smallest k elements.</p>
+            <pre><code>PriorityQueue&lt;Integer&gt; minHeap = new PriorityQueue&lt;&gt;();        // default = min heap
+minHeap.offer(30); minHeap.offer(10); minHeap.offer(20);
+minHeap.peek();   // 10  (O(1))
+minHeap.poll();   // 10, then re-heapify (O(log n))</code></pre>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Max Heap — largest sits at the root</div>
+            <p class="solution-desc"><strong>Rule:</strong> every parent ≥ its children. The root is therefore the maximum of the whole heap.</p>
+            <div class="tree-viz">        50        <span style="color: var(--text-muted)">// root = largest</span>
+       /  \
+     30    40
+    / \
+   10 20</div>
+            <p class="solution-desc"><strong>Use case:</strong> get the largest element fast — top-K largest, highest priority task, largest pending request.</p>
+            <pre><code>PriorityQueue&lt;Integer&gt; maxHeap = new PriorityQueue&lt;&gt;(Comparator.reverseOrder());
+maxHeap.offer(30); maxHeap.offer(10); maxHeap.offer(50);
+maxHeap.peek();   // 50  (O(1))</code></pre>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Why array-backed? — The index trick</div>
+            <p class="solution-desc">Because a heap is always a <em>complete</em> tree, we can flatten it into an array with no wasted space and no pointers:</p>
+            <div class="tree-viz">Tree:                  Array (0-indexed):
+
+        10                  ┌────┬────┬────┬────┬────┐
+       /  \                 │ 10 │ 20 │ 30 │ 40 │ 50 │
+     20    30               └────┴────┴────┴────┴────┘
+    /  \                       0    1    2    3    4
+   40   50</div>
+            <p class="solution-desc">For a node at index <code>i</code>:</p>
+            <div class="equations">
+              <div class="eq-row accent">
+                <span class="eq-left">Left</span>
+                <span class="eq-sign">=</span>
+                <span class="eq-right">2·i + 1</span>
+              </div>
+              <div class="eq-row green">
+                <span class="eq-left">Right</span>
+                <span class="eq-sign">=</span>
+                <span class="eq-right">2·i + 2</span>
+              </div>
+              <div class="eq-row pink">
+                <span class="eq-left">Parent</span>
+                <span class="eq-sign">=</span>
+                <span class="eq-right">(i − 1) / 2     <span style="color: var(--text-muted)">// integer division</span></span>
+              </div>
+            </div>
+            <p class="solution-desc"><strong>Verify on the example above:</strong> index <code>1</code> is 20 → its parent is at <code>(1−1)/2 = 0</code> which is 10 ✅. Its children are at indices <code>3</code> and <code>4</code> → 40 and 50 ✅.</p>
+            <p class="solution-desc">This is why heaps are so fast and so cache-friendly — no node objects, no pointer dereferencing, just contiguous memory.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> How insert &amp; delete actually work</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-arrow-up-circle-fill"></i>
+                  <span>Insert — "sift up"</span>
+                </div>
+                <ul>
+                  <li>Put the new element at the <strong>end of the array</strong> (= last leaf, keeps tree complete).</li>
+                  <li>Compare with parent; if heap rule is violated, <strong>swap with parent</strong>.</li>
+                  <li>Repeat until the parent is OK or you reach the root.</li>
+                  <li>Cost: <strong>O(log n)</strong> — at most <code>height</code> swaps.</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-arrow-down-circle-fill"></i>
+                  <span>Delete root — "sift down"</span>
+                </div>
+                <ul>
+                  <li>Return the root (the answer), then move the <strong>last leaf</strong> to the root slot.</li>
+                  <li>Compare with the smaller (min heap) / larger (max heap) child; <strong>swap if needed</strong>.</li>
+                  <li>Repeat going down until heap rule holds.</li>
+                  <li>Cost: <strong>O(log n)</strong>.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Time Complexity</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Operation</th><th>Complexity</th><th>Why</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Peek min / max</td><td>O(1)</td><td>Just read array[0]</td></tr>
+                  <tr><td>Insert</td><td>O(log n)</td><td>Sift up — at most <code>height</code> swaps</td></tr>
+                  <tr><td>Delete root</td><td>O(log n)</td><td>Sift down — at most <code>height</code> swaps</td></tr>
+                  <tr><td>Build heap (heapify)</td><td>O(n)</td><td>Bottom-up trick — tighter than n·log n</td></tr>
+                  <tr><td>Search arbitrary element</td><td>O(n)</td><td>Heap isn't sorted — only parent-child ordered</td></tr>
+                  <tr><td>Heap sort</td><td>O(n log n)</td><td>n deletions, each O(log n)</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Min Heap vs Max Heap — quick comparison</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-arrow-down-square-fill"></i>
+                  <span>Min Heap</span>
+                </div>
+                <ul>
+                  <li><b>Root:</b> smallest element</li>
+                  <li><b>Rule:</b> parent ≤ children</li>
+                  <li><b>Java:</b> <code>new PriorityQueue&lt;&gt;()</code> (default)</li>
+                  <li><b>Used for:</b> shortest-path (Dijkstra), earliest-deadline scheduling, smallest-K</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-arrow-up-square-fill"></i>
+                  <span>Max Heap</span>
+                </div>
+                <ul>
+                  <li><b>Root:</b> largest element</li>
+                  <li><b>Rule:</b> parent ≥ children</li>
+                  <li><b>Java:</b> <code>new PriorityQueue&lt;&gt;(Comparator.reverseOrder())</code></li>
+                  <li><b>Used for:</b> top-K largest, highest-priority task, max-bandwidth picks</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">7</span> Where Heaps are actually used</div>
+            <div class="use-cases">
+              <div class="use-case">
+                <h4><i class="bi bi-cup-hot-fill"></i> Java &amp; JVM</h4>
+                <ul>
+                  <li><code>PriorityQueue</code> — backed by a binary min-heap</li>
+                  <li><code>DelayQueue</code>, <code>ScheduledThreadPoolExecutor</code></li>
+                  <li>Some GC algorithms internally</li>
+                </ul>
+                <div class="examples"><b>Why:</b> O(1) peek + O(log n) insert/delete is exactly what schedulers need.</div>
+              </div>
+              <div class="use-case green">
+                <h4><i class="bi bi-cpu-fill"></i> OS / Schedulers</h4>
+                <ul>
+                  <li>CPU process schedulers (priority queues)</li>
+                  <li>Timer / event queues</li>
+                  <li>Network packet scheduling (QoS)</li>
+                </ul>
+                <div class="examples"><b>Why:</b> always pick the next highest-priority task in log n.</div>
+              </div>
+              <div class="use-case pink">
+                <h4><i class="bi bi-diagram-3-fill"></i> Graph Algorithms</h4>
+                <ul>
+                  <li>Dijkstra — shortest path (min heap on distance)</li>
+                  <li>Prim's — minimum spanning tree</li>
+                  <li>A* search</li>
+                </ul>
+                <div class="examples"><b>Why:</b> repeatedly "extract min" is the hot loop in these algorithms.</div>
+              </div>
+              <div class="use-case orange">
+                <h4><i class="bi bi-trophy-fill"></i> Top-K &amp; Streaming</h4>
+                <ul>
+                  <li>Top-K frequent elements (LeetCode classic)</li>
+                  <li>Streaming median (two heaps)</li>
+                  <li>Heap Sort</li>
+                  <li>Fraud / outlier ranking</li>
+                </ul>
+                <div class="examples"><b>Why:</b> keeps only the K best — O(n log k) total.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>One-liner:</b> A Heap is a <strong>complete binary tree</strong> stored as an array. <strong>Min Heap</strong> keeps the smallest at the root, <strong>Max Heap</strong> keeps the largest. Peek is O(1), insert/delete are O(log n). It's the engine behind Java's <code>PriorityQueue</code>, OS schedulers, Dijkstra/Prim/A*, top-K problems, and Heap Sort. <em>Use a heap whenever you repeatedly need the "best" element from a changing set without re-sorting.</em>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Sorting Algorithms — Bubble, Selection, Insertion, Merge, Quick, Heap (with code) <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">Sorting is the bread-and-butter of any DSA interview. The 6 classic algorithms split into two camps — <em>simple O(n²)</em> ones (Bubble, Selection, Insertion) you learn first, and <em>fast O(n log n)</em> ones (Merge, Quick, Heap) you actually use. Each has a sweet spot.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-sort-down"></i> 3 properties interviewers will ask about</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Stable</span>
+              <span class="core-diff-val">Equal elements keep their original relative order. Important when sorting by multiple keys.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">In-place</span>
+              <span class="core-diff-val">Uses O(1) or O(log n) extra memory — doesn't allocate a second array.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Comparison-based</span>
+              <span class="core-diff-val">Decides order by comparing pairs. Lower bound for these is Ω(n log n).</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Bubble Sort</div>
+            <p class="solution-desc">Repeatedly walk through the array and <strong>swap adjacent elements</strong> that are out of order. After each pass the largest element <em>bubbles</em> to the end.</p>
+            <div class="tree-viz">[5, 1, 4]
+→ [1, 5, 4]   <span style="color: var(--text-muted)">// swap 5 and 1</span>
+→ [1, 4, 5]   <span style="color: var(--text-muted)">// swap 5 and 4</span></div>
+            <pre><code>public static void bubbleSort(int[] a) {
+    int n = a.length;
+    for (int i = 0; i &lt; n - 1; i++) {
+        boolean swapped = false;
+        for (int j = 0; j &lt; n - 1 - i; j++) {
+            if (a[j] &gt; a[j + 1]) {
+                int tmp = a[j];
+                a[j] = a[j + 1];
+                a[j + 1] = tmp;
+                swapped = true;
+            }
+        }
+        if (!swapped) return;
+    }
+}</code></pre>
+            <div class="complexity">
+              <span class="time">Best O(n) · Avg O(n²) · Worst O(n²)</span>
+              <span class="space">O(1) space · stable ✅</span>
+            </div>
+            <p class="solution-desc"><strong>Use when:</strong> teaching, very small inputs, or when you just need the "is it sorted" early-exit on nearly sorted data.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Selection Sort</div>
+            <p class="solution-desc">Find the <strong>minimum element</strong> in the unsorted portion and swap it into the first unsorted slot. Repeat.</p>
+            <div class="tree-viz">[64, 25, 12]
+→ [12, 25, 64]   <span style="color: var(--text-muted)">// pick min (12), swap with first</span></div>
+            <pre><code>public static void selectionSort(int[] a) {
+    int n = a.length;
+    for (int i = 0; i &lt; n - 1; i++) {
+        int minIdx = i;
+        for (int j = i + 1; j &lt; n; j++)
+            if (a[j] &lt; a[minIdx]) minIdx = j;
+        int tmp = a[i];
+        a[i] = a[minIdx];
+        a[minIdx] = tmp;
+    }
+}</code></pre>
+            <div class="complexity">
+              <span class="time">Best / Avg / Worst all O(n²)</span>
+              <span class="space">O(1) space · <em>not</em> stable ❌</span>
+            </div>
+            <p class="solution-desc"><strong>Use when:</strong> memory writes are expensive — Selection does at most <code>n</code> swaps, fewer than Bubble.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Insertion Sort</div>
+            <p class="solution-desc">Build the sorted array <strong>one element at a time</strong> — take the next element and insert it into its right place in the already-sorted prefix (like sorting playing cards in your hand).</p>
+            <div class="tree-viz">[5, 2, 4]
+→ [2, 5, 4]   <span style="color: var(--text-muted)">// insert 2 before 5</span>
+→ [2, 4, 5]   <span style="color: var(--text-muted)">// insert 4 between 2 and 5</span></div>
+            <pre><code>public static void insertionSort(int[] a) {
+    for (int i = 1; i &lt; a.length; i++) {
+        int key = a[i];
+        int j = i - 1;
+        while (j &gt;= 0 &amp;&amp; a[j] &gt; key) {
+            a[j + 1] = a[j];
+            j--;
+        }
+        a[j + 1] = key;
+    }
+}</code></pre>
+            <div class="complexity">
+              <span class="time">Best O(n) · Avg O(n²) · Worst O(n²)</span>
+              <span class="space">O(1) space · stable ✅</span>
+            </div>
+            <p class="solution-desc"><strong>Use when:</strong> data is <em>nearly sorted</em> or <em>small</em> (n ≤ ~10). Java's Timsort actually <em>switches</em> to insertion sort for small subarrays for exactly this reason.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Merge Sort — Divide &amp; Conquer</div>
+            <p class="solution-desc"><strong>Divide</strong> the array in half, <strong>recursively sort</strong> each half, then <strong>merge</strong> the two sorted halves in O(n). Guaranteed O(n log n) — no matter the input.</p>
+            <div class="tree-viz">[5, 2, 4, 1]
+   ↓ divide
+[5, 2]      [4, 1]
+   ↓ recurse + merge each
+[2, 5]      [1, 4]
+   ↓ merge both
+[1, 2, 4, 5]</div>
+            <pre><code>public static void mergeSort(int[] a) {
+    if (a.length &lt; 2) return;
+    int mid = a.length / 2;
+    int[] left  = Arrays.copyOfRange(a, 0, mid);
+    int[] right = Arrays.copyOfRange(a, mid, a.length);
+    mergeSort(left);
+    mergeSort(right);
+    merge(a, left, right);
+}
+
+private static void merge(int[] a, int[] l, int[] r) {
+    int i = 0, j = 0, k = 0;
+    while (i &lt; l.length &amp;&amp; j &lt; r.length)
+        a[k++] = (l[i] &lt;= r[j]) ? l[i++] : r[j++];
+    while (i &lt; l.length) a[k++] = l[i++];
+    while (j &lt; r.length) a[k++] = r[j++];
+}</code></pre>
+            <div class="complexity">
+              <span class="time">Best / Avg / Worst all O(n log n)</span>
+              <span class="space">O(n) space · stable ✅</span>
+            </div>
+            <p class="solution-desc"><strong>Use when:</strong> stability matters (sorting by multiple keys), linked lists, or when you need a <em>guaranteed</em> O(n log n) (no quicksort worst-case risk). Java's <code>Collections.sort()</code> uses <strong>Timsort</strong> — a hybrid of merge + insertion sort.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Quick Sort — Pivot &amp; Partition</div>
+            <p class="solution-desc">Pick a <strong>pivot</strong>, partition the array so smaller elements go left and larger ones go right, then recursively sort each side. Average <strong>O(n log n)</strong>, but worst <strong>O(n²)</strong> on already-sorted data with bad pivot choice.</p>
+            <div class="tree-viz">pivot = 5
+[8, 2, 5, 1]
+   ↓ partition
+[2, 1]   5   [8]
+   ↓ recurse on left + right
+[1, 2]   5   [8]
+   ↓ result
+[1, 2, 5, 8]</div>
+            <pre><code>public static void quickSort(int[] a, int lo, int hi) {
+    if (lo &lt; hi) {
+        int p = partition(a, lo, hi);
+        quickSort(a, lo, p - 1);
+        quickSort(a, p + 1, hi);
+    }
+}
+
+private static int partition(int[] a, int lo, int hi) {
+    int pivot = a[hi];          // pick last as pivot
+    int i = lo - 1;
+    for (int j = lo; j &lt; hi; j++) {
+        if (a[j] &lt;= pivot) {
+            i++;
+            int t = a[i]; a[i] = a[j]; a[j] = t;
+        }
+    }
+    int t = a[i + 1]; a[i + 1] = a[hi]; a[hi] = t;
+    return i + 1;
+}</code></pre>
+            <div class="complexity">
+              <span class="time">Best O(n log n) · Avg O(n log n) · Worst O(n²)</span>
+              <span class="space">O(log n) space · <em>not</em> stable ❌</span>
+            </div>
+            <p class="solution-desc"><strong>Use when:</strong> general-purpose sorting of primitives — it's the <em>fastest in practice</em> due to cache locality. Java's <code>Arrays.sort(int[])</code> uses <strong>Dual-Pivot Quicksort</strong>. Random pivot or median-of-three avoids the O(n²) trap.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Heap Sort — sort using a heap</div>
+            <p class="solution-desc">Build a <strong>max-heap</strong> from the array (O(n)), then repeatedly extract the max from the root and put it at the end. After <code>n</code> extractions, the array is sorted.</p>
+            <div class="tree-viz">[4, 10, 3, 5, 1]
+   ↓ heapify (max heap)
+[10, 5, 3, 4, 1]
+   ↓ extract 10 → last position
+[5, 4, 3, 1, 10]
+   ↓ extract 5
+[4, 1, 3, 5, 10]
+   ↓ ... continues
+[1, 3, 4, 5, 10]</div>
+            <pre><code>public static void heapSort(int[] a) {
+    int n = a.length;
+    for (int i = n / 2 - 1; i &gt;= 0; i--) heapify(a, n, i);   // build max-heap
+    for (int i = n - 1; i &gt; 0; i--) {
+        int t = a[0]; a[0] = a[i]; a[i] = t;                  // move max to end
+        heapify(a, i, 0);                                     // restore heap on [0..i)
+    }
+}
+
+private static void heapify(int[] a, int n, int i) {
+    int largest = i, l = 2 * i + 1, r = 2 * i + 2;
+    if (l &lt; n &amp;&amp; a[l] &gt; a[largest]) largest = l;
+    if (r &lt; n &amp;&amp; a[r] &gt; a[largest]) largest = r;
+    if (largest != i) {
+        int t = a[i]; a[i] = a[largest]; a[largest] = t;
+        heapify(a, n, largest);
+    }
+}</code></pre>
+            <div class="complexity">
+              <span class="time">Best / Avg / Worst all O(n log n)</span>
+              <span class="space">O(1) space · <em>not</em> stable ❌</span>
+            </div>
+            <p class="solution-desc"><strong>Use when:</strong> you need O(n log n) <em>and</em> O(1) extra memory — embedded systems, real-time constraints, top-K extraction.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">7</span> Master Comparison Table</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Sort</th><th>Best</th><th>Average</th><th>Worst</th><th>Space</th><th>Stable</th><th>In-place</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Bubble</td>    <td>O(n)</td>       <td>O(n²)</td>      <td>O(n²)</td>      <td>O(1)</td>     <td>✅</td><td>✅</td></tr>
+                  <tr><td>Selection</td> <td>O(n²)</td>      <td>O(n²)</td>      <td>O(n²)</td>      <td>O(1)</td>     <td>❌</td><td>✅</td></tr>
+                  <tr><td>Insertion</td> <td>O(n)</td>       <td>O(n²)</td>      <td>O(n²)</td>      <td>O(1)</td>     <td>✅</td><td>✅</td></tr>
+                  <tr><td>Merge</td>     <td>O(n log n)</td> <td>O(n log n)</td> <td>O(n log n)</td> <td>O(n)</td>     <td>✅</td><td>❌</td></tr>
+                  <tr><td>Quick</td>     <td>O(n log n)</td> <td>O(n log n)</td> <td>O(n²)</td>      <td>O(log n)</td> <td>❌</td><td>✅</td></tr>
+                  <tr><td>Heap</td>      <td>O(n log n)</td> <td>O(n log n)</td> <td>O(n log n)</td> <td>O(1)</td>     <td>❌</td><td>✅</td></tr>
+                  <tr><td>Counting</td>  <td>O(n+k)</td>     <td>O(n+k)</td>     <td>O(n+k)</td>     <td>O(k)</td>     <td>✅</td><td>❌</td></tr>
+                  <tr><td>Radix</td>     <td>O(d·n)</td>     <td>O(d·n)</td>     <td>O(d·n)</td>     <td>O(n+k)</td>   <td>✅</td><td>❌</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">8</span> Which sort should I pick? — decision guide</div>
+            <div class="use-cases">
+              <div class="use-case">
+                <h4><i class="bi bi-1-square-fill"></i> Small data (n &lt; ~20)</h4>
+                <ul>
+                  <li><strong>Insertion Sort</strong></li>
+                  <li>Fewer overhead instructions than n·log n algos</li>
+                </ul>
+                <div class="examples"><b>Why:</b> low constant factor beats asymptotic on small n.</div>
+              </div>
+              <div class="use-case green">
+                <h4><i class="bi bi-bar-chart-line-fill"></i> Large data, general purpose</h4>
+                <ul>
+                  <li><strong>Quick Sort</strong> (primitives) — fastest in practice</li>
+                  <li><strong>Merge Sort</strong> (objects) — stable, guaranteed n·log n</li>
+                </ul>
+                <div class="examples"><b>Java:</b> <code>Arrays.sort(int[])</code> → Dual-Pivot Quicksort. <code>Collections.sort()</code> → Timsort.</div>
+              </div>
+              <div class="use-case pink">
+                <h4><i class="bi bi-hdd-fill"></i> Memory-constrained</h4>
+                <ul>
+                  <li><strong>Heap Sort</strong></li>
+                  <li>O(1) extra space, no recursion stack</li>
+                </ul>
+                <div class="examples"><b>Why:</b> in-place + O(n log n) worst case — predictable on embedded systems.</div>
+              </div>
+              <div class="use-case orange">
+                <h4><i class="bi bi-shield-check"></i> Stability required</h4>
+                <ul>
+                  <li><strong>Merge Sort</strong> / Timsort</li>
+                  <li>Insertion Sort (for small n)</li>
+                </ul>
+                <div class="examples"><b>Use case:</b> sort users by city, then by name — first sort's order must survive the second sort.</div>
+              </div>
+              <div class="use-case">
+                <h4><i class="bi bi-arrow-up-right-circle-fill"></i> Nearly sorted</h4>
+                <ul>
+                  <li><strong>Insertion Sort</strong> — O(n) on nearly sorted</li>
+                  <li>Timsort also exploits "runs"</li>
+                </ul>
+                <div class="examples"><b>Why:</b> very few swaps when most elements already in place.</div>
+              </div>
+              <div class="use-case green">
+                <h4><i class="bi bi-123"></i> Small integer range (k ≪ n)</h4>
+                <ul>
+                  <li><strong>Counting Sort</strong> — O(n + k)</li>
+                  <li><strong>Radix Sort</strong> — for fixed-width integers / strings</li>
+                </ul>
+                <div class="examples"><b>Why:</b> beats the O(n log n) lower bound — these aren't comparison-based.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">9</span> What Java actually uses (interview gem)</div>
+            <ul style="margin: 0 0 10px;">
+              <li><code>Arrays.sort(int[])</code> / primitive arrays → <strong>Dual-Pivot Quicksort</strong> (Vladimir Yaroslavskiy, 2009). Falls back to insertion sort for small partitions.</li>
+              <li><code>Arrays.sort(Object[])</code> / <code>Collections.sort()</code> / <code>List.sort()</code> → <strong>Timsort</strong> — a hybrid of merge sort + insertion sort that exploits "runs" of already-sorted data. Stable, O(n log n) worst case, O(n) best case on sorted input.</li>
+              <li><code>Stream.sorted()</code> → also Timsort under the hood.</li>
+              <li><code>parallelSort</code> → Fork/Join parallel merge sort for large arrays.</li>
+            </ul>
+            <p class="solution-desc">Mentioning <em>Dual-Pivot Quicksort</em> and <em>Timsort</em> by name in an interview almost always lands well — it shows you've looked under the hood.</p>
+          </div>
+
+          <div class="takeaway">
+            <b>Interview one-liner:</b> Sorting algorithms arrange data in order; pick one based on <strong>data size</strong>, <strong>memory</strong>, <strong>stability</strong>, and <strong>data characteristics</strong>. <em>Bubble / Selection / Insertion</em> are simple O(n²) and only used for tiny or nearly sorted inputs. <em>Merge / Quick / Heap</em> are the O(n log n) workhorses — Quick is fastest in practice but worst-case O(n²); Merge is stable with guaranteed O(n log n); Heap is O(1) memory. Java itself uses <strong>Dual-Pivot Quicksort</strong> for primitives and <strong>Timsort</strong> (merge + insertion hybrid) for objects.
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>What is a Red-Black Tree? (the engine behind TreeMap / TreeSet) <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">A <strong>Red-Black Tree</strong> is a <strong>self-balancing Binary Search Tree (BST)</strong>. It keeps the tree balanced by coloring each node either <em>red</em> or <em>black</em> and enforcing 5 simple rules. The result: every operation (search / insert / delete) is guaranteed <strong>O(log n)</strong> — never O(n).</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-tree-fill"></i> Core Idea</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">What</span>
+              <span class="core-diff-val">A BST where each node has a color (red / black) and 5 invariants are maintained.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Why</span>
+              <span class="core-diff-val">Plain BSTs can degenerate into a linked list (O(n)). Coloring + rotations keep height ≈ log n.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Cost</span>
+              <span class="core-diff-val">Search / Insert / Delete — all O(log n), guaranteed worst case.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Why we need it — the skewed-BST problem</div>
+            <p class="solution-desc">If you insert <code>10, 20, 30, 40</code> into a plain BST <em>in order</em>, you get a sloped chain — basically a linked list:</p>
+            <div class="tree-viz">10
+  \
+   20
+     \
+      30
+        \
+         40       <span style="color: var(--text-muted)">// search now = O(n), not O(log n)</span></div>
+            <p class="solution-desc">A Red-Black Tree detects this and <strong>auto-rotates</strong> as you insert, so the same data stays balanced:</p>
+            <div class="tree-viz">       <span class="rb-b">20(B)</span>
+       /    \
+   <span class="rb-b">10(B)</span>    <span class="rb-b">30(B)</span>
+              \
+              <span class="rb-r">40(R)</span></div>
+            <p class="solution-desc">Same data, but height ≈ log n. Every operation stays fast.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> The 5 Rules (invariants)</div>
+            <ol style="margin: 0 0 10px;">
+              <li>Every node is either <span class="rb-r">Red</span> or <span class="rb-b">Black</span>.</li>
+              <li>The <strong>root</strong> is always <span class="rb-b">Black</span>.</li>
+              <li>A <span class="rb-r">Red</span> node <em>cannot</em> have a <span class="rb-r">Red</span> child (no two reds in a row).</li>
+              <li>Every path from root to any <code>NULL</code> leaf has the <strong>same number of black nodes</strong> (this is called the <em>black-height</em>).</li>
+              <li><code>NULL</code> leaves are considered <span class="rb-b">Black</span>.</li>
+            </ol>
+            <p class="solution-desc"><strong>Why these rules work:</strong> they mathematically guarantee that the longest path is at most <strong>2× the shortest path</strong>. That keeps the tree height bounded by <code>2·log₂(n+1)</code> — i.e. O(log n).</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Example — a valid Red-Black Tree</div>
+            <div class="tree-legend">
+              <span><span class="rb-b">■</span> Black</span>
+              <span><span class="rb-r">■</span> Red</span>
+            </div>
+            <div class="tree-viz">         <span class="rb-b">10(B)</span>
+        /     \
+     <span class="rb-r">5(R)</span>    <span class="rb-r">20(R)</span>
+     /  \     /  \
+   <span class="rb-b">3(B)</span> <span class="rb-b">7(B)</span> <span class="rb-b">15(B)</span> <span class="rb-b">25(B)</span></div>
+            <p class="solution-desc">Check the rules: root is black ✅, no red-red pair ✅, every path from root to a NULL leaf passes through the same count of black nodes ✅.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Balancing Operations</div>
+            <p class="solution-desc">After every insert/delete the tree checks the 5 rules. If a rule is violated, it fixes itself using:</p>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-palette-fill"></i>
+                  <span>Recoloring</span>
+                </div>
+                <ul>
+                  <li>Flip node colors (red ↔ black) without moving any pointers.</li>
+                  <li>Used when an uncle node is red — push the "blackness" up the tree.</li>
+                  <li>Cheapest fix — no structure change.</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-arrow-repeat"></i>
+                  <span>Rotations</span>
+                </div>
+                <ul>
+                  <li><strong>Left rotation</strong> — pivots a node down-left, its right child up.</li>
+                  <li><strong>Right rotation</strong> — mirror of left.</li>
+                  <li>Used when uncle is black — physically reshape the tree.</li>
+                  <li>At most <strong>2 rotations</strong> per insert (and O(log n) recolorings).</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Time Complexity</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Operation</th><th>Average</th><th>Worst</th><th>Notes</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Search</td><td>O(log n)</td><td>O(log n)</td><td>Same as a balanced BST</td></tr>
+                  <tr><td>Insert</td><td>O(log n)</td><td>O(log n)</td><td>1 walk down + at most 2 rotations</td></tr>
+                  <tr><td>Delete</td><td>O(log n)</td><td>O(log n)</td><td>More complex — up to 3 rotations</td></tr>
+                  <tr><td>Space</td><td>O(n)</td><td>O(n)</td><td>1 bit per node for the color</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Where Red-Black Trees are actually used</div>
+            <div class="use-cases">
+              <div class="use-case">
+                <h4><i class="bi bi-cup-hot-fill"></i> Java Collections</h4>
+                <ul>
+                  <li><code>TreeMap</code> — sorted map</li>
+                  <li><code>TreeSet</code> — sorted set</li>
+                  <li><code>ConcurrentSkipListMap</code> uses skip lists, not RB — but the API is similar.</li>
+                </ul>
+                <div class="examples"><b>Why:</b> guaranteed O(log n) for <code>get</code>, <code>put</code>, <code>firstKey</code>, <code>floorKey</code>, range queries.</div>
+              </div>
+              <div class="use-case green">
+                <h4><i class="bi bi-cpu-fill"></i> Linux Kernel</h4>
+                <ul>
+                  <li>Completely Fair Scheduler (CFS) — picks the next task to run</li>
+                  <li><code>epoll</code> internal data structure</li>
+                  <li>Virtual memory area (VMA) tracking</li>
+                </ul>
+                <div class="examples"><b>Why:</b> kernel needs predictable worst-case performance — RB tree gives that.</div>
+              </div>
+              <div class="use-case pink">
+                <h4><i class="bi bi-database-fill"></i> Databases</h4>
+                <ul>
+                  <li>In-memory index structures</li>
+                  <li>Some isolation-level lock managers</li>
+                </ul>
+                <div class="examples"><b>Note:</b> on-disk indexes typically use <strong>B-trees / B+ trees</strong> instead — better cache locality for disk I/O.</div>
+              </div>
+              <div class="use-case orange">
+                <h4><i class="bi bi-code-square"></i> Language Runtimes</h4>
+                <ul>
+                  <li>C++ STL: <code>std::map</code>, <code>std::set</code>, <code>std::multimap</code></li>
+                  <li>Compiler symbol tables</li>
+                  <li>Some garbage-collector free-list implementations</li>
+                </ul>
+                <div class="examples"><b>Why:</b> ordered traversal + log-n inserts is the right primitive for these.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">7</span> RB Tree vs AVL Tree (the common follow-up)</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-tree-fill"></i>
+                  <span>Red-Black Tree</span>
+                </div>
+                <ul>
+                  <li><b>Balance:</b> loose — longest path ≤ 2× shortest</li>
+                  <li><b>Insert / Delete:</b> faster (fewer rotations)</li>
+                  <li><b>Search:</b> slightly slower (taller tree)</li>
+                  <li><b>Use when:</b> writes are frequent (Java <code>TreeMap</code>, Linux kernel)</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-tree"></i>
+                  <span>AVL Tree</span>
+                </div>
+                <ul>
+                  <li><b>Balance:</b> strict — heights differ by at most 1</li>
+                  <li><b>Insert / Delete:</b> slower (more rotations)</li>
+                  <li><b>Search:</b> faster (shorter tree)</li>
+                  <li><b>Use when:</b> reads dominate writes (in-memory DB indexes)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>One-liner:</b> A Red-Black Tree is a self-balancing BST that uses red/black coloring and 5 invariants to keep the tree height bounded by O(log n). Every <strong>insert/delete</strong> may trigger <em>recoloring</em> and at most a couple of <em>rotations</em> to restore the rules. In Java, it's the engine behind <code>TreeMap</code> and <code>TreeSet</code>; in the Linux kernel it powers the CFS scheduler and <code>epoll</code>. Use it when you need a <strong>sorted</strong> structure with <strong>guaranteed</strong> O(log n) operations.
           </div>
         </div>
       </details>

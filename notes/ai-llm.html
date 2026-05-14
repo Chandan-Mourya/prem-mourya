@@ -34,7 +34,7 @@
     <div class="topic-page-header">
       <div class="topic-page-eyebrow">17 · AI &amp; LLM</div>
       <h1>AI / LLM engineering</h1>
-      <p class="topic-page-desc">Practical answers from real AI integration work — LLMs, embeddings, RAG, vector DBs, tool calling. Anchor stories in Punctuations.ai.</p>
+      <p class="topic-page-desc">Practical answers from real AI integration work — LLMs, embeddings, RAG, vector DBs, tool calling.</p>
       <div class="topic-page-meta">
         <span><strong>12</strong> questions</span>
         <span>Press <span class="hint-kbd">/</span> to search</span>
@@ -46,11 +46,252 @@
     <div class="qa-list">
 
       <details class="qa">
-        <summary>What is an LLM, in one paragraph? <span class="qa-tag must">must</span></summary>
+        <summary>What is an LLM (Large Language Model)? <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p>A <strong>Large Language Model</strong> is a neural network — typically a transformer — trained on huge amounts of text to predict the next token. "Token" is roughly a word piece; for English ~4 characters on average. Predicting the next token over billions of examples gives the model statistical understanding of grammar, facts, reasoning patterns, code, and style.</p>
-          <p>At inference you give it a prompt; it generates tokens one at a time, conditioned on everything before. <strong>Context window</strong> limits how much it can see at once (commonly 8K–200K tokens today). <strong>Temperature</strong> controls randomness — 0 for deterministic outputs, &gt;0 for creativity.</p>
-          <p>Common families: OpenAI GPT, Anthropic Claude, Google Gemini, Meta Llama (open weights), Mistral, DeepSeek. As an engineer I treat them like a remote service — call an API, handle latency, retries, cost, and safety just like any other dependency.</p>
+          <p class="answer-intro">An <strong>LLM</strong> is a deep-learning model — almost always a <strong>Transformer</strong> — trained on huge amounts of text so it can <em>understand</em> language and <em>generate</em> text, one <strong>token</strong> (roughly a word piece) at a time. It's the engine behind tools like ChatGPT, Claude, Gemini, and Llama.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-robot"></i> Core Idea</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">What</span>
+              <span class="core-diff-val">A neural network trained on massive text corpora to <strong>predict the next token</strong> given everything before it.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">How</span>
+              <span class="core-diff-val">Transformer architecture + attention mechanism, trained with billions of examples.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Why useful</span>
+              <span class="core-diff-val">Next-token prediction at scale produces emergent skills — reasoning, code, translation, summarization.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> What can it actually do?</div>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>Understand</strong> natural language — intent, sentiment, entities.</li>
+              <li><strong>Generate</strong> text — emails, articles, marketing copy.</li>
+              <li><strong>Answer questions</strong> — open-domain Q&amp;A, FAQs.</li>
+              <li><strong>Write code</strong> — boilerplate, refactors, test cases, regexes.</li>
+              <li><strong>Summarize</strong> long content — meeting notes, papers, support tickets.</li>
+              <li><strong>Translate</strong> between languages — including code-to-code.</li>
+              <li><strong>Classify &amp; extract</strong> — entities, topics, structured JSON.</li>
+            </ul>
+            <p class="solution-desc"><strong>Popular families:</strong> OpenAI GPT, Anthropic Claude, Google Gemini, Meta Llama (open weights), Mistral, DeepSeek.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Why is it called "Large"?</div>
+            <p class="solution-desc">The "Large" refers to three things — all at once:</p>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-database-fill"></i>
+                  <span>Massive Training Data</span>
+                </div>
+                <ul>
+                  <li>Trillions of <strong>tokens</strong> of text</li>
+                  <li>Web pages, books, code, Wikipedia, papers</li>
+                  <li>Multi-language, multi-domain</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-cpu-fill"></i>
+                  <span>Massive Parameter Count</span>
+                </div>
+                <ul>
+                  <li>Billions to <strong>trillions</strong> of learnable weights</li>
+                  <li>e.g. GPT-3 = 175B, Llama 3.1 405B = 405B</li>
+                  <li>More params → more capacity to memorize patterns</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-lightning-charge-fill"></i>
+                  <span>Massive Compute</span>
+                </div>
+                <ul>
+                  <li>Thousands of GPUs/TPUs for weeks-to-months</li>
+                  <li>Training cost: $10M – $100M+</li>
+                  <li>This is why only a few labs train frontier models</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> How an LLM actually works — end-to-end flow</div>
+            <div class="flow">
+              <div class="flow-step">Input prompt <span class="badge">"What is Java?"</span></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-note">tokenizer splits text into tokens (~¾ of a word each)</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Token IDs <span class="badge">[1734, 318, 7349, 30]</span></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-note">embedded into vectors + passed through transformer layers</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step accent">Transformer + Attention <span class="badge">N layers</span></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-note">produces probability distribution over the next token</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Predict next token <span class="badge">"Java"</span></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-note">append, repeat — generates one token at a time</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step accent">Generated response <span class="badge">"Java is a programming language…"</span></div>
+            </div>
+            <p class="solution-desc" style="margin-top: 10px;">
+              The whole thing boils down to: <strong>"given the tokens so far, what's the most likely next token?"</strong> Repeat that thousands of times → coherent text.
+            </p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Key Technologies behind LLMs</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Technology</th><th>Role</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Deep Learning</td><td>Layered neural networks that learn from data via backpropagation.</td></tr>
+                  <tr><td>Neural Networks</td><td>The general framework — neurons, weights, activations.</td></tr>
+                  <tr><td>Transformer (2017)</td><td>The breakthrough architecture from Google's "Attention Is All You Need" paper. Replaced RNN/LSTM for sequence modelling.</td></tr>
+                  <tr><td>Attention Mechanism</td><td>Lets the model "focus" on the most relevant words in the input when predicting the next one — captures long-range dependencies.</td></tr>
+                  <tr><td>Tokenization (BPE)</td><td>Splits text into subword units — e.g. <code>"unbreakable"</code> → <code>["un", "break", "able"]</code>.</td></tr>
+                  <tr><td>Pre-training + Fine-tuning</td><td>First trained on raw text (self-supervised), then fine-tuned on instruction data + RLHF for alignment.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Concrete Example</div>
+            <pre><code>// Prompt
+"What is Java?"
+
+// What the LLM does internally (simplified):
+1. Tokenize:    ["What", " is", " Java", "?"]
+2. Predict next token  →  "Java"
+3. Predict next token  →  " is"
+4. Predict next token  →  " a"
+5. Predict next token  →  " programming"
+6. Predict next token  →  " language"
+... continues ...
+
+// Final output
+"Java is a programming language designed for portability and platform-independence..."</code></pre>
+            <p class="solution-desc">At every step, the model picks the most probable next token (or samples from the top-K with some randomness controlled by <strong>temperature</strong>).</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Where LLMs are used</div>
+            <div class="use-cases">
+              <div class="use-case">
+                <h4><i class="bi bi-chat-dots-fill"></i> Chatbots &amp; Assistants</h4>
+                <ul>
+                  <li>ChatGPT, Claude, Gemini, Copilot</li>
+                  <li>Customer-support bots, FAQ deflection</li>
+                  <li>Voice assistants (Siri, Alexa NLU)</li>
+                </ul>
+              </div>
+              <div class="use-case green">
+                <h4><i class="bi bi-code-slash"></i> Code Generation</h4>
+                <ul>
+                  <li>GitHub Copilot, Cursor, Windsurf</li>
+                  <li>Auto-completion, refactoring, test writing</li>
+                  <li>SQL / regex / config generation</li>
+                </ul>
+              </div>
+              <div class="use-case pink">
+                <h4><i class="bi bi-search"></i> Semantic Search</h4>
+                <ul>
+                  <li>Embedding-powered search (Perplexity, Bing, Google AI Overviews)</li>
+                  <li>RAG over private knowledge bases</li>
+                  <li>Document Q&amp;A</li>
+                </ul>
+              </div>
+              <div class="use-case orange">
+                <h4><i class="bi bi-file-text-fill"></i> Content &amp; Productivity</h4>
+                <ul>
+                  <li>Article / email / report generation</li>
+                  <li>Meeting note summarization</li>
+                  <li>Translation, paraphrasing, tone adjustment</li>
+                </ul>
+              </div>
+              <div class="use-case green">
+                <h4><i class="bi bi-list-check"></i> Structured Extraction</h4>
+                <ul>
+                  <li>PDF → JSON, invoice/resume parsing</li>
+                  <li>Entity extraction from logs/tickets</li>
+                  <li>Classification, intent detection</li>
+                </ul>
+              </div>
+              <div class="use-case pink">
+                <h4><i class="bi bi-bank2"></i> Domain Applications</h4>
+                <ul>
+                  <li>Fraud explanation in fintech</li>
+                  <li>Medical record summarization</li>
+                  <li>Legal document review</li>
+                  <li>Personalized education / tutoring</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">7</span> Advantages vs Limitations</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-check-circle-fill" style="color: var(--green);"></i>
+                  <span>Advantages</span>
+                </div>
+                <ul>
+                  <li>Understands and generates <strong>natural language</strong></li>
+                  <li>Huge breadth of knowledge baked into weights</li>
+                  <li>Generates human-like, context-aware responses</li>
+                  <li>Automates tasks previously requiring humans</li>
+                  <li>Same model handles many domains (general purpose)</li>
+                  <li>Zero/few-shot — no per-task training needed</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-exclamation-triangle-fill" style="color: #f0883e;"></i>
+                  <span>Limitations</span>
+                </div>
+                <ul>
+                  <li><strong>Hallucinations</strong> — confidently wrong answers</li>
+                  <li>Knowledge cutoff — outdated information</li>
+                  <li>Massive compute cost (GPU, latency, $$)</li>
+                  <li>Bias from training data</li>
+                  <li>Vulnerable to <strong>prompt injection</strong> and jailbreaks</li>
+                  <li>Non-deterministic outputs (with temperature &gt; 0)</li>
+                  <li>Privacy / data-leakage concerns with public APIs</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">8</span> Engineer's perspective — how I treat LLMs in production</div>
+            <p class="solution-desc">As a backend engineer, an LLM is just <em>another remote service</em> — and that mental model is the most important one:</p>
+            <ul style="margin: 0 0 10px;">
+              <li>Wrap calls in a <strong>retry</strong> + <strong>circuit-breaker</strong> + <strong>timeout</strong> just like any HTTP dependency.</li>
+              <li>Track <strong>tokens-in / tokens-out</strong> per request — that's your cost meter.</li>
+              <li>Watch <strong>p95 latency</strong> — streaming responses help mask it.</li>
+              <li>Use <strong>RAG</strong> instead of fine-tuning for fresh / private data.</li>
+              <li><strong>Validate</strong> structured outputs (JSON schema) before consuming downstream.</li>
+              <li>Set <strong>temperature = 0</strong> for deterministic flows (extraction, classification); higher for creative writing.</li>
+              <li>Cap the <strong>context window</strong> — large prompts = more cost + slower response.</li>
+              <li>Never trust LLM output for security-critical decisions — always have a deterministic guardrail.</li>
+            </ul>
+          </div>
+
+          <div class="takeaway">
+            <b>One-liner:</b> An LLM is a <strong>transformer-based neural network</strong> trained on massive text data to <strong>predict the next token</strong> — that single capability scales up into chat, code, search, summarization, and translation. It's "large" in three ways at once: data, parameters, and compute. As an engineer, treat it as a remote service — manage <em>latency, cost, hallucination, and security</em> just like any other dependency. Pair it with <strong>RAG</strong> for fresh data, <strong>structured outputs</strong> for downstream pipelines, and never blindly trust its output.
+          </div>
         </div>
       </details>
 
@@ -64,7 +305,7 @@
             <li><strong>Generate</strong> — pass the question plus retrieved chunks as context to the LLM with a prompt like "Answer using only this context."</li>
           </ol>
           <p>Why use it: LLMs have stale training data and hallucinate. RAG keeps answers grounded in your current docs without retraining.</p>
-          <p>On Punctuations.ai, I built RAG over a recruiter's candidate database — they can ask "show me Python developers in Bangalore with 3+ years of GenAI work" and the system retrieves matching resume chunks and generates a ranked summary. Tweaks that mattered: <strong>hybrid retrieval</strong> (BM25 + vector), <strong>reranking</strong> (cross-encoder on top 50), and careful prompt engineering with citations.</p>
+          <p>I've built RAG over a recruiter's candidate database — they can ask "show me Python developers in Bangalore with 3+ years of GenAI work" and the system retrieves matching resume chunks and generates a ranked summary. Tweaks that mattered: <strong>hybrid retrieval</strong> (BM25 + vector), <strong>reranking</strong> (cross-encoder on top 50), and careful prompt engineering with citations.</p>
         </div>
       </details>
 
@@ -89,7 +330,7 @@
           <p>A vector DB stores embeddings and supports fast approximate nearest-neighbor (ANN) search. You need it when the dataset is too big or too slow for an exact scan — typically &gt; ~100K vectors.</p>
           <p>Options:</p>
           <ul>
-            <li><strong>Elasticsearch / OpenSearch</strong> — kNN support (HNSW), great if you already use ES. My pick for Punctuations.ai since we needed hybrid search anyway.</li>
+            <li><strong>Elasticsearch / OpenSearch</strong> — kNN support (HNSW), great if you already use ES. My pick for our platform since we needed hybrid search anyway.</li>
             <li><strong>PostgreSQL + pgvector</strong> — keep vectors next to relational data; simple ops; HNSW or IVFFlat.</li>
             <li><strong>Qdrant / Milvus / Weaviate</strong> — purpose-built, more advanced filtering and clustering features.</li>
             <li><strong>Pinecone</strong> — managed, popular for hosted RAG apps.</li>
@@ -120,7 +361,7 @@
         <div class="qa-body">
           <p>LLM calls are both slow and expensive — these compound at scale. My toolkit:</p>
           <ul>
-            <li><strong>Cache</strong> — semantic cache (vector similarity) for repeat or near-duplicate queries. On Punctuations.ai we cache JD embeddings and the matched-resume list keyed by JD hash.</li>
+            <li><strong>Cache</strong> — semantic cache (vector similarity) for repeat or near-duplicate queries. On our platform we cache JD embeddings and the matched-resume list keyed by JD hash.</li>
             <li><strong>Smaller models for easier sub-tasks</strong> — classification, extraction, reranking don't need GPT-4. Use Mistral 7B, Llama 3 8B, or a fine-tuned small model.</li>
             <li><strong>Streaming</strong> — improves perceived latency; users see output as it arrives.</li>
             <li><strong>Batch + parallelize</strong> — concurrent calls for unrelated sub-prompts.</li>
@@ -129,7 +370,7 @@
             <li><strong>Async pipelines</strong> — heavy LLM work in Kafka workers, not synchronous APIs.</li>
             <li><strong>Token quotas</strong> per user/tenant for cost protection.</li>
           </ul>
-          <p>Result on Punctuations.ai: dropped match latency from 4 s to ~600 ms and cut monthly token spend nearly in half.</p>
+          <p>Result on our match service: dropped match latency from 4 s to ~600 ms and cut monthly token spend nearly in half.</p>
         </div>
       </details>
 
@@ -144,7 +385,7 @@
 // Model returns: { tool: "lookupCandidate", args: { id: "C-123" } }
 // Your code executes, returns result, model continues.</code></pre>
           <p>Builds agentic flows: the model decides which tool, you execute, feed the result back, loop until done.</p>
-          <p>On Punctuations.ai a recruiter assistant uses tool calling for: <code>search_candidates</code>, <code>get_resume</code>, <code>send_invite</code>, <code>schedule_meeting</code>. The LLM is the planner; tools are deterministic. Important: <strong>always validate tool arguments server-side</strong> — never trust the model to send safe inputs. Authorize like any other API call.</p>
+          <p>On a recruiter-assistant feature I built, tool calling was used for: <code>search_candidates</code>, <code>get_resume</code>, <code>send_invite</code>, <code>schedule_meeting</code>. The LLM is the planner; tools are deterministic. Important: <strong>always validate tool arguments server-side</strong> — never trust the model to send safe inputs. Authorize like any other API call.</p>
         </div>
       </details>
 
@@ -233,7 +474,7 @@
             <li><strong>Evals</strong> in CI on the golden set before prompt changes ship.</li>
             <li><strong>Feature flags</strong> to switch models/prompts without redeploy.</li>
           </ul>
-          <p>This is roughly the shape of what we built for Punctuations.ai's match service.</p>
+          <p>This is roughly the shape of the AI match service I worked on.</p>
         </div>
       </details>
 

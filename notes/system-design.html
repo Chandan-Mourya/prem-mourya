@@ -72,15 +72,409 @@
       </details>
 
       <details class="qa">
-        <summary>Load balancing — strategies and where</summary>
+        <summary>What is Load Balancing? <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p>A <strong>load balancer</strong> distributes incoming requests across backend instances. Layers:</p>
-          <ul>
-            <li><strong>L4 (TCP/UDP)</strong> — routes by IP/port; faster, no app awareness. AWS NLB, HAProxy.</li>
-            <li><strong>L7 (HTTP)</strong> — routes by URL, headers, cookies; can do SSL termination, sticky sessions, content-based routing. AWS ALB, Nginx, Envoy.</li>
-          </ul>
-          <p>Algorithms: <strong>Round-robin</strong> (simple), <strong>Least connections</strong> (favors free instances), <strong>Weighted</strong> (mixed instance sizes), <strong>IP hash</strong> (session stickiness), <strong>Consistent hashing</strong> (cache-friendly routing).</p>
-          <p>Modern setups have load balancers at multiple layers: edge LB (cloud), service-mesh sidecar (Istio, Linkerd) for service-to-service. <strong>Always have health checks</strong> — unhealthy instances must be drained quickly.</p>
+          <p class="answer-intro"><strong>Load balancing</strong> is the process of <strong>distributing incoming network traffic across multiple servers</strong> so that no single server gets overloaded. A <em>load balancer</em> sits in front of a pool of backend servers and decides which one handles each incoming request. It's one of the most fundamental building blocks in any scalable system.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-bullseye"></i> Core Idea — what it gives you</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Availability</span>
+              <span class="core-diff-val">If one server dies, traffic automatically shifts to healthy ones — no downtime.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Scalability</span>
+              <span class="core-diff-val">Add or remove servers horizontally — the LB picks them up. Handles 10K → 10M users with the same architecture.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Performance</span>
+              <span class="core-diff-val">No single box is overwhelmed → lower latency, better throughput, faster response times.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Why we need it — the simple picture</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-x-circle-fill" style="color: #ff7b72;"></i>
+                  <span>Without a Load Balancer</span>
+                </div>
+                <ul>
+                  <li>10,000 users → <strong>1 server</strong> → it dies / slows down</li>
+                  <li>Single point of failure</li>
+                  <li>Vertical scaling only (bigger box) — expensive &amp; capped</li>
+                  <li>Deploys cause downtime — server has to restart</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-check-circle-fill" style="color: var(--green);"></i>
+                  <span>With a Load Balancer</span>
+                </div>
+                <ul>
+                  <li>10,000 users → LB → <strong>spread across N servers</strong></li>
+                  <li>One server dies? LB drains it, others keep serving</li>
+                  <li>Horizontal scaling — add cheap commodity servers</li>
+                  <li>Rolling deploys — restart one server at a time, zero downtime</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Architecture — single front door, many backends</div>
+            <div class="tree-viz">              ┌─────────────┐
+              │    Users    │  (clients, browsers, mobile apps)
+              └──────┬──────┘
+                     │
+                     ▼
+              ┌─────────────┐
+              │ LOAD        │  ← health checks, routing algorithm
+              │ BALANCER    │
+              └──────┬──────┘
+            ┌────────┼────────┐
+            ▼        ▼        ▼
+       ┌────────┐ ┌────────┐ ┌────────┐
+       │Server 1│ │Server 2│ │Server 3│   (identical app instances)
+       └────────┘ └────────┘ └────────┘</div>
+            <p class="solution-desc">The LB performs <strong>health checks</strong> on each server (e.g. ping <code>/health</code> every 5s). Unhealthy ones are <em>drained</em> — no traffic routed to them. This is what turns load balancing from <em>"spread requests"</em> into a real <em>availability</em> mechanism.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Common Load-Balancing Algorithms (overview)</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Algorithm</th><th>How it works</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Round Robin</td>           <td>Requests distributed sequentially — server 1, 2, 3, 1, 2, 3, …</td></tr>
+                  <tr><td>Weighted Round Robin</td>  <td>Bigger / faster servers get more traffic via weights (e.g. 3:1:1).</td></tr>
+                  <tr><td>Least Connections</td>     <td>Routes to the server with the fewest active connections — great for long-lived connections.</td></tr>
+                  <tr><td>IP Hash</td>               <td>Hash of client IP → always picks the same server. Used for session stickiness.</td></tr>
+                  <tr><td>Least Response Time</td>   <td>Picks the server currently responding fastest.</td></tr>
+                  <tr><td>Geo-based / GeoDNS</td>    <td>Routes users to their nearest region or data center.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="solution-desc">For full details on when to use each algorithm and the real-world tools, see the <strong>"Load balancing — strategies and where they're used"</strong> question below.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Benefits — at a glance</div>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>Prevents server overload</strong> — work is spread evenly.</li>
+              <li><strong>Improves response time</strong> — no single box becomes a bottleneck.</li>
+              <li><strong>High availability</strong> — automatic failover when servers go down.</li>
+              <li><strong>Supports horizontal scaling</strong> — just spin up more servers, the LB picks them up.</li>
+              <li><strong>Zero-downtime deploys</strong> — rolling restart, one server at a time.</li>
+              <li><strong>SSL termination</strong> — decrypt HTTPS once at the LB, pass plain HTTP to backends.</li>
+              <li><strong>Security</strong> — single ingress point to harden, hide internal IPs.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Layer 4 vs Layer 7 (where the LB sits)</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-hdd-network-fill"></i>
+                  <span>L4 — Transport (TCP/UDP)</span>
+                </div>
+                <ul>
+                  <li>Routes by <strong>IP + port</strong> — doesn't inspect the payload</li>
+                  <li>Extremely fast (line-rate)</li>
+                  <li>App-agnostic — works for any TCP/UDP service</li>
+                  <li><b>Examples:</b> AWS NLB, HAProxy (TCP mode), F5</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-globe2"></i>
+                  <span>L7 — Application (HTTP)</span>
+                </div>
+                <ul>
+                  <li>Routes by <strong>URL path, headers, cookies, host</strong></li>
+                  <li>Can do SSL termination, sticky sessions, content-based routing</li>
+                  <li>Slightly slower (inspects payload)</li>
+                  <li><b>Examples:</b> AWS ALB, NGINX, Envoy, Traefik</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Popular Load Balancers</div>
+            <div class="use-cases">
+              <div class="use-case">
+                <h4><i class="bi bi-hdd-network"></i> NGINX</h4>
+                <ul>
+                  <li>Industry-standard reverse proxy + L7 LB</li>
+                  <li>Lightweight, highly configurable</li>
+                  <li>Used by &gt;30% of all websites</li>
+                </ul>
+                <div class="examples"><b>Best for:</b> general-purpose HTTP load balancing.</div>
+              </div>
+              <div class="use-case green">
+                <h4><i class="bi bi-lightning-charge-fill"></i> HAProxy</h4>
+                <ul>
+                  <li>Battle-tested TCP/HTTP LB</li>
+                  <li>Massive throughput, low CPU</li>
+                  <li>Powers GitHub, Reddit, Stack Overflow</li>
+                </ul>
+                <div class="examples"><b>Best for:</b> high-throughput, fine-grained control.</div>
+              </div>
+              <div class="use-case pink">
+                <h4><i class="bi bi-cloud-fill"></i> AWS ELB family</h4>
+                <ul>
+                  <li><strong>ALB</strong> — L7 HTTP/HTTPS</li>
+                  <li><strong>NLB</strong> — L4 TCP/UDP, line-rate</li>
+                  <li><strong>GLB</strong> — for IPS / WAF appliances</li>
+                </ul>
+                <div class="examples"><b>Best for:</b> AWS-native architectures, fully managed.</div>
+              </div>
+              <div class="use-case orange">
+                <h4><i class="bi bi-diagram-3"></i> Envoy / Traefik</h4>
+                <ul>
+                  <li><strong>Envoy</strong> — modern proxy, core of Istio service mesh</li>
+                  <li><strong>Traefik</strong> — auto-discovers K8s services</li>
+                  <li>Cloud-native, dynamic config</li>
+                </ul>
+                <div class="examples"><b>Best for:</b> Kubernetes / service-mesh setups.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>Interview-friendly answer:</b> Load balancing is the process of distributing incoming user requests across <strong>multiple backend servers</strong> so that no single server is overloaded. A <em>load balancer</em> sits in front of the server pool and routes requests using algorithms like <strong>round-robin</strong>, <strong>least connections</strong>, or <strong>IP hash</strong>. This gives the system <strong>high availability</strong> (failover when a server dies), <strong>scalability</strong> (just add more servers), and <strong>better performance</strong> (no single bottleneck). For example, an e-commerce site with millions of users uses a load balancer in front of its app servers so that traffic is distributed evenly, and the site stays online even if one server fails. Common tools: <em>NGINX, HAProxy, AWS ALB/NLB, Envoy, Traefik</em>.
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Load balancing — strategies and where they're used <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">A <strong>load balancer</strong> sits in front of a pool of servers and distributes incoming requests across them. The whole point is to improve three things at once:</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-bullseye"></i> Why we load-balance — 3 goals</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Performance</span>
+              <span class="core-diff-val">No single server gets overwhelmed → lower latency, better throughput.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Scalability</span>
+              <span class="core-diff-val">Add or remove instances horizontally without app changes.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Availability</span>
+              <span class="core-diff-val">If one server dies, health checks drain it and traffic shifts to healthy ones.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Common Load-Balancing Strategies</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Strategy</th><th>How it works</th><th>Best used when</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Round Robin</td>
+                    <td>Requests go one-by-one to each server in order.</td>
+                    <td>All servers have <strong>equal capacity</strong>.</td>
+                  </tr>
+                  <tr>
+                    <td>Weighted Round Robin</td>
+                    <td>More powerful servers get a higher share (e.g. 3:1).</td>
+                    <td>Servers have <strong>different capacities</strong> (mixed instance sizes).</td>
+                  </tr>
+                  <tr>
+                    <td>Least Connections</td>
+                    <td>Sends request to the server with the <em>fewest active</em> connections.</td>
+                    <td><strong>Long-lived</strong> connections — WebSockets, chat, DBs.</td>
+                  </tr>
+                  <tr>
+                    <td>Weighted Least Connections</td>
+                    <td>Combines server weight with current active connections.</td>
+                    <td>Mixed capacities + long-lived sessions.</td>
+                  </tr>
+                  <tr>
+                    <td>IP Hash</td>
+                    <td>Hash of client IP → always picks the same server.</td>
+                    <td><strong>Session stickiness</strong> needed (no shared session store).</td>
+                  </tr>
+                  <tr>
+                    <td>Consistent Hashing</td>
+                    <td>Hashes the key onto a ring; adds/removes servers with minimal reshuffle.</td>
+                    <td>Cache routing (Redis cluster, CDN edge), shard routing.</td>
+                  </tr>
+                  <tr>
+                    <td>Least Response Time</td>
+                    <td>Picks the server with the fastest current response.</td>
+                    <td>Performance-critical, latency-sensitive systems.</td>
+                  </tr>
+                  <tr>
+                    <td>Random</td>
+                    <td>Just picks one at random.</td>
+                    <td>Simple setups, mostly stateless services.</td>
+                  </tr>
+                  <tr>
+                    <td>Geo-based / GeoDNS</td>
+                    <td>Routes user to the nearest region or data center.</td>
+                    <td>Global apps, CDNs, streaming, multi-region SaaS.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> L4 vs L7 — at which layer does it balance?</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-hdd-network-fill"></i>
+                  <span>L4 — Transport (TCP/UDP)</span>
+                </div>
+                <ul>
+                  <li><b>Routes by:</b> IP + port</li>
+                  <li><b>Speed:</b> very fast — no payload inspection</li>
+                  <li><b>App-aware:</b> no</li>
+                  <li><b>Features:</b> raw TCP/UDP forwarding</li>
+                  <li><b>Examples:</b> AWS NLB, HAProxy (TCP mode), F5 BIG-IP</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-globe2"></i>
+                  <span>L7 — Application (HTTP)</span>
+                </div>
+                <ul>
+                  <li><b>Routes by:</b> URL path, headers, cookies, host</li>
+                  <li><b>Speed:</b> slower — does payload inspection</li>
+                  <li><b>App-aware:</b> yes</li>
+                  <li><b>Features:</b> SSL termination, sticky sessions, content-based routing, WAF</li>
+                  <li><b>Examples:</b> AWS ALB, NGINX, Envoy, Traefik</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Where each strategy is used in the real world</div>
+            <div class="use-cases">
+              <div class="use-case">
+                <h4><i class="bi bi-arrow-repeat"></i> Round Robin</h4>
+                <ul>
+                  <li>Small web apps</li>
+                  <li>Stateless REST APIs</li>
+                  <li>Internal microservice traffic</li>
+                </ul>
+                <div class="examples"><b>Tools:</b> NGINX (default), HAProxy, AWS ALB</div>
+              </div>
+              <div class="use-case green">
+                <h4><i class="bi bi-link-45deg"></i> Least Connections</h4>
+                <ul>
+                  <li>Chat / messaging apps</li>
+                  <li>WebSocket servers</li>
+                  <li>Database connection proxies</li>
+                </ul>
+                <div class="examples"><b>Why:</b> connections stay open for minutes/hours, so "fewest active" matters more than round-robin fairness.</div>
+              </div>
+              <div class="use-case pink">
+                <h4><i class="bi bi-fingerprint"></i> IP Hash / Sticky Sessions</h4>
+                <ul>
+                  <li>Shopping carts (legacy stack)</li>
+                  <li>Login / session-on-server apps</li>
+                  <li>File-upload sessions</li>
+                </ul>
+                <div class="examples"><b>Modern fix:</b> push session to Redis / JWT, then go stateless and drop stickiness.</div>
+              </div>
+              <div class="use-case orange">
+                <h4><i class="bi bi-globe-americas"></i> Geo-based / GeoDNS</h4>
+                <ul>
+                  <li>CDNs (Cloudflare, CloudFront)</li>
+                  <li>Video / streaming platforms</li>
+                  <li>Global SaaS, multi-region apps</li>
+                </ul>
+                <div class="examples"><b>Tools:</b> AWS Route 53 latency routing, Cloudflare, Akamai.</div>
+              </div>
+              <div class="use-case">
+                <h4><i class="bi bi-diagram-2"></i> Consistent Hashing</h4>
+                <ul>
+                  <li>Redis Cluster / Memcached pools</li>
+                  <li>CDN edge node selection</li>
+                  <li>Sharded service routing</li>
+                </ul>
+                <div class="examples"><b>Why:</b> adding/removing a node only reshuffles 1/N keys, not all of them.</div>
+              </div>
+              <div class="use-case green">
+                <h4><i class="bi bi-speedometer2"></i> Least Response Time</h4>
+                <ul>
+                  <li>Latency-critical APIs (trading, fraud)</li>
+                  <li>Multi-region failover</li>
+                </ul>
+                <div class="examples"><b>Tools:</b> Envoy, F5, some service-mesh setups.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Hardware vs Software Load Balancers</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-cpu-fill"></i>
+                  <span>Hardware LB</span>
+                </div>
+                <ul>
+                  <li><b>Form:</b> dedicated physical appliance</li>
+                  <li><b>Pros:</b> extremely high throughput, line-rate</li>
+                  <li><b>Cons:</b> expensive, vendor-locked, slow to scale</li>
+                  <li><b>Examples:</b> F5 BIG-IP, Citrix NetScaler, A10</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-cloud-fill"></i>
+                  <span>Software / Cloud LB</span>
+                </div>
+                <ul>
+                  <li><b>Form:</b> software process or managed cloud service</li>
+                  <li><b>Pros:</b> cheap, elastic, programmable, easy to scale</li>
+                  <li><b>Cons:</b> ops overhead (self-managed), slightly higher latency</li>
+                  <li><b>Examples:</b> NGINX, HAProxy, Envoy, AWS ALB/NLB, Azure LB, GCP LB</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Modern Multi-Layer Setup (production reality)</div>
+            <div class="flow">
+              <div class="flow-step">Client / Browser</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step accent">CDN <span class="badge">geo-based</span></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Cloud LB <span class="badge">L7 / ALB</span></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">API Gateway / Ingress <span class="badge">nginx / envoy</span></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Service-Mesh Sidecar <span class="badge">istio / linkerd</span></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step accent">Backend pod / service</div>
+            </div>
+            <p class="solution-desc" style="margin-top: 10px;">
+              At every layer you need <strong>health checks</strong> — unhealthy instances must be drained quickly so traffic doesn't get sent to a broken pod. Health checks are what turn a load balancer from "spreads requests" into a real <em>availability</em> mechanism.
+            </p>
+          </div>
+
+          <div class="takeaway">
+            <b>Interview one-liner:</b> Load balancing strategies decide <em>how</em> incoming traffic is distributed across servers. Pick <strong>round-robin</strong> for equal stateless servers, <strong>weighted</strong> for mixed sizes, <strong>least connections</strong> for long-lived connections, <strong>IP hash</strong> for session stickiness, <strong>consistent hashing</strong> for caches/shards, and <strong>geo-based</strong> for global users. In production you usually have <em>multiple layers</em> of balancing — CDN at the edge, an L7 cloud LB (ALB / NGINX), and a service-mesh sidecar for service-to-service — all backed by health checks.
+          </div>
         </div>
       </details>
 
@@ -101,12 +495,398 @@
       </details>
 
       <details class="qa">
-        <summary>Consistent hashing — what and why?</summary>
+        <summary>Consistent Hashing — what, why, and where <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p>Plain hashing distributes keys with <code>hash(key) % n</code> — but if <code>n</code> changes (a node added/removed), almost every key moves to a different node. For a cache cluster that's catastrophic.</p>
-          <p><strong>Consistent hashing</strong> places servers on a ring keyed by hash, and each key goes to the next server clockwise. Adding or removing one node only reassigns the keys belonging to the affected arc — average ~<code>K/N</code> keys move, not <code>K</code>.</p>
-          <p>To avoid hotspots from unlucky hash distributions, each physical node owns multiple <strong>virtual nodes (vnodes)</strong> on the ring — spreads load evenly.</p>
-          <p>Used by: Cassandra, DynamoDB, memcached clients, CDNs, Akamai. In Kafka/RabbitMQ the same idea appears in partition assignment with consistent semantics. Knowing it shows you understand why distributed systems can rebalance gracefully.</p>
+          <p class="answer-intro"><strong>Consistent hashing</strong> is the technique distributed systems use to spread data across multiple servers <em>without</em> having to remap almost all the keys whenever a server is added or removed. It's the foundation behind Cassandra, DynamoDB, Redis Cluster, memcached clients, and most CDNs.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-diagram-2-fill"></i> Core Idea</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Problem</span>
+              <span class="core-diff-val"><code>hash(key) % N</code> breaks badly when N changes — almost every key gets reassigned.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Solution</span>
+              <span class="core-diff-val">Place both <strong>servers</strong> and <strong>keys</strong> on a circular hash ring. Each key goes to the next server clockwise.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Win</span>
+              <span class="core-diff-val">When you add/remove a node, only <strong>~K/N keys</strong> move (not all K). Smooth rebalance, no thundering-herd cache misses.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> The Problem — naive modulo hashing breaks on rebalance</div>
+            <p class="solution-desc">With 3 servers and the rule <code>server = hash(key) % 3</code>:</p>
+            <div class="tree-viz">key "user-42"  →  hash = 17  →  17 % 3 = <span style="color: var(--green);">2</span>   (server 2)
+key "user-91"  →  hash = 25  →  25 % 3 = <span style="color: var(--green);">1</span>   (server 1)</div>
+            <p class="solution-desc">Now you add a 4th server. The denominator changes from 3 to 4:</p>
+            <div class="tree-viz">key "user-42"  →  hash = 17  →  17 % 4 = <span style="color: #ff7b72;">1</span>   (was 2, now 1 ❌)
+key "user-91"  →  hash = 25  →  25 % 4 = <span style="color: #ff7b72;">1</span>   (was 1, still 1 ✅ — lucky)</div>
+            <p class="solution-desc"><strong>The disaster:</strong> roughly <em>(N−1)/N</em> of all keys end up on a different server. For a cache cluster, that's a <strong>cold-cache stampede</strong> — every request misses, hits the DB, takes the site down.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> The Solution — the hash ring</div>
+            <p class="solution-desc">Hash both <strong>servers</strong> and <strong>keys</strong> onto a circular space (e.g. 0 → 2³² − 1). Each key is owned by the <em>next server clockwise</em> on the ring.</p>
+            <div class="tree-viz">              0 / 2³²
+                  •
+            <span style="color: var(--accent);">[S1]</span>•─ ─ ─ ─ ─ ─•<span style="color: var(--accent);">[S2]</span>
+              /                \
+             /     <span style="color: var(--text-muted);">key K1</span>     \
+            •  ◀──────────       •      <span style="color: var(--text-muted);">// K1 goes clockwise → S2</span>
+             \                  /
+              \                /
+            <span style="color: var(--accent);">[S4]</span>•─ ─ ─ ─ ─ ─•<span style="color: var(--accent);">[S3]</span>
+                  •</div>
+            <p class="solution-desc"><strong>Rule:</strong> for a key with hash <code>h</code>, walk clockwise on the ring until you hit the first server — that's where the key lives.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> What happens when a server is added or removed?</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-plus-circle-fill" style="color: var(--green);"></i>
+                  <span>Add a server</span>
+                </div>
+                <ul>
+                  <li>New server lands at some point on the ring.</li>
+                  <li>It "steals" only the keys in the <strong>arc between itself and its clockwise predecessor</strong>.</li>
+                  <li>Every other key on the ring stays where it was.</li>
+                  <li>Average keys moved: <strong>K / N</strong> (where K = total keys, N = servers).</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-dash-circle-fill" style="color: #f0883e;"></i>
+                  <span>Remove a server</span>
+                </div>
+                <ul>
+                  <li>Its keys are inherited by the <strong>next clockwise server</strong>.</li>
+                  <li>No other keys move.</li>
+                  <li>Average keys moved: <strong>K / N</strong>.</li>
+                  <li>The cache stays mostly warm — only one arc rebuilds.</li>
+                </ul>
+              </div>
+            </div>
+            <p class="solution-desc" style="margin-top: 10px;">
+              <strong>Contrast with modulo hashing:</strong> there, adding one node moved <em>~(N−1)/N</em> of all keys. With consistent hashing, you move only <em>1/N</em>. That's the whole point.
+            </p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Virtual Nodes (vnodes) — fixing uneven distribution</div>
+            <p class="solution-desc"><strong>Problem:</strong> with just N points on the ring, the spacing can be wildly uneven — one server might end up owning a huge arc and getting hammered while another barely sees traffic.</p>
+            <p class="solution-desc"><strong>Fix:</strong> each physical server registers many <strong>virtual nodes</strong> at different hash positions (typically 100–250 per node).</p>
+            <div class="tree-viz">Without vnodes:                With vnodes (each server = 4 points):
+
+[S1]──────────[S2]              [S1]─[S3]─[S2]─[S1]
+ /                \              /              \
+•   uneven arcs   •            •  even spread    •
+ \                /              \              /
+[S3]──────────[ ]               [S2]─[S3]─[S1]─[S2]</div>
+            <p class="solution-desc"><strong>Benefits of vnodes:</strong></p>
+            <ul style="margin: 0 0 10px;">
+              <li>Load is statistically even across servers.</li>
+              <li>Heterogeneous capacity: a 2× bigger server owns 2× the vnodes.</li>
+              <li>When a server dies, its load is spread across <em>all</em> other servers, not just one neighbor.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Modulo Hashing vs Consistent Hashing — side by side</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-percent"></i>
+                  <span>Modulo Hashing</span>
+                </div>
+                <ul>
+                  <li><b>Rule:</b> <code>hash(key) % N</code></li>
+                  <li><b>Add/remove node:</b> <strong>~(N−1)/N keys move</strong> 💥</li>
+                  <li><b>Effect:</b> cache stampede, DB overload</li>
+                  <li><b>Load balance:</b> usually OK</li>
+                  <li><b>Use when:</b> N is fixed forever</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-circle"></i>
+                  <span>Consistent Hashing</span>
+                </div>
+                <ul>
+                  <li><b>Rule:</b> servers + keys on a ring, key → next server clockwise</li>
+                  <li><b>Add/remove node:</b> only <strong>~K/N keys move</strong> ✅</li>
+                  <li><b>Effect:</b> graceful rebalance, cache mostly warm</li>
+                  <li><b>Load balance:</b> good — perfect with vnodes</li>
+                  <li><b>Use when:</b> N grows / shrinks dynamically</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Benefits — at a glance</div>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>Minimal rehashing</strong> — only ~K/N keys move on any topology change.</li>
+              <li><strong>Scalability</strong> — add/remove servers without downtime or full rebalance.</li>
+              <li><strong>Even load distribution</strong> (with vnodes) — no hotspots.</li>
+              <li><strong>High availability</strong> — failure of one node spreads its keys to many others.</li>
+              <li><strong>Predictable routing</strong> — the same key always maps to the same server (until topology changes).</li>
+              <li><strong>Cache-friendly</strong> — most existing cache entries stay valid after rebalance.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">7</span> Where it's used in the real world</div>
+            <div class="use-cases">
+              <div class="use-case">
+                <h4><i class="bi bi-database-fill"></i> Distributed Databases</h4>
+                <ul>
+                  <li><strong>Apache Cassandra</strong> — partitioner places rows on a ring (Murmur3 hash + vnodes by default).</li>
+                  <li><strong>Amazon DynamoDB</strong> — partition keys mapped via consistent hashing.</li>
+                  <li><strong>Riak</strong>, <strong>ScyllaDB</strong> — same model.</li>
+                </ul>
+                <div class="examples"><b>Why:</b> add a node → only that node's arc rebuilds, cluster stays online.</div>
+              </div>
+              <div class="use-case green">
+                <h4><i class="bi bi-lightning-charge-fill"></i> Distributed Caches</h4>
+                <ul>
+                  <li><strong>Redis Cluster</strong> (16,384 hash slots, similar idea)</li>
+                  <li><strong>Memcached</strong> via <code>ketama</code> client-side consistent hashing</li>
+                  <li>Twitter's Twemproxy / Pelikan</li>
+                </ul>
+                <div class="examples"><b>Why:</b> avoid cold-cache stampedes when scaling the cache tier.</div>
+              </div>
+              <div class="use-case pink">
+                <h4><i class="bi bi-globe2"></i> CDNs &amp; Edge</h4>
+                <ul>
+                  <li><strong>Akamai</strong> — picks the right edge node for each URL</li>
+                  <li><strong>Cloudflare</strong>, AWS CloudFront edge routing</li>
+                  <li>Object storage front-ends</li>
+                </ul>
+                <div class="examples"><b>Why:</b> minimal cache disruption when edge nodes come and go.</div>
+              </div>
+              <div class="use-case orange">
+                <h4><i class="bi bi-arrow-left-right"></i> Load Balancers &amp; Service Meshes</h4>
+                <ul>
+                  <li><strong>Envoy</strong> / <strong>HAProxy</strong> — ring-hash / maglev load balancing</li>
+                  <li>gRPC client-side load balancers</li>
+                  <li>Session-affinity routing without sticky cookies</li>
+                </ul>
+                <div class="examples"><b>Why:</b> stable routing for user/session to backend without server-side state.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>Interview one-liner:</b> Consistent hashing maps both servers and keys onto a circular hash ring, and each key is owned by the next server clockwise. When a server is added or removed, only <strong>~K/N keys</strong> move (instead of almost all, like with <code>hash(key) % N</code>). <strong>Virtual nodes</strong> spread each physical server across many ring positions to keep load even. It's the foundation behind <em>Cassandra, DynamoDB, Redis Cluster, memcached, Akamai/CDNs</em>, and ring-hash load balancers — it's what lets a distributed system <em>scale and rebalance gracefully without cold-cache stampedes</em>.
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>WebSocket vs Server-Sent Events (SSE) — real-time push <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">Both <strong>WebSocket</strong> and <strong>Server-Sent Events (SSE)</strong> solve the same core problem — pushing real-time updates from a server to a browser without polling — but they differ in <em>direction</em>, <em>protocol</em>, and <em>operational complexity</em>. Picking the right one is a classic system design call.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-broadcast-pin"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">WebSocket</span>
+              <span class="core-diff-val"><strong>Full-duplex</strong> — both client and server can send messages anytime, over a persistent TCP connection.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">SSE</span>
+              <span class="core-diff-val"><strong>One-way</strong> push (server → client) — client cannot send back over the same channel; uses a long-lived HTTP response.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Rule of thumb</span>
+              <span class="core-diff-val">If the client just consumes updates → SSE. If the client also sends data → WebSocket.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> How they work — conceptually</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-arrow-left-right"></i>
+                  <span>WebSocket</span>
+                </div>
+                <ul>
+                  <li>Starts as a normal HTTP request with <code>Upgrade: websocket</code> header.</li>
+                  <li>Server agrees → connection <strong>upgrades</strong> to the WebSocket protocol (<code>ws://</code> / <code>wss://</code>).</li>
+                  <li>Now it's a <strong>persistent TCP socket</strong> — both sides can send frames anytime.</li>
+                  <li>Supports binary + text frames.</li>
+                  <li>You handle reconnects, heartbeats (ping/pong), and back-pressure yourself.</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-arrow-right"></i>
+                  <span>Server-Sent Events (SSE)</span>
+                </div>
+                <ul>
+                  <li>Plain HTTP request from client with header <code>Accept: text/event-stream</code>.</li>
+                  <li>Server replies with <strong>never-ending HTTP response</strong> and pushes data lines as events arrive.</li>
+                  <li>Stays standard HTTP/HTTPS — works through proxies, load balancers, firewalls.</li>
+                  <li><strong>Text only</strong> (UTF-8). Use base64 for binary.</li>
+                  <li>Browser <strong>auto-reconnects</strong> on disconnect with <code>Last-Event-ID</code> header.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Full comparison table</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Feature</th><th>WebSocket</th><th>SSE</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Direction</td><td>Bidirectional (full-duplex)</td><td>Unidirectional (server → client)</td></tr>
+                  <tr><td>Protocol</td><td><code>ws://</code> / <code>wss://</code></td><td><code>http://</code> / <code>https://</code></td></tr>
+                  <tr><td>Connection</td><td>Persistent TCP socket</td><td>Long-lived HTTP response</td></tr>
+                  <tr><td>Message format</td><td>Binary + Text</td><td>Text only (UTF-8)</td></tr>
+                  <tr><td>Reconnection</td><td>Manual (you write retry/backoff)</td><td>Automatic (built into browser)</td></tr>
+                  <tr><td>Browser support</td><td>Broad (incl. mobile)</td><td>Broad (no IE / old Edge)</td></tr>
+                  <tr><td>Firewall / proxy</td><td>Sometimes blocked / needs config</td><td>Works over standard HTTP</td></tr>
+                  <tr><td>Complexity</td><td>Higher — auth, state, frames</td><td>Lower — just an HTTP endpoint</td></tr>
+                  <tr><td>Scaling</td><td>Harder (stateful, sticky conns)</td><td>Easier (stateless HTTP-friendly)</td></tr>
+                  <tr><td>Backpressure</td><td>Manual control</td><td>HTTP-level flow control</td></tr>
+                  <tr><td>Server-side cost</td><td>One socket per client</td><td>One open HTTP response per client</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> When to use which</div>
+            <div class="use-cases">
+              <div class="use-case">
+                <h4><i class="bi bi-chat-fill"></i> Use WebSocket — Chat / Collab</h4>
+                <ul>
+                  <li>Chat apps (Slack, WhatsApp Web)</li>
+                  <li>Live collaboration (Google Docs, Figma)</li>
+                  <li>Multiplayer games</li>
+                  <li>Trading platforms with order placement</li>
+                </ul>
+                <div class="examples"><b>Why:</b> client must <em>send</em> data back constantly (typing, edits, moves, orders).</div>
+              </div>
+              <div class="use-case green">
+                <h4><i class="bi bi-bell-fill"></i> Use SSE — One-way Push</h4>
+                <ul>
+                  <li>Live notifications (in-app toasts)</li>
+                  <li>Stock / crypto price tickers</li>
+                  <li>News &amp; sports score feeds</li>
+                  <li>Progress updates (uploads, jobs)</li>
+                  <li>LLM token streaming (ChatGPT-style)</li>
+                </ul>
+                <div class="examples"><b>Why:</b> client only consumes — no need to pay the cost &amp; complexity of full-duplex.</div>
+              </div>
+              <div class="use-case pink">
+                <h4><i class="bi bi-question-circle-fill"></i> Use Polling — Quick fix</h4>
+                <ul>
+                  <li>Low-frequency updates (every 10s+)</li>
+                  <li>When proxies/CDNs block long-lived connections</li>
+                  <li>Legacy clients</li>
+                </ul>
+                <div class="examples"><b>Tip:</b> use <strong>long-polling</strong> as a fallback when SSE/WebSocket aren't available — same UX, plain HTTP.</div>
+              </div>
+              <div class="use-case orange">
+                <h4><i class="bi bi-shield-check"></i> Use HTTP/2 Server Push? — No</h4>
+                <ul>
+                  <li><em>HTTP/2 Server Push is dead</em> — deprecated by Chrome &amp; major browsers.</li>
+                  <li>For app-level push: use SSE or WebSocket.</li>
+                </ul>
+                <div class="examples"><b>Note:</b> HTTP/2 push was for sub-resources (CSS, JS), never for app data.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Code examples — client side</div>
+            <p class="solution-desc"><strong>SSE — browser EventSource API:</strong></p>
+            <pre><code>const events = new EventSource('/api/notifications');
+
+events.onmessage = (e) =&gt; {
+  console.log('Got:', e.data);     // each line is one event
+};
+
+events.onerror = () =&gt; {
+  console.log('Disconnected — browser will auto-retry');
+};</code></pre>
+            <p class="solution-desc"><strong>WebSocket — browser API:</strong></p>
+            <pre><code>const socket = new WebSocket('wss://api.example.com/chat');
+
+socket.onopen    = () =&gt; socket.send('hello server');
+socket.onmessage = (e) =&gt; console.log('Got:', e.data);
+socket.onclose   = () =&gt; { /* manually reconnect with backoff */ };
+socket.onerror   = (e) =&gt; console.error(e);</code></pre>
+            <p class="solution-desc"><strong>SSE server (Spring Boot):</strong></p>
+            <pre><code>@GetMapping(value = "/notifications", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+public SseEmitter stream() {
+    SseEmitter emitter = new SseEmitter(0L);   // never time out
+    executor.submit(() -&gt; {
+        for (var event : feed) {
+            emitter.send(SseEmitter.event().data(event));
+        }
+        emitter.complete();
+    });
+    return emitter;
+}</code></pre>
+            <p class="solution-desc"><strong>WebSocket server (Spring Boot + STOMP):</strong></p>
+            <pre><code>@Configuration
+@EnableWebSocketMessageBroker
+public class WsConfig implements WebSocketMessageBrokerConfigurer {
+    @Override public void registerStompEndpoints(StompEndpointRegistry r) {
+        r.addEndpoint("/ws").withSockJS();
+    }
+    @Override public void configureMessageBroker(MessageBrokerRegistry r) {
+        r.enableSimpleBroker("/topic");
+        r.setApplicationDestinationPrefixes("/app");
+    }
+}</code></pre>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Real-time options compared (bonus)</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Mechanism</th><th>Direction</th><th>Latency</th><th>Best for</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Short polling</td><td>Client pulls</td><td>Poor (interval)</td><td>Low-frequency, simple, legacy</td></tr>
+                  <tr><td>Long polling</td><td>Client pulls</td><td>Medium</td><td>Fallback when WS/SSE blocked</td></tr>
+                  <tr><td>SSE</td><td>Server → Client</td><td>Low</td><td>Notifications, feeds, LLM streaming</td></tr>
+                  <tr><td>WebSocket</td><td>Bidirectional</td><td>Very low</td><td>Chat, games, collab, trading</td></tr>
+                  <tr><td>gRPC streaming</td><td>Bidirectional (HTTP/2)</td><td>Very low</td><td>Service-to-service streams</td></tr>
+                  <tr><td>WebRTC</td><td>P2P / mesh</td><td>Lowest</td><td>Audio / video / direct P2P data</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Operational gotchas</div>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>Load balancers:</strong> WebSocket needs sticky sessions <em>or</em> a stateless message bus (Redis pub/sub, Kafka). Most cloud LBs need explicit WS support enabled (AWS ALB, GCP HTTPS LB).</li>
+              <li><strong>Connection limits:</strong> each persistent connection holds an OS file descriptor and JVM thread/goroutine. Plan for <code>ulimit</code>, kernel <code>somaxconn</code>, and connection-per-instance budgets.</li>
+              <li><strong>Heartbeats:</strong> WS doesn't auto-detect dead connections — send ping/pong every 20–30s, drop on missed pong.</li>
+              <li><strong>Scaling out:</strong> a publish from one instance must reach connections on other instances — use Redis pub/sub, NATS, or Kafka as the fanout layer.</li>
+              <li><strong>Backpressure:</strong> slow consumers can OOM your server. Buffer with limits, drop or coalesce when the queue grows.</li>
+              <li><strong>Authentication:</strong> JWT in the initial handshake (URL param or first message). Re-auth on token refresh.</li>
+              <li><strong>SSE reconnect:</strong> server should honor <code>Last-Event-ID</code> header to replay missed events.</li>
+            </ul>
+          </div>
+
+          <div class="takeaway">
+            <b>Interview one-liner:</b> Both WebSocket and SSE push real-time updates from server to browser. <strong>WebSocket</strong> is <em>full-duplex</em> over a persistent TCP socket — use it for chat, collab, games, and trading where the client also sends data. <strong>SSE</strong> is <em>one-way</em> (server → client) over plain HTTP with automatic reconnect — use it for notifications, live feeds, price tickers, and LLM token streaming. SSE is simpler, scales easier (it's just HTTP), and is great when you only need server push. For anything truly interactive, WebSocket is the right tool — at the cost of more operational complexity (sticky sessions, heartbeats, fanout bus).
+          </div>
         </div>
       </details>
 

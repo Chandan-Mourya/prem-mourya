@@ -816,6 +816,376 @@ details.qa .qa-body em{ color: var(--text); font-style: normal; font-weight: 500
 .must-list ol li{ margin-bottom: 4px; break-inside: avoid; }
 .must-list ol li::marker{ color: var(--pink); font-weight: 600; }
 
+/* ============================================================
+   NESTED BOX VISUALIZATION (e.g. JDK ⊃ JRE ⊃ JVM)
+   ============================================================ */
+.nest-wrap{
+  margin: 18px 0;
+  display: flex;
+  justify-content: center;
+}
+.nest-box{
+  position: relative;
+  border: 2px dashed;
+  border-radius: 12px;
+  padding: 26px 18px 18px;
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+}
+.nest-box + .nest-box{ margin-top: 0; }
+.nest-box .nest-label{
+  position: absolute;
+  top: -12px;
+  left: 18px;
+  background: var(--bg-elevated);
+  padding: 2px 10px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border-radius: 4px;
+}
+.nest-jdk{
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+.nest-jdk > .nest-label{ color: var(--accent); }
+.nest-jre{
+  border-color: var(--green);
+  background: var(--green-bg);
+  margin: 12px 12px 0;
+}
+.nest-jre > .nest-label{ color: var(--green); background: var(--bg); }
+.nest-jvm{
+  border-color: var(--pink);
+  background: var(--pink-bg);
+  margin: 12px;
+}
+.nest-jvm > .nest-label{ color: var(--pink); background: var(--bg); }
+.nest-item{
+  display: inline-block;
+  margin: 4px 4px;
+  padding: 3px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+/* ============================================================
+   APPROACH BOX — explains the thinking before solution code
+   ============================================================ */
+.approach-box{
+  margin: 12px 0;
+  padding: 12px 14px 10px;
+  background: var(--accent-bg);
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+}
+.approach-box .approach-title{
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--accent);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.approach-box .approach-title::before{
+  content: "💡";
+  font-size: 13px;
+}
+.approach-box p{
+  margin: 0 0 6px;
+  font-size: 13.5px;
+  color: var(--text-soft);
+  line-height: 1.55;
+}
+.approach-box p:last-child{ margin-bottom: 0; }
+.approach-box ol,
+.approach-box ul{
+  margin: 6px 0 0;
+  padding-left: 22px;
+}
+.approach-box li{
+  font-size: 13px;
+  color: var(--text-soft);
+  margin-bottom: 4px;
+  line-height: 1.5;
+}
+.approach-box code{
+  font-size: 12px;
+}
+
+/* ============================================================
+   TREE VIZ — for binary / red-black / AVL tree diagrams
+   ============================================================ */
+.tree-viz{
+  background: var(--bg);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 14px 16px;
+  margin: 12px 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre;
+  overflow-x: auto;
+  color: var(--text-soft);
+}
+.rb-r{ color: #ff7b72; font-weight: 700; }    /* Red node */
+.rb-b{ color: #e6edf3; font-weight: 700; }    /* Black node — bright so it's visible on dark bg */
+.tree-legend{
+  display: inline-flex;
+  gap: 14px;
+  margin: 4px 0 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.tree-legend .rb-r,
+.tree-legend .rb-b{ margin-right: 4px; }
+
+/* ============================================================
+   NOTE TABLE — comparison / strategy table used inside Q&A
+   ============================================================ */
+.note-table{
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+  font-size: 13.5px;
+  overflow: hidden;
+  border-radius: 8px;
+  display: table;
+}
+.note-table thead{
+  background: var(--surface);
+}
+.note-table th{
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.6px;
+  color: var(--accent);
+  text-transform: uppercase;
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.note-table td{
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: top;
+  color: var(--text-soft);
+}
+.note-table tbody tr:last-child td{ border-bottom: 0; }
+.note-table tbody tr:hover{ background: rgba(255,255,255,.02); }
+.note-table tbody td:first-child{
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+.note-table-wrap{
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 14px 0;
+}
+.note-table-wrap .note-table{ margin: 0; }
+
+/* ============================================================
+   USE-CASE CARDS — real-world examples grid
+   ============================================================ */
+.use-cases{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin: 14px 0;
+}
+.use-case{
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+}
+.use-case h4{
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+}
+.use-case ul{ margin: 0; padding-left: 18px; }
+.use-case li{ font-size: 13px; color: var(--text-soft); margin-bottom: 3px; }
+.use-case .examples{
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border-subtle);
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+.use-case .examples b{ color: var(--text-soft); }
+.use-case.green{ border-left-color: var(--green); }
+.use-case.green h4{ color: var(--green); }
+.use-case.pink{ border-left-color: var(--pink); }
+.use-case.pink h4{ color: var(--pink); }
+.use-case.orange{ border-left-color: #f0883e; }
+.use-case.orange h4{ color: #f0883e; }
+
+/* ============================================================
+   MEMORY-ZONE VISUALIZATION (shared vs per-thread)
+   ============================================================ */
+.mem-zones{
+  display: grid;
+  gap: 16px;
+  margin: 18px 0;
+}
+.mem-zone{
+  position: relative;
+  border: 2px dashed;
+  border-radius: 10px;
+  padding: 22px 16px 16px;
+}
+.mem-zone .mem-zone-label{
+  position: absolute;
+  top: -10px;
+  left: 16px;
+  background: var(--bg-elevated);
+  padding: 2px 10px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border-radius: 4px;
+}
+.mem-zone.shared{
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+.mem-zone.shared .mem-zone-label{ color: var(--accent); }
+.mem-zone.thread{
+  border-color: var(--green);
+  background: var(--green-bg);
+}
+.mem-zone.thread .mem-zone-label{ color: var(--green); }
+.mem-areas{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+.mem-area{
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+}
+.mem-area b{
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+.mem-area span{
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+/* ============================================================
+   FLOW DIAGRAM (top-to-bottom arrows)
+   ============================================================ */
+.flow{
+  margin: 16px 0;
+  padding: 16px;
+  background: var(--bg);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.flow-step{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text);
+  min-width: 200px;
+  justify-content: center;
+}
+.flow-step .badge{
+  font-size: 10.5px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text-muted);
+  letter-spacing: 0.4px;
+}
+.flow-step.accent{ border-color: var(--accent); color: var(--accent); }
+.flow-step.accent .badge{ color: var(--accent); background: var(--accent-bg); }
+.flow-arrow{
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  line-height: 1;
+  margin: 2px 0;
+}
+.flow-note{
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ============================================================
+   EQUATION ROWS (e.g. JDK = JRE + Dev Tools)
+   ============================================================ */
+.equations{
+  margin: 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.eq-row{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+}
+.eq-row .eq-left{
+  font-weight: 700;
+  color: var(--text);
+  min-width: 60px;
+}
+.eq-row .eq-sign{ color: var(--text-dim); font-weight: 700; }
+.eq-row .eq-right{ color: var(--text-soft); }
+.eq-row .eq-right .plus{ color: var(--text-dim); margin: 0 4px; }
+.eq-row.accent .eq-left { color: var(--accent); }
+.eq-row.green  .eq-left { color: var(--green); }
+.eq-row.pink   .eq-left { color: var(--pink); }
+
 .topic-pills{
   display: inline-flex;
   flex-wrap: wrap;

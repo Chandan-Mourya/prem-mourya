@@ -34,7 +34,7 @@
     <div class="topic-page-header">
       <div class="topic-page-eyebrow">09 · Elasticsearch</div>
       <h1>Elasticsearch — indexing, search &amp; scaling</h1>
-      <p class="topic-page-desc">Lucene-backed distributed search. You use it on Punctuations.ai for resume search and kNN similarity — bring those stories into your answers.</p>
+      <p class="topic-page-desc">Lucene-backed distributed search. Resume search and kNN similarity, hybrid keyword + vector search.</p>
       <div class="topic-page-meta">
         <span><strong>9</strong> questions</span>
         <span>Press <span class="hint-kbd">/</span> to search</span>
@@ -49,7 +49,7 @@
         <summary>What is Elasticsearch and where does it shine? <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
           <p><strong>Elasticsearch</strong> is a distributed, near-real-time search and analytics engine built on top of <strong>Apache Lucene</strong>. It stores data as JSON documents in <em>indices</em>, which are split into <em>shards</em> distributed across nodes for horizontal scaling and replicated for high availability.</p>
-          <p>It shines wherever you need <strong>full-text search, ranking, faceting, aggregations, or kNN vector search</strong> — use cases like log analytics (the ELK stack), product search, autocomplete, observability, and now AI semantic search. On Punctuations.ai I use it for resume search: keyword + filters for skill/location, plus <code>dense_vector</code> fields for semantic match between job descriptions and candidate profiles. Where a relational DB struggles (fuzzy match, scoring, faceted aggregations), Elasticsearch is purpose-built.</p>
+          <p>It shines wherever you need <strong>full-text search, ranking, faceting, aggregations, or kNN vector search</strong> — use cases like log analytics (the ELK stack), product search, autocomplete, observability, and now AI semantic search. I've used it for resume search: keyword + filters for skill/location, plus <code>dense_vector</code> fields for semantic match between job descriptions and candidate profiles. Where a relational DB struggles (fuzzy match, scoring, faceted aggregations), Elasticsearch is purpose-built.</p>
         </div>
       </details>
 
@@ -90,7 +90,7 @@
         <summary>Analyzers — what are they and have you customized one?</summary>
         <div class="qa-body">
           <p>An <strong>analyzer</strong> processes text in three stages: <strong>char filters</strong> (e.g. strip HTML), a <strong>tokenizer</strong> (e.g. <code>standard</code> splits on whitespace and punctuation), and zero or more <strong>token filters</strong> (lowercase, stop words, stemming, synonyms, ngrams). The default <code>standard</code> analyzer works for most English text.</p>
-          <p>On Punctuations.ai I built a <strong>custom analyzer</strong> for resumes: standard tokenizer plus lowercase, plus a <strong>synonym filter</strong> mapping <code>js → javascript</code>, <code>k8s → kubernetes</code>, etc., and an <strong>edge_ngram</strong> tokenizer on a separate field for autocomplete. The synonym list was loaded from a file and reloadable without reindexing. That single change improved recall on tech-skill searches noticeably — recruiters typing "ML" started finding "Machine Learning" resumes.</p>
+          <p>I once built a <strong>custom analyzer</strong> for resumes: standard tokenizer plus lowercase, plus a <strong>synonym filter</strong> mapping <code>js → javascript</code>, <code>k8s → kubernetes</code>, etc., and an <strong>edge_ngram</strong> tokenizer on a separate field for autocomplete. The synonym list was loaded from a file and reloadable without reindexing. That single change improved recall on tech-skill searches noticeably — recruiters typing "ML" started finding "Machine Learning" resumes.</p>
         </div>
       </details>
 
@@ -98,7 +98,7 @@
         <summary>kNN / vector search in Elasticsearch <span class="qa-tag hot">hot</span></summary>
         <div class="qa-body">
           <p>Since ES 8 you can index <strong><code>dense_vector</code></strong> fields and run <strong>kNN search</strong> using HNSW, an approximate nearest-neighbor algorithm. You declare the dimension (e.g. 768 or 1536) and a similarity metric (cosine, dot product, L2), then store embeddings produced by an LLM or embedding model.</p>
-          <p>On Punctuations.ai I store a 768-dim vector per resume (computed from a summary + skills). At query time we embed the job description, run a <code>knn</code> query with <code>k: 50</code>, then re-rank by combining vector score with BM25 on must-have skills using a <code>function_score</code>. This <strong>hybrid search</strong> gives much better results than pure vector or pure keyword: vector handles "Python developer" ≈ "Pythonista" while BM25 anchors hard requirements like "AWS".</p>
+          <p>In one project I stored a 768-dim vector per resume (computed from a summary + skills). At query time we embed the job description, run a <code>knn</code> query with <code>k: 50</code>, then re-rank by combining vector score with BM25 on must-have skills using a <code>function_score</code>. This <strong>hybrid search</strong> gives much better results than pure vector or pure keyword: vector handles "Python developer" ≈ "Pythonista" while BM25 anchors hard requirements like "AWS".</p>
         </div>
       </details>
 
@@ -113,7 +113,7 @@
       <details class="qa">
         <summary>How do you keep MongoDB and Elasticsearch in sync?</summary>
         <div class="qa-body">
-          <p>On Punctuations.ai MongoDB is the source of truth and Elasticsearch is a read-optimized projection. We use an <strong>event-driven sync</strong>: the service writes to Mongo, then publishes a domain event (<code>ResumeUpserted</code>, <code>ResumeDeleted</code>) to Kafka. A small consumer reads those events and updates the ES index — bulk API in batches of 500 for throughput. Indexing is <strong>idempotent</strong> using the resume ID as the ES document ID, so retries are safe.</p>
+          <p>In a project I worked on, MongoDB was the source of truth and Elasticsearch a read-optimized projection. We used an <strong>event-driven sync</strong>: the service writes to Mongo, then publishes a domain event (<code>ResumeUpserted</code>, <code>ResumeDeleted</code>) to Kafka. A small consumer reads those events and updates the ES index — bulk API in batches of 500 for throughput. Indexing is <strong>idempotent</strong> using the resume ID as the ES document ID, so retries are safe.</p>
           <p>For initial loads and recovery we have a <strong>full-reindex job</strong> that streams Mongo via a change stream cursor and pushes everything through the bulk API. We also expose a small admin endpoint to reindex a single document on demand. With this pattern the lag is typically &lt;500 ms and we never write to ES directly from request paths — that keeps API latency predictable.</p>
         </div>
       </details>

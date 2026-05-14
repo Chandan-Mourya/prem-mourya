@@ -75,9 +75,25 @@
       <details class="qa">
         <summary>1. Two Sum <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p class="problem-statement">Given an array of integers and a target, return the indices of the two numbers that add up to the target. Exactly one valid answer; can't use the same element twice.</p>
+          <p class="problem-statement">Given an array of integers and a <code>target</code>, return the <strong>indices</strong> of the two numbers that add up to <code>target</code>. Exactly one valid answer; same element cannot be used twice.</p>
           <div class="problem-example"><b>Input:</b>  nums = [2, 7, 11, 15], target = 9
 <b>Output:</b> [0, 1]    // nums[0] + nums[1] = 9</div>
+          <div class="problem-example"><b>Input:</b>  nums = [3, 2, 4], target = 6
+<b>Output:</b> [1, 2]    // 2 + 4 = 6</div>
+          <div class="problem-example"><b>Input:</b>  nums = [3, 3], target = 6
+<b>Output:</b> [0, 1]</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH</div>
+            <p>For each number <code>x</code>, we need <code>target − x</code> to also exist in the array. Instead of searching for the complement every time (O(n)), <strong>store every number we've seen in a HashMap</strong> as we walk left-to-right.</p>
+            <ol>
+              <li>Walk through the array once.</li>
+              <li>For each <code>nums[i]</code>, compute <code>complement = target − nums[i]</code>.</li>
+              <li>If <code>complement</code> is already in the map → answer is <code>[map.get(complement), i]</code>.</li>
+              <li>Otherwise, put <code>nums[i] → i</code> into the map and continue.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">array</span><span class="topic-pill">hashmap</span></div>
 
           <div class="solution brute">
@@ -116,9 +132,25 @@
       <details class="qa">
         <summary>2. Contains Duplicate</summary>
         <div class="qa-body">
-          <p class="problem-statement">Return <code>true</code> if any value appears at least twice in the array; <code>false</code> if every element is distinct.</p>
+          <p class="problem-statement">Return <code>true</code> if any value appears <strong>at least twice</strong> in the array; <code>false</code> if every element is distinct.</p>
           <div class="problem-example"><b>Input:</b>  [1, 2, 3, 1]
 <b>Output:</b> true</div>
+          <div class="problem-example"><b>Input:</b>  [1, 2, 3, 4]
+<b>Output:</b> false</div>
+          <div class="problem-example"><b>Input:</b>  [1, 1, 1, 3, 3, 4, 3, 2, 4, 2]
+<b>Output:</b> true</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH</div>
+            <p>The classic <strong>"have I seen this before?"</strong> pattern. A HashSet lets us answer that in O(1).</p>
+            <ol>
+              <li>Walk through the array.</li>
+              <li>Try to add each element to a <code>HashSet</code>.</li>
+              <li>If <code>add()</code> returns <code>false</code>, we've seen this number → return <code>true</code>.</li>
+              <li>If we finish the loop without a duplicate → return <code>false</code>.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">array</span><span class="topic-pill">hashset</span></div>
 
           <div class="solution brute">
@@ -152,9 +184,25 @@
       <details class="qa">
         <summary>3. Best Time to Buy and Sell Stock</summary>
         <div class="qa-body">
-          <p class="problem-statement">Given prices on day i, find the max profit from one buy + one sell. You must buy before you sell.</p>
+          <p class="problem-statement">Given an array where <code>prices[i]</code> is the price of a stock on day <code>i</code>, return the <strong>maximum profit</strong> from one buy + one sell. You must buy <em>before</em> you sell. Return <code>0</code> if no profit is possible.</p>
           <div class="problem-example"><b>Input:</b>  [7, 1, 5, 3, 6, 4]
-<b>Output:</b> 5    // buy on day 2 (price 1), sell on day 5 (price 6)</div>
+<b>Output:</b> 5    // buy at 1 (day 2), sell at 6 (day 5)</div>
+          <div class="problem-example"><b>Input:</b>  [7, 6, 4, 3, 1]
+<b>Output:</b> 0    // prices keep falling — no profit</div>
+          <div class="problem-example"><b>Input:</b>  [2, 4, 1]
+<b>Output:</b> 2    // buy at 2, sell at 4 (don't wait for 1)</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH</div>
+            <p>For each day, the best sell price gives <code>price[today] − min(price so far)</code>. So we just need to track the <strong>minimum price seen so far</strong> as we walk left-to-right.</p>
+            <ol>
+              <li>Initialize <code>minPrice = ∞</code>, <code>maxProfit = 0</code>.</li>
+              <li>For each price, update <code>minPrice = min(minPrice, price)</code>.</li>
+              <li>Then update <code>maxProfit = max(maxProfit, price − minPrice)</code>.</li>
+              <li>One pass, no extra memory.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">array</span><span class="topic-pill">greedy</span></div>
 
           <div class="solution brute">
@@ -191,9 +239,24 @@
       <details class="qa">
         <summary>4. Product of Array Except Self <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p class="problem-statement">Return an array where <code>output[i]</code> equals the product of every element except <code>nums[i]</code>. <strong>Cannot use division.</strong></p>
+          <p class="problem-statement">Return an array where <code>output[i]</code> equals the <strong>product of every element except</strong> <code>nums[i]</code>. <strong>Cannot use division</strong> (so you can't just compute total product / nums[i]).</p>
           <div class="problem-example"><b>Input:</b>  [1, 2, 3, 4]
-<b>Output:</b> [24, 12, 8, 6]</div>
+<b>Output:</b> [24, 12, 8, 6]    // (2·3·4), (1·3·4), (1·2·4), (1·2·3)</div>
+          <div class="problem-example"><b>Input:</b>  [-1, 1, 0, -3, 3]
+<b>Output:</b> [0, 0, 9, 0, 0]    // zeros wipe everything except their own slot</div>
+          <div class="problem-example"><b>Input:</b>  [2, 3, 4, 5]
+<b>Output:</b> [60, 40, 30, 24]</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH</div>
+            <p>For index <code>i</code>: <strong>answer = (product of everything to its left) × (product of everything to its right)</strong>. Compute these in two passes.</p>
+            <ol>
+              <li><strong>Pass 1 (left → right):</strong> fill <code>ans[i]</code> with the prefix product (product of all elements before <code>i</code>).</li>
+              <li><strong>Pass 2 (right → left):</strong> keep a running <code>right</code> product and multiply <code>ans[i] *= right</code>, then update <code>right *= nums[i]</code>.</li>
+              <li>Total: O(n) time, O(1) extra space (output array doesn't count).</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">array</span><span class="topic-pill">prefix-suffix</span></div>
 
           <div class="solution brute">
@@ -241,9 +304,25 @@
       <details class="qa">
         <summary>5. Maximum Subarray (Kadane's Algorithm) <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p class="problem-statement">Find the contiguous subarray with the largest sum.</p>
+          <p class="problem-statement">Find the <strong>contiguous</strong> subarray with the largest sum. Return that sum. Array may contain negative numbers.</p>
           <div class="problem-example"><b>Input:</b>  [-2, 1, -3, 4, -1, 2, 1, -5, 4]
 <b>Output:</b> 6    // subarray [4, -1, 2, 1]</div>
+          <div class="problem-example"><b>Input:</b>  [1]
+<b>Output:</b> 1</div>
+          <div class="problem-example"><b>Input:</b>  [5, 4, -1, 7, 8]
+<b>Output:</b> 23    // entire array</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Kadane's Algorithm</div>
+            <p>At every index ask one question: <em>"is it better to <strong>extend</strong> the current subarray, or <strong>restart</strong> from here?"</em></p>
+            <ol>
+              <li>Let <code>curr</code> = best subarray sum ending exactly at index <code>i</code>.</li>
+              <li>Recurrence: <code>curr = max(nums[i], curr + nums[i])</code> — extend or restart.</li>
+              <li>Track the overall best: <code>best = max(best, curr)</code>.</li>
+              <li>If <code>curr + nums[i] &lt; nums[i]</code>, the previous subarray is dragging us down — drop it.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">array</span><span class="topic-pill">DP</span><span class="topic-pill">kadane</span></div>
 
           <div class="solution brute">
@@ -289,9 +368,25 @@
       <details class="qa">
         <summary>6. Valid Anagram</summary>
         <div class="qa-body">
-          <p class="problem-statement">Return true if <code>t</code> is an anagram of <code>s</code> — same letters, same counts.</p>
+          <p class="problem-statement">Return <code>true</code> if <code>t</code> is an <strong>anagram</strong> of <code>s</code> — meaning both strings contain the <em>same letters with the same counts</em>, just possibly in a different order.</p>
           <div class="problem-example"><b>Input:</b>  s = "anagram", t = "nagaram"
 <b>Output:</b> true</div>
+          <div class="problem-example"><b>Input:</b>  s = "rat", t = "car"
+<b>Output:</b> false</div>
+          <div class="problem-example"><b>Input:</b>  s = "listen", t = "silent"
+<b>Output:</b> true</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH</div>
+            <p>Two strings are anagrams iff their <strong>character frequency histograms match</strong>. Skip sorting (O(n log n)) and use a counting array.</p>
+            <ol>
+              <li>Quick check: if lengths differ, return <code>false</code>.</li>
+              <li>Use a 26-int array (lowercase a–z).</li>
+              <li>Increment for each char in <code>s</code>, decrement for each char in <code>t</code>.</li>
+              <li>If every bucket is <code>0</code> at the end → anagram.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">string</span><span class="topic-pill">frequency</span></div>
 
           <div class="solution brute">
@@ -328,9 +423,25 @@
       <details class="qa">
         <summary>7. Longest Substring Without Repeating Characters <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p class="problem-statement">Find the length of the longest substring with all unique characters.</p>
+          <p class="problem-statement">Find the <strong>length</strong> of the longest substring (contiguous) of <code>s</code> that contains <strong>all unique characters</strong> (no repeats).</p>
           <div class="problem-example"><b>Input:</b>  "abcabcbb"
 <b>Output:</b> 3    // "abc"</div>
+          <div class="problem-example"><b>Input:</b>  "bbbbb"
+<b>Output:</b> 1    // "b"</div>
+          <div class="problem-example"><b>Input:</b>  "pwwkew"
+<b>Output:</b> 3    // "wke" (not "pwke" — that's a subsequence)</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Sliding Window</div>
+            <p>Maintain a window <code>[left, right]</code> that always contains <em>unique characters</em>. <strong>Expand right</strong>; if a duplicate appears, <strong>jump left</strong> past its last occurrence.</p>
+            <ol>
+              <li>Use a <code>HashMap&lt;char, lastIndex&gt;</code>.</li>
+              <li>Move <code>right</code> through the string.</li>
+              <li>If <code>s[right]</code> was seen and its last index ≥ <code>left</code>: move <code>left = lastIdx + 1</code>.</li>
+              <li>Update <code>map[s[right]] = right</code> and <code>maxLen = max(maxLen, right − left + 1)</code>.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">string</span><span class="topic-pill">sliding-window</span></div>
 
           <div class="solution brute">
@@ -377,9 +488,26 @@ private boolean allUnique(String s, int i, int j) {
       <details class="qa">
         <summary>8. Group Anagrams</summary>
         <div class="qa-body">
-          <p class="problem-statement">Group strings that are anagrams of each other.</p>
+          <p class="problem-statement">Given an array of strings, <strong>group all anagrams together</strong>. Each group goes into its own list.</p>
           <div class="problem-example"><b>Input:</b>  ["eat","tea","tan","ate","nat","bat"]
 <b>Output:</b> [["eat","tea","ate"], ["tan","nat"], ["bat"]]</div>
+          <div class="problem-example"><b>Input:</b>  [""]
+<b>Output:</b> [[""]]</div>
+          <div class="problem-example"><b>Input:</b>  ["a"]
+<b>Output:</b> [["a"]]</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH</div>
+            <p>All anagrams share the <strong>same canonical key</strong>. Build a key per word, then group by key in a HashMap.</p>
+            <ol>
+              <li>For each word, build a <strong>character-count "fingerprint"</strong> (a 26-int array).</li>
+              <li>Use its string representation as a map key.</li>
+              <li>Add the original word to <code>map[key]</code>'s list.</li>
+              <li>Return all the lists.</li>
+            </ol>
+            <p><em>Alternative key: sort the word's characters. Simpler to write but slower (O(k log k) per word).</em></p>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">string</span><span class="topic-pill">hashmap</span></div>
 
           <div class="solution brute">
@@ -420,12 +548,25 @@ private boolean allUnique(String s, int i, int j) {
       <details class="qa">
         <summary>9. Valid Parentheses <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p class="problem-statement">Given a string of <code>()</code>, <code>[]</code>, <code>{}</code> — return true if every open bracket has a matching close in the right order.</p>
+          <p class="problem-statement">Given a string of just <code>()</code>, <code>[]</code>, <code>{}</code> characters, return <code>true</code> if every open bracket has a <strong>matching close</strong> and they're <strong>properly nested</strong>.</p>
           <div class="problem-example"><b>Input:</b>  "([{}])"
-<b>Output:</b> true
+<b>Output:</b> true</div>
+          <div class="problem-example"><b>Input:</b>  "([)]"
+<b>Output:</b> false    // brackets cross — not nested</div>
+          <div class="problem-example"><b>Input:</b>  "{[]}"
+<b>Output:</b> true</div>
 
-<b>Input:</b>  "([)]"
-<b>Output:</b> false</div>
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Stack matching</div>
+            <p>Every <em>close</em> bracket must match the <strong>most recent unmatched open</strong> bracket — that's exactly what a stack tracks.</p>
+            <ol>
+              <li>For each character:</li>
+              <li>If it's an <em>opener</em> (<code>(</code>, <code>[</code>, <code>{</code>) → push onto stack.</li>
+              <li>If it's a <em>closer</em> → stack must not be empty, and top must be the matching opener; pop it. Otherwise <code>false</code>.</li>
+              <li>At the end, the stack must be empty (all opens were closed).</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">string</span><span class="topic-pill">stack</span></div>
 
           <div class="solution optimal">
@@ -454,9 +595,26 @@ private boolean allUnique(String s, int i, int j) {
       <details class="qa">
         <summary>10. Longest Palindromic Substring</summary>
         <div class="qa-body">
-          <p class="problem-statement">Return the longest substring that reads the same forward and backward.</p>
+          <p class="problem-statement">Return the longest <strong>contiguous</strong> substring of <code>s</code> that reads the same forward and backward.</p>
           <div class="problem-example"><b>Input:</b>  "babad"
-<b>Output:</b> "bab" or "aba"</div>
+<b>Output:</b> "bab" or "aba"    // either is valid</div>
+          <div class="problem-example"><b>Input:</b>  "cbbd"
+<b>Output:</b> "bb"</div>
+          <div class="problem-example"><b>Input:</b>  "racecar"
+<b>Output:</b> "racecar"</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Expand Around Center</div>
+            <p>Every palindrome has a <strong>center</strong> — one character (odd length) or a gap between two characters (even length). There are <code>2n − 1</code> possible centers.</p>
+            <ol>
+              <li>For each index <code>i</code>:</li>
+              <li>Expand outward from <code>(i, i)</code> — odd-length center.</li>
+              <li>Expand outward from <code>(i, i+1)</code> — even-length center.</li>
+              <li>Keep growing while <code>s[left] == s[right]</code>.</li>
+              <li>Track the longest palindrome found.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">string</span><span class="topic-pill">two-pointer</span></div>
 
           <div class="solution brute">
@@ -504,9 +662,25 @@ private int expand(String s, int l, int r) {
       <details class="qa">
         <summary>11. Maximum Sum Subarray of Size K</summary>
         <div class="qa-body">
-          <p class="problem-statement">Find the maximum sum of any contiguous subarray of size <code>k</code>.</p>
+          <p class="problem-statement">Find the <strong>maximum sum</strong> of any <em>contiguous</em> subarray of <strong>exactly</strong> size <code>k</code>.</p>
           <div class="problem-example"><b>Input:</b>  nums = [2, 1, 5, 1, 3, 2], k = 3
 <b>Output:</b> 9    // [5, 1, 3]</div>
+          <div class="problem-example"><b>Input:</b>  nums = [1, 4, 2, 10, 23, 3, 1, 0, 20], k = 4
+<b>Output:</b> 39    // [4, 2, 10, 23]</div>
+          <div class="problem-example"><b>Input:</b>  nums = [100, 200, 300, 400], k = 2
+<b>Output:</b> 700    // [300, 400]</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Fixed Sliding Window</div>
+            <p>Classic <strong>"don't recompute, just slide"</strong> trick. Instead of summing k elements every time (O(n·k)), just adjust the running sum as the window moves.</p>
+            <ol>
+              <li>Compute the sum of the first <code>k</code> elements → initial window sum.</li>
+              <li>Slide right by 1 each step:</li>
+              <li><code>sum += nums[right] − nums[right − k]</code> — add the entering element, remove the leaving one.</li>
+              <li>Track <code>max(sum)</code> across all slides.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">array</span><span class="topic-pill">sliding-window</span></div>
 
           <div class="solution brute">
@@ -546,9 +720,25 @@ private int expand(String s, int l, int r) {
       <details class="qa">
         <summary>12. Minimum Window Substring <span class="qa-tag hot">hot</span></summary>
         <div class="qa-body">
-          <p class="problem-statement">Given strings <code>s</code> and <code>t</code>, find the smallest substring of <code>s</code> that contains every character of <code>t</code> (including duplicates).</p>
+          <p class="problem-statement">Given strings <code>s</code> and <code>t</code>, return the <strong>smallest substring</strong> of <code>s</code> that contains <em>every character</em> of <code>t</code> (counting duplicates). Return <code>""</code> if no such window exists.</p>
           <div class="problem-example"><b>Input:</b>  s = "ADOBECODEBANC", t = "ABC"
 <b>Output:</b> "BANC"</div>
+          <div class="problem-example"><b>Input:</b>  s = "a", t = "a"
+<b>Output:</b> "a"</div>
+          <div class="problem-example"><b>Input:</b>  s = "a", t = "aa"
+<b>Output:</b> ""    // not enough a's</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Variable Sliding Window (Expand &amp; Shrink)</div>
+            <p>Move two pointers <code>left</code> and <code>right</code> over <code>s</code>. <strong>Expand right</strong> until the window contains all of <code>t</code>; then <strong>shrink left</strong> as long as it still does. Track the smallest valid window.</p>
+            <ol>
+              <li>Build a frequency map <code>need</code> for <code>t</code>.</li>
+              <li>Expand <code>right</code>: as you see required characters, count how many requirements are "satisfied".</li>
+              <li>When all requirements are met → try shrinking <code>left</code> while the window stays valid; record window size.</li>
+              <li>Continue expanding right; repeat.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">string</span><span class="topic-pill">sliding-window</span></div>
 
           <div class="solution optimal">
@@ -597,9 +787,26 @@ private int expand(String s, int l, int r) {
       <details class="qa">
         <summary>13. Reverse Linked List <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p class="problem-statement">Reverse a singly linked list.</p>
+          <p class="problem-statement">Reverse a <strong>singly linked list</strong> — flip every <code>next</code> pointer so the list goes the other way. Return the new head.</p>
           <div class="problem-example"><b>Input:</b>  1 → 2 → 3 → 4 → 5
 <b>Output:</b> 5 → 4 → 3 → 2 → 1</div>
+          <div class="problem-example"><b>Input:</b>  1 → 2
+<b>Output:</b> 2 → 1</div>
+          <div class="problem-example"><b>Input:</b>  []  (empty list)
+<b>Output:</b> []</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Three Pointers (iterative)</div>
+            <p>Walk through the list and flip each <code>next</code> pointer in place. The key is to <strong>remember the next node before overwriting it</strong>.</p>
+            <ol>
+              <li>Use 3 references: <code>prev = null</code>, <code>curr = head</code>, <code>next</code>.</li>
+              <li>Save <code>next = curr.next</code> before overwriting.</li>
+              <li>Flip the pointer: <code>curr.next = prev</code>.</li>
+              <li>Advance: <code>prev = curr</code>, <code>curr = next</code>.</li>
+              <li>When <code>curr == null</code>, <code>prev</code> is the new head.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">linked-list</span><span class="topic-pill">two-pointer</span></div>
 
           <div class="solution optimal">
@@ -637,7 +844,26 @@ private int expand(String s, int l, int r) {
       <details class="qa">
         <summary>14. Detect Cycle in Linked List <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p class="problem-statement">Return true if the linked list contains a cycle.</p>
+          <p class="problem-statement">Return <code>true</code> if the linked list contains a <strong>cycle</strong> — i.e. some <code>next</code> pointer goes back to an earlier node, creating an infinite loop.</p>
+          <div class="problem-example"><b>Input:</b>  3 → 2 → 0 → -4 → (back to 2)
+<b>Output:</b> true</div>
+          <div class="problem-example"><b>Input:</b>  1 → 2 → null
+<b>Output:</b> false</div>
+          <div class="problem-example"><b>Input:</b>  1 → (back to 1)
+<b>Output:</b> true</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Floyd's Tortoise &amp; Hare</div>
+            <p>Two pointers moving at <strong>different speeds</strong>. If there's a cycle, the fast one will eventually <strong>lap</strong> the slow one — they must meet. If there's no cycle, fast hits <code>null</code>.</p>
+            <ol>
+              <li>Start <code>slow</code> and <code>fast</code> at <code>head</code>.</li>
+              <li>Each iteration: <code>slow = slow.next</code>, <code>fast = fast.next.next</code>.</li>
+              <li>If <code>fast</code> (or <code>fast.next</code>) becomes null → no cycle.</li>
+              <li>If <code>slow == fast</code> → cycle detected.</li>
+              <li>Beats the HashSet approach in space (O(1) vs O(n)).</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">linked-list</span><span class="topic-pill">two-pointer</span><span class="topic-pill">floyd</span></div>
 
           <div class="solution brute">
@@ -675,9 +901,26 @@ private int expand(String s, int l, int r) {
       <details class="qa">
         <summary>15. Merge Two Sorted Linked Lists</summary>
         <div class="qa-body">
-          <p class="problem-statement">Merge two sorted lists into one sorted list.</p>
+          <p class="problem-statement">Given two <strong>sorted</strong> linked lists, merge them into a single sorted list by <strong>splicing nodes</strong> (no new allocations). Return the head.</p>
           <div class="problem-example"><b>Input:</b>  l1 = 1→2→4, l2 = 1→3→4
 <b>Output:</b> 1→1→2→3→4→4</div>
+          <div class="problem-example"><b>Input:</b>  l1 = [], l2 = []
+<b>Output:</b> []</div>
+          <div class="problem-example"><b>Input:</b>  l1 = [], l2 = 0
+<b>Output:</b> 0</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Dummy Head + Two Pointers</div>
+            <p>Use a <strong>dummy node</strong> to avoid awkward "is this the first node?" edge cases. Walk both lists simultaneously and attach the smaller head each step.</p>
+            <ol>
+              <li>Create <code>dummy</code> node and pointer <code>tail = dummy</code>.</li>
+              <li>While both lists have nodes: attach the smaller node to <code>tail.next</code>, advance that list's pointer.</li>
+              <li>Move <code>tail = tail.next</code>.</li>
+              <li>When one list runs out, attach the other entirely (it's already sorted).</li>
+              <li>Return <code>dummy.next</code>.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">linked-list</span><span class="topic-pill">two-pointer</span></div>
 
           <div class="solution optimal">
@@ -707,7 +950,23 @@ private int expand(String s, int l, int r) {
       <details class="qa">
         <summary>16. Min Stack</summary>
         <div class="qa-body">
-          <p class="problem-statement">Design a stack supporting <code>push</code>, <code>pop</code>, <code>top</code>, and <code>getMin</code> — all in O(1).</p>
+          <p class="problem-statement">Design a stack that supports <code>push</code>, <code>pop</code>, <code>top</code>, and <code>getMin</code> — <strong>all in O(1)</strong> time.</p>
+          <div class="problem-example"><b>Input:</b>  push(-2), push(0), push(-3), getMin(), pop(), top(), getMin()
+<b>Output:</b> -3, _, 0, -2</div>
+          <div class="problem-example"><b>Input:</b>  push(5), push(2), getMin(), pop(), getMin()
+<b>Output:</b> 2, _, 5</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Auxiliary Min Stack</div>
+            <p>Trick: at every "moment" in the stack's lifetime, we need to know the min. So keep <strong>a parallel stack of running minimums</strong>.</p>
+            <ol>
+              <li>Use two stacks: <code>data</code> (the normal stack) and <code>mins</code> (running minimums).</li>
+              <li><strong>push(x):</strong> push to <code>data</code>; if <code>mins</code> is empty <em>or</em> <code>x ≤ mins.peek()</code>, also push <code>x</code> to <code>mins</code>.</li>
+              <li><strong>pop():</strong> pop from <code>data</code>; if that value equals <code>mins.peek()</code>, also pop from <code>mins</code>.</li>
+              <li><strong>getMin():</strong> return <code>mins.peek()</code> — O(1).</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">stack</span><span class="topic-pill">design</span></div>
 
           <div class="solution brute">
@@ -744,7 +1003,23 @@ private int expand(String s, int l, int r) {
       <details class="qa">
         <summary>17. Implement Queue Using Stacks</summary>
         <div class="qa-body">
-          <p class="problem-statement">Implement a FIFO queue using only two LIFO stacks.</p>
+          <p class="problem-statement">Implement a <strong>FIFO queue</strong> (push, pop, peek, empty) using <strong>only two LIFO stacks</strong>.</p>
+          <div class="problem-example"><b>Input:</b>  push(1), push(2), peek(), pop(), empty()
+<b>Output:</b> _, _, 1, 1, false</div>
+          <div class="problem-example"><b>Input:</b>  push(1), pop(), empty()
+<b>Output:</b> _, 1, true</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Two Stacks (amortized O(1))</div>
+            <p>A queue is FIFO, a stack is LIFO — two stacks back-to-back <strong>cancel out the LIFO twice</strong>, giving you FIFO.</p>
+            <ol>
+              <li>Keep two stacks: <code>in</code> (for pushes) and <code>out</code> (for pops).</li>
+              <li><strong>push(x):</strong> just push to <code>in</code>.</li>
+              <li><strong>pop()/peek():</strong> if <code>out</code> is empty, drain everything from <code>in</code> into <code>out</code> — this reverses the order. Then pop/peek from <code>out</code>.</li>
+              <li>Each element moves at most twice → <strong>amortized O(1)</strong>.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">stack</span><span class="topic-pill">queue</span><span class="topic-pill">design</span></div>
 
           <div class="solution optimal">
@@ -780,9 +1055,26 @@ private int expand(String s, int l, int r) {
       <details class="qa">
         <summary>18. Next Greater Element</summary>
         <div class="qa-body">
-          <p class="problem-statement">For each element, find the first greater element to its right. If none, return −1.</p>
+          <p class="problem-statement">For each element in the array, find the <strong>first greater element to its right</strong>. If none exists, return <code>-1</code> for that position.</p>
           <div class="problem-example"><b>Input:</b>  [2, 1, 2, 4, 3]
 <b>Output:</b> [4, 2, 4, -1, -1]</div>
+          <div class="problem-example"><b>Input:</b>  [4, 5, 2, 25]
+<b>Output:</b> [5, 25, 25, -1]</div>
+          <div class="problem-example"><b>Input:</b>  [13, 7, 6, 12]
+<b>Output:</b> [-1, 12, 12, -1]</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Monotonic Decreasing Stack</div>
+            <p>Walk <strong>right to left</strong>. Keep a stack of "candidates" that could be the next-greater for some earlier element. Pop everything smaller than the current — the top is the answer.</p>
+            <ol>
+              <li>Iterate <code>i</code> from <code>n−1</code> down to <code>0</code>.</li>
+              <li>Pop the stack while it's non-empty and <code>stack.peek() ≤ nums[i]</code> (those can never be the answer for the left).</li>
+              <li>If stack empty → answer is <code>-1</code>; else answer is <code>stack.peek()</code>.</li>
+              <li>Push <code>nums[i]</code> onto the stack.</li>
+              <li>Each element pushed and popped at most once → O(n).</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">stack</span><span class="topic-pill">monotonic</span></div>
 
           <div class="solution brute">
@@ -829,7 +1121,27 @@ private int expand(String s, int l, int r) {
       <details class="qa">
         <summary>19. Binary Search <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p class="problem-statement">Find a target in a sorted array. Return its index or −1.</p>
+          <p class="problem-statement">Given a <strong>sorted</strong> array of integers and a <code>target</code>, return the index of <code>target</code> in O(log n), or <code>-1</code> if not found.</p>
+          <div class="problem-example"><b>Input:</b>  nums = [-1, 0, 3, 5, 9, 12], target = 9
+<b>Output:</b> 4</div>
+          <div class="problem-example"><b>Input:</b>  nums = [-1, 0, 3, 5, 9, 12], target = 2
+<b>Output:</b> -1</div>
+          <div class="problem-example"><b>Input:</b>  nums = [5], target = 5
+<b>Output:</b> 0</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Divide &amp; Conquer</div>
+            <p>Since the array is sorted, the middle element tells you which half can possibly contain the target — <strong>throw away the other half</strong>. Each step halves the search space.</p>
+            <ol>
+              <li>Two pointers: <code>left = 0</code>, <code>right = n − 1</code>.</li>
+              <li><strong>Critical:</strong> compute <code>mid = left + (right − left) / 2</code> to avoid integer overflow.</li>
+              <li>If <code>nums[mid] == target</code> → return <code>mid</code>.</li>
+              <li>If <code>nums[mid] &lt; target</code> → search right half: <code>left = mid + 1</code>.</li>
+              <li>Else → search left half: <code>right = mid − 1</code>.</li>
+              <li>Exit when <code>left &gt; right</code> → return <code>-1</code>.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">array</span><span class="topic-pill">binary-search</span></div>
 
           <div class="solution optimal">
@@ -854,9 +1166,35 @@ private int expand(String s, int l, int r) {
       <details class="qa">
         <summary>20. Search in Rotated Sorted Array <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p class="problem-statement">A sorted array was rotated at an unknown pivot. Find a target in O(log n).</p>
+          <p class="problem-statement">An originally sorted array was <strong>rotated at an unknown pivot</strong> (e.g. <code>[0,1,2,4,5,6,7]</code> became <code>[4,5,6,7,0,1,2]</code>). Find a target's index in <strong>O(log n)</strong>, or return <code>-1</code>.</p>
           <div class="problem-example"><b>Input:</b>  nums = [4, 5, 6, 7, 0, 1, 2], target = 0
 <b>Output:</b> 4</div>
+          <div class="problem-example"><b>Input:</b>  nums = [4, 5, 6, 7, 0, 1, 2], target = 3
+<b>Output:</b> -1</div>
+          <div class="problem-example"><b>Input:</b>  nums = [1], target = 0
+<b>Output:</b> -1</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Modified Binary Search</div>
+            <p>The trick: at any split point, <strong>at least one half is still sorted</strong>. Check which half is sorted, then decide if the target lies inside that sorted half.</p>
+            <ol>
+              <li>Compute <code>mid</code>. If <code>nums[mid] == target</code> → return.</li>
+              <li><strong>If <code>nums[left] ≤ nums[mid]</code></strong> → left half is sorted:
+                <ul>
+                  <li>If <code>target ∈ [nums[left], nums[mid])</code> → search left.</li>
+                  <li>Else → search right.</li>
+                </ul>
+              </li>
+              <li><strong>Else</strong> → right half is sorted:
+                <ul>
+                  <li>If <code>target ∈ (nums[mid], nums[right]]</code> → search right.</li>
+                  <li>Else → search left.</li>
+                </ul>
+              </li>
+              <li>Repeat until found or <code>left &gt; right</code>.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">array</span><span class="topic-pill">binary-search</span></div>
 
           <div class="solution optimal">
@@ -892,9 +1230,27 @@ private int expand(String s, int l, int r) {
       <details class="qa">
         <summary>21. Binary Tree Level Order Traversal</summary>
         <div class="qa-body">
-          <p class="problem-statement">Return the values of the tree level by level (BFS).</p>
+          <p class="problem-statement">Return the node values of a binary tree <strong>level by level</strong> (left-to-right at each level) as a list of lists.</p>
           <div class="problem-example"><b>Input:</b>  [3, 9, 20, null, null, 15, 7]
 <b>Output:</b> [[3], [9, 20], [15, 7]]</div>
+          <div class="problem-example"><b>Input:</b>  [1]
+<b>Output:</b> [[1]]</div>
+          <div class="problem-example"><b>Input:</b>  []
+<b>Output:</b> []</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — BFS with Queue (snapshot per level)</div>
+            <p>BFS naturally visits nodes level-by-level. The trick to <strong>group by level</strong> is to <em>snapshot the queue size</em> at the start of each level — those are exactly that level's nodes.</p>
+            <ol>
+              <li>Start with <code>queue = [root]</code>.</li>
+              <li>While queue not empty:</li>
+              <li>&nbsp;&nbsp;&nbsp;Save <code>size = queue.size()</code> — that's this level's node count.</li>
+              <li>&nbsp;&nbsp;&nbsp;Process exactly <code>size</code> nodes: poll, add value to current level list, enqueue non-null children.</li>
+              <li>&nbsp;&nbsp;&nbsp;Add the level list to the result.</li>
+              <li>Return the result.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">tree</span><span class="topic-pill">BFS</span><span class="topic-pill">queue</span></div>
 
           <div class="solution optimal">
@@ -927,7 +1283,26 @@ private int expand(String s, int l, int r) {
       <details class="qa">
         <summary>22. Maximum Depth of Binary Tree</summary>
         <div class="qa-body">
-          <p class="problem-statement">Return the height of the tree (number of nodes on the longest root-to-leaf path).</p>
+          <p class="problem-statement">Return the <strong>height</strong> of a binary tree — the number of nodes along the <em>longest root-to-leaf path</em>.</p>
+          <div class="problem-example"><b>Input:</b>  [3, 9, 20, null, null, 15, 7]
+<b>Output:</b> 3    // root → 20 → 15 (or 7)</div>
+          <div class="problem-example"><b>Input:</b>  [1, null, 2]
+<b>Output:</b> 2</div>
+          <div class="problem-example"><b>Input:</b>  []
+<b>Output:</b> 0</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Recursive DFS</div>
+            <p>Classic divide &amp; conquer on trees: <strong>"height of any node = 1 + max(height of its left, height of its right)"</strong>.</p>
+            <ol>
+              <li>Base case: <code>null</code> node has depth <code>0</code>.</li>
+              <li>Recursively compute <code>leftDepth = maxDepth(root.left)</code>.</li>
+              <li>Recursively compute <code>rightDepth = maxDepth(root.right)</code>.</li>
+              <li>Return <code>1 + max(leftDepth, rightDepth)</code>.</li>
+              <li>Each node visited once → O(n) time. Stack depth = tree height → O(h) space.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">tree</span><span class="topic-pill">DFS</span><span class="topic-pill">recursion</span></div>
 
           <div class="solution optimal">
@@ -945,7 +1320,26 @@ private int expand(String s, int l, int r) {
       <details class="qa">
         <summary>23. Lowest Common Ancestor of Binary Tree <span class="qa-tag hot">hot</span></summary>
         <div class="qa-body">
-          <p class="problem-statement">Find the lowest node in the tree that is an ancestor of both <code>p</code> and <code>q</code>.</p>
+          <p class="problem-statement">Given a binary tree and two nodes <code>p</code> and <code>q</code>, find the <strong>lowest (deepest) common ancestor</strong> — the node that is an ancestor of both, closest to them.</p>
+          <div class="problem-example"><b>Input:</b>  tree = [3, 5, 1, 6, 2, 0, 8, null, null, 7, 4], p = 5, q = 1
+<b>Output:</b> 3    // root</div>
+          <div class="problem-example"><b>Input:</b>  tree = [3, 5, 1, 6, 2, 0, 8, null, null, 7, 4], p = 5, q = 4
+<b>Output:</b> 5    // a node can be its own ancestor</div>
+          <div class="problem-example"><b>Input:</b>  tree = [1, 2], p = 1, q = 2
+<b>Output:</b> 1</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Recursive DFS</div>
+            <p>Each recursive call answers: <em>"does this subtree contain <code>p</code>, <code>q</code>, both, or neither?"</em></p>
+            <ol>
+              <li>If <code>root</code> is <code>null</code>, or equals <code>p</code> or <code>q</code> → return <code>root</code>.</li>
+              <li>Recurse on left and right.</li>
+              <li>If <strong>both sides return non-null</strong> → current node is the LCA. Return <code>root</code>.</li>
+              <li>If only one side is non-null → that side contains both (or one), so return it upward.</li>
+              <li>Works because once both p and q are found, the splitting node is the LCA.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">tree</span><span class="topic-pill">DFS</span><span class="topic-pill">recursion</span></div>
 
           <div class="solution optimal">
@@ -967,7 +1361,27 @@ private int expand(String s, int l, int r) {
       <details class="qa">
         <summary>24. Validate Binary Search Tree</summary>
         <div class="qa-body">
-          <p class="problem-statement">Return true if a binary tree is a valid BST — every node's left subtree contains only smaller values, right subtree only larger.</p>
+          <p class="problem-statement">Return <code>true</code> if a binary tree is a valid <strong>BST</strong>: for every node, <em>every</em> value in its left subtree must be <strong>strictly smaller</strong>, and <em>every</em> value in its right subtree must be <strong>strictly larger</strong>.</p>
+          <div class="problem-example"><b>Input:</b>  [2, 1, 3]
+<b>Output:</b> true</div>
+          <div class="problem-example"><b>Input:</b>  [5, 1, 4, null, null, 3, 6]
+<b>Output:</b> false    // 3 is in 4's left subtree, but 3 &lt; 5 — violates root's right-must-be-greater</div>
+          <div class="problem-example"><b>Input:</b>  [2, 2, 2]
+<b>Output:</b> false    // duplicates not allowed (strict)</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Pass Min/Max Bounds Down</div>
+            <p><strong>Gotcha:</strong> just checking <code>left &lt; root &lt; right</code> at each node is wrong — a deep left descendant could still violate the rule. Pass a <strong>valid range</strong> down the recursion.</p>
+            <ol>
+              <li>Each node receives <code>(min, max)</code> — the allowed value range.</li>
+              <li>For the root: range is <code>(-∞, +∞)</code>.</li>
+              <li>Check <code>min &lt; node.val &lt; max</code>; if not → invalid.</li>
+              <li>Recurse left with new range <code>(min, node.val)</code>.</li>
+              <li>Recurse right with new range <code>(node.val, max)</code>.</li>
+              <li>Use <code>Long</code> for bounds to handle <code>Integer.MIN/MAX</code> as values.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">tree</span><span class="topic-pill">BST</span><span class="topic-pill">DFS</span></div>
 
           <div class="solution brute">
@@ -1002,9 +1416,26 @@ private boolean validate(TreeNode n, long min, long max) {
       <details class="qa">
         <summary>25. Kth Largest Element in Array <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p class="problem-statement">Find the k-th largest element in an unsorted array.</p>
+          <p class="problem-statement">Find the <strong>k-th largest</strong> element in an unsorted array. <em>(Note: that's the k-th in sorted order, not the k-th distinct.)</em></p>
           <div class="problem-example"><b>Input:</b>  nums = [3, 2, 1, 5, 6, 4], k = 2
-<b>Output:</b> 5</div>
+<b>Output:</b> 5    // sorted desc: [6,5,4,3,2,1]</div>
+          <div class="problem-example"><b>Input:</b>  nums = [3, 2, 3, 1, 2, 4, 5, 5, 6], k = 4
+<b>Output:</b> 4</div>
+          <div class="problem-example"><b>Input:</b>  nums = [1], k = 1
+<b>Output:</b> 1</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Min-Heap of Size K</div>
+            <p>Keep a <strong>bounded min-heap of size k</strong> containing the k largest elements seen so far. The root of this heap is always the smallest of those k — which is exactly the k-th largest overall.</p>
+            <ol>
+              <li>Initialize an empty min-heap.</li>
+              <li>For each number: push it; if heap size exceeds <code>k</code>, poll (removes the smallest).</li>
+              <li>After processing all numbers, <code>heap.peek()</code> = answer.</li>
+              <li>Time: O(n log k), space: O(k).</li>
+              <li><em>For O(n) average use Quickselect (randomized partition), but heap is the cleaner interview answer.</em></li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">array</span><span class="topic-pill">heap</span><span class="topic-pill">quickselect</span></div>
 
           <div class="solution brute">
@@ -1038,9 +1469,26 @@ private boolean validate(TreeNode n, long min, long max) {
       <details class="qa">
         <summary>26. Top K Frequent Elements <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p class="problem-statement">Return the k most frequent elements.</p>
+          <p class="problem-statement">Given an array and integer <code>k</code>, return the <strong>k most frequent</strong> elements (in any order).</p>
           <div class="problem-example"><b>Input:</b>  nums = [1, 1, 1, 2, 2, 3], k = 2
 <b>Output:</b> [1, 2]</div>
+          <div class="problem-example"><b>Input:</b>  nums = [1], k = 1
+<b>Output:</b> [1]</div>
+          <div class="problem-example"><b>Input:</b>  nums = [4,1,-1,2,-1,2,3], k = 2
+<b>Output:</b> [-1, 2]</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Frequency Map + Min-Heap of Size K</div>
+            <p>Two phases: <strong>count</strong>, then <strong>pick top k by count</strong>. Use a min-heap to keep only the k most frequent — same bounded-heap trick as Kth Largest.</p>
+            <ol>
+              <li>Build a HashMap of <code>num → frequency</code> in one pass.</li>
+              <li>Initialize a min-heap ordered by frequency.</li>
+              <li>For each (num, freq) entry: push; if heap size &gt; k → poll (removes lowest frequency).</li>
+              <li>Extract all elements from the heap → answer.</li>
+              <li><em>O(n) alternative: bucket sort — create n buckets indexed by frequency, then read top-k from the highest buckets.</em></li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">heap</span><span class="topic-pill">hashmap</span><span class="topic-pill">bucket</span></div>
 
           <div class="solution brute">
@@ -1081,9 +1529,27 @@ private boolean validate(TreeNode n, long min, long max) {
       <details class="qa">
         <summary>27. Merge Intervals <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p class="problem-statement">Merge all overlapping intervals.</p>
+          <p class="problem-statement">Given an array of intervals <code>[start, end]</code>, <strong>merge all overlapping intervals</strong> and return the resulting non-overlapping intervals.</p>
           <div class="problem-example"><b>Input:</b>  [[1,3],[2,6],[8,10],[15,18]]
-<b>Output:</b> [[1,6],[8,10],[15,18]]</div>
+<b>Output:</b> [[1,6],[8,10],[15,18]]    // [1,3] and [2,6] overlap → [1,6]</div>
+          <div class="problem-example"><b>Input:</b>  [[1,4],[4,5]]
+<b>Output:</b> [[1,5]]    // touching counts as overlap</div>
+          <div class="problem-example"><b>Input:</b>  [[1,4],[2,3]]
+<b>Output:</b> [[1,4]]    // [2,3] fully inside [1,4]</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Sort by Start, then Sweep</div>
+            <p>Once sorted by start, overlap is local — the current interval can only overlap with the <em>previous merged interval</em>. So just one pass after sorting.</p>
+            <ol>
+              <li><strong>Sort</strong> intervals by start time.</li>
+              <li>Initialize result with the first interval.</li>
+              <li>For each next interval:</li>
+              <li>&nbsp;&nbsp;&nbsp;If <code>current.start ≤ last.end</code> → overlap, merge by setting <code>last.end = max(last.end, current.end)</code>.</li>
+              <li>&nbsp;&nbsp;&nbsp;Otherwise → no overlap, append the current interval to result.</li>
+              <li>Time: O(n log n) for sort. The sweep is O(n).</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">array</span><span class="topic-pill">interval</span><span class="topic-pill">sort</span></div>
 
           <div class="solution optimal">
@@ -1113,9 +1579,26 @@ private boolean validate(TreeNode n, long min, long max) {
       <details class="qa">
         <summary>28. Meeting Rooms II — minimum rooms needed</summary>
         <div class="qa-body">
-          <p class="problem-statement">Given meeting time intervals, find the minimum number of rooms required.</p>
+          <p class="problem-statement">Given meeting time intervals <code>[start, end]</code>, find the <strong>minimum number of rooms</strong> needed so that no two meetings overlap in the same room.</p>
           <div class="problem-example"><b>Input:</b>  [[0,30],[5,10],[15,20]]
+<b>Output:</b> 2    // [5,10] overlaps with [0,30], [15,20] also overlaps with [0,30]</div>
+          <div class="problem-example"><b>Input:</b>  [[7,10],[2,4]]
+<b>Output:</b> 1    // no overlap, 1 room is enough</div>
+          <div class="problem-example"><b>Input:</b>  [[9,10],[4,9],[4,17]]
 <b>Output:</b> 2</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Sort + Min-Heap of End Times</div>
+            <p>Process meetings in <strong>start order</strong>. Use a min-heap of end times to track which rooms are currently busy. <strong>Reuse</strong> the earliest-ending room if it's already free; otherwise allocate a new room.</p>
+            <ol>
+              <li><strong>Sort</strong> meetings by start time.</li>
+              <li>For each meeting:</li>
+              <li>&nbsp;&nbsp;&nbsp;If <code>heap.peek() ≤ meeting.start</code> → that room is free, poll it (reuse).</li>
+              <li>&nbsp;&nbsp;&nbsp;Push <code>meeting.end</code> onto the heap.</li>
+              <li>Final heap size = number of rooms ever needed at peak.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">interval</span><span class="topic-pill">heap</span><span class="topic-pill">greedy</span></div>
 
           <div class="solution optimal">
@@ -1144,9 +1627,25 @@ private boolean validate(TreeNode n, long min, long max) {
       <details class="qa">
         <summary>29. Climbing Stairs</summary>
         <div class="qa-body">
-          <p class="problem-statement">You can climb 1 or 2 steps at a time. How many ways to reach the top of <code>n</code> steps?</p>
+          <p class="problem-statement">You're climbing a staircase with <code>n</code> steps. Each move you can climb <strong>1 or 2 steps</strong>. How many <em>distinct ways</em> can you reach the top?</p>
+          <div class="problem-example"><b>Input:</b>  n = 2
+<b>Output:</b> 2    // 1+1 or 2</div>
+          <div class="problem-example"><b>Input:</b>  n = 3
+<b>Output:</b> 3    // 1+1+1, 1+2, 2+1</div>
           <div class="problem-example"><b>Input:</b>  n = 4
 <b>Output:</b> 5    // 1+1+1+1, 1+1+2, 1+2+1, 2+1+1, 2+2</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — It's Fibonacci in disguise</div>
+            <p>To reach step <code>n</code>, your last move was either <strong>+1</strong> (so you came from <code>n−1</code>) or <strong>+2</strong> (from <code>n−2</code>). So <code>ways(n) = ways(n−1) + ways(n−2)</code> — Fibonacci!</p>
+            <ol>
+              <li>Base cases: <code>ways(1) = 1</code>, <code>ways(2) = 2</code>.</li>
+              <li>Iteratively compute up to <code>n</code>: <code>curr = prev1 + prev2</code>.</li>
+              <li>Only need the <strong>last two values</strong> — O(1) space.</li>
+              <li>Avoid plain recursion → O(2ⁿ) and stack overflow for n &gt; 40.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">DP</span><span class="topic-pill">fibonacci</span></div>
 
           <div class="solution brute">
@@ -1181,9 +1680,26 @@ private boolean validate(TreeNode n, long min, long max) {
       <details class="qa">
         <summary>30. Coin Change — fewest coins to make amount</summary>
         <div class="qa-body">
-          <p class="problem-statement">Given coin denominations and an amount, return the fewest coins needed (or −1 if impossible). Unlimited supply.</p>
+          <p class="problem-statement">Given coin denominations and a target <code>amount</code>, return the <strong>fewest coins</strong> needed to make that amount (unlimited supply of each coin). Return <code>-1</code> if it's impossible.</p>
           <div class="problem-example"><b>Input:</b>  coins = [1, 2, 5], amount = 11
 <b>Output:</b> 3    // 5 + 5 + 1</div>
+          <div class="problem-example"><b>Input:</b>  coins = [2], amount = 3
+<b>Output:</b> -1    // can't make 3 from only 2's</div>
+          <div class="problem-example"><b>Input:</b>  coins = [1], amount = 0
+<b>Output:</b> 0</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Bottom-up DP</div>
+            <p>Build up answers for every amount from <code>0</code> to <code>amount</code>. <strong>Greedy fails</strong> in general (e.g. coins = [1,3,4], amount = 6 — greedy picks 4+1+1, optimal is 3+3) — so we must try every coin at each amount.</p>
+            <ol>
+              <li>Let <code>dp[i]</code> = fewest coins to make amount <code>i</code>.</li>
+              <li>Init <code>dp[0] = 0</code>; all others = <code>amount + 1</code> (sentinel "impossible").</li>
+              <li>For each amount <code>i</code> from <code>1</code> to <code>amount</code>:</li>
+              <li>&nbsp;&nbsp;&nbsp;For each coin <code>c</code>: if <code>c ≤ i</code>, then <code>dp[i] = min(dp[i], dp[i − c] + 1)</code>.</li>
+              <li>If <code>dp[amount] &gt; amount</code> → return <code>-1</code>; else return <code>dp[amount]</code>.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">DP</span></div>
 
           <div class="solution optimal">
@@ -1213,12 +1729,31 @@ private boolean validate(TreeNode n, long min, long max) {
       <details class="qa">
         <summary>31. Number of Islands <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p class="problem-statement">Count connected groups of <code>'1'</code>s in a 2D grid (4-directional).</p>
+          <p class="problem-statement">Given a 2D grid of <code>'1'</code> (land) and <code>'0'</code> (water), count the number of <strong>islands</strong> — connected groups of land cells (4-directionally connected: up, down, left, right).</p>
           <div class="problem-example"><b>Input:</b>  [["1","1","0","0"],
         ["1","1","0","0"],
         ["0","0","1","0"],
         ["0","0","0","1"]]
 <b>Output:</b> 3</div>
+          <div class="problem-example"><b>Input:</b>  [["1","1","1","1","0"],
+        ["1","1","0","1","0"],
+        ["1","1","0","0","0"]]
+<b>Output:</b> 1    // all connected</div>
+          <div class="problem-example"><b>Input:</b>  [["1"]]
+<b>Output:</b> 1</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — DFS &amp; Sink (flood fill)</div>
+            <p>Scan every cell. When you find unvisited land (<code>'1'</code>), it's a new island — <strong>DFS from there and sink the whole island</strong> (flip its cells to <code>'0'</code>) so you don't count it again.</p>
+            <ol>
+              <li>Iterate every cell <code>(i, j)</code>.</li>
+              <li>If <code>grid[i][j] == '1'</code>: increment <code>count</code>, run DFS to flip all connected <code>'1'</code>s to <code>'0'</code>.</li>
+              <li>DFS recursively visits 4 neighbors, with bounds checks + "is this still <code>'1'</code>" check.</li>
+              <li>Time: O(m·n). Space: O(m·n) recursion depth in the worst case (one big island).</li>
+              <li><em>BFS with a queue works just as well — and avoids stack overflow on huge grids.</em></li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">graph</span><span class="topic-pill">DFS</span><span class="topic-pill">BFS</span></div>
 
           <div class="solution optimal">
@@ -1246,7 +1781,27 @@ private void dfs(char[][] g, int i, int j) {
       <details class="qa">
         <summary>32. Clone Graph</summary>
         <div class="qa-body">
-          <p class="problem-statement">Deep-copy a connected undirected graph. Each node has a value + a list of neighbors.</p>
+          <p class="problem-statement">Given a reference to a node in a <strong>connected undirected graph</strong>, return a <strong>deep copy</strong> (clone) of the entire graph. Each node has a value + a list of neighbors.</p>
+          <div class="problem-example"><b>Input:</b>  adjList = [[2,4],[1,3],[2,4],[1,3]]    // 4 nodes in a square
+<b>Output:</b> Same structure, all new node objects</div>
+          <div class="problem-example"><b>Input:</b>  adjList = [[]]    // single node, no edges
+<b>Output:</b> New node with empty neighbors</div>
+          <div class="problem-example"><b>Input:</b>  adjList = []    // null input
+<b>Output:</b> null</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — DFS + "Original → Clone" Map</div>
+            <p>Graphs have <strong>cycles</strong> — naïve recursion will loop forever. The key is to <strong>cache</strong> each created clone, so revisiting a node returns the existing clone instead of recreating it.</p>
+            <ol>
+              <li>Maintain a <code>HashMap&lt;Node, Node&gt;</code>: original → its clone.</li>
+              <li>For the current node:</li>
+              <li>&nbsp;&nbsp;&nbsp;If it's already cloned (in map) → return that clone (breaks cycles).</li>
+              <li>&nbsp;&nbsp;&nbsp;Otherwise, create the clone, <em>put it in the map first</em>, then recurse on neighbors.</li>
+              <li>For each neighbor, recursively clone it and add to the new node's neighbors.</li>
+              <li>Time: O(V + E). Space: O(V).</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">graph</span><span class="topic-pill">DFS</span><span class="topic-pill">hashmap</span></div>
 
           <div class="solution optimal">
@@ -1278,7 +1833,25 @@ public Node cloneGraph(Node node) {
       <details class="qa">
         <summary>33. LRU Cache <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p class="problem-statement">Design an LRU cache with O(1) <code>get</code> and <code>put</code>. Evict the least recently used item when capacity is exceeded.</p>
+          <p class="problem-statement">Design an <strong>LRU (Least Recently Used) cache</strong>. Operations: <code>get(key)</code> and <code>put(key, value)</code> — both in <strong>O(1)</strong>. When capacity is exceeded, evict the least recently used entry.</p>
+          <div class="problem-example"><b>Input:</b>  capacity = 2; put(1,1); put(2,2); get(1); put(3,3); get(2); put(4,4); get(1); get(3); get(4)
+<b>Output:</b> _,_, 1, _,-1, _,-1, 3, 4    // 2 evicted by put(3,3); 1 evicted by put(4,4)</div>
+          <div class="problem-example"><b>Input:</b>  capacity = 1; put(1,1); put(2,2); get(1)
+<b>Output:</b> _, _, -1    // 1 was evicted</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — HashMap + Doubly Linked List</div>
+            <p>We need both <strong>O(1) lookup</strong> (HashMap) and <strong>O(1) ordering updates</strong> (Doubly Linked List). Most-recently-used at head, least-recently-used at tail.</p>
+            <ol>
+              <li>HashMap: <code>key → DLL node</code>.</li>
+              <li>Doubly Linked List with sentinel <code>head</code> and <code>tail</code> — keeps every node having prev/next, avoids null checks.</li>
+              <li><strong>get(key):</strong> if node exists → move to head (mark "just used") → return value. Else return -1.</li>
+              <li><strong>put(key, val):</strong> if key exists → update value, move to head. Else create node + add to head; if size &gt; capacity, remove tail node and its map entry.</li>
+              <li>All operations are pointer rewires → O(1).</li>
+            </ol>
+            <p><em>Shortcut: Java's <code>LinkedHashMap</code> with <code>accessOrder=true</code> does this in 5 lines — but interviewers want the manual implementation.</em></p>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">design</span><span class="topic-pill">hashmap</span><span class="topic-pill">doubly-linked-list</span></div>
 
           <div class="solution brute">
@@ -1352,7 +1925,30 @@ public Node cloneGraph(Node node) {
       <details class="qa">
         <summary>34. Rate Limiter (Sliding Window)</summary>
         <div class="qa-body">
-          <p class="problem-statement">Allow at most <code>N</code> requests per user within any <code>W</code>-second window. Return true if a new request should be allowed.</p>
+          <p class="problem-statement">Allow at most <code>N</code> requests per user within any rolling <code>W</code>-second window. <code>allow(user)</code> returns <code>true</code> if the new request is permitted, <code>false</code> if it should be rate-limited.</p>
+          <div class="problem-example"><b>Setup:</b> limit = 3 per 10s window
+<b>t=0s:</b>  allow("u1") → true   (1/3)
+<b>t=2s:</b>  allow("u1") → true   (2/3)
+<b>t=3s:</b>  allow("u1") → true   (3/3)
+<b>t=5s:</b>  allow("u1") → false  (limit hit)
+<b>t=11s:</b> allow("u1") → true   (oldest request at t=0s now outside window)</div>
+          <div class="problem-example"><b>Setup:</b> different users are independent
+<b>t=0s:</b>  allow("u1") → true ; allow("u2") → true</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Sliding Window with Timestamp Queue</div>
+            <p>Per-user <strong>deque of recent request timestamps</strong>. On each call, evict everything older than <code>now − W</code>, then check the deque size.</p>
+            <ol>
+              <li>Maintain <code>Map&lt;user, Deque&lt;timestamp&gt;&gt;</code>.</li>
+              <li>On <code>allow(user)</code>: get the deque for that user.</li>
+              <li>Evict from the front while <code>peekFirst() ≤ now − windowMs</code>.</li>
+              <li>If deque size ≥ <code>limit</code> → reject.</li>
+              <li>Else → append <code>now</code> and accept.</li>
+              <li>Synchronize per-user to make it thread-safe.</li>
+            </ol>
+            <p><em>Production: use Redis (<code>INCR + EXPIRE</code> per <code>(user, window-key)</code>) for distributed limits across multiple servers. Token bucket is another classic option for bursty traffic.</em></p>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">design</span><span class="topic-pill">queue</span><span class="topic-pill">sliding-window</span></div>
 
           <div class="solution brute">
@@ -1396,7 +1992,28 @@ public Node cloneGraph(Node node) {
       <details class="qa">
         <summary>35. Sliding Window Fraud Detection</summary>
         <div class="qa-body">
-          <p class="problem-statement">Flag a card as suspicious if it has more than K transactions exceeding amount X within a moving window of T seconds.</p>
+          <p class="problem-statement">Flag a card as <strong>suspicious</strong> if it has more than <code>K</code> transactions exceeding amount <code>X</code> within a moving window of <code>T</code> seconds. Real BFSI-style anti-fraud check.</p>
+          <div class="problem-example"><b>Setup:</b> threshold = $1000, K = 3 within T = 60s
+<b>t=0s:</b>  card "C1" charged $1500 → not suspicious (count=1)
+<b>t=10s:</b> card "C1" charged $2000 → not suspicious (count=2)
+<b>t=20s:</b> card "C1" charged $1200 → not suspicious (count=3)
+<b>t=30s:</b> card "C1" charged $1100 → <span style="color: #ff7b72">SUSPICIOUS</span> (count=4 in 60s)
+<b>t=70s:</b> card "C1" charged $1100 → not suspicious (t=0s drops out of window)</div>
+          <div class="problem-example"><b>Note:</b> charges below threshold $1000 are ignored entirely.</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Per-Card Deque + Sliding Window</div>
+            <p>Same sliding-window trick as the rate limiter, but only count transactions that <strong>exceed the amount threshold</strong>.</p>
+            <ol>
+              <li>Maintain <code>Map&lt;cardId, Deque&lt;timestamp&gt;&gt;</code> of qualifying transactions only.</li>
+              <li>On each tx, if <code>amount &lt; threshold</code> → ignore (not suspicious).</li>
+              <li>Else: evict timestamps older than <code>now − windowMs</code> from the front.</li>
+              <li>Push current timestamp at the back.</li>
+              <li>If deque size &gt; <code>K</code> → flag as suspicious.</li>
+              <li>Lock per-card for thread-safety. In prod, store this state in Redis with TTL'd lists.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">sliding-window</span><span class="topic-pill">queue</span><span class="topic-pill">design</span></div>
 
           <div class="solution optimal">
@@ -1432,7 +2049,29 @@ public Node cloneGraph(Node node) {
       <details class="qa">
         <summary>36. Transaction Deduplication</summary>
         <div class="qa-body">
-          <p class="problem-statement">Process payment requests with idempotency keys — duplicates within a TTL should be ignored (return the original result).</p>
+          <p class="problem-statement">Process payment requests with <strong>idempotency keys</strong> — if the same key arrives twice within a TTL (e.g. 24 hours), treat the second one as a duplicate (return the original result, don't reprocess).</p>
+          <div class="problem-example"><b>Setup:</b> TTL = 10 minutes
+<b>isNew("txn_abc")</b>  → true    // first time, accept
+<b>isNew("txn_abc")</b>  → false   // duplicate within TTL, reject
+<b>isNew("txn_xyz")</b>  → true    // different key
+<b>(11 min later)</b>
+<b>isNew("txn_abc")</b>  → true    // TTL expired, treat as new</div>
+          <div class="problem-example"><b>Real use:</b> payment-gateway retries from flaky clients. Without dedup, a double-tap or network retry would charge the user twice.</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — ConcurrentHashMap with TTL</div>
+            <p>Store seen idempotency keys with their first-seen timestamp. <strong>Atomically insert</strong> (<code>putIfAbsent</code>) so concurrent retries don't both succeed.</p>
+            <ol>
+              <li>Use <code>ConcurrentHashMap&lt;String, Long&gt;</code> mapping key → first-seen timestamp.</li>
+              <li><code>putIfAbsent(key, now)</code> returns:</li>
+              <li>&nbsp;&nbsp;&nbsp;<strong>null</strong> → key was new, accept the request.</li>
+              <li>&nbsp;&nbsp;&nbsp;<strong>existing timestamp</strong> → check if it's still within TTL.</li>
+              <li>If <code>now − existing &gt; ttl</code> → expired, treat as new (overwrite).</li>
+              <li>Else → duplicate, reject.</li>
+            </ol>
+            <p><em>Production: Redis with <code>SET key value NX EX ttl</code> — single atomic operation across all app instances, with automatic eviction.</em></p>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">hashmap</span><span class="topic-pill">idempotency</span><span class="topic-pill">design</span></div>
 
           <div class="solution optimal">
@@ -1465,9 +2104,28 @@ public Node cloneGraph(Node node) {
       <details class="qa">
         <summary>37. Merge K Sorted Lists <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p class="problem-statement">Merge <code>k</code> sorted linked lists into one sorted list.</p>
+          <p class="problem-statement">Given an array of <code>k</code> sorted linked lists, merge them into <strong>one sorted linked list</strong> and return its head.</p>
           <div class="problem-example"><b>Input:</b>  [[1,4,5], [1,3,4], [2,6]]
 <b>Output:</b> [1,1,2,3,4,4,5,6]</div>
+          <div class="problem-example"><b>Input:</b>  []
+<b>Output:</b> []</div>
+          <div class="problem-example"><b>Input:</b>  [[]]
+<b>Output:</b> []</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Min-Heap of List Heads</div>
+            <p>At every step, the next node in the merged list is the <strong>smallest</strong> among the current heads of all <code>k</code> lists. A min-heap finds that smallest in O(log k).</p>
+            <ol>
+              <li>Push the head of each list into a min-heap (ordered by node value).</li>
+              <li>Use a <code>dummy</code> head + <code>tail</code> pointer for building the result.</li>
+              <li>While heap not empty:</li>
+              <li>&nbsp;&nbsp;&nbsp;Poll the smallest node, append to <code>tail.next</code>, advance <code>tail</code>.</li>
+              <li>&nbsp;&nbsp;&nbsp;If that node has a <code>next</code>, push it into the heap.</li>
+              <li>Return <code>dummy.next</code>.</li>
+              <li>Total nodes = N → O(N log k) time, O(k) space.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">linked-list</span><span class="topic-pill">heap</span><span class="topic-pill">divide-conquer</span></div>
 
           <div class="solution brute">
@@ -1502,7 +2160,29 @@ public Node cloneGraph(Node node) {
       <details class="qa">
         <summary>38. Top K Transactions by Amount</summary>
         <div class="qa-body">
-          <p class="problem-statement">From a stream of transactions, maintain the top K by amount in O(log K) per insert.</p>
+          <p class="problem-statement">From a continuous <strong>stream</strong> of transactions, maintain the <strong>top K transactions by amount</strong>. New transactions arrive one at a time; updates must be <strong>O(log K)</strong> per insert. Provide <code>topK()</code> to read the current top K.</p>
+          <div class="problem-example"><b>Setup:</b> K = 3
+<b>add($100)</b> → top3 = [100]
+<b>add($500)</b> → top3 = [100, 500]
+<b>add($50)</b>  → top3 = [50, 100, 500]
+<b>add($1000)</b>→ top3 = [100, 500, 1000]   // $50 kicked out
+<b>add($30)</b>  → top3 = [100, 500, 1000]   // $30 doesn't qualify</div>
+          <div class="problem-example"><b>Real use:</b> dashboards showing top-N customer transactions, top-N largest trades today, etc.</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — Bounded Min-Heap of Size K</div>
+            <p>Same trick as Kth Largest, but kept up to date as data streams in. The min-heap always contains <em>exactly</em> the K largest seen so far — its root is the smallest of those, so it's the threshold to beat.</p>
+            <ol>
+              <li>Maintain a min-heap of size ≤ K, ordered by amount.</li>
+              <li>On new transaction:</li>
+              <li>&nbsp;&nbsp;&nbsp;If heap size &lt; K → just push.</li>
+              <li>&nbsp;&nbsp;&nbsp;Else if <code>amount &gt; heap.peek()</code> → poll smallest, push new.</li>
+              <li>&nbsp;&nbsp;&nbsp;Else → ignore (won't make the top K).</li>
+              <li><code>topK()</code> returns a copy of the heap contents.</li>
+              <li>Synchronize <code>add</code> and <code>topK</code> for thread-safety in a real streaming system.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">heap</span><span class="topic-pill">priority-queue</span><span class="topic-pill">stream</span></div>
 
           <div class="solution optimal">
@@ -1538,7 +2218,27 @@ public Node cloneGraph(Node node) {
       <details class="qa">
         <summary>39. Detect Duplicate Transactions in Stream</summary>
         <div class="qa-body">
-          <p class="problem-statement">A transaction is a duplicate if the same <code>(user, amount, merchant)</code> occurs more than once within the last <code>T</code> seconds.</p>
+          <p class="problem-statement">A transaction is a <strong>duplicate</strong> if the same <code>(user, amount, merchant)</code> tuple occurs more than once within the last <code>T</code> seconds. Flag these in real time. Critical for fraud / accidental double-tap prevention.</p>
+          <div class="problem-example"><b>Setup:</b> window = 30s
+<b>t=0s:</b>  ("u1", $100, "Amazon") → not a duplicate, accept
+<b>t=10s:</b> ("u1", $100, "Amazon") → <span style="color: #ff7b72">DUPLICATE</span> (same combo within 30s)
+<b>t=15s:</b> ("u1", $100, "Flipkart") → not a duplicate (different merchant)
+<b>t=40s:</b> ("u1", $100, "Amazon") → not a duplicate (previous outside 30s)</div>
+          <div class="problem-example"><b>Real use:</b> payment gateway "double-tap" protection, prevents accidental re-submits from flaky retries.</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — HashMap of Last-Seen Timestamps</div>
+            <p>Build a <strong>composite key</strong> from <code>(user, amount, merchant)</code> and store the <em>last-seen timestamp</em> for that key. If we see the same key again within the window → it's a duplicate.</p>
+            <ol>
+              <li>Use <code>ConcurrentHashMap&lt;String, Long&gt;</code>.</li>
+              <li>Build a key string: <code>user + "|" + amount + "|" + merchant</code>.</li>
+              <li>Call <code>map.put(key, now)</code> — returns the previous timestamp (or null).</li>
+              <li>If previous is non-null AND <code>now − prev ≤ windowMs</code> → duplicate.</li>
+              <li>Otherwise accept.</li>
+              <li>Memory grows with active keys — add periodic cleanup or use Redis with TTL'd keys for production.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">hashmap</span><span class="topic-pill">sliding-window</span><span class="topic-pill">stream</span></div>
 
           <div class="solution optimal">
@@ -1566,7 +2266,33 @@ public Node cloneGraph(Node node) {
       <details class="qa">
         <summary>40. Design Parking Lot / ATM / Payment System (LLD + DSA)</summary>
         <div class="qa-body">
-          <p class="problem-statement">A classic open-ended question — interviewer wants to see <strong>OOP design</strong>, the right <strong>data structures</strong>, and concurrency awareness, not a perfect implementation.</p>
+          <p class="problem-statement">A classic <strong>open-ended Low-Level Design (LLD)</strong> question. The interviewer is testing your ability to:</p>
+          <ul style="margin: 0 0 10px; padding-left: 22px;">
+            <li>Identify core <strong>entities</strong> and their relationships (OOP).</li>
+            <li>Choose the right <strong>data structures</strong> for each operation.</li>
+            <li>Reason about <strong>concurrency</strong> (multiple gates / users in parallel).</li>
+            <li>Extend the design for new requirements (reservations, persistence, multi-lot).</li>
+          </ul>
+          <div class="problem-example"><b>Sample asks:</b>
+- Parking Lot (multi-floor, multi-vehicle, dynamic pricing)
+- ATM (state machine + transaction log)
+- Payment System (idempotent transfers, refund flow)
+- Movie Booking, Ride-share Matching, Vending Machine</div>
+          <div class="problem-example"><b>Tip:</b> don't dive into code immediately. Spend the first 2-3 minutes clarifying scope &amp; requirements with the interviewer.</div>
+
+          <div class="approach-box">
+            <div class="approach-title">APPROACH — A repeatable 6-step LLD playbook</div>
+            <p>This same structure works for <em>any</em> LLD question. Walking the interviewer through it explicitly signals seniority.</p>
+            <ol>
+              <li><strong>Clarify scope</strong> — capacity? Multi-floor? Vehicle types? Pricing? Reservations? Single-instance or distributed?</li>
+              <li><strong>Core entities</strong> — list nouns: <code>Vehicle</code>, <code>ParkingSpot</code>, <code>Ticket</code>, <code>ParkingLot</code>. Define their fields.</li>
+              <li><strong>Key operations</strong> — list verbs: <code>enter()</code>, <code>exit()</code>. Define inputs/outputs.</li>
+              <li><strong>Data structures &amp; justification</strong> — PriorityQueue per vehicle type for nearest free spot; HashMap of active tickets for O(1) exit lookup.</li>
+              <li><strong>Concurrency</strong> — multiple gates allocating simultaneously → synchronize per-type queue or use lock-free CAS.</li>
+              <li><strong>Extensions</strong> — reservations with TTL, persistence (DB + UUIDs), multi-lot distributed state (Redis), pricing strategies.</li>
+            </ol>
+          </div>
+
           <div class="topic-pills"><span class="topic-pill">design</span><span class="topic-pill">LLD</span><span class="topic-pill">OOP</span></div>
 
           <div class="solution optimal">

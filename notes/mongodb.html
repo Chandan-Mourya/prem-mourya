@@ -34,7 +34,7 @@
     <div class="topic-page-header">
       <div class="topic-page-eyebrow">08 · MongoDB</div>
       <h1>MongoDB — documents, aggregation, scaling</h1>
-      <p class="topic-page-desc">Document database, primary store at Punctuations.ai. Talk about embedding vs referencing, aggregation pipelines, indexes, and replication.</p>
+      <p class="topic-page-desc">Document database. Talk about embedding vs referencing, aggregation pipelines, indexes, and replication.</p>
       <div class="topic-page-meta">
         <span><strong>9</strong> questions</span>
         <span>Press <span class="hint-kbd">/</span> to search</span>
@@ -56,7 +56,7 @@
             <li><strong>You need horizontal write scaling</strong> — sharding is built in.</li>
             <li>You're OK with eventual consistency on reads from secondaries.</li>
           </ul>
-          <p>I use it at Punctuations.ai for resumes — each is a different shape (different sections, custom fields), and we'd hate a 12-table relational model. For strongly relational data with complex joins, I'd still pick Postgres.</p>
+          <p>I've used it for resume data — each resume is a different shape (different sections, custom fields), and we'd hate a 12-table relational model. For strongly relational data with complex joins, I'd still pick Postgres.</p>
         </div>
       </details>
 
@@ -163,7 +163,7 @@
           </div>
 
           <div class="takeaway">
-            <b>On Punctuations.ai:</b> resume sections (experience, education, skills) are <strong>embedded</strong> — always read with the resume, naturally bounded. Recruiter feedback and search-event history are <strong>referenced</strong> in separate collections — unbounded, independently queried, separate lifecycle.
+            <b>Real example:</b> resume sections (experience, education, skills) are <strong>embedded</strong> — always read with the resume, naturally bounded. Recruiter feedback and search-event history are <strong>referenced</strong> in separate collections — unbounded, independently queried, separate lifecycle.
           </div>
         </div>
       </details>
@@ -253,7 +253,7 @@
     // change.operationType: insert, update, replace, delete
     publishToKafka(change.fullDocument);
 });</code></pre>
-          <p>I use them at Punctuations.ai to feed Elasticsearch: every resume insert/update emits a change → Kafka → ES indexer. Idempotent indexing (by document ID) means retries are safe.</p>
+          <p>I've used them to feed Elasticsearch: every document insert/update emits a change → Kafka → ES indexer. Idempotent indexing (by document ID) means retries are safe.</p>
           <p>Use cases: CDC (change data capture), cache invalidation, real-time analytics, push notifications. They're much cleaner than polling. Note: they require a replica set (not standalone Mongo).</p>
         </div>
       </details>

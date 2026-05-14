@@ -34,7 +34,7 @@
     <div class="topic-page-header">
       <div class="topic-page-eyebrow">10 · Microservices</div>
       <h1>Microservices architecture</h1>
-      <p class="topic-page-desc">Why split a monolith, how services communicate, where it goes wrong. Bring your OneXtel SMS-platform and Punctuations.ai stories.</p>
+      <p class="topic-page-desc">Why split a monolith, how services communicate, where it goes wrong.</p>
       <div class="topic-page-meta">
         <span><strong>13</strong> questions</span>
         <span>Press <span class="hint-kbd">/</span> to search</span>
@@ -207,7 +207,7 @@
             <li><strong>Message queues</strong> (RabbitMQ, SQS) — point-to-point work distribution.</li>
             <li><strong>Event streams</strong> (Kafka) — pub/sub, replayable.</li>
           </ul>
-          <p>Best practice: <strong>sync where the caller really needs the result</strong>, <strong>async for everything else</strong> — state changes that other services react to. Async decouples deployment timing and isolates failures. On Punctuations.ai, resume upload returns immediately, then Kafka triggers parsing, indexing, and notifications independently.</p>
+          <p>Best practice: <strong>sync where the caller really needs the result</strong>, <strong>async for everything else</strong> — state changes that other services react to. Async decouples deployment timing and isolates failures. In one platform I worked on, resume upload returns immediately, then Kafka triggers parsing, indexing, and notifications independently.</p>
         </div>
       </details>
 
@@ -225,19 +225,373 @@
       </details>
 
       <details class="qa">
-        <summary>API Gateway — what does it do?</summary>
+        <summary>What is an API Gateway? <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p>An <strong>API Gateway</strong> is a single entry point in front of your services. Responsibilities:</p>
-          <ul>
-            <li><strong>Routing</strong> — map paths/hosts to backend services.</li>
-            <li><strong>Authentication</strong> — verify tokens before requests reach services.</li>
-            <li><strong>Rate limiting</strong> &amp; throttling.</li>
-            <li><strong>Request/response transformation</strong> — versioning, header rewriting.</li>
-            <li><strong>Aggregation</strong> — combine multiple service calls into one client response (BFF pattern).</li>
-            <li><strong>SSL termination</strong>, logging, metrics, CORS.</li>
-          </ul>
-          <p>Tools I've used: <strong>Spring Cloud Gateway</strong> (Java/Project Reactor), <strong>Kong</strong>, <strong>AWS API Gateway</strong>, <strong>Nginx</strong>, <strong>Envoy</strong> (often via Istio in K8s).</p>
-          <p>Pitfall: don't put business logic in the gateway. It should be thin. Heavy aggregation belongs in a BFF service. At Indus Net we use Spring Cloud Gateway for auth + routing; service-to-service calls inside the cluster skip the gateway.</p>
+          <p class="answer-intro">An <strong>API Gateway</strong> is a <em>single entry point</em> between clients and your backend services in a microservices architecture. Instead of clients calling each microservice directly, all requests <strong>first go through the gateway</strong>, which then routes them to the right service — and handles cross-cutting concerns like auth, rate limiting, and observability along the way.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-shield-fill-check"></i> Core Idea</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">What</span>
+              <span class="core-diff-val">A reverse proxy that sits in front of all your microservices — the <em>only door</em> from the outside world into your system.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Why</span>
+              <span class="core-diff-val">Centralize cross-cutting concerns (auth, rate limiting, logging, routing) so individual services stay focused on business logic.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">How</span>
+              <span class="core-diff-val">Path/host-based routing: <code>/users/*</code> → User Service, <code>/orders/*</code> → Order Service, etc.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Why we need it — without vs with</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-x-circle-fill" style="color: #ff7b72;"></i>
+                  <span>Without an API Gateway</span>
+                </div>
+                <ul>
+                  <li>Clients know <strong>every service's URL</strong> and port</li>
+                  <li>Each service implements auth, rate limiting, logging — <strong>duplicated everywhere</strong></li>
+                  <li>Frontend has to call <strong>5 services for one screen</strong> (chatty &amp; slow)</li>
+                  <li>Every service is publicly exposed → bigger attack surface</li>
+                  <li>Version / route changes break clients</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-check-circle-fill" style="color: var(--green);"></i>
+                  <span>With an API Gateway</span>
+                </div>
+                <ul>
+                  <li>Clients call <strong>one URL</strong> — the gateway</li>
+                  <li>Auth, rate limiting, CORS, logging — <strong>handled once</strong></li>
+                  <li>Gateway can <strong>aggregate</strong> multiple service calls (BFF pattern)</li>
+                  <li>Internal services hide behind the gateway → smaller attack surface</li>
+                  <li>Routes / versions change <strong>without touching clients</strong></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Architecture — single door in</div>
+            <div class="tree-viz">                    ┌────────────┐
+                    │   Client   │   (browser, mobile)
+                    └─────┬──────┘
+                          │   1 request, 1 URL
+                          ▼
+                    ┌────────────┐
+                    │ API GATEWAY│  ◀── auth, rate limit, log, CORS, route
+                    └─────┬──────┘
+            ┌─────────────┼─────────────┐
+            ▼             ▼             ▼
+       ┌────────┐   ┌─────────┐   ┌──────────┐
+       │  User  │   │  Order  │   │ Payment  │
+       │ Service│   │ Service │   │ Service  │
+       └────────┘   └─────────┘   └──────────┘
+            ▲             ▲             ▲
+            │             │             │
+           DB1           DB2           DB3</div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> What the gateway actually does</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Responsibility</th><th>What it does</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Routing</td>                <td>Maps incoming paths / hosts / methods to the right backend service.</td></tr>
+                  <tr><td>Authentication</td>         <td>Validates JWT / OAuth token <em>before</em> the request reaches any service.</td></tr>
+                  <tr><td>Authorization</td>          <td>Checks roles / scopes per route.</td></tr>
+                  <tr><td>Rate Limiting / Throttling</td><td>Per-user or per-API-key limits — protects services from abuse and spikes.</td></tr>
+                  <tr><td>Load Balancing</td>         <td>Distributes traffic across multiple instances of the same service.</td></tr>
+                  <tr><td>Request/Response Transformation</td><td>Header rewriting, payload shaping, protocol bridging (REST ↔ gRPC).</td></tr>
+                  <tr><td>Caching</td>                <td>Cache GET responses for hot endpoints to offload backends.</td></tr>
+                  <tr><td>SSL / TLS Termination</td>  <td>Decrypts HTTPS once at the edge → plaintext to internal services.</td></tr>
+                  <tr><td>Logging &amp; Monitoring</td>   <td>Single chokepoint to capture metrics, request IDs, distributed-trace headers.</td></tr>
+                  <tr><td>Aggregation (BFF)</td>      <td>Fan out one client request to N services, merge the responses.</td></tr>
+                  <tr><td>Circuit Breaking / Retries</td><td>Stop calling a failing service; retry idempotent calls.</td></tr>
+                  <tr><td>CORS</td>                   <td>Handle browser preflight requests centrally.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Routing example — an e-commerce app</div>
+            <p class="solution-desc">All requests come in via <code>https://api.shop.com/*</code>. The gateway routes them by path prefix:</p>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Incoming path</th><th>Goes to</th><th>Gateway also does</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><code>GET  /users/42</code></td>      <td>User Service</td>     <td>Validate JWT, fetch user role from claim</td></tr>
+                  <tr><td><code>POST /orders</code></td>        <td>Order Service</td>    <td>Auth + rate-limit (10/min per user)</td></tr>
+                  <tr><td><code>GET  /orders/99/status</code></td><td>Order Service</td>  <td>Cache for 5s, add tracing header</td></tr>
+                  <tr><td><code>POST /payments</code></td>      <td>Payment Service</td>  <td>Extra strict auth, audit log</td></tr>
+                  <tr><td><code>GET  /products/*</code></td>    <td>Product Service</td>  <td>Public — no auth required, heavy caching</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="solution-desc"><strong>Spring Cloud Gateway example (YAML):</strong></p>
+            <pre><code>spring:
+  cloud:
+    gateway:
+      routes:
+        - id: users-route
+          uri: lb://user-service          # service discovery
+          predicates:
+            - Path=/users/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Source, gateway
+        - id: orders-route
+          uri: lb://order-service
+          predicates:
+            - Path=/orders/**
+          filters:
+            - RewritePath=/orders/(?&lt;rest&gt;.*), /api/v1/$\{rest}</code></pre>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Popular API Gateway tools</div>
+            <div class="use-cases">
+              <div class="use-case">
+                <h4><i class="bi bi-cup-hot-fill"></i> Spring Cloud Gateway</h4>
+                <ul>
+                  <li>Java, reactive (Project Reactor)</li>
+                  <li>Filter-chain model, YAML or programmatic routes</li>
+                  <li>Tight integration with Spring ecosystem</li>
+                </ul>
+                <div class="examples"><b>Best for:</b> Java/Spring Boot stacks.</div>
+              </div>
+              <div class="use-case green">
+                <h4><i class="bi bi-globe2"></i> Kong</h4>
+                <ul>
+                  <li>Built on NGINX + Lua / OpenResty</li>
+                  <li>Massive plugin ecosystem (auth, rate-limit, logging…)</li>
+                  <li>Has both self-hosted &amp; managed (Kong Konnect)</li>
+                </ul>
+                <div class="examples"><b>Best for:</b> polyglot stacks, big plugin needs.</div>
+              </div>
+              <div class="use-case pink">
+                <h4><i class="bi bi-cloud-fill"></i> AWS API Gateway</h4>
+                <ul>
+                  <li>Fully managed, pay-per-request</li>
+                  <li>Integrates with Lambda, IAM, Cognito out of the box</li>
+                  <li>REST &amp; HTTP API flavors, also WebSocket</li>
+                </ul>
+                <div class="examples"><b>Best for:</b> serverless / AWS-native apps.</div>
+              </div>
+              <div class="use-case orange">
+                <h4><i class="bi bi-hdd-network"></i> NGINX / Envoy</h4>
+                <ul>
+                  <li>NGINX — proven, lightweight L7 proxy</li>
+                  <li>Envoy — modern, used in Istio service mesh</li>
+                  <li>Traefik — auto-discovers K8s services</li>
+                </ul>
+                <div class="examples"><b>Best for:</b> K8s / cloud-native + service mesh setups.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Common pitfalls (production lessons)</div>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>Don't put business logic in the gateway.</strong> Keep it thin — routing, auth, observability only. Heavy aggregation belongs in a <strong>BFF (Backend-For-Frontend)</strong> service.</li>
+              <li><strong>It's a single point of failure.</strong> Run multiple instances, fronted by a real load balancer (ALB, GCP LB) — never just one gateway pod.</li>
+              <li><strong>Latency tax.</strong> Every request now hops through the gateway. Keep filter chains short; profile p99 regularly.</li>
+              <li><strong>Internal service-to-service calls usually skip the gateway.</strong> Inside the cluster, services call each other directly (or via a service mesh) — going via the gateway adds a needless hop.</li>
+              <li><strong>Beware "smart gateway" creep</strong> — orchestration, transformations, data joins gradually pile up until it's a monolith disguised as a gateway.</li>
+              <li><strong>Distinguish North–South vs East–West.</strong> Gateway = North–South (client ↔ system). East–West (service ↔ service) belongs to a <em>service mesh</em> (Istio, Linkerd) — different problem, different tool.</li>
+            </ul>
+          </div>
+
+          <div class="takeaway">
+            <b>Interview one-liner:</b> An API Gateway acts as a <strong>reverse proxy and single entry point</strong> for all client requests in a microservices architecture. It routes incoming requests to the right backend service (<code>/users/*</code> → User Service, <code>/orders/*</code> → Order Service…) and handles <em>cross-cutting concerns</em> centrally — authentication, rate limiting, load balancing, caching, logging, transformation, and SSL termination. This <strong>simplifies the client</strong> (one URL instead of many) and <strong>centralizes security and traffic management</strong>. Popular tools: Spring Cloud Gateway, Kong, NGINX, AWS API Gateway, Traefik, Envoy. Keep it <em>thin</em> — no business logic in the gateway.
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>API Gateway vs Load Balancer — what's the difference? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">Both <strong>API Gateway</strong> and <strong>Load Balancer</strong> sit between clients and backend servers, so people confuse them — but they solve <em>different</em> problems and they're routinely used <strong>together</strong> in modern microservices architectures.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-arrows-collapse"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Load Balancer</span>
+              <span class="core-diff-val"><strong>Distributes traffic</strong> across multiple servers — solves <em>scalability &amp; availability</em>.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">API Gateway</span>
+              <span class="core-diff-val"><strong>Manages APIs</strong> — auth, routing, rate limiting, transformation — solves <em>API lifecycle &amp; security</em>.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Rule of thumb</span>
+              <span class="core-diff-val">LB is about <em>boxes</em>. Gateway is about <em>APIs</em>. Use both.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> What each one actually does</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-arrow-left-right"></i>
+                  <span>Load Balancer</span>
+                </div>
+                <ul>
+                  <li>Distributes incoming traffic across <strong>multiple server instances</strong></li>
+                  <li>Health-checks backends; drains the unhealthy ones</li>
+                  <li>Works at <strong>L4 (TCP/UDP)</strong> or <strong>L7 (HTTP)</strong></li>
+                  <li>Algorithms: round-robin, least-connections, IP hash</li>
+                  <li>Goal: prevent overload, maximize availability</li>
+                  <li><b>Examples:</b> NGINX, HAProxy, AWS NLB/ALB, F5</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-door-open-fill"></i>
+                  <span>API Gateway</span>
+                </div>
+                <ul>
+                  <li><strong>Single entry point</strong> for all client API calls</li>
+                  <li>Path-based routing to many microservices</li>
+                  <li>Authentication, authorization, rate limiting</li>
+                  <li>Caching, logging, transformation, API aggregation</li>
+                  <li>Goal: centralize cross-cutting concerns across APIs</li>
+                  <li><b>Examples:</b> Kong, Spring Cloud Gateway, AWS API Gateway, Apigee</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Side-by-side comparison</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Aspect</th><th>Load Balancer</th><th>API Gateway</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Primary job</td>          <td>Distribute traffic across servers</td>      <td>Route &amp; manage API calls</td></tr>
+                  <tr><td>Layer</td>                <td>L4 / L7</td>                                <td>L7 (always app-layer)</td></tr>
+                  <tr><td>Knows about APIs?</td>    <td>No — just hosts &amp; ports</td>                <td>Yes — paths, verbs, payloads</td></tr>
+                  <tr><td>Auth</td>                 <td>Pass-through</td>                           <td>Validates JWT / OAuth</td></tr>
+                  <tr><td>Rate limiting</td>        <td>Basic, per-IP</td>                          <td>Rich — per user, key, endpoint</td></tr>
+                  <tr><td>Routing</td>              <td>Distribute across same service</td>         <td>Route by path/host to many services</td></tr>
+                  <tr><td>Transformation</td>       <td>None</td>                                   <td>Headers, payload, REST ↔ gRPC</td></tr>
+                  <tr><td>Aggregation (BFF)</td>    <td>No</td>                                     <td>Yes</td></tr>
+                  <tr><td>Caching</td>              <td>Basic HTTP cache</td>                       <td>Endpoint-level cache</td></tr>
+                  <tr><td>Health checks</td>        <td>Yes (built-in)</td>                         <td>Yes (downstream services)</td></tr>
+                  <tr><td>Used in</td>              <td>Any distributed system</td>                 <td>Microservices, public APIs</td></tr>
+                  <tr><td>Cost / complexity</td>    <td>Low</td>                                    <td>Higher</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> The architectural picture — different shapes</div>
+            <p class="solution-desc"><strong>Load Balancer</strong> — spreads requests across <em>identical copies</em> of one service:</p>
+            <div class="tree-viz">             ┌─────────────┐
+             │   Users     │
+             └──────┬──────┘
+                    ▼
+             ┌─────────────┐
+             │ Load        │  ← round-robin
+             │ Balancer    │
+             └──────┬──────┘
+        ┌──────────┼──────────┐
+        ▼          ▼          ▼
+   ┌────────┐ ┌────────┐ ┌────────┐
+   │Server 1│ │Server 2│ │Server 3│   (same app — many copies)
+   └────────┘ └────────┘ └────────┘</div>
+
+            <p class="solution-desc"><strong>API Gateway</strong> — routes requests to <em>different services</em>:</p>
+            <div class="tree-viz">             ┌─────────────┐
+             │  Clients    │
+             └──────┬──────┘
+                    ▼
+             ┌─────────────┐
+             │ API Gateway │  ← path-based routing, auth, rate-limit
+             └──────┬──────┘
+        ┌──────────┼──────────┐
+        ▼          ▼          ▼
+   ┌────────┐ ┌─────────┐ ┌──────────┐
+   │  User  │ │  Order  │ │ Payment  │   (different services)
+   │ Service│ │ Service │ │ Service  │
+   └────────┘ └─────────┘ └──────────┘</div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Can an API Gateway also do load balancing?</div>
+            <p class="solution-desc"><strong>Yes</strong> — modern API gateways (Kong, Spring Cloud Gateway, AWS API Gateway, Envoy) usually have built-in load balancing across multiple instances of each backend service. <em>But</em>:</p>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>Dedicated load balancers are optimized for raw traffic distribution</strong> — millions of requests/sec at L4 with near-zero overhead.</li>
+              <li><strong>API gateways are optimized for API management</strong> — auth, transformation, observability per API call.</li>
+              <li>In practice, most production systems use <strong>both</strong> — a dedicated LB (ALB / NLB) in front of the gateway tier itself for HA, and gateways doing finer-grained routing + balancing across services.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Real-world production architecture — both used together</div>
+            <p class="solution-desc">A typical setup at scale uses <em>both</em>:</p>
+            <div class="tree-viz">                     ┌────────────┐
+                     │   Client   │
+                     └──────┬─────┘
+                            ▼
+                     ┌────────────┐
+                     │ Cloud LB   │  ← TLS termination, L7, HA
+                     │ (ALB/NLB)  │     in front of gateway pods
+                     └──────┬─────┘
+            ┌───────────────┼──────────────┐
+            ▼               ▼              ▼
+        ┌────────┐    ┌────────┐    ┌────────┐
+        │Gateway1│    │Gateway2│    │Gateway3│
+        └────────┘    └────────┘    └────────┘
+            │             │              │
+            └─────────────┴──────────────┘
+                            ▼
+                  ┌────────────────────┐
+                  │ Internal LB / Mesh │  ← service-to-service LB
+                  │ (Envoy / Istio)    │     (East–West)
+                  └─────────┬──────────┘
+            ┌───────────────┼──────────────┐
+            ▼               ▼              ▼
+        ┌────────┐    ┌─────────┐    ┌──────────┐
+        │  User  │    │  Order  │    │ Payment  │
+        │ Service│    │ Service │    │ Service  │
+        └────────┘    └─────────┘    └──────────┘</div>
+            <p class="solution-desc"><strong>Why both:</strong></p>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>Cloud LB</strong> in front handles HA + TLS for the gateway tier itself (you don't want the gateway to be a single point of failure).</li>
+              <li><strong>API Gateway</strong> handles auth, routing, rate-limiting, transformation per API.</li>
+              <li><strong>Internal LB / service mesh</strong> handles East–West (service-to-service) traffic with retries, circuit breakers, mTLS.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Mental model — North-South vs East-West</div>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>North–South traffic</strong> (client ↔ system, outside ↔ inside): <em>API Gateway</em> is the right tool. It's the front door.</li>
+              <li><strong>East–West traffic</strong> (service ↔ service inside the cluster): <em>Internal load balancer or service mesh</em> (Istio, Linkerd) handles it. Gateways are <em>not</em> for internal calls.</li>
+              <li>For <strong>raw scaling of any service tier</strong> (gateway, app server, etc.): <em>Load Balancer</em> in front of identical replicas.</li>
+            </ul>
+          </div>
+
+          <div class="takeaway">
+            <b>Interview-ready answer:</b> A <strong>Load Balancer</strong> distributes traffic across multiple <em>servers</em> to improve scalability and availability — it doesn't care what the requests are, just that the work is spread evenly. An <strong>API Gateway</strong> is a centralized entry point for <em>APIs</em> that provides authentication, routing, rate limiting, caching, transformation, and monitoring — it's API-aware. The two solve different problems: LB = traffic distribution; Gateway = API management. In microservices architectures, both are typically used together — a cloud LB fronts the gateway tier for HA, and the gateway routes requests to the right service. A gateway can do basic load balancing, but a dedicated LB is optimized for raw distribution; you don't have to pick one — use both.
+          </div>
         </div>
       </details>
 

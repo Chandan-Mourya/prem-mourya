@@ -48,15 +48,390 @@
       <details class="qa">
         <summary>What does "RESTful" actually mean? <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p><strong>REST (Representational State Transfer)</strong> is an architectural style from Roy Fielding's 2000 thesis. The core constraints:</p>
-          <ul>
-            <li><strong>Client–server</strong> separation.</li>
-            <li><strong>Stateless</strong> — every request carries all info needed; the server holds no session state about the client (one of the most important).</li>
-            <li><strong>Cacheable</strong> responses where appropriate.</li>
-            <li><strong>Uniform interface</strong> — identify resources via URIs, manipulate via standard methods (GET, POST, PUT, PATCH, DELETE), self-descriptive messages, HATEOAS (links in responses, rarely fully applied).</li>
-            <li><strong>Layered</strong> system, optional code-on-demand.</li>
-          </ul>
-          <p>In practice "RESTful" today usually means: JSON over HTTP, resource-oriented URIs (<code>/users/{id}</code>, not <code>/getUser?id=</code>), correct verbs and status codes, stateless auth via tokens. Most real APIs are <em>RESTish</em> — pragmatic, not religious about HATEOAS.</p>
+          <p class="answer-intro">An API is <strong>RESTful</strong> when it follows the principles of <strong>REST (Representational State Transfer)</strong> — an architectural style from Roy Fielding's 2000 PhD thesis. In one line: <em>treat everything as a resource, identify it with a URL, and act on it using the standard HTTP methods.</em></p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-globe2"></i> Core Idea</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Resource</span>
+              <span class="core-diff-val">Everything is a "thing" — <code>users</code>, <code>orders</code>, <code>products</code> — identified by a URL.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Verb</span>
+              <span class="core-diff-val">HTTP method tells you the <em>action</em>: GET / POST / PUT / PATCH / DELETE.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Stateless</span>
+              <span class="core-diff-val">Every request is self-contained — the server keeps no per-client session.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> The classic example — a <code>/users</code> resource</div>
+            <p class="solution-desc">In a RESTful API, you don't invent ad-hoc endpoint names like <code>/getUser</code> or <code>/createUser</code>. Instead, you have <strong>one URL per resource</strong> and the HTTP verb decides what happens.</p>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Method</th><th>URL</th><th>What it does</th><th>Typical status</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>GET</td>     <td><code>/users</code></td>   <td>Get all users (list)</td>                 <td>200 OK</td></tr>
+                  <tr><td>GET</td>     <td><code>/users/1</code></td> <td>Get user with ID 1</td>                   <td>200 OK · 404 Not Found</td></tr>
+                  <tr><td>POST</td>    <td><code>/users</code></td>   <td>Create a new user</td>                    <td>201 Created</td></tr>
+                  <tr><td>PUT</td>     <td><code>/users/1</code></td> <td>Replace user 1 (full update)</td>         <td>200 OK · 204 No Content</td></tr>
+                  <tr><td>PATCH</td>   <td><code>/users/1</code></td> <td>Update some fields of user 1</td>         <td>200 OK</td></tr>
+                  <tr><td>DELETE</td>  <td><code>/users/1</code></td> <td>Delete user 1</td>                        <td>204 No Content</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <pre><code># Real curl examples
+curl       https://api.example.com/users               # list all
+curl       https://api.example.com/users/42            # one user
+curl -X POST -d '{"name":"Alice"}' .../users           # create
+curl -X PUT  -d '{"name":"Alice","email":"x@y"}' .../users/42
+curl -X DELETE .../users/42</code></pre>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> The 6 REST principles (Roy Fielding's constraints)</div>
+            <ol style="margin: 0 0 10px;">
+              <li><strong>Client–Server</strong> — clear separation of concerns: UI on one side, data &amp; logic on the other.</li>
+              <li><strong>Stateless</strong> — every request carries all info needed (auth token, params). The server holds <em>no session</em> about the client. Easy to scale horizontally.</li>
+              <li><strong>Cacheable</strong> — responses indicate whether they can be cached (<code>Cache-Control</code>, <code>ETag</code>). GETs are cacheable by default.</li>
+              <li><strong>Uniform Interface</strong> — same set of HTTP verbs everywhere, resources are URLs, payloads are self-describing (JSON + content type).</li>
+              <li><strong>Layered System</strong> — clients don't know if they're talking directly to the server or through a load balancer / CDN / proxy.</li>
+              <li><strong>Code on Demand</strong> (optional) — server can ship code (e.g. JavaScript) for the client to execute.</li>
+            </ol>
+            <p class="solution-desc">In practice you'll hear "<em>RESTish</em>" — most real APIs are pragmatic and skip <strong>HATEOAS</strong> (hypermedia links in responses) since few clients use it.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Good vs Bad URL design</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-check-circle-fill" style="color: var(--green);"></i>
+                  <span>RESTful — Resources (nouns)</span>
+                </div>
+                <ul>
+                  <li><code>GET /users</code></li>
+                  <li><code>GET /users/42</code></li>
+                  <li><code>GET /users/42/orders</code></li>
+                  <li><code>POST /orders</code></li>
+                  <li><code>DELETE /orders/99</code></li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-x-circle-fill" style="color: #ff7b72;"></i>
+                  <span>Not RESTful — Verbs in URL</span>
+                </div>
+                <ul>
+                  <li><code>GET /getUsers</code></li>
+                  <li><code>GET /getUserById?id=42</code></li>
+                  <li><code>POST /createUser</code></li>
+                  <li><code>POST /deleteOrder?id=99</code></li>
+                  <li><code>GET /users/list</code></li>
+                </ul>
+              </div>
+            </div>
+            <p class="solution-desc"><strong>Rule:</strong> URLs identify <em>what</em> (the noun); HTTP methods describe <em>what to do</em> (the verb).</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Common HTTP status codes you should use</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Code</th><th>Meaning</th><th>Use when</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>200 OK</td>                   <td>Success with body</td>                     <td>GET, PUT, PATCH succeeded</td></tr>
+                  <tr><td>201 Created</td>              <td>Resource created</td>                      <td>POST that created a new entity</td></tr>
+                  <tr><td>204 No Content</td>           <td>Success, no body</td>                      <td>DELETE succeeded</td></tr>
+                  <tr><td>400 Bad Request</td>          <td>Invalid input</td>                         <td>Validation failed, malformed JSON</td></tr>
+                  <tr><td>401 Unauthorized</td>         <td>Not authenticated</td>                     <td>Missing / invalid token</td></tr>
+                  <tr><td>403 Forbidden</td>            <td>Authenticated but not allowed</td>         <td>User lacks permission</td></tr>
+                  <tr><td>404 Not Found</td>            <td>Resource doesn't exist</td>                <td>GET <code>/users/999</code> when 999 has no row</td></tr>
+                  <tr><td>409 Conflict</td>             <td>State conflict</td>                        <td>Duplicate email on create, version mismatch</td></tr>
+                  <tr><td>422 Unprocessable Entity</td> <td>Semantically wrong</td>                    <td>Business-rule validation fails</td></tr>
+                  <tr><td>500 Internal Server Error</td><td>Unhandled exception</td>                  <td>Server bug — your fault, not the client's</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> What "RESTful" looks like in practice</div>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>JSON</strong> over HTTP — almost always (binary / XML in rare cases).</li>
+              <li><strong>Stateless auth</strong> — JWT in <code>Authorization: Bearer ...</code> header, no server-side session.</li>
+              <li><strong>Resource-oriented URLs</strong> — <code>/users/42</code>, not <code>/getUser?id=42</code>.</li>
+              <li><strong>Plural nouns</strong> — <code>/users</code> not <code>/user</code> (consistent).</li>
+              <li><strong>Nesting for relationships</strong> — <code>/users/42/orders</code>.</li>
+              <li><strong>Filtering / sorting / paging via query params</strong> — <code>?status=active&amp;page=2&amp;limit=20</code>.</li>
+              <li><strong>Versioning</strong> — usually <code>/v1/users</code>.</li>
+              <li><strong>Correct status codes</strong> — never return <code>200 OK</code> with <code>{"error": "..."}</code> in the body.</li>
+              <li><strong>HTTPS</strong> always — REST itself is transport-agnostic, but you should be encrypting in transit.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> RESTful in Spring Boot — what it looks like in code</div>
+            <pre><code>@RestController
+@RequestMapping("/users")
+public class UserController {
+
+    @GetMapping
+    public List&lt;User&gt; list() {
+        return userService.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public User getOne(@PathVariable Long id) {
+        return userService.findById(id);     // throws → 404
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public User create(@RequestBody @Valid CreateUserDto dto) {
+        return userService.create(dto);
+    }
+
+    @PutMapping("/{id}")
+    public User update(@PathVariable Long id, @RequestBody @Valid UserDto dto) {
+        return userService.update(id, dto);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        userService.delete(id);
+    }
+}</code></pre>
+            <p class="solution-desc">Notice: one controller per resource, methods named by verb, status codes set explicitly, no business logic — just translate HTTP ↔ service.</p>
+          </div>
+
+          <div class="takeaway">
+            <b>Interview one-liner:</b> A <strong>RESTful API</strong> follows REST principles for designing web services. In REST, everything is treated as a <em>resource</em>, accessed through <em>URLs</em>, and operated on using standard <em>HTTP methods</em> — <code>GET</code> to fetch, <code>POST</code> to create, <code>PUT</code>/<code>PATCH</code> to update, <code>DELETE</code> to remove. It's <strong>stateless</strong> (each request carries all info needed), uses <strong>standard HTTP status codes</strong>, and typically exchanges data in <strong>JSON</strong>. The classic example: <code>GET /users</code> lists users, <code>POST /users</code> creates one, <code>PUT /users/1</code> updates user 1, <code>DELETE /users/1</code> deletes them. Real APIs are usually "RESTish" — pragmatic and skip HATEOAS.
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>REST vs gRPC — when to pick which <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">Both <strong>REST</strong> and <strong>gRPC</strong> are ways for services to talk to each other in a distributed system, but they sit on different ends of the spectrum. <strong>REST is resource-oriented, JSON over HTTP/1.1, browser-friendly.</strong> <strong>gRPC is RPC-oriented, Protocol Buffers over HTTP/2, optimized for service-to-service performance.</strong></p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-broadcast"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">REST</span>
+              <span class="core-diff-val"><strong>Resource-oriented</strong>: URIs identify resources, HTTP verbs act on them, JSON payloads. Simple, human-readable, ubiquitous.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">gRPC</span>
+              <span class="core-diff-val"><strong>Action-oriented (RPC)</strong>: you call <em>methods</em> defined in a <code>.proto</code> contract. Binary protobuf over HTTP/2. Fast and strongly typed.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Rule of thumb</span>
+              <span class="core-diff-val"><strong>REST</strong> for external / public-facing APIs. <strong>gRPC</strong> for internal microservice-to-microservice traffic.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> How they look — side-by-side</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-globe2"></i>
+                  <span>REST — JSON over HTTP</span>
+                </div>
+                <ul>
+                  <li>Endpoints are <strong>nouns</strong>: <code>GET /users/42</code></li>
+                  <li>Payload is <strong>JSON</strong> (human readable)</li>
+                  <li>Built on top of HTTP/1.1 (or HTTP/2)</li>
+                  <li>Contract is informal — OpenAPI / Swagger optional</li>
+                  <li>Test from <code>curl</code> / browser / Postman</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-lightning-charge-fill"></i>
+                  <span>gRPC — Protobuf over HTTP/2</span>
+                </div>
+                <ul>
+                  <li>Endpoints are <strong>verbs</strong>: <code>UserService.GetUser({id: 42})</code></li>
+                  <li>Payload is <strong>binary protobuf</strong> — small &amp; fast</li>
+                  <li>Built on HTTP/2 (multiplexing, header compression)</li>
+                  <li>Contract is the <code>.proto</code> file — generates client + server stubs</li>
+                  <li>Strongly typed end-to-end across languages</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Full comparison table</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Feature</th><th>REST</th><th>gRPC</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Style</td><td>Resource-oriented (CRUD on URIs)</td><td>RPC — call methods on services</td></tr>
+                  <tr><td>Payload</td><td>JSON (text)</td><td>Protobuf (binary)</td></tr>
+                  <tr><td>Transport</td><td>HTTP/1.1 or HTTP/2</td><td>HTTP/2 only (required)</td></tr>
+                  <tr><td>Contract</td><td>OpenAPI / Swagger (optional)</td><td><code>.proto</code> file (mandatory)</td></tr>
+                  <tr><td>Typing</td><td>Weak — JSON is schemaless</td><td>Strong — code-gen client + server</td></tr>
+                  <tr><td>Performance</td><td>Slower (text parsing, larger payload)</td><td>~5–10× faster, ~3× smaller payload</td></tr>
+                  <tr><td>Streaming</td><td>No (use SSE / WebSocket separately)</td><td>Built-in: server, client, bidi streams</td></tr>
+                  <tr><td>Browser support</td><td>Native everywhere</td><td>Needs gRPC-Web + proxy (Envoy)</td></tr>
+                  <tr><td>Tooling / debug</td><td>curl, Postman, browser</td><td>grpcurl, BloomRPC, server reflection</td></tr>
+                  <tr><td>Versioning</td><td>URL versions (<code>/v1/</code>) or headers</td><td>Field tags &amp; <code>optional</code> in proto</td></tr>
+                  <tr><td>Code generation</td><td>Optional (OpenAPI Generator)</td><td>Built-in for ~12 languages</td></tr>
+                  <tr><td>Caching</td><td>HTTP caching (CDN-friendly)</td><td>No — binary &amp; method-based</td></tr>
+                  <tr><td>Error handling</td><td>HTTP status codes (200/4xx/5xx)</td><td>gRPC status codes (OK, NOT_FOUND, …)</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Code feel — same endpoint, two worlds</div>
+            <p class="solution-desc"><strong>REST — Spring Boot:</strong></p>
+            <pre><code>@RestController
+@RequestMapping("/users")
+class UserController {
+    @GetMapping("/{id}")
+    public User getUser(@PathVariable Long id) {
+        return userService.findById(id);
+    }
+}
+
+// Client call:
+GET /users/42  HTTP/1.1
+Accept: application/json
+
+// Response:
+{ "id": 42, "name": "Alice", "email": "..." }</code></pre>
+
+            <p class="solution-desc"><strong>gRPC — define the contract once:</strong></p>
+            <pre><code>// user.proto
+syntax = "proto3";
+
+service UserService {
+  rpc GetUser(GetUserRequest) returns (User);
+}
+
+message GetUserRequest { int64 id = 1; }
+message User {
+  int64  id    = 1;
+  string name  = 2;
+  string email = 3;
+}</code></pre>
+            <p class="solution-desc">Server &amp; client stubs are <strong>auto-generated</strong> in any supported language. The Java server method has the exact <code>User</code> object — no JSON parsing, no type guessing.</p>
+            <pre><code>@GrpcService
+class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
+    @Override
+    public void getUser(GetUserRequest req, StreamObserver&lt;User&gt; obs) {
+        User u = userService.findById(req.getId());
+        obs.onNext(u);
+        obs.onCompleted();
+    }
+}</code></pre>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Performance — why gRPC wins on the wire</div>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>Protobuf vs JSON:</strong> binary encoding, field numbers instead of names, no whitespace — usually <strong>3–5× smaller</strong> payloads.</li>
+              <li><strong>HTTP/2 multiplexing:</strong> many requests share one TCP connection — no head-of-line blocking, no connection-per-call overhead.</li>
+              <li><strong>HPACK header compression:</strong> HTTP headers (auth tokens, trace IDs) are compressed and reused across requests.</li>
+              <li><strong>Strong typing → fewer bugs:</strong> the compiler catches schema mismatches before runtime.</li>
+              <li><strong>Persistent connections + keep-alive:</strong> ideal for high-frequency service-to-service traffic.</li>
+              <li>Typical real-world wins: <em>2–10× faster latency, 50–80% smaller bandwidth</em>.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Streaming — gRPC's killer feature</div>
+            <p class="solution-desc">gRPC supports <strong>four call types</strong> out of the box, none of which REST gives you natively:</p>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead><tr><th>Type</th><th>Pattern</th><th>Example use</th></tr></thead>
+                <tbody>
+                  <tr><td>Unary</td><td>1 request → 1 response</td><td>Standard CRUD call</td></tr>
+                  <tr><td>Server streaming</td><td>1 request → N responses</td><td>Log tail, price ticker, LLM tokens</td></tr>
+                  <tr><td>Client streaming</td><td>N requests → 1 response</td><td>File chunk upload, metric batches</td></tr>
+                  <tr><td>Bi-directional</td><td>N ↔ N</td><td>Chat, real-time game state</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="solution-desc">REST would need SSE or WebSocket for any of the streaming patterns. gRPC bakes it in.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> When to use which</div>
+            <div class="use-cases">
+              <div class="use-case">
+                <h4><i class="bi bi-globe2"></i> Use REST when…</h4>
+                <ul>
+                  <li>Public / external API — third parties consume it</li>
+                  <li>Browsers / mobile apps call you directly</li>
+                  <li>You want CDN caching of GETs</li>
+                  <li>Maximum ecosystem &amp; tooling support</li>
+                  <li>Casual <code>curl</code> / Postman debugging</li>
+                </ul>
+                <div class="examples"><b>Examples:</b> GitHub API, Stripe API, public Twitter/X API.</div>
+              </div>
+              <div class="use-case green">
+                <h4><i class="bi bi-diagram-3-fill"></i> Use gRPC when…</h4>
+                <ul>
+                  <li>Internal microservice ↔ microservice</li>
+                  <li>Low latency &amp; high throughput required</li>
+                  <li>You need streaming (server / bidi)</li>
+                  <li>Polyglot services share a strict contract</li>
+                  <li>Service mesh (Istio, Linkerd) — gRPC is first-class</li>
+                </ul>
+                <div class="examples"><b>Examples:</b> Google internal, Netflix, Square, most modern microservice platforms.</div>
+              </div>
+              <div class="use-case pink">
+                <h4><i class="bi bi-bridge"></i> Use both (common pattern)</h4>
+                <ul>
+                  <li>REST/JSON at the <strong>edge</strong> (public, browser-friendly)</li>
+                  <li>gRPC <strong>internally</strong> between services</li>
+                  <li>API Gateway translates REST → gRPC</li>
+                </ul>
+                <div class="examples"><b>Tools:</b> grpc-gateway, Envoy, Istio. You write the gRPC service once, expose REST automatically.</div>
+              </div>
+              <div class="use-case orange">
+                <h4><i class="bi bi-question-circle-fill"></i> GraphQL — the third option?</h4>
+                <ul>
+                  <li>Flexible queries, single endpoint, client picks fields</li>
+                  <li>Used by Facebook, Shopify, GitHub (v4)</li>
+                  <li>Different shape problem: client-driven aggregation</li>
+                </ul>
+                <div class="examples"><b>Note:</b> GraphQL is not a direct replacement for either — orthogonal concern.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">7</span> Operational trade-offs</div>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>Browser support:</strong> gRPC needs <code>gRPC-Web</code> + a proxy (Envoy) — you can't directly call gRPC from a browser. REST works everywhere.</li>
+              <li><strong>Debugging:</strong> REST = <code>curl</code> &amp; eyeball the JSON. gRPC = binary on the wire, needs <code>grpcurl</code> or BloomRPC.</li>
+              <li><strong>Caching:</strong> REST GETs cache beautifully in CDNs / proxies. gRPC has no equivalent — caching must be at the app layer.</li>
+              <li><strong>Versioning:</strong> protobuf field tags make backward compatibility easy — never reuse a tag, mark removed fields <code>reserved</code>. REST relies on URL versions or media-type negotiation.</li>
+              <li><strong>Load balancers:</strong> classic L4 LBs can break gRPC because all calls share one TCP connection — use an L7 LB that's HTTP/2-aware (Envoy, ALB, NGINX).</li>
+              <li><strong>Code-gen workflow:</strong> gRPC requires a build step. Helpful tooling (Buf, protoc, plugins) but it's overhead REST avoids.</li>
+            </ul>
+          </div>
+
+          <div class="takeaway">
+            <b>Interview one-liner:</b> Both REST and gRPC are communication mechanisms for distributed systems. <strong>REST</strong> is resource-oriented, uses JSON over HTTP, and is simple, human-readable, and browser-friendly — ideal for <em>public-facing APIs</em>. <strong>gRPC</strong> is an RPC framework using <em>Protocol Buffers over HTTP/2</em>, offering smaller payloads, lower latency, strong typing, and built-in streaming — ideal for <em>internal service-to-service traffic</em> where performance matters. The common pattern in modern systems is to use both: <strong>REST at the edge</strong> for external clients, and <strong>gRPC internally</strong> between microservices, with an API gateway bridging the two.
+          </div>
         </div>
       </details>
 
