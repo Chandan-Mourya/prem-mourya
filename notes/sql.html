@@ -96,18 +96,139 @@
       </details>
 
       <details class="qa">
-        <summary>Indexes — what kinds and when?</summary>
+        <summary>Indexing strategy for large-scale systems <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p>An <strong>index</strong> is an auxiliary data structure that speeds up lookups in exchange for slower writes and extra storage.</p>
-          <ul>
-            <li><strong>B-tree (B+tree)</strong> — default; balanced tree giving O(log n) lookups, range scans, and ordered reads. Good for equality and range queries.</li>
-            <li><strong>Hash</strong> — O(1) equality only; no range, no ORDER BY. Used by some engines for in-memory tables.</li>
-            <li><strong>Composite (multi-column)</strong> — order matters: <code>(a, b)</code> helps queries on <code>a</code> or <code>(a, b)</code>, but not <code>b</code> alone (leftmost prefix rule).</li>
-            <li><strong>Covering</strong> — includes all columns the query needs; the DB never has to touch the row.</li>
-            <li><strong>Partial / filtered</strong> — index only rows matching a predicate (Postgres, SQL Server).</li>
-            <li><strong>Full-text, GIN/GIST</strong> — specialized for text and JSON.</li>
-          </ul>
-          <p>Rule: index columns in WHERE, JOIN, and ORDER BY. Don't over-index — every INSERT/UPDATE pays.</p>
+          <p class="answer-intro">Indexes are the single biggest lever for query performance — and the most over-applied feature in production databases. A correct indexing strategy speeds up reads by orders of magnitude while keeping writes affordable. The wrong strategy makes writes slow, doubles storage, and confuses the optimizer.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Index <strong>WHERE / JOIN / ORDER BY</strong> columns of the queries that <em>actually run in production</em> — not every column "just in case". Compose indexes by selectivity (most selective leftmost), prefer <strong>covering indexes</strong> for hot read paths, and remove indexes that the optimizer never picks.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Index types — and when each one wins</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead><tr><th>Type</th><th>Strength</th><th>Use when</th></tr></thead>
+                <tbody>
+                  <tr><td><strong>B-tree (B+tree)</strong></td><td>Equality + range + ordered scans, O(log n)</td><td>Default for almost everything</td></tr>
+                  <tr><td><strong>Hash</strong></td><td>O(1) equality only</td><td>In-memory tables (rare in app DBs)</td></tr>
+                  <tr><td><strong>Composite (multi-column)</strong></td><td>Equality on prefix + range on next column</td><td>Filter + sort patterns: <code>(tenant_id, created_at)</code></td></tr>
+                  <tr><td><strong>Covering / INCLUDE</strong></td><td>Index has all columns query needs — no row fetch</td><td>Hot read paths returning a few columns</td></tr>
+                  <tr><td><strong>Partial / filtered</strong></td><td>Indexes only rows matching a predicate (Postgres, SQL Server)</td><td>"Active rows" — <code>WHERE deleted_at IS NULL</code></td></tr>
+                  <tr><td><strong>Expression / functional</strong></td><td>Indexes a function of a column</td><td><code>LOWER(email)</code>, <code>jsonb_field-&gt;&gt;'k'</code></td></tr>
+                  <tr><td><strong>GIN / GIST</strong></td><td>Inverted, multi-value</td><td>Full-text, JSONB containment, arrays, geo</td></tr>
+                  <tr><td><strong>BRIN</strong></td><td>Block-range, tiny</td><td>Append-only time-series tables</td></tr>
+                  <tr><td><strong>Bitmap</strong></td><td>Combine multiple low-cardinality predicates</td><td>OLAP / data warehouses</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Composite indexes — leftmost prefix and column order</div>
+            <pre><code>-- Useful for queries on (tenant_id), (tenant_id, created_at), and ORDER BY created_at within tenant
+CREATE INDEX ix_orders_tenant_created ON orders (tenant_id, created_at DESC);
+
+-- Useless for queries that filter ONLY on created_at — wrong leading column
+SELECT * FROM orders WHERE created_at &gt; now() - interval '1 day';   -- won't use it</code></pre>
+            <p>Rules:</p>
+            <ul>
+              <li><strong>Leftmost prefix</strong> — only queries that filter on the <em>leading column(s)</em> can use the index.</li>
+              <li><strong>Equality before range</strong> — once a range column is reached, subsequent index columns can't be used for further filtering.</li>
+              <li><strong>Most selective column leftmost</strong> if both are filtered with equality.</li>
+              <li><strong>Match ORDER BY</strong> direction with the index direction (ASC/DESC) for sort-free reads.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Covering indexes — the biggest read-side win</div>
+            <pre><code>-- Postgres / SQL Server: include extra columns
+CREATE INDEX ix_users_email_covering
+ON users (email)
+INCLUDE (id, name, status);
+
+-- Query never touches the table heap — read directly from the index
+SELECT id, name, status FROM users WHERE email = 'foo@bar.com';</code></pre>
+            <p>For hot endpoints (login, profile lookup), a covering index can drop latency by 5–10× because the DB skips the row fetch entirely.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> The cost of indexes</div>
+            <ul>
+              <li><strong>Slower writes</strong> — every INSERT/UPDATE/DELETE must maintain every affected index.</li>
+              <li><strong>Storage</strong> — wide indexes can rival table size; secondary indexes in InnoDB include the PK value.</li>
+              <li><strong>Optimizer confusion</strong> — too many similar indexes can cause poor plan choice.</li>
+              <li><strong>Maintenance</strong> — bloat, REINDEX, statistics updates.</li>
+            </ul>
+            <p>Rule of thumb: a high-write OLTP table tolerates 5–8 well-chosen indexes; beyond that, write throughput degrades.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Operational practices</div>
+            <ul>
+              <li>Use <code>EXPLAIN ANALYZE</code> on every slow query before adding an index.</li>
+              <li>Postgres: <code>pg_stat_user_indexes</code> shows scan counts — drop indexes with <code>idx_scan = 0</code>.</li>
+              <li>Create indexes <code>CONCURRENTLY</code> in production (Postgres) to avoid table locks.</li>
+              <li>Watch index bloat — REINDEX or pg_repack on bloated indexes.</li>
+              <li>For very large tables, partition first, then index per partition (smaller, faster).</li>
+              <li>Maintain <strong>statistics</strong> (<code>ANALYZE</code> / auto-vacuum) so the optimizer picks the right index.</li>
+              <li>For UUID PKs, prefer <strong>UUIDv7</strong> (time-ordered) over UUIDv4 — secondary indexes don't fragment.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Special cases at large scale</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-title">High-write tables</div>
+                <ul>
+                  <li>Minimize secondary indexes; consider write-optimized engines (TimescaleDB, ClickHouse).</li>
+                  <li>Partition by time, drop old partitions instead of DELETE.</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-title">Multi-tenant</div>
+                <ul>
+                  <li>Lead every composite index with <code>tenant_id</code>.</li>
+                  <li>Consider per-tenant partitioning for large tenants.</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-title">Search</div>
+                <ul>
+                  <li>Move full-text out of the OLTP DB — use Elasticsearch / OpenSearch.</li>
+                  <li>Sync via CDC (Debezium) or outbox.</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-title">Soft delete</div>
+                <ul>
+                  <li>Partial index <code>WHERE deleted_at IS NULL</code> keeps the index small.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">7</span> Common interview gotchas</div>
+            <ul>
+              <li>Indexing every column "just in case" is a write-side disaster.</li>
+              <li>Composite index column order is not commutative — design from query patterns.</li>
+              <li>Functions on indexed columns (e.g., <code>LOWER(email)</code>) defeat the index unless you create an expression index.</li>
+              <li><code>OR</code> in WHERE often defeats indexes — rewrite as <code>UNION</code> or <code>IN</code>.</li>
+              <li>Implicit type casts disable index use — match column type to parameter type.</li>
+              <li><code>LIKE 'foo%'</code> uses the index; <code>LIKE '%foo'</code> doesn't (consider trigram / GIN).</li>
+              <li>Wide PK (UUIDv4) bloats every secondary index — prefer BIGINT or UUIDv7.</li>
+              <li>NULL handling differs by engine — Postgres allows NULL in indexes; some engines need partial indexes.</li>
+              <li>Adding an index in production blocks writes by default — use <code>CONCURRENTLY</code> (Postgres) or online DDL tools (gh-ost / pt-osc for MySQL).</li>
+              <li>Index statistics drift over time — <code>ANALYZE</code> is mandatory after big data changes.</li>
+            </ul>
+          </div>
+
+          <p class="takeaway"><b>Interview one-liner:</b> A production indexing strategy is driven by the <em>queries that actually run</em>, not by table structure. Use <strong>B-tree</strong> as the default; build <strong>composite indexes</strong> with the most selective and equality-filtered columns leftmost, matching <code>ORDER BY</code>. Use <strong>covering indexes</strong> (<code>INCLUDE</code>) for hot read paths to skip the row fetch. Use <strong>partial</strong> indexes for soft-deleted / filtered subsets. Index everything in WHERE / JOIN / ORDER BY of hot queries; remove indexes that <code>pg_stat_user_indexes</code> shows are never used. In production, create indexes <code>CONCURRENTLY</code>, monitor bloat, and prefer narrow PKs (BIGINT or UUIDv7) so secondary indexes stay small. The biggest cost of bad indexing is <em>slow writes</em> — fewer, sharper indexes beat many speculative ones.</p>
         </div>
       </details>
 
@@ -192,37 +313,406 @@ SELECT * FROM (
       </details>
 
       <details class="qa">
-        <summary>N+1 query problem — and how to fix it</summary>
+        <summary>Lazy Loading — why and where we use it (Hibernate / JPA / Spring) <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p>The N+1 query problem: fetching a list of N parents (1 query), then fetching children for each (N more queries) = N+1 round trips. Common with JPA/Hibernate lazy associations:</p>
-          <pre><code>List&lt;Order&gt; orders = orderRepo.findAll();   // 1 query
-for (Order o : orders) o.getItems().size();   // N queries — bad</code></pre>
-          <p>Fixes:</p>
+          <p class="answer-intro"><strong>Lazy Loading</strong> is a design technique where an object or its related data is loaded <strong>only when it's actually needed</strong>, instead of loading everything upfront. It's a core ORM concept and a frequent backend interview topic.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Defer expensive work until the moment you need its result. Instead of pulling every related row into memory the first time, fetch the parent now and the children <em>only when the code actually touches them</em>. Saves DB calls, memory, and startup time.</span>
+            </div>
+          </div>
+
+          <p><b>Real-life intuition.</b> When Netflix opens, it doesn't pre-load every movie's metadata, trailer, and reviews. It loads the home screen first, and movie details only when you open a specific tile. That's lazy loading — exactly the same pattern ORMs apply to entity relationships.</p>
+
+          <p><b>Why we use it:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead>
+                <tr><th>Benefit</th><th>How lazy loading helps</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><strong>Performance</strong></td><td>Skip work the user may never trigger — fewer SQL joins, smaller result sets.</td></tr>
+                <tr><td><strong>Memory usage</strong></td><td>Only the entities actually accessed live in memory.</td></tr>
+                <tr><td><strong>Faster startup</strong></td><td>App boots quickly because heavy beans/objects are created on first use, not at start.</td></tr>
+                <tr><td><strong>Database optimization</strong></td><td>Avoid unnecessary joins; let the ORM emit a follow-up query only if the relationship is read.</td></tr>
+                <tr><td><strong>Scalability</strong></td><td>Less wasted CPU/IO per request — system handles more load on the same hardware.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Where lazy loading shows up:</b></p>
+          <div class="use-cases">
+            <div class="use-case"><b>Hibernate / JPA</b><br/>Load related entities (<code>@OneToMany</code>, <code>@ManyToOne</code>) only when accessed — <code>FetchType.LAZY</code>.</div>
+            <div class="use-case green"><b>Spring Beans</b><br/><code>@Lazy</code> defers bean instantiation until first injection — speeds up startup.</div>
+            <div class="use-case pink"><b>Frontend / images</b><br/>Browsers load <code>&lt;img loading="lazy"&gt;</code> only as they scroll into view.</div>
+            <div class="use-case orange"><b>Microservices</b><br/>Fetch enrichment data on-demand instead of joining everything upfront.</div>
+            <div class="use-case"><b>Caching</b><br/>Compute and cache values only when first requested (lazy cache population).</div>
+            <div class="use-case green"><b>Singletons / heavy objects</b><br/>Build expensive resources (connections, ML models) on first use.</div>
+          </div>
+
+          <p><b>The canonical example — Hibernate <code>FetchType.LAZY</code>:</b></p>
+          <pre><code>@Entity
+class Department {
+    @Id Long id;
+    String name;
+
+    @OneToMany(mappedBy = "department", fetch = FetchType.LAZY)
+    private List&lt;Employee&gt; employees;   // not loaded with Department
+}</code></pre>
+
+          <p><b>What happens internally — step by step:</b></p>
+          <div class="flow">
+            <div class="flow-step">User requests <code>Department</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><code>SELECT * FROM department WHERE id = 1</code> &nbsp;— only the parent loads</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Hibernate returns a <strong>proxy</strong> for <code>employees</code> (not real data)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Code calls <code>department.getEmployees()</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Proxy triggers <code>SELECT * FROM employee WHERE department_id = 1</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Real employee list returned and cached on the entity</div>
+          </div>
+
+          <p><b>Lazy vs Eager — the comparison every interviewer asks:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead>
+                <tr><th>Aspect</th><th>Lazy Loading</th><th>Eager Loading</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><strong>When data loads</strong></td><td>Only when accessed</td><td>Immediately with the parent</td></tr>
+                <tr><td><strong>DB load</strong></td><td>One small query; more on access</td><td>One big join up-front</td></tr>
+                <tr><td><strong>Memory</strong></td><td>Lower — only what's used</td><td>Higher — everything loaded</td></tr>
+                <tr><td><strong>JPA default</strong></td><td><code>@OneToMany</code>, <code>@ManyToMany</code></td><td><code>@ManyToOne</code>, <code>@OneToOne</code></td></tr>
+                <tr><td><strong>Risk</strong></td><td><code>LazyInitializationException</code>, N+1 queries</td><td>Wasted work, slow APIs</td></tr>
+                <tr><td><strong>Best for</strong></td><td>Optional / large relationships</td><td>Small, always-needed relationships</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>FetchType examples:</b></p>
+          <pre><code>@OneToMany(fetch = FetchType.LAZY)    // default — load on access
+@ManyToOne(fetch = FetchType.EAGER)   // default — load with parent</code></pre>
+
+          <p><b>Spring <code>@Lazy</code> — same idea, applied to beans:</b></p>
+          <pre><code>@Component
+@Lazy
+public class HeavyReportService {
+    // bean is created only when first injected/used, not at app startup
+}</code></pre>
+
+          <p><b>The two big gotchas:</b></p>
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">1. <code>LazyInitializationException</code></div>
+              <p>Happens when you try to access a lazy field <strong>after the Hibernate session is closed</strong> (typical when accessing in the controller layer or after the transaction ends).</p>
+              <pre><code>department.getEmployees().size();
+// → LazyInitializationException: could not initialize proxy - no Session</code></pre>
+              <p><b>Fixes:</b></p>
+              <ul>
+                <li><strong>JOIN FETCH</strong> in JPQL — load relationship in the same query.<br/><code>SELECT d FROM Department d JOIN FETCH d.employees</code></li>
+                <li><strong>@EntityGraph</strong> on the repository method — declarative per-query eager fetch.</li>
+                <li><strong>DTO projection</strong> — return a flat DTO from the query instead of the entity.</li>
+                <li><strong>Open-Session-in-View</strong> (Spring Boot default) — keeps session open across the HTTP request; convenient but easy to abuse.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">2. N+1 Query Problem</div>
+              <p>Lazy loading inside a loop is the most common cause:</p>
+              <pre><code>List&lt;Department&gt; depts = deptRepo.findAll();   // 1 query
+for (Department d : depts) {
+    d.getEmployees().size();                   // N more queries
+}
+// Total: 1 + N queries</code></pre>
+              <p><b>Fixes:</b></p>
+              <ul>
+                <li><strong>JOIN FETCH</strong> — one query with a join.</li>
+                <li><strong>@EntityGraph</strong> — per-query fetch plan on Spring Data repos.</li>
+                <li><strong>@BatchSize</strong> — Hibernate batches child queries (e.g., 1 + N/10).</li>
+                <li><strong>Two-step fetch</strong> in code — parents, then a single <code>WHERE id IN (...)</code> for children.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p><b>Advantages and disadvantages at a glance:</b></p>
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">Advantages</div>
+              <ul>
+                <li>Faster startup, smaller initial payload.</li>
+                <li>Lower memory footprint.</li>
+                <li>Better scalability under load.</li>
+                <li>Lets you keep entity relationships in code without paying for them every time.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Disadvantages</div>
+              <ul>
+                <li>Risk of N+1 queries if you iterate over lazy associations.</li>
+                <li><code>LazyInitializationException</code> when session/transaction is closed.</li>
+                <li>Harder to debug — proxy objects, hidden queries fired on field access.</li>
+                <li>Open-Session-in-View can mask issues and slow APIs silently.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p><b>Best practices I follow:</b></p>
           <ul>
-            <li><strong>JOIN FETCH</strong> in JPQL — one query with a JOIN.</li>
-            <li><strong>@EntityGraph</strong> on Spring Data repos — declarative eager fetch per query.</li>
-            <li><strong>Batch fetch</strong> — Hibernate <code>@BatchSize</code> groups child queries.</li>
-            <li>Two queries: parents + WHERE IN (parentIds) for children, assembled in code — often the cleanest at scale.</li>
+            <li><strong>Default to LAZY</strong> for collections and large relationships. Mark only small, always-needed ones as <code>EAGER</code>.</li>
+            <li><strong>Be explicit per use case</strong> — use <code>JOIN FETCH</code> or <code>@EntityGraph</code> when a screen needs the relationship, instead of changing the entity-level default.</li>
+            <li><strong>Return DTOs from query endpoints</strong> — projections avoid both <code>LazyInitializationException</code> and N+1 entirely.</li>
+            <li><strong>Enable SQL logging in dev</strong> — watch query counts for list endpoints; one bad N+1 can break production under load.</li>
+            <li><strong>Turn off Open-Session-in-View</strong> in serious projects and handle fetching explicitly in the service layer.</li>
           </ul>
-          <p>I've fixed dozens of N+1 issues in production — they're invisible in unit tests and lethal under load. Always enable SQL logging in dev and watch the query count for any list endpoint.</p>
+
+          <p><b>One real-world example.</b> In an e-commerce app, when listing orders, we don't want to load every product's full details for every order. Order → Items are <strong>LAZY</strong>. The order list endpoint uses a DTO projection (just <code>orderId</code>, <code>total</code>, <code>status</code>). When the user opens a specific order, a separate query with <code>JOIN FETCH</code> pulls the items and product summaries. Result: list endpoint stays under 50 ms; detail endpoint still loads in one round-trip.</p>
+
+          <p class="takeaway">
+            <b>Interview-ready one-liner:</b> Lazy Loading is a design technique where related data is loaded <strong>only when needed</strong>, mainly to improve performance, reduce memory, and minimize unnecessary DB calls. In Hibernate / JPA, it's enabled via <code>FetchType.LAZY</code> — Hibernate returns a <strong>proxy</strong> and fires the child query only when the relationship is accessed. For example, fetching a <code>Department</code> doesn't load <code>employees</code> until <code>department.getEmployees()</code> is called. It scales well, but watch out for <code>LazyInitializationException</code> and the <strong>N+1 query problem</strong> — solved with <code>JOIN FETCH</code>, <code>@EntityGraph</code>, or DTO projections.
+          </p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>N+1 Problem in JPA — what it is and how to fix it <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">The <strong>N+1 query problem</strong> is one of the most common performance killers in JPA / Hibernate applications. It happens when loading a list of <em>N parent</em> entities triggers <em>N additional queries</em> to load their child data — turning <strong>one logical "give me orders with items"</strong> request into <strong>1 + N round trips to the database</strong>.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">One query loads the parents. Then, for <em>every parent</em>, another query loads its children. <strong>1 + N queries</strong> for what should be a single join. The cause is almost always <strong>lazy loading inside a loop</strong> — and it's invisible in unit tests but lethal under production load.</span>
+            </div>
+          </div>
+
+          <p><b>Where the name comes from:</b></p>
+          <ul>
+            <li><strong>1</strong> query loads the <em>parent</em> list.</li>
+            <li><strong>N</strong> queries — one per parent — load each parent's children.</li>
+            <li><strong>Total: 1 + N</strong> = "N+1".</li>
+          </ul>
+
+          <p><b>The classic example — <code>Department → Employees</code>:</b></p>
+          <pre><code>@Entity
+class Department {
+    @OneToMany(mappedBy = "department", fetch = FetchType.LAZY)
+    List&lt;Employee&gt; employees;
+}
+
+// In service:
+List&lt;Department&gt; depts = deptRepo.findAll();          // 1 query
+for (Department d : depts) {
+    d.getEmployees().size();                          // 1 query EACH
+}</code></pre>
+
+          <p><b>What Hibernate actually fires:</b></p>
+          <pre><code>-- Query 1
+SELECT * FROM department;
+
+-- Query 2  (dept 1)
+SELECT * FROM employee WHERE department_id = 1;
+-- Query 3  (dept 2)
+SELECT * FROM employee WHERE department_id = 2;
+-- ...
+-- Query 11 (dept 10)
+SELECT * FROM employee WHERE department_id = 10;
+
+-- TOTAL: 1 + 10 = 11 queries  (for 10 departments)
+-- With 1000 departments → 1001 queries</code></pre>
+          <p>Each extra query is a round trip — network latency + parse + plan + execute. At 5 ms per query, 1001 queries = <strong>~5 seconds wasted</strong> on what should be a single join.</p>
+
+          <p><b>Why does it happen?</b></p>
+          <ul>
+            <li><strong>Lazy loading (default for collections)</strong> — <code>@OneToMany</code> and <code>@ManyToMany</code> are <code>LAZY</code> by default. Touching the collection inside a loop fires one query each time.</li>
+            <li><strong>Eager loading can do it too</strong> — <code>@ManyToOne(fetch = EAGER)</code> on a list endpoint fires one extra query per row to load the parent.</li>
+            <li><strong>Hibernate doesn't see the loop</strong> — it sees N individual property accesses on N proxies and dutifully fires N queries.</li>
+          </ul>
+
+          <p><b>The symptoms:</b></p>
+          <ul>
+            <li>Endpoint takes 100 ms with 10 rows, 5 s with 500 rows, times out with 5 000 rows.</li>
+            <li>Database CPU spikes on list endpoints.</li>
+            <li>Hibernate SQL logs show repeating <code>SELECT … WHERE id = ?</code> after the parent query.</li>
+            <li>Unit tests pass; production grinds to a halt.</li>
+          </ul>
+
+          <p><b>Fix 1 — JOIN FETCH (the most common solution):</b></p>
+          <pre><code>@Query("SELECT d FROM Department d JOIN FETCH d.employees")
+List&lt;Department&gt; findAllWithEmployees();</code></pre>
+          <pre><code>-- Single query — fixed!
+SELECT d.*, e.*
+FROM department d
+LEFT JOIN employee e ON e.department_id = d.id;</code></pre>
+          <p>One query, all data. <strong>Caveat:</strong> for collections, <code>JOIN FETCH</code> can produce duplicate parents (one row per child) — use <code>SELECT DISTINCT d</code> or a <code>Set</code> in the entity. Also you can <code>JOIN FETCH</code> only one collection per query (Hibernate throws <code>MultipleBagFetchException</code> otherwise).</p>
+
+          <p><b>Fix 2 — @EntityGraph (declarative, Spring Data friendly):</b></p>
+          <pre><code>public interface DeptRepo extends JpaRepository&lt;Department, Long&gt; {
+
+    @EntityGraph(attributePaths = {"employees"})
+    List&lt;Department&gt; findAll();
+}</code></pre>
+          <p>Per-query fetch plan without changing the entity's default. Reusable, clean, and lets different endpoints have different fetch strategies.</p>
+
+          <p><b>Fix 3 — DTO Projection (often the cleanest):</b></p>
+          <pre><code>public interface DeptSummary {
+    Long getId();
+    String getName();
+    Long getEmployeeCount();
+}
+
+@Query("""
+    SELECT d.id AS id, d.name AS name, COUNT(e) AS employeeCount
+    FROM Department d LEFT JOIN d.employees e
+    GROUP BY d.id, d.name
+""")
+List&lt;DeptSummary&gt; findSummaries();</code></pre>
+          <p>Fetches <em>only the columns you need</em>, in one query, with no lazy proxies and no <code>LazyInitializationException</code> risk. Ideal for list/index endpoints.</p>
+
+          <p><b>Fix 4 — Batch Fetching (<code>@BatchSize</code>):</b></p>
+          <pre><code>@OneToMany(mappedBy = "department", fetch = FetchType.LAZY)
+@BatchSize(size = 50)
+List&lt;Employee&gt; employees;</code></pre>
+          <p>Hibernate collapses the N queries into <code>ceil(N / 50)</code> queries by batching IDs:</p>
+          <pre><code>SELECT * FROM employee WHERE department_id IN (1, 2, 3, …, 50);
+SELECT * FROM employee WHERE department_id IN (51, 52, …, 100);</code></pre>
+          <p>You can also set it globally: <code>spring.jpa.properties.hibernate.default_batch_fetch_size=50</code>.</p>
+
+          <p><b>All four fixes — side by side:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Fix</th><th>How it works</th><th>Best for</th><th>Watch out for</th></tr></thead>
+              <tbody>
+                <tr><td><strong>JOIN FETCH</strong></td><td>One JPQL with explicit JOIN.</td><td>Detail endpoints; small/medium child sets.</td><td>Duplicate parents; one collection per query.</td></tr>
+                <tr><td><strong>@EntityGraph</strong></td><td>Declarative fetch plan per repo method.</td><td>Spring Data repos; reusable fetch profiles.</td><td>Same join behaviour & limits as JOIN FETCH.</td></tr>
+                <tr><td><strong>DTO projection</strong></td><td>Select only required columns.</td><td>List/index pages; reporting.</td><td>Extra DTO classes; manual mapping.</td></tr>
+                <tr><td><strong>@BatchSize</strong></td><td>Hibernate groups child queries into <code>IN</code> batches.</td><td>Big result sets where joins blow up.</td><td>Not zero queries — just fewer.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Why EAGER is NOT the answer:</b></p>
+          <ul>
+            <li>Switching to <code>FetchType.EAGER</code> makes <em>every</em> query load the children — even when you don't need them.</li>
+            <li>It often causes N+1 itself on list endpoints (one extra query per row for <code>@ManyToOne(EAGER)</code>).</li>
+            <li>It encourages "load the world" entity graphs that fall apart under load.</li>
+            <li><strong>Best practice: keep relationships LAZY by default; opt-in to fetching per use case</strong> via <code>JOIN FETCH</code>, <code>@EntityGraph</code>, or DTOs.</li>
+          </ul>
+
+          <p><b>How to detect N+1 in dev — non-negotiable:</b></p>
+          <pre><code># application.yml
+spring:
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE   # values, optional</code></pre>
+          <ul>
+            <li>Hit every list endpoint locally and <strong>count the SQL statements</strong>.</li>
+            <li>If a list of 10 rows fires 11+ queries → N+1.</li>
+            <li>Tools: <strong>Hibernate Statistics</strong>, <strong>p6spy</strong>, <strong>QuickPerf</strong>, <strong>Datasource Proxy</strong>.</li>
+          </ul>
+
+          <p><b>Real-world example — list orders with customer:</b></p>
+          <pre><code>// BEFORE — N+1 (1 + N queries)
+@GetMapping("/orders")
+public List&lt;Order&gt; list() {
+    return orderRepo.findAll();      // 1 query
+    // serializer calls order.getCustomer() → N queries (1 per order)
+}
+
+// AFTER — single query
+@Query("SELECT o FROM Order o JOIN FETCH o.customer")
+List&lt;Order&gt; findAllWithCustomer();</code></pre>
+          <p>Before: 500 orders → 501 queries → ~3 s. After: 500 orders → 1 query → ~50 ms.</p>
+
+          <p><b>Best practices — the production checklist:</b></p>
+          <ul>
+            <li><strong>Default to <code>FetchType.LAZY</code></strong> on every relationship. Never change the entity-level default to satisfy one endpoint.</li>
+            <li><strong>Be explicit per use case</strong> — <code>JOIN FETCH</code> / <code>@EntityGraph</code> / DTOs for the specific screen that needs the children.</li>
+            <li><strong>Return DTOs from list endpoints</strong> — projections sidestep both N+1 and <code>LazyInitializationException</code>.</li>
+            <li><strong>Enable SQL logging in dev</strong> — count queries on every list endpoint before merging.</li>
+            <li><strong>Use <code>@BatchSize</code></strong> as a global safety net (<code>default_batch_fetch_size=50</code>).</li>
+            <li><strong>Watch for <code>MultipleBagFetchException</code></strong> — you can't <code>JOIN FETCH</code> two collections at once; use <code>Set</code> or split into queries.</li>
+          </ul>
+
+          <p><b>Common interview gotchas:</b></p>
+          <ul>
+            <li><strong>EAGER fixes N+1?</strong> — No, it often <em>causes</em> it and always wastes work.</li>
+            <li><strong><code>MultipleBagFetchException</code></strong> — appears when you <code>JOIN FETCH</code> two <code>List</code> collections; change them to <code>Set</code> or fetch separately.</li>
+            <li><strong>Cartesian product</strong> — joining two collections inflates row counts (N × M rows); use <code>Set</code> or split queries.</li>
+            <li><strong>Pagination + JOIN FETCH</strong> — Hibernate logs a warning and does in-memory pagination. Solution: fetch IDs paginated, then a second query with <code>IN</code> + JOIN FETCH.</li>
+            <li><strong>It happens with <code>@ManyToOne(EAGER)</code> too</strong> — list endpoint loads parent → N queries to load each child's parent.</li>
+          </ul>
+
+          <p class="takeaway">
+            <b>Interview one-liner:</b> The <strong>N+1 problem</strong> in JPA happens when loading <em>N parent</em> entities triggers <em>N additional queries</em> to load their children — usually caused by <strong>lazy loading inside a loop</strong>. For example, fetching <code>Department</code>s and then iterating to access <code>employees</code> fires 1 + N SQL statements. The most common fix is <strong><code>JOIN FETCH</code></strong> to load related entities in a single query; other fixes are <strong><code>@EntityGraph</code></strong> for declarative fetch plans, <strong>DTO projections</strong> for list endpoints, and <strong><code>@BatchSize</code></strong> for batching child queries. The right approach is to keep relationships <strong>LAZY by default</strong> and opt in to fetching per use case — never switch to EAGER, and always count SQL statements during development.
+          </p>
         </div>
       </details>
 
       <details class="qa">
         <summary>How would you optimize a slow query? <span class="qa-tag hot">hot</span></summary>
         <div class="qa-body">
-          <p>My playbook:</p>
-          <ol>
-            <li><strong>Reproduce and measure.</strong> Get the real query and run <code>EXPLAIN ANALYZE</code>. Don't guess.</li>
-            <li><strong>Read the plan.</strong> Are we scanning whole tables? Doing filesort? Using the index I expect?</li>
-            <li><strong>Add or fix indexes.</strong> The most common win. Mind the leftmost-prefix rule on composites. Use covering indexes for hot read paths.</li>
-            <li><strong>Rewrite the query.</strong> Replace correlated subqueries with joins, push filters early, select only needed columns.</li>
-            <li><strong>Avoid N+1</strong> (see previous answer).</li>
-            <li><strong>Cache</strong> hot read-only data in Redis or app-level when DB tuning hits limits.</li>
-            <li><strong>Partition or shard</strong> tables that don't fit in working set anymore.</li>
-            <li><strong>Async pre-compute</strong> heavy aggregations (materialized views, refresh jobs).</li>
-          </ol>
-          <p>One Indus Net example: a dashboard query took 12 s. <code>EXPLAIN</code> showed a missing index on <code>(tenant_id, created_at)</code>. Adding it brought the query to 80 ms.</p>
+          <p class="answer-intro">Never tune blind — reproduce with real data, read <code>EXPLAIN (ANALYZE, BUFFERS)</code>, fix the plan, then consider caching or architecture.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Measure → read plan → index or rewrite → only then cache/partition.</span>
+            </div>
+          </div>
+
+          <div class="flow">
+            <div class="flow-row">
+              <div class="flow-step"><div class="flow-step-title">1. Measure</div><div class="flow-step-body"><code>EXPLAIN (ANALYZE, BUFFERS)</code> on prod-like volume.</div></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-step"><div class="flow-step-title">2. Plan</div><div class="flow-step-body">Seq scan? Wrong index? Sort spill to disk?</div></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-step"><div class="flow-step-title">3. Fix</div><div class="flow-step-body">Index, rewrite, or denormalise — in that order.</div></div>
+            </div>
+          </div>
+
+<pre><code>-- Before: 12s dashboard query (missing composite index)
+EXPLAIN ANALYZE
+SELECT * FROM orders
+ WHERE tenant_id = 42
+   AND created_at &gt;= '2025-01-01'
+ ORDER BY created_at DESC LIMIT 50;
+-- Seq Scan on orders  (cost=… rows=30M)
+
+CREATE INDEX CONCURRENTLY idx_orders_tenant_created
+  ON orders (tenant_id, created_at DESC);
+-- After: Index Scan, ~80ms</code></pre>
+
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Plan red flag</th><th>Typical fix</th></tr></thead>
+              <tbody>
+                <tr><td>Seq Scan on large table</td><td>Composite index matching WHERE + ORDER BY</td></tr>
+                <tr><td>Nested loop on huge inner set</td><td>Rewrite join order; statistics refresh</td></tr>
+                <tr><td>Sort / HashAggregate spilling</td><td>Reduce rows earlier; index for ORDER BY</td></tr>
+                <tr><td>Index used but still slow</td><td>Covering index; avoid <code>SELECT *</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Common interview gotchas:</b></p>
+          <ul>
+            <li>Adding an index without checking write amplification and storage.</li>
+            <li>Caching before fixing a bad plan — you cache slowness.</li>
+            <li>Tuning on empty dev DB — plans differ wildly at 30M rows.</li>
+            <li>Forgetting <code>CONCURRENTLY</code> on Postgres prod indexes.</li>
+          </ul>
+
+          <p class="takeaway"><b>Interview one-liner:</b> Slow query work starts with <code>EXPLAIN ANALYZE</code> on realistic data. Fix the plan with the right composite index or rewrite; cache and partition only when the DB is genuinely the wrong place for that access pattern.</p>
         </div>
       </details>
 
@@ -329,9 +819,22 @@ for (Order o : orders) o.getItems().size();   // N queries — bad</code></pre>
             </div>
           </div>
 
-          <div class="takeaway">
-            <b>My default:</b> <strong>optimistic</strong> for general CRUD — clean conflict semantics, no held locks, scales well. Reach for <strong>pessimistic</strong> in narrow, short, high-contention sections (inventory, balance updates). And on the user side, show a clear "this record was changed by someone else — please refresh" message.
-          </div>
+<pre><code>// Optimistic — JPA @Version
+@Entity class Order { @Version Long version; }
+// UPDATE … WHERE id = ? AND version = ?  → 0 rows = conflict
+
+// Pessimistic — short critical section
+@Lock(LockModeType.PESSIMISTIC_WRITE)
+Inventory findForUpdate(String sku);  // SELECT … FOR UPDATE</code></pre>
+
+          <p><b>Common interview gotchas:</b></p>
+          <ul>
+            <li>Optimistic under extreme contention — retries pile up; use pessimistic for hot rows.</li>
+            <li>Pessimistic during long user think-time — holds locks, deadlocks.</li>
+            <li>Forgetting <code>OptimisticLockException</code> in the API — return 409, not 500.</li>
+          </ul>
+
+          <p class="takeaway"><b>Interview one-liner:</b> Default to optimistic (<code>@Version</code>) for web CRUD. Use pessimistic (<code>FOR UPDATE</code>) only for short, high-contention money/inventory paths. Always surface conflicts to the user with a clear refresh message.</p>
         </div>
       </details>
 
@@ -342,6 +845,322 @@ for (Order o : orders) o.getItems().size();   // N queries — bad</code></pre>
           <p><strong>Replication</strong> — copy the entire data to one or more replicas. Adds read capacity (read replicas) and fault tolerance (failover). Doesn't help write throughput. Asynchronous replication has lag; synchronous is slower but consistent.</p>
           <p><strong>Partitioning</strong> — split a single table into chunks <em>within the same database</em> by range (date), list (region), or hash. Each partition is a separate physical structure. Smaller indexes per partition, can drop old partitions cheaply. Postgres has declarative partitioning; MySQL supports it natively.</p>
           <p><strong>Sharding</strong> — split data <em>across multiple databases/servers</em> by a shard key. Adds write throughput. Complex: cross-shard joins are hard, rebalancing is painful, you need a router. Reach for it only when you've exhausted vertical scaling and replication.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How do you design database transactions in high-concurrency systems? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">Under high concurrency, naive transactions lock too long, escalate to deadlocks, or get retried into pile-ups. The art is to <strong>keep transactions tiny</strong>, <strong>pick the right isolation level</strong>, <strong>choose the right concurrency control</strong> (optimistic vs pessimistic), and <strong>structure the code so failures retry safely</strong>.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Tiny transactions, deterministic lock order, the <strong>right isolation level</strong> for the workload (READ COMMITTED is the production default; bump only if you have a real anomaly to prevent), and explicit choice between <strong>optimistic</strong> (low contention) and <strong>pessimistic</strong> (hot rows, money). Make the surrounding code <strong>idempotent</strong> so retries are safe.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> The 7 rules</div>
+            <ol>
+              <li><strong>Keep transactions short</strong> — open late, commit early. Never call external APIs or wait on user input inside a transaction.</li>
+              <li><strong>Read outside, write inside</strong> — pre-load data outside the transaction; only the actual mutation belongs inside.</li>
+              <li><strong>Pick a deterministic lock order</strong> — always acquire row locks in the same order across the codebase to prevent deadlocks (e.g., always lock <code>account_a</code> before <code>account_b</code> by ascending id).</li>
+              <li><strong>Use <code>SELECT … FOR UPDATE SKIP LOCKED</code></strong> for queue-style work distribution across many workers.</li>
+              <li><strong>Default isolation = READ COMMITTED</strong>; bump to REPEATABLE READ or SERIALIZABLE only for specific anomalies, with retry logic.</li>
+              <li><strong>Optimistic locking</strong> (version column) for "many readers, occasional conflicts" (CRUD on profiles, orders).</li>
+              <li><strong>Pessimistic locking</strong> only for hot rows where conflicts are frequent and correctness is critical (inventory decrement, balance update).</li>
+            </ol>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Isolation levels — when each one is right</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead><tr><th>Level</th><th>Allows</th><th>When to use</th></tr></thead>
+                <tbody>
+                  <tr><td>READ UNCOMMITTED</td><td>Dirty reads</td><td>Almost never</td></tr>
+                  <tr><td>READ COMMITTED</td><td>Non-repeatable reads, phantoms</td><td><strong>Default for most apps</strong>; Postgres / Oracle default</td></tr>
+                  <tr><td>REPEATABLE READ</td><td>Phantoms (Postgres prevents most)</td><td>Reports / analytics needing a stable snapshot; MySQL InnoDB default</td></tr>
+                  <tr><td>SERIALIZABLE</td><td>Nothing — full serial schedule</td><td>Truly conflicting workflows (financial postings) — accept retries on serialization failures</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Optimistic locking pattern (high concurrency, low conflict)</div>
+            <pre><code>@Entity
+public class Order {
+    @Id Long id;
+    @Version Integer version;          // Hibernate increments + checks
+    String status;
+    BigDecimal totalCents;
+}
+
+// Hibernate generates: UPDATE orders SET status=?, version=version+1
+//                      WHERE id=? AND version=?
+// 0 rows affected → OptimisticLockException → retry or 409 Conflict</code></pre>
+            <p>Pair with retry-on-conflict (Spring Retry or manual loop with a small max attempts) for transparent recovery.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Pessimistic + SKIP LOCKED for distributed work queues</div>
+            <pre><code>// Multiple worker pods read disjoint rows safely
+SELECT * FROM jobs
+WHERE status = 'PENDING'
+ORDER BY created_at
+LIMIT 10
+FOR UPDATE SKIP LOCKED;</code></pre>
+            <p><code>SKIP LOCKED</code> is the killer feature for outbox publishers and async job runners — each worker grabs rows nobody else has, no coordinator needed.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Avoiding hot-row contention</div>
+            <ul>
+              <li><strong>Sharded counters</strong> — split a hot counter across N rows; sum on read.</li>
+              <li><strong>Async aggregation</strong> — write events to Kafka/queue; a reducer updates the counter in batches.</li>
+              <li><strong>Per-key serialization</strong> — funnel hot-row writes through a single thread (or single Kafka partition).</li>
+              <li><strong>Row partitioning</strong> — split per-tenant or per-region so contention stays local.</li>
+              <li><strong>Memoization at the app</strong> — Redis CAS or single-flight to absorb concurrent writes.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Retry-safe transactions</div>
+            <p>Any transaction that may be retried (optimistic conflict, deadlock victim, serialization failure) must be:</p>
+            <ul>
+              <li><strong>Idempotent</strong> — running twice produces the same result.</li>
+              <li><strong>Side-effect-isolated</strong> — no external API call inside the transaction (move to outbox + post-commit hook).</li>
+              <li><strong>Time-bounded</strong> — capped retries with exponential backoff so we don't infinite-loop.</li>
+              <li><strong>Observable</strong> — log + count retries; alert on excess.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">7</span> Common interview gotchas</div>
+            <ul>
+              <li>Long transactions hold locks → cascading slowdown for everyone.</li>
+              <li>External HTTP call inside a transaction → connection holds for seconds → pool exhaustion.</li>
+              <li>SERIALIZABLE without retry logic → mysterious 500s under load.</li>
+              <li>Reading and updating without ordering → deadlocks across workers.</li>
+              <li>Putting <code>@Transactional</code> on a private/self-invoked method → silently no-op (Spring proxy).</li>
+              <li>Using <code>SELECT FOR UPDATE</code> without an index → scans + locks more rows than expected, deadlock magnet.</li>
+              <li>Ignoring <code>OptimisticLockException</code> → silent overwrites of concurrent edits.</li>
+              <li>Multi-statement transactions across multiple services → distributed transaction smell; use Saga.</li>
+            </ul>
+          </div>
+
+          <p class="takeaway"><b>Interview one-liner:</b> Under high concurrency, design transactions to be <strong>tiny</strong>, <strong>retry-safe</strong>, and <strong>idempotent</strong>. Default isolation is <strong>READ COMMITTED</strong>; bump up only for specific anomalies. Use <strong>optimistic locking</strong> (<code>@Version</code>) for most CRUD with low conflict rate; use <strong>pessimistic locking</strong> (<code>SELECT … FOR UPDATE</code>) for hot rows where correctness can't tolerate retries. <strong>SKIP LOCKED</strong> is the killer feature for distributed work queues. Always acquire locks in a deterministic order, never call external APIs inside a transaction, and log/alert on conflict rates and deadlocks. Hot-row contention is solved with <strong>sharded counters</strong>, <strong>async aggregation via Kafka</strong>, or <strong>per-key serialization</strong>, not by holding locks longer.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How do you handle deadlocks in database systems? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">A <strong>deadlock</strong> is two or more transactions each waiting for a lock the other holds — the DB detects the cycle and aborts one as the "deadlock victim". Deadlocks are inevitable in concurrent systems; the engineering goal is to make them <strong>rare, debuggable, and automatically recoverable</strong>.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Prevent deadlocks by acquiring locks in a <strong>consistent order</strong> across the codebase, keeping transactions short, and indexing the columns used in WHERE clauses (so the DB locks fewer rows). When deadlocks happen, the DB throws a deadlock exception — the application <strong>retries with backoff</strong> on idempotent transactions.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Anatomy of a classic deadlock</div>
+            <div class="flow">
+              <div class="flow-step">Tx A: <code>UPDATE orders SET … WHERE id = 1</code> — locks row 1</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Tx B: <code>UPDATE orders SET … WHERE id = 2</code> — locks row 2</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Tx A: <code>UPDATE orders SET … WHERE id = 2</code> — waits for B</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step accent">Tx B: <code>UPDATE orders SET … WHERE id = 1</code> — waits for A → CYCLE</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">DB detects, picks a victim, aborts it with deadlock error (Postgres SQLSTATE 40P01 / MySQL ER_LOCK_DEADLOCK)</div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Prevention rules</div>
+            <ul>
+              <li><strong>Consistent lock order</strong> — always lock rows in the same order (e.g., ascending PK). Eliminates the cycle.</li>
+              <li><strong>Short transactions</strong> — fewer locks held for less time → less chance of overlap.</li>
+              <li><strong>Index the WHERE column</strong> — without an index the DB may take more locks than necessary (page or table locks).</li>
+              <li><strong>Avoid mixing access patterns</strong> — code paths that lock the same rows in different orders are deadlock generators.</li>
+              <li><strong>Use <code>SELECT … FOR UPDATE</code></strong> at the start of the transaction to declare all locks upfront.</li>
+              <li><strong>Lower lock granularity</strong> — InnoDB row-level &gt; MyISAM table-level.</li>
+              <li><strong>Avoid SERIALIZABLE</strong> when not needed; it acquires more locks.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Code pattern — sorted lock acquisition</div>
+            <pre><code>// Bad — order varies by call site, deadlock magnet
+@Transactional
+public void transfer(Long fromId, Long toId, BigDecimal amt) {
+    Account from = repo.findForUpdate(fromId);     // arbitrary order
+    Account to   = repo.findForUpdate(toId);
+    from.debit(amt);  to.credit(amt);
+}
+
+// Good — deterministic ordering by id
+@Transactional
+public void transfer(Long fromId, Long toId, BigDecimal amt) {
+    Long firstId  = Math.min(fromId, toId);
+    Long secondId = Math.max(fromId, toId);
+    Account a = repo.findForUpdate(firstId);
+    Account b = repo.findForUpdate(secondId);
+    Account from = (firstId.equals(fromId)) ? a : b;
+    Account to   = (firstId.equals(fromId)) ? b : a;
+    from.debit(amt);  to.credit(amt);
+}</code></pre>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Recovery — retry the victim</div>
+            <pre><code>// Spring Retry on deadlock victim
+@Retryable(
+    retryFor = { CannotAcquireLockException.class,
+                 DeadlockLoserDataAccessException.class },
+    maxAttempts = 3,
+    backoff = @Backoff(delay = 50, multiplier = 2.0, random = true)
+)
+@Transactional
+public void transfer(Long fromId, Long toId, BigDecimal amt) { ... }</code></pre>
+            <p>Retries work only if the transaction is <strong>idempotent</strong> — replaying it must be safe. With backoff + jitter, a small number of deadlocks is a non-event for users.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Diagnose deadlocks in production</div>
+            <ul>
+              <li><strong>Postgres</strong>: <code>log_lock_waits = on</code>, <code>deadlock_timeout = 1s</code> — every deadlock is logged with both involved queries.</li>
+              <li><strong>MySQL InnoDB</strong>: <code>SHOW ENGINE INNODB STATUS</code> shows the LATEST DETECTED DEADLOCK with both transactions and locks.</li>
+              <li>Enable <code>innodb_print_all_deadlocks = ON</code> to capture every deadlock to the error log.</li>
+              <li>APMs (Datadog, New Relic) usually surface deadlock errors with stack traces.</li>
+              <li>Track the metric <code>deadlocks_per_minute</code>; alert on a sudden rise.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Common interview gotchas</div>
+            <ul>
+              <li>Deadlocks are <em>detected</em>, not prevented, by the DB — engineering prevents them.</li>
+              <li>Lock waits and deadlocks are different — long lock waits don't cycle (no victim) but cause latency.</li>
+              <li><code>SELECT FOR UPDATE</code> on a non-indexed column locks far more rows than expected → deadlock magnet.</li>
+              <li>Retry without idempotency = silent double-execution.</li>
+              <li>SERIALIZABLE in Postgres causes "could not serialize access" failures — application must retry.</li>
+              <li>InnoDB picks the smaller transaction (least undo) as the victim — predictable but the bigger one wins, which can starve small writes.</li>
+              <li>Deadlock storms after a deploy → recently changed code path likely introduced a non-deterministic lock order.</li>
+              <li>Don't try to "lock everything upfront" globally — it serializes the system.</li>
+            </ul>
+          </div>
+
+          <p class="takeaway"><b>Interview one-liner:</b> Deadlocks happen when two transactions hold locks the other wants — the DB detects the cycle and aborts a victim. Prevent them by acquiring locks in a <strong>deterministic order</strong> (e.g., always by ascending PK), keeping transactions <strong>short</strong>, <strong>indexing</strong> WHERE clauses (so fewer rows are locked), and avoiding higher isolation levels than necessary. Recover with <strong>retry-on-deadlock</strong> using exponential backoff + jitter — works only for idempotent transactions. Diagnose via <code>SHOW ENGINE INNODB STATUS</code> (MySQL) or <code>log_lock_waits</code> (Postgres); alert on deadlock rate. The art is "make them rare, automatic, invisible to users", not "eliminate them entirely".</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How does database connection pooling work internally? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">Opening a TCP connection to a database, doing the auth handshake, and tearing it down again costs 5–50 ms — much longer than most queries. A <strong>connection pool</strong> keeps a fixed set of physical connections warm and hands them out per request. Every production Java app uses one (HikariCP is the default in Spring Boot 2+).</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">A bounded <strong>pool</strong> of pre-opened DB connections. The app borrows one, runs SQL, returns it. The pool handles validation, recycling, leak detection, and back-pressure when the pool is exhausted (callers wait or timeout).</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Lifecycle of a borrowed connection</div>
+            <div class="flow">
+              <div class="flow-step">App calls <code>dataSource.getConnection()</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Pool finds an idle connection or creates one (up to <code>maximumPoolSize</code>)</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Validates the connection (test query / ping)</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Returns a <strong>proxy</strong> to the app — looks like a JDBC <code>Connection</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">App runs SQL, then calls <code>connection.close()</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step accent">Proxy intercepts <code>close()</code> → returns the physical connection to the pool, never actually closes it</div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> The HikariCP knobs that matter</div>
+            <pre><code>spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 20            # hard cap; sized per app + per DB capacity
+      minimum-idle: 20                 # often = max for steady-state services
+      connection-timeout: 3000         # ms to wait for a connection before failing
+      idle-timeout: 600000             # ms before idle connections are closed (if &gt; min-idle)
+      max-lifetime: 1800000            # max age — recycle to avoid stale TCP / DB-side timeouts
+      leak-detection-threshold: 30000  # log a warning if borrowed &gt; 30s
+      validation-timeout: 5000
+      pool-name: HikariCP-orders</code></pre>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> How big should the pool be?</div>
+            <ul>
+              <li><strong>Per pod</strong>: a pool of 10–20 is usually enough; more usually means a query problem.</li>
+              <li><strong>Total</strong>: pods × pool ≤ DB <code>max_connections</code> minus headroom for admin and replicas.</li>
+              <li>Beyond what the DB can handle in parallel, more connections add contention, not throughput.</li>
+              <li>For Postgres, consider <strong>PgBouncer</strong> in transaction-pooling mode — many app pools converge into a small DB-side pool.</li>
+              <li>Hikari's classic guidance: <code>connections = ((cores × 2) + spindles)</code> for typical OLTP — a small, hot pool beats a huge cold one.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Pool exhaustion — what it looks like</div>
+            <ul>
+              <li>App threads stuck on <code>HikariPool.getConnection</code> in dumps.</li>
+              <li><code>SQLTransientConnectionException: HikariPool-1 - Connection is not available, request timed out</code> in logs.</li>
+              <li>Latency rises sharply at peak; 5xx if connection-timeout is short.</li>
+              <li>Root causes: long-running queries, too-small pool, transactions held over external calls, or downstream DB slowdown.</li>
+            </ul>
+            <p>Fix: shorten transactions, find the slow query, raise pool size cautiously, or add a circuit breaker on the slow endpoint.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Connection validation &amp; staleness</div>
+            <ul>
+              <li>Pool periodically tests idle connections (<code>SELECT 1</code> or driver ping) — drops dead ones.</li>
+              <li><code>max-lifetime</code> recycles connections proactively to dodge DB / firewall idle timeouts (a 1-hour <code>wait_timeout</code> on MySQL is a classic source of <code>Communications link failure</code>).</li>
+              <li>For RDS Proxy / connection routers, set <code>max-lifetime</code> below the proxy's idle timeout.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Connection leak detection</div>
+            <p><code>leak-detection-threshold</code> logs a stack trace if a connection is held longer than the threshold — invaluable for catching code that forgets to close (rare with try-with-resources, common with custom code that bypasses Spring).</p>
+            <pre><code>Connection leak detection triggered for HikariProxyConnection@12345,
+stack trace:
+  at com.shop.repo.OrderRepo.findAll(OrderRepo.java:42)
+  ...</code></pre>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">7</span> Common interview gotchas</div>
+            <ul>
+              <li>Bigger pools aren't always better — beyond DB parallelism, they add contention.</li>
+              <li>Pool exhaustion presents as "the DB is slow" — actually the app can't borrow a connection.</li>
+              <li>External HTTP calls inside a transaction hold the connection — pool exhaustion in disguise.</li>
+              <li>Default <code>connection-timeout</code> (30s) is too long — fail-fast in 1–3s + retry.</li>
+              <li>Long <code>idle-timeout</code> + DB-side <code>wait_timeout</code> mismatch → "Communications link failure" after midnight.</li>
+              <li>Pools per data source — don't share a pool across logical databases.</li>
+              <li>Pool size + replicas: total active connections across all pods can swamp the DB if HPA scales aggressively.</li>
+              <li>For serverless / Lambda, traditional pooling doesn't fit — use RDS Proxy or Aurora Serverless for connection multiplexing.</li>
+              <li>Always export pool metrics (active, idle, waiting, total) to Prometheus and alert on waiters &gt; 0.</li>
+            </ul>
+          </div>
+
+          <p class="takeaway"><b>Interview one-liner:</b> A connection pool keeps a bounded set of warm DB connections so the app avoids the 5–50 ms cost of opening one per request. <strong>HikariCP</strong> is the default; the knobs that matter are <code>maximum-pool-size</code>, <code>connection-timeout</code> (fail-fast), <code>max-lifetime</code> (recycle to dodge DB-side idle timeouts), and <code>leak-detection-threshold</code>. Size the pool small and hot — a 10–20 connection pool is enough for most pods; beyond DB parallelism, more connections only add contention. Always export metrics (active/idle/waiting) and alert on waiters &gt; 0. Pool exhaustion looks like "DB is slow" but is actually the app stuck on <code>getConnection</code> — fix by shortening transactions, killing long-running queries, or adding circuit breakers on slow endpoints.</p>
         </div>
       </details>
 

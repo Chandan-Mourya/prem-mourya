@@ -1092,6 +1092,145 @@ maxHeap.peek();   // 50  (O(1))</code></pre>
       </details>
 
       <details class="qa">
+        <summary>What is a Queue and how does it work? (FIFO, the everyday data structure) <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">A <strong>Queue</strong> is a linear data structure that follows the <strong>FIFO</strong> principle — <em>First In, First Out</em>. The element inserted first is the one that gets removed first, exactly like a line at a ticket counter.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Two ends, one direction. Items are added at the <strong>rear</strong> (enqueue) and removed from the <strong>front</strong> (dequeue). Order is preserved — first in is first out — so a queue is the right pick whenever <em>fairness, ordering, or back-pressure</em> matters.</span>
+            </div>
+          </div>
+
+          <p><b>Visual structure:</b></p>
+          <pre class="tree-viz">          dequeue (front)              enqueue (rear)
+                ↑                              ↑
+          ┌─────────────────────────────────────────┐
+          │   10  →  20  →  30  →  40  →  50        │
+          └─────────────────────────────────────────┘
+              ^                                ^
+              front                            rear
+
+  enqueue(60)  →  10  →  20  →  30  →  40  →  50  →  60
+  dequeue()    →  returns 10, queue becomes 20  →  30  →  40  →  50  →  60</pre>
+
+          <p><b>Core operations (and their costs):</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead>
+                <tr><th>Operation</th><th>Java method</th><th>What it does</th><th>Time</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Enqueue (insert at rear)</td><td><code>offer(x)</code> / <code>add(x)</code></td><td>Adds <code>x</code> at the rear of the queue.</td><td>O(1)</td></tr>
+                <tr><td>Dequeue (remove from front)</td><td><code>poll()</code> / <code>remove()</code></td><td>Removes and returns the front element; <code>poll</code> returns <code>null</code> if empty, <code>remove</code> throws.</td><td>O(1)</td></tr>
+                <tr><td>Peek (front without removing)</td><td><code>peek()</code> / <code>element()</code></td><td>Returns the front without removing it.</td><td>O(1)</td></tr>
+                <tr><td>Size / empty check</td><td><code>size()</code> / <code>isEmpty()</code></td><td>Standard collection ops.</td><td>O(1)</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Queue in Java — it's an <em>interface</em>, not a single class:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead>
+                <tr><th>Implementation</th><th>Backed by</th><th>Use when…</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>LinkedList</code></td><td>Doubly-linked list</td><td>General-purpose FIFO queue; also implements <code>Deque</code>.</td></tr>
+                <tr><td><code>ArrayDeque</code></td><td>Resizable circular array</td><td><strong>Preferred</strong> FIFO/LIFO queue — faster than <code>LinkedList</code>, no per-node overhead.</td></tr>
+                <tr><td><code>PriorityQueue</code></td><td>Min-Heap (array)</td><td>You want the <em>smallest / highest-priority</em> element next, not FIFO order.</td></tr>
+                <tr><td><code>ArrayBlockingQueue</code> / <code>LinkedBlockingQueue</code></td><td>Array / linked list + locks</td><td>Thread-safe producer-consumer pipelines (e.g., between threads).</td></tr>
+                <tr><td><code>ConcurrentLinkedQueue</code></td><td>Lock-free linked list (CAS)</td><td>High-throughput concurrent queue without blocking.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Quick code example:</b></p>
+          <pre><code>Queue&lt;Integer&gt; q = new ArrayDeque&lt;&gt;();
+q.offer(10);            // [10]
+q.offer(20);            // [10, 20]
+q.offer(30);            // [10, 20, 30]
+q.peek();               // 10   (front, not removed)
+q.poll();               // 10   (removed → [20, 30])
+q.poll();               // 20
+q.isEmpty();            // false</code></pre>
+
+          <p><b>How a queue works internally — front and rear pointers:</b></p>
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">MECHANICS</span>
+              <span class="core-diff-val">Every queue keeps two cursors: <strong><code>front</code></strong> (where to dequeue from) and <strong><code>rear</code></strong> (where to enqueue to). On <em>enqueue</em>, rear moves forward; on <em>dequeue</em>, front moves forward. Because both ends are tracked directly, no traversal is needed — operations are <strong>O(1)</strong>.</span>
+            </div>
+          </div>
+
+          <p><b>Three classic implementations:</b></p>
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">1. Linked-list-based queue (Java's <code>LinkedList</code>)</div>
+              <p>Each node stores <strong>data + next pointer</strong>. The queue maintains a <code>front</code> and <code>rear</code> reference.</p>
+              <ul>
+                <li><b>Enqueue:</b> create new node, point <code>rear.next</code> to it, move <code>rear</code>. → O(1)</li>
+                <li><b>Dequeue:</b> read <code>front.data</code>, advance <code>front = front.next</code>. → O(1)</li>
+                <li><b>Pro:</b> grows dynamically, no fixed capacity.</li>
+                <li><b>Con:</b> per-node memory overhead, poor cache locality.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">2. Array-based queue (naive)</div>
+              <p>Backed by a fixed array with <code>front</code> and <code>rear</code> indices.</p>
+              <ul>
+                <li><b>Enqueue:</b> <code>arr[rear++] = x</code>. → O(1)</li>
+                <li><b>Dequeue:</b> read <code>arr[front++]</code>. → O(1)</li>
+                <li><b>Problem:</b> after several dequeues, the front of the array goes to waste — even if there are empty slots at index 0, you can't enqueue there.</li>
+                <li><b>Fix:</b> use a <strong>Circular Queue</strong>.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">3. Circular Queue (Java's <code>ArrayDeque</code>)</div>
+              <p>Same array, but indices <strong>wrap around using modulo</strong>: <code>rear = (rear + 1) % capacity</code>. Empty slots at the start are reused.</p>
+              <ul>
+                <li>Best of both worlds — array's cache locality + no wasted space.</li>
+                <li>This is exactly how <code>ArrayDeque</code> is implemented.</li>
+                <li>When the array fills up, it doubles in size (amortized O(1) growth).</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">4. <code>PriorityQueue</code> (special case)</div>
+              <p>Not FIFO — it's a <strong>Min-Heap</strong>. The "front" is always the smallest (or by custom <code>Comparator</code>), not the earliest inserted.</p>
+              <ul>
+                <li><b>Enqueue:</b> insert + sift-up. → O(log n)</li>
+                <li><b>Dequeue:</b> remove root + sift-down. → O(log n)</li>
+                <li><b>Use when:</b> "next" should mean <em>highest priority</em>, not <em>first arrival</em>.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p><b>Variants worth knowing:</b></p>
+          <ul>
+            <li><strong>Deque (Double-Ended Queue):</strong> insert/remove from both ends — <code>ArrayDeque</code>, <code>LinkedList</code>.</li>
+            <li><strong>Circular Queue:</strong> array-backed, wraps around — fixed capacity, no wasted space.</li>
+            <li><strong>Priority Queue:</strong> heap-backed, order by priority not insertion.</li>
+            <li><strong>Blocking Queue:</strong> producer waits when full, consumer waits when empty — backbone of thread pools and producer-consumer patterns.</li>
+          </ul>
+
+          <p><b>Where queues are used in real systems:</b></p>
+          <div class="use-cases">
+            <div class="use-case"><b>Task scheduling</b><br/>OS schedulers, thread pools — <code>ExecutorService</code> uses a <code>BlockingQueue</code> internally for the task queue.</div>
+            <div class="use-case green"><b>BFS traversal</b><br/>Graph and tree BFS — explore neighbours level by level using a queue.</div>
+            <div class="use-case pink"><b>Messaging systems</b><br/>Kafka, RabbitMQ, SQS — durable, distributed queues for decoupling producers from consumers.</div>
+            <div class="use-case orange"><b>Print &amp; request queues</b><br/>Printer spoolers, web-server request queues, rate-limited APIs.</div>
+            <div class="use-case"><b>Buffering / back-pressure</b><br/>Between fast producers and slow consumers — protects downstream from overload.</div>
+            <div class="use-case green"><b>Priority work</b><br/><code>PriorityQueue</code> for Dijkstra, A*, top-K problems, fraud/outlier scoring.</div>
+          </div>
+
+          <p class="takeaway">
+            <b>In one line:</b> A Queue is a <strong>FIFO</strong> linear data structure with two pointers — <em>front</em> (dequeue end) and <em>rear</em> (enqueue end) — giving <strong>O(1)</strong> insert and remove. In Java, <code>Queue</code> is an interface implemented by <code>LinkedList</code>, <code>ArrayDeque</code>, and <code>PriorityQueue</code>; key ops are <code>offer()</code>, <code>poll()</code>, and <code>peek()</code>. Linked-list queues grow dynamically, array queues waste space unless made circular, and <code>PriorityQueue</code> is heap-backed and ordered by priority — not insertion. Queues are everywhere: <em>BFS, schedulers, thread pools, printer spoolers, Kafka, and any producer-consumer pipeline</em>.
+          </p>
+        </div>
+      </details>
+
+      <details class="qa">
         <summary>Sorting Algorithms — Bubble, Selection, Insertion, Merge, Quick, Heap (with code) <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
           <p class="answer-intro">Sorting is the bread-and-butter of any DSA interview. The 6 classic algorithms split into two camps — <em>simple O(n²)</em> ones (Bubble, Selection, Insertion) you learn first, and <em>fast O(n log n)</em> ones (Merge, Quick, Heap) you actually use. Each has a sweet spot.</p>
@@ -1606,19 +1745,235 @@ private static void heapify(int[] a, int n, int i) {
       </details>
 
       <details class="qa">
-        <summary>How do you build an immutable class?</summary>
+        <summary>Immutability in Java — what, why, and how to build an immutable class <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p>Five rules. <strong>(1)</strong> Mark the class <code>final</code> so it can't be subclassed (subclasses could add mutable state). <strong>(2)</strong> Make all fields <code>private final</code>. <strong>(3)</strong> No setters; set everything in the constructor. <strong>(4)</strong> If you hold references to mutable objects (lists, dates), <strong>defensively copy</strong> in the constructor and getters — otherwise callers can mutate your internal state.</p>
-          <p><strong>(5)</strong> Don't expose anything that lets a subclass or external code mutate. Java 14+ <strong><code>record</code></strong> classes give you immutable value objects almost for free — final fields, accessors, equals/hashCode/toString. I use records for DTOs, Java events, and config snapshots. <code>java.time</code> types (LocalDate, Instant) are great examples of immutable design in the JDK.</p>
+          <p class="answer-intro"><strong>Immutability</strong> means an object's <em>state cannot change after it is created</em>. Once constructed, its fields are fixed — any "modification" produces a new object instead. <code>String</code>, <code>Integer</code>, <code>LocalDate</code>, and <code>Instant</code> are the classic examples in the JDK.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Construct it once with all required state, then <strong>refuse all further changes</strong> — no setters, no exposed mutable fields, no inheritance that could add mutable state. The object is safe to share across threads, safe to cache, and safe to use as a HashMap key.</span>
+            </div>
+          </div>
+
+          <p><b>Why immutability is so valued:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Benefit</th><th>Reason</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Thread-safe</strong></td><td>No synchronization needed — state never changes, so there's nothing for threads to race on.</td></tr>
+                <tr><td><strong>Secure</strong></td><td>Data passed across trust boundaries can't be tampered with after a security check.</td></tr>
+                <tr><td><strong>Cache-friendly</strong></td><td><code>hashCode()</code> is constant → can be cached. Same value can be shared (e.g., String pool, <code>Integer</code> cache).</td></tr>
+                <tr><td><strong>Safe HashMap key</strong></td><td>Hash never changes → entries don't get "lost" in a bucket after mutation.</td></tr>
+                <tr><td><strong>Predictable / no aliasing bugs</strong></td><td>Passing it to a method can't surprise you with mutations from the other side.</td></tr>
+                <tr><td><strong>Easier reasoning</strong></td><td>State at line 10 == state at line 100. Fewer "where did this change?" investigations.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>The 5 rules to build an immutable class:</b></p>
+          <ol>
+            <li>Mark the <strong>class <code>final</code></strong> — so subclasses can't add mutable state.</li>
+            <li>Make all <strong>fields <code>private final</code></strong>.</li>
+            <li><strong>No setters</strong> — set everything via the constructor only.</li>
+            <li>For any <strong>mutable field</strong> (List, Date, array), do <em>defensive copies</em> in both the constructor and the getter.</li>
+            <li>Don't expose any method that allows internal state to change (no <code>add()</code>, <code>clear()</code>, etc.).</li>
+          </ol>
+
+          <p><b>Simple immutable class — Employee:</b></p>
+          <pre><code>public final class Employee {                 // (1) final class
+    private final int id;                     // (2) private final field
+    private final String name;                // (2) private final field
+
+    public Employee(int id, String name) {    // (3) constructor only
+        this.id = id;
+        this.name = name;
+    }
+
+    public int getId()      { return id; }    // (5) no mutating methods
+    public String getName() { return name; }
+}
+// No setters → state cannot change after construction.</code></pre>
+
+          <p><b>The defensive-copy gotcha — mutable fields:</b></p>
+          <p>The class above is fine because <code>int</code> and <code>String</code> are themselves immutable. The trap is when a field is a mutable type — like <code>List</code>, <code>Date</code>, or an array. Without defensive copies, callers can still mutate the internal state:</p>
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">BROKEN — exposes internal list</div>
+              <pre><code>public final class Team {
+    private final List&lt;String&gt; members;
+
+    public Team(List&lt;String&gt; members) {
+        this.members = members;            // ❌ caller still holds a reference
+    }
+
+    public List&lt;String&gt; getMembers() {
+        return members;                    // ❌ caller can call .add()
+    }
+}</code></pre>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">CORRECT — defensive copies</div>
+              <pre><code>public final class Team {
+    private final List&lt;String&gt; members;
+
+    public Team(List&lt;String&gt; members) {
+        this.members = List.copyOf(members);    // ✅ defensive copy in
+    }
+
+    public List&lt;String&gt; getMembers() {
+        return Collections.unmodifiableList(members);   // ✅ read-only view
+    }
+}</code></pre>
+            </div>
+          </div>
+
+          <p><b>String is the canonical immutable class:</b></p>
+          <pre><code>String s = "Java";
+s.concat("8");           // returns a NEW String "Java8" — original unchanged
+System.out.println(s);   // still prints "Java"
+
+String t = s.concat("8");
+System.out.println(t);   // "Java8"</code></pre>
+          <p>That's why method chaining on String / <code>StringBuilder.toString()</code> / <code>LocalDate.plusDays(1)</code> always returns a new object — none of them ever mutate <code>this</code>.</p>
+
+          <p><b>Java records (Java 16+) — immutability for free:</b></p>
+          <pre><code>public record Employee(int id, String name) {}</code></pre>
+          <p>A single line gives you: a public canonical constructor, <code>private final</code> fields, public accessors (<code>id()</code>, <code>name()</code>), and correct <code>equals</code>/<code>hashCode</code>/<code>toString</code>. The class is implicitly <code>final</code>. I use records everywhere for DTOs, event payloads, value objects, and configuration snapshots — they remove thousands of lines of boilerplate.</p>
+
+          <p><b>Where immutability shows up in the JDK:</b></p>
+          <ul>
+            <li><strong><code>String</code></strong>, <code>Integer</code>, <code>Long</code>, <code>Double</code>, all the wrapper types.</li>
+            <li><strong><code>java.time</code></strong> — <code>LocalDate</code>, <code>LocalTime</code>, <code>LocalDateTime</code>, <code>Instant</code>, <code>Duration</code>, <code>ZonedDateTime</code>.</li>
+            <li><strong><code>List.of(...)</code></strong>, <code>Set.of(...)</code>, <code>Map.of(...)</code> — immutable collections from Java 9+.</li>
+            <li><strong><code>java.math.BigInteger</code></strong>, <code>BigDecimal</code>.</li>
+            <li><strong>Java records</strong> — the modern way to declare value objects.</li>
+          </ul>
+
+          <p><b>Common interview gotchas:</b></p>
+          <ul>
+            <li><strong><code>final</code> ≠ immutable</strong> — <code>final List&lt;X&gt;</code> only stops reassigning the reference; you can still <code>add()</code> to it.</li>
+            <li><strong>Without <code>final</code> on the class</strong>, a subclass could override methods and add mutable state.</li>
+            <li><strong>Without defensive copies</strong>, sharing a mutable field with the outside world leaks internal state.</li>
+            <li><strong>"Mutating" methods on String are illusions</strong> — <code>concat</code>, <code>replace</code>, <code>toUpperCase</code> all return new strings; the original is untouched.</li>
+            <li><strong>Reflection can still break immutability</strong> — it's a language-level contract, not a security guarantee against malicious code.</li>
+          </ul>
+
+          <p class="takeaway">
+            <b>Interview one-liner:</b> An <strong>immutable object</strong> is one whose state cannot change after construction. To build one: <strong>(1)</strong> make the class <code>final</code>, <strong>(2)</strong> all fields <code>private final</code>, <strong>(3)</strong> no setters — initialise via constructor, <strong>(4)</strong> defensive-copy any mutable fields in &amp; out, <strong>(5)</strong> expose nothing that mutates state. Benefits: <em>thread-safe, secure, cache-friendly, safe as a HashMap key</em>. <code>String</code>, the wrapper classes, and the <code>java.time</code> family are all immutable — and from Java 16+, <strong><code>record</code></strong> gives you all of this for free in a single line.
+          </p>
         </div>
       </details>
 
       <details class="qa">
-        <summary>final, finally, finalize() — explain all three</summary>
+        <summary>final vs finally vs finalize() — three lookalikes, three different jobs <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p><strong><code>final</code></strong> is a modifier. On a variable it means assigned once (effectively constant); on a method it can't be overridden; on a class it can't be extended. It's a tool for safety and intent — I mark all DTO fields and most local variables final.</p>
-          <p><strong><code>finally</code></strong> is a block in try/catch/finally that always runs after try, even if an exception was thrown or a <code>return</code> executed — used to release resources. Java 7+ try-with-resources covers most use cases.</p>
-          <p><strong><code>finalize()</code></strong> was a callback invoked by GC before reclaiming an object. <strong>Deprecated since Java 9, removed in Java 18.</strong> It was unreliable, could resurrect objects, and slowed GC. Use <strong>Cleaner</strong> or try-with-resources / AutoCloseable instead. If you see finalize() in code, treat it as a smell.</p>
+          <p class="answer-intro">These three look similar and trip up almost everyone in Core Java interviews — but they live on completely different planets. One is a <strong>keyword (modifier)</strong>, one is a <strong>block</strong>, one is a <strong>method</strong>. Knowing this clearly is a quick way to look sharp.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> The 30-second mental model</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key"><code>final</code></span>
+              <span class="core-diff-val"><strong>Keyword</strong> — restricts modification. Used on <em>variables, methods, classes</em>. Compile-time.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key"><code>finally</code></span>
+              <span class="core-diff-val"><strong>Block</strong> — guaranteed cleanup code. Used with <code>try/catch</code>. Runtime — always executes.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key"><code>finalize()</code></span>
+              <span class="core-diff-val"><strong>Method</strong> — historical GC callback before object cleanup. <em>Deprecated since Java 9, removed in Java 18.</em></span>
+            </div>
+          </div>
+
+          <p><b>Side-by-side comparison:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead>
+                <tr><th>Aspect</th><th><code>final</code></th><th><code>finally</code></th><th><code>finalize()</code></th></tr>
+              </thead>
+              <tbody>
+                <tr><td><strong>What it is</strong></td><td>Keyword / modifier</td><td>Block in try/catch</td><td>Method on <code>Object</code></td></tr>
+                <tr><td><strong>Used with</strong></td><td>Variable, method, class</td><td><code>try</code> / <code>catch</code></td><td>Class (override)</td></tr>
+                <tr><td><strong>Purpose</strong></td><td>Restrict modification</td><td>Guaranteed cleanup</td><td>Notify GC is about to collect this object</td></tr>
+                <tr><td><strong>When it runs</strong></td><td>Compile-time check</td><td>Always after try (even on exception/return)</td><td>By GC — timing is undefined</td></tr>
+                <tr><td><strong>Category</strong></td><td>Language feature</td><td>Exception handling</td><td>Garbage collection (legacy)</td></tr>
+                <tr><td><strong>Status (Java 21)</strong></td><td>Active</td><td>Active</td><td><strong>Removed (Java 18+)</strong> — use <code>Cleaner</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4 style="margin-top:18px"><code>final</code> — restrict modification</h4>
+          <p>Applied to:</p>
+          <ul>
+            <li><strong>Variable</strong> → value can be assigned only once.</li>
+            <li><strong>Method</strong> → cannot be overridden by subclasses.</li>
+            <li><strong>Class</strong> → cannot be extended (e.g., <code>String</code>, <code>Integer</code>).</li>
+          </ul>
+          <pre><code>final int MAX = 10;          // constant value
+MAX = 20;                    // compile error
+
+final class Money { ... }    // no subclass allowed
+
+class Base {
+    public final void pay() { ... }   // subclasses can't override
+}</code></pre>
+          <p>It's also the foundation of <strong>immutability</strong> (every field of a record is implicitly <code>final</code>) and required for variables captured by lambdas/anonymous classes (must be <em>effectively final</em>).</p>
+
+          <h4 style="margin-top:18px"><code>finally</code> — always executes</h4>
+          <p>A block that runs <strong>regardless of whether an exception is thrown or the try block returns early</strong>. Used for releasing resources — closing files, DB connections, sockets.</p>
+          <pre><code>Connection conn = null;
+try {
+    conn = dataSource.getConnection();
+    return conn.createStatement().executeUpdate(sql);
+} catch (SQLException e) {
+    log.error("DB failed", e);
+    throw e;
+} finally {
+    if (conn != null) conn.close();    // ALWAYS runs
+}</code></pre>
+          <p>Since Java 7, <strong>try-with-resources</strong> handles this more cleanly — any resource implementing <code>AutoCloseable</code> is closed automatically:</p>
+          <pre><code>try (Connection conn = dataSource.getConnection();
+     PreparedStatement ps = conn.prepareStatement(sql)) {
+    return ps.executeUpdate();
+}   // conn and ps closed automatically, in reverse order</code></pre>
+          <p><b>Gotcha:</b> <code>return</code> in a <code>finally</code> block <em>overrides</em> a return from try — and exceptions get swallowed. Never put control-flow statements inside <code>finally</code>.</p>
+
+          <h4 style="margin-top:18px"><code>finalize()</code> — the deprecated GC callback</h4>
+          <p>A method on <code>Object</code> that the JVM <em>used to</em> call before garbage-collecting an object. The idea was: "last chance to clean up native resources".</p>
+          <pre><code>@Override
+protected void finalize() throws Throwable {
+    closeNativeHandle();   // historically: release C/C++ resource
+}</code></pre>
+          <p><b>Why it was abandoned:</b></p>
+          <ul>
+            <li><strong>Unpredictable timing</strong> — GC decides if and when. Could be called minutes later, or never.</li>
+            <li><strong>Performance penalty</strong> — finalizable objects survive at least one extra GC cycle.</li>
+            <li><strong>Object resurrection</strong> — code in <code>finalize()</code> could store <code>this</code> in a static field, making the object "un-dead" and breaking GC invariants.</li>
+            <li><strong>Exceptions silently swallowed</strong> — any throw inside <code>finalize()</code> is ignored.</li>
+          </ul>
+          <p><b>Status:</b> <em>Deprecated for removal in Java 9</em>, <strong>removed entirely in Java 18</strong>. Modern replacements:</p>
+          <ul>
+            <li><strong>try-with-resources / <code>AutoCloseable</code></strong> — the right answer 99% of the time.</li>
+            <li><strong><code>java.lang.ref.Cleaner</code></strong> (Java 9+) — for the rare native-resource case, with deterministic background cleanup.</li>
+          </ul>
+
+          <p><b>A trap interviewers love:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Statement</th><th>True / False</th><th>Why</th></tr></thead>
+              <tbody>
+                <tr><td><code>final</code> prevents inheritance.</td><td>Partial</td><td>True for <em>classes</em>; on a <em>method</em>, it prevents <strong>overriding</strong>, not inheritance.</td></tr>
+                <tr><td><code>finally</code> always runs.</td><td>Almost true</td><td>Doesn't run only if JVM exits (<code>System.exit</code>) or the thread is killed.</td></tr>
+                <tr><td><code>finalize()</code> guarantees cleanup.</td><td>False</td><td>JVM may never call it. Don't rely on it for resource cleanup.</td></tr>
+                <tr><td><code>final</code> makes an object immutable.</td><td>False</td><td>It only prevents the <em>reference</em> from changing; the object itself can still be mutated.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="takeaway">
+            <b>Interview one-liner:</b> <code>final</code> is a <strong>keyword</strong> that restricts modification — a <code>final</code> variable can't be reassigned, a <code>final</code> method can't be overridden, a <code>final</code> class can't be extended. <code>finally</code> is a <strong>block</strong> used with <code>try/catch</code> that always executes — for releasing resources like DB connections and files. <code>finalize()</code> is a <strong>method</strong> on <code>Object</code> that the GC used to call before reclaiming memory — it's been <em>deprecated since Java 9 and removed in Java 18</em>; use try-with-resources or <code>Cleaner</code> instead.
+          </p>
         </div>
       </details>
 
@@ -1716,6 +2071,99 @@ class Dog extends Animal {
           <div class="takeaway">
             <b>Takeaway:</b> overloading is a <strong>convenience</strong> for the API author; overriding is what makes <strong>polymorphism</strong> work — the foundation of interfaces, abstract classes, and most framework hooks like Spring's <code>@Transactional</code> proxies.
           </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Can we override the main() method in Java? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">Classic trick interview question. The short answer is <strong>no — you cannot override <code>main()</code></strong>, because it's <code>static</code> and static methods are never overridden in Java. But you <em>can</em> <strong>overload</strong> it — the JVM just won't call your overloaded version when the program starts.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> The two-sentence answer</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Override main()?</span>
+              <span class="core-diff-val"><strong>No.</strong> <code>main()</code> is <code>static</code> — and static methods belong to the <em>class</em>, not the instance, so polymorphic overriding doesn't apply.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Overload main()?</span>
+              <span class="core-diff-val"><strong>Yes.</strong> You can write many <code>main()</code> methods with different parameter lists — but the JVM only ever calls <code>public static void main(String[] args)</code>.</span>
+            </div>
+          </div>
+
+          <p><b>Why static methods can't be overridden — the underlying rule:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Aspect</th><th>Instance methods</th><th>Static methods</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Bound to</strong></td><td>The object instance</td><td>The class itself</td></tr>
+                <tr><td><strong>Resolved at</strong></td><td>Runtime (<em>dynamic dispatch</em>)</td><td>Compile time (<em>static binding</em>)</td></tr>
+                <tr><td><strong>Same signature in subclass</strong></td><td>Override — replaces the parent's behaviour</td><td><strong>Hides</strong> the parent's method, doesn't override it</td></tr>
+                <tr><td><strong>Polymorphism</strong></td><td>Yes — virtual call via the runtime type</td><td>No — call is fixed by the reference type</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>What looks like "overriding" a static method is actually <strong>method hiding</strong>. The compiler resolves the call based on the <em>declared</em> reference type, not the runtime object — so polymorphism doesn't kick in.</p>
+
+          <p><b>Overloading <code>main()</code> — perfectly legal:</b></p>
+          <pre><code>public class Test {
+
+    // The one the JVM actually calls
+    public static void main(String[] args) {
+        System.out.println("Original main");
+        main(42);              // call the overload manually
+        main(3.14);
+    }
+
+    // Overloads — same name, different parameters
+    public static void main(int x) {
+        System.out.println("Overloaded main with int: " + x);
+    }
+
+    public static void main(double d) {
+        System.out.println("Overloaded main with double: " + d);
+    }
+}
+
+// Output:
+//   Original main
+//   Overloaded main with int: 42
+//   Overloaded main with double: 3.14</code></pre>
+          <p>Only <code>public static void main(String[] args)</code> is the JVM entry point. Other overloads are just normal static methods that happen to share the name; you have to call them yourself.</p>
+
+          <p><b>Method hiding demo — what people <em>think</em> is overriding:</b></p>
+          <pre><code>class Parent {
+    public static void hello() { System.out.println("Parent.hello"); }
+}
+
+class Child extends Parent {
+    public static void hello() { System.out.println("Child.hello"); }   // HIDES, doesn't override
+}
+
+Parent p = new Child();
+p.hello();        // → "Parent.hello"   ← resolved by REFERENCE type at compile time
+Child.hello();    // → "Child.hello"
+Parent.hello();   // → "Parent.hello"</code></pre>
+          <p>If <code>hello()</code> were <em>non-static</em>, <code>p.hello()</code> would print <code>"Child.hello"</code> (true overriding). Static = compile-time binding = hiding, not overriding.</p>
+
+          <p><b>What you can do with main() — a quick reference:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Action</th><th>Allowed?</th><th>Why</th></tr></thead>
+              <tbody>
+                <tr><td>Override <code>main</code> in a subclass</td><td><strong>No</strong></td><td>It's static — only hiding is possible.</td></tr>
+                <tr><td>Overload <code>main</code> (different params)</td><td><strong>Yes</strong></td><td>Just a normal static method; JVM ignores the extras.</td></tr>
+                <tr><td>Multiple <code>main</code> in different classes</td><td><strong>Yes</strong></td><td>Each class can have its own entry point.</td></tr>
+                <tr><td>Make <code>main</code> non-static</td><td><strong>No</strong></td><td>JVM won't recognise it as the entry point — won't start.</td></tr>
+                <tr><td>Make <code>main</code> non-public / non-void</td><td><strong>No</strong></td><td>Exact signature <code>public static void main(String[])</code> is required.</td></tr>
+                <tr><td>Use <code>String... args</code> instead of <code>String[]</code></td><td><strong>Yes</strong></td><td>Varargs is just compile-time sugar for an array — same signature.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="takeaway">
+            <b>Interview one-liner:</b> <strong>No, we cannot override the <code>main()</code> method</strong> in Java because it is <code>static</code>, and static methods are bound at compile time to the class — they can be <em>hidden</em> in a subclass but never <em>overridden</em>. We <em>can</em> overload <code>main()</code> by changing its parameters, but the JVM only ever calls the standard <code>public static void main(String[] args)</code> as the program's entry point.
+          </p>
         </div>
       </details>
 
@@ -1913,6 +2361,88 @@ class Dog extends Animal {
       </details>
 
       <details class="qa">
+        <summary>throw vs throws — actual exception vs declaration <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">A classic one-word-difference Java interview question. <strong><code>throw</code></strong> and <strong><code>throws</code></strong> are both about exceptions, but they do completely different things — one <em>raises</em> an exception at runtime, the other <em>declares</em> at compile time that a method might raise one.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key"><code>throw</code></span>
+              <span class="core-diff-val"><strong>Statement</strong> used <em>inside</em> a method to actually throw an exception <strong>object</strong>. Runtime action.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key"><code>throws</code></span>
+              <span class="core-diff-val"><strong>Keyword</strong> used in a method <em>signature</em> to <strong>declare</strong> that this method may throw certain checked exception <strong>classes</strong>. Compile-time contract.</span>
+            </div>
+          </div>
+
+          <p><b>Side-by-side comparison:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead>
+                <tr><th>Aspect</th><th><code>throw</code></th><th><code>throws</code></th></tr>
+              </thead>
+              <tbody>
+                <tr><td><strong>Purpose</strong></td><td>Actually <em>raises</em> an exception</td><td><em>Declares</em> what exceptions can be raised</td></tr>
+                <tr><td><strong>Where</strong></td><td>Inside a method / block body</td><td>In the method signature</td></tr>
+                <tr><td><strong>Followed by</strong></td><td>An exception <strong>object</strong> (<code>new RuntimeException(...)</code>)</td><td>An exception <strong>class</strong> name (or several, comma-separated)</td></tr>
+                <tr><td><strong>How many at a time</strong></td><td>One exception per <code>throw</code> statement</td><td>Multiple classes allowed in one declaration</td></tr>
+                <tr><td><strong>When evaluated</strong></td><td>Runtime — at the moment the statement executes</td><td>Compile time — the compiler verifies the contract</td></tr>
+                <tr><td><strong>Mandatory for</strong></td><td>Any time you want to raise an exception manually</td><td>Only <em>checked</em> exceptions (unchecked are optional)</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b><code>throw</code> — explicit exception raising:</b></p>
+          <pre><code>public void withdraw(BigDecimal amount) {
+    if (amount.signum() &lt;= 0) {
+        throw new IllegalArgumentException("Amount must be positive");
+    }
+    if (amount.compareTo(balance) &gt; 0) {
+        throw new InsufficientBalanceException("Balance too low");
+    }
+    balance = balance.subtract(amount);
+}</code></pre>
+          <p>Use it when a business rule is violated or invalid input is detected. The single <code>throw</code> statement creates an exception object and unwinds the stack until something catches it.</p>
+
+          <p><b><code>throws</code> — declaring what a method can throw:</b></p>
+          <pre><code>public String readFile(String path) throws IOException {
+    return Files.readString(Path.of(path));   // IOException is checked
+}
+
+// Multiple checked exceptions, comma-separated
+public void process() throws IOException, SQLException, ParseException {
+    // ...
+}</code></pre>
+          <p>The compiler forces this: if you call a method that throws a <strong>checked</strong> exception, you must either <em>catch it</em> or <em>declare it</em> with <code>throws</code> in your own signature. This is the "checked exception contract".</p>
+
+          <p><b>The two together — typical pattern:</b></p>
+          <pre><code>public User findUser(Long id) throws UserNotFoundException {    // declares
+    User u = repository.find(id);
+    if (u == null) {
+        throw new UserNotFoundException("User " + id);          // throws
+    }
+    return u;
+}</code></pre>
+          <p>If <code>UserNotFoundException extends RuntimeException</code>, the <code>throws</code> declaration is <em>optional</em> — the compiler doesn't require it for unchecked exceptions, though some teams still declare it for documentation.</p>
+
+          <p><b>Common interview gotchas:</b></p>
+          <ul>
+            <li><strong>Unchecked exceptions never <em>need</em> <code>throws</code></strong> — <code>RuntimeException</code> subclasses can be thrown freely without declaring.</li>
+            <li><strong>You can throw any <code>Throwable</code></strong> — including <code>Error</code> — but that's almost always wrong.</li>
+            <li><strong><code>throws</code> doesn't mean "this method <em>will</em> throw"</strong> — only that it <em>might</em>.</li>
+            <li><strong>Overridden methods can't widen the <code>throws</code> clause</strong> — a subclass override may declare fewer (or narrower) checked exceptions, never more.</li>
+            <li><strong>Lambdas and streams hate checked exceptions</strong> — that's why most modern code prefers unchecked. Use <code>UncheckedIOException</code> or your own runtime exception types.</li>
+          </ul>
+
+          <p class="takeaway">
+            <b>Interview one-liner:</b> <strong><code>throw</code></strong> is a statement used <em>inside</em> a method to actually <em>raise</em> an exception object (<code>throw new RuntimeException("...")</code>). <strong><code>throws</code></strong> is a keyword used in the method <em>signature</em> to <em>declare</em> the checked exception types a method might raise (<code>void read() throws IOException</code>). One <em>throws</em> at runtime, the other is a <em>compile-time contract</em>; <code>throw</code> is followed by an exception <em>object</em>, <code>throws</code> by exception <em>class names</em>; one exception per <code>throw</code>, but many can be declared with <code>throws</code>.
+          </p>
+        </div>
+      </details>
+
+      <details class="qa">
         <summary>== vs equals() — and the Integer cache trap</summary>
         <div class="qa-body">
           <p class="answer-intro">Two of the most misunderstood operators in Java. Using the wrong one is a classic source of silent bugs.</p>
@@ -1983,6 +2513,75 @@ a.equals(c);        // true</code></pre>
       <div class="section-divider">Java 8+ Features</div>
 
       <details class="qa">
+        <summary>Java 8 features — what changed and why it matters <span class="qa-tag hot">hot</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">Java 8 (released 2014) was the most impactful release in Java's history. It brought <strong>functional programming</strong> into the language and changed how everyday code is written — from <code>for</code> loops to streams, from null checks to <code>Optional</code>, from clunky <code>Date</code> to <code>java.time</code>.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Treat functions as first-class values. Replace <em>"how to do it"</em> loops with <em>"what to do"</em> declarative pipelines. Write code that is <strong>shorter, safer, and easier to reason about</strong>.</span>
+            </div>
+          </div>
+
+          <p><b>The major features at a glance:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead>
+                <tr><th>Feature</th><th>What it gives you</th><th>One-line example</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><strong>Lambda Expressions</strong></td><td>Pass behaviour as a value — no anonymous-inner-class boilerplate.</td><td><code>(a, b) -&gt; a + b</code></td></tr>
+                <tr><td><strong>Functional Interfaces</strong></td><td>Single-Abstract-Method types that lambdas plug into.</td><td><code>Function</code>, <code>Predicate</code>, <code>Consumer</code>, <code>Supplier</code></td></tr>
+                <tr><td><strong>Stream API</strong></td><td>Declarative pipelines over collections — filter / map / reduce.</td><td><code>list.stream().filter(...).map(...).toList()</code></td></tr>
+                <tr><td><strong>Method References</strong></td><td>Even shorter lambdas when calling an existing method.</td><td><code>String::length</code></td></tr>
+                <tr><td><strong><code>Optional&lt;T&gt;</code></strong></td><td>Explicit "value may be absent" type — kills <code>NullPointerException</code>.</td><td><code>findById(id).orElseThrow(...)</code></td></tr>
+                <tr><td><strong>Default &amp; Static methods</strong></td><td>Add methods to interfaces without breaking existing implementors.</td><td><code>default boolean isEmpty() { ... }</code></td></tr>
+                <tr><td><strong>New Date-Time API</strong></td><td>Immutable, thread-safe, timezone-aware types — replaces <code>Date</code>/<code>Calendar</code>.</td><td><code>LocalDate</code>, <code>Instant</code>, <code>ZonedDateTime</code></td></tr>
+                <tr><td><strong>CompletableFuture</strong></td><td>Composable async — chain, combine, handle errors.</td><td><code>supplyAsync(...).thenApply(...)</code></td></tr>
+                <tr><td><strong>Nashorn / PermGen → Metaspace</strong></td><td>JS engine added (later removed); class metadata moved out of heap into native memory.</td><td>—</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>The headline: functional programming in Java.</b> Lambdas + Streams together replaced thousands of lines of imperative loop-and-collect code with concise pipelines:</p>
+
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">BEFORE JAVA 8 (Imperative)</div>
+              <pre><code>List&lt;String&gt; active = new ArrayList&lt;&gt;();
+for (User u : users) {
+    if (u.isActive()) {
+        active.add(u.getEmail());
+    }
+}
+Collections.sort(active);</code></pre>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">JAVA 8+ (Declarative)</div>
+              <pre><code>List&lt;String&gt; active = users.stream()
+    .filter(User::isActive)
+    .map(User::getEmail)
+    .sorted()
+    .toList();</code></pre>
+            </div>
+          </div>
+
+          <p><b>Other quick wins worth remembering:</b></p>
+          <ul>
+            <li><strong>Optional</strong> made absent values explicit — methods that <em>might not</em> return something now say so in their signature instead of returning <code>null</code> and crashing callers.</li>
+            <li><strong>Default methods</strong> let library authors extend interfaces (e.g., <code>Collection.stream()</code>, <code>List.sort()</code>) without breaking every class that already implemented them.</li>
+            <li><strong>java.time</strong> finally gave Java a sane date/time API — immutable, thread-safe, and zone-aware. Storing <code>Instant</code> in UTC and converting at the edge eliminates a huge class of bugs.</li>
+            <li><strong>CompletableFuture</strong> replaced the limited <code>Future</code> with a real composition model for async work.</li>
+          </ul>
+
+          <p class="takeaway">
+            <b>In one line:</b> Java 8 introduced <strong>Lambdas, Stream API, Functional Interfaces, Method References, Optional, default/static methods in interfaces, the new Date-Time API, and CompletableFuture</strong>. The biggest shift was bringing functional programming into the language — code became <em>cleaner, more concise, and more maintainable</em>, and most modern Java idioms (streams, <code>Optional</code> return types, immutable data, async composition) trace back to this single release.
+          </p>
+        </div>
+      </details>
+
+      <details class="qa">
         <summary>Stream API — explain with an example <span class="qa-tag hot">hot</span></summary>
         <div class="qa-body">
           <p>The Stream API (Java 8) provides a functional pipeline for processing collections: <strong>source → intermediate operations → terminal operation</strong>. Intermediate ops (<code>filter</code>, <code>map</code>, <code>sorted</code>) are <strong>lazy</strong> — they're only executed when a terminal op (<code>collect</code>, <code>count</code>, <code>forEach</code>) runs.</p>
@@ -2001,6 +2600,109 @@ a.equals(c);        // true</code></pre>
           <p><strong><code>Optional&lt;T&gt;</code></strong> represents a value that may or may not be present. It's a container designed for <strong>return types</strong> — to make the absence of a value explicit instead of returning null and crashing downstream.</p>
           <p>Good usage: <code>Optional&lt;User&gt; findById(Long id)</code>. Callers can compose: <code>findById(id).map(User::getEmail).orElse("unknown")</code> or <code>.orElseThrow(() -&gt; new NotFoundException())</code>.</p>
           <p>Bad usage: <strong>don't use Optional as a field, parameter, or in collections.</strong> Don't call <code>get()</code> without first checking <code>isPresent()</code> — that's just <code>null</code> with extra steps. Don't return <code>Optional</code> for collections — return an empty list. Treat it as a return-type-only signaling device.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Handling NullPointerException using Java 8 (Optional) <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro"><code>NullPointerException</code> is the most common bug in Java. Java 8 didn't <em>eliminate</em> it, but it gave us <strong><code>Optional&lt;T&gt;</code></strong> — a container that <em>explicitly</em> represents "value may or may not be present", so the compiler and the caller are forced to think about absence instead of crashing on it.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Instead of returning <code>null</code> and trusting every caller to check for it, return <code>Optional&lt;T&gt;</code>. The type signature itself says <em>"this might be empty"</em>, and chaining methods (<code>map</code>, <code>orElse</code>, <code>ifPresent</code>) lets you handle absence safely <strong>without writing nested <code>if (x != null)</code> checks</strong>.</span>
+            </div>
+          </div>
+
+          <p><b>The before-and-after that interviewers love:</b></p>
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">BEFORE — Defensive null checks</div>
+              <pre><code>User u = findUserById(id);
+if (u != null) {
+    Address a = u.getAddress();
+    if (a != null) {
+        City c = a.getCity();
+        if (c != null) {
+            return c.getName();
+        }
+    }
+}
+return "Unknown";</code></pre>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">AFTER — Optional chain</div>
+              <pre><code>return Optional.ofNullable(findUserById(id))
+    .map(User::getAddress)
+    .map(Address::getCity)
+    .map(City::getName)
+    .orElse("Unknown");</code></pre>
+            </div>
+          </div>
+
+          <p><b>The Optional methods you actually use day-to-day:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead>
+                <tr><th>Method</th><th>What it does</th><th>When to use</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>Optional.of(x)</code></td><td>Wraps a value; <strong>throws NPE if x is null</strong>.</td><td>When you're certain the value is non-null.</td></tr>
+                <tr><td><code>Optional.ofNullable(x)</code></td><td>Wraps a value; gives <code>Optional.empty()</code> if null.</td><td>Most common — wrapping legacy code that may return null.</td></tr>
+                <tr><td><code>Optional.empty()</code></td><td>An explicitly empty Optional.</td><td>Returning "not found" from a finder method.</td></tr>
+                <tr><td><code>map(fn)</code></td><td>Transforms the value if present; stays empty otherwise.</td><td>Chaining field accesses safely.</td></tr>
+                <tr><td><code>flatMap(fn)</code></td><td>Like <code>map</code> but for functions that already return <code>Optional</code>.</td><td>Avoids nested <code>Optional&lt;Optional&lt;T&gt;&gt;</code>.</td></tr>
+                <tr><td><code>filter(predicate)</code></td><td>Keeps value if predicate true, else empty.</td><td>Conditional access — e.g., only active users.</td></tr>
+                <tr><td><code>orElse(default)</code></td><td>Returns the value or a default.</td><td>Default is cheap (a constant).</td></tr>
+                <tr><td><code>orElseGet(supplier)</code></td><td>Returns the value or computes a default lazily.</td><td>Default is expensive (DB / network call).</td></tr>
+                <tr><td><code>orElseThrow(...)</code></td><td>Returns the value or throws a custom exception.</td><td>"Not found" should be an error (404).</td></tr>
+                <tr><td><code>ifPresent(consumer)</code></td><td>Runs the consumer if value is present; does nothing if empty.</td><td>Side effects — log, publish event.</td></tr>
+                <tr><td><code>isPresent()</code> / <code>isEmpty()</code></td><td>Boolean checks.</td><td><em>Rarely</em> — prefer functional methods above.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>One realistic Spring Boot example:</b></p>
+          <pre><code>// Service
+public Optional&lt;User&gt; findById(Long id) {
+    return userRepository.findById(id);   // already returns Optional
+}
+
+// Controller
+@GetMapping("/users/{id}")
+public UserDto getUser(@PathVariable Long id) {
+    return userService.findById(id)
+        .map(UserDto::from)
+        .orElseThrow(() -&gt; new ResourceNotFoundException("User " + id));
+}</code></pre>
+
+          <p><b>orElse vs orElseGet — small but classic interview gotcha:</b></p>
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title"><code>orElse(default)</code></div>
+              <p>The default is <strong>always evaluated</strong>, even when the value is present. Fine for constants.</p>
+              <pre><code>opt.orElse("UNKNOWN")           // OK
+opt.orElse(slowDbCall())        // bad — runs even if opt has value</code></pre>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title"><code>orElseGet(supplier)</code></div>
+              <p>The supplier runs <strong>only if the Optional is empty</strong>. Use it for any expensive default.</p>
+              <pre><code>opt.orElseGet(this::slowDbCall) // only called when empty</code></pre>
+            </div>
+          </div>
+
+          <p><b>Common mistakes (don't do these in interview code):</b></p>
+          <ul>
+            <li><strong>Calling <code>get()</code> without checking</strong> — that's just <code>null</code> with extra steps, and throws <code>NoSuchElementException</code>.</li>
+            <li><strong>Using Optional as a field or method parameter</strong> — it was designed for return types only. Use plain <code>null</code> or overloads for parameters.</li>
+            <li><strong>Returning <code>Optional&lt;List&lt;T&gt;&gt;</code></strong> — return an empty list instead. "Optional of collection" doesn't add value.</li>
+            <li><strong>Wrapping just to do <code>if (opt.isPresent()) opt.get()...</code></strong> — that's the same null check, prettier. Use <code>map</code> / <code>ifPresent</code>.</li>
+          </ul>
+
+          <p class="takeaway">
+            <b>In one line:</b> Java 8's <strong><code>Optional&lt;T&gt;</code></strong> makes the absence of a value <em>explicit at the type level</em>. Using <code>ofNullable</code>, <code>map</code>, <code>orElse</code>, <code>orElseGet</code>, <code>orElseThrow</code>, and <code>ifPresent</code>, we replace defensive null checks with a clean functional chain — fewer bugs, better readability, and most <code>NullPointerException</code>s caught at compile-time intent rather than at 3 AM in production. <em>Use Optional as a return type, never call <code>get()</code> blindly, and prefer <code>orElseGet</code> when the fallback is expensive.</em>
+          </p>
         </div>
       </details>
 

@@ -78,25 +78,234 @@
       </details>
 
       <details class="qa">
-        <summary>Diagnosing a memory leak in production <span class="qa-tag hot">hot</span></summary>
+        <summary>Debugging a Memory Leak in Spring Boot Production — full playbook <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p>Symptom: memory grows over time, full GCs run frequently, eventually OOM.</p>
-          <p>My playbook:</p>
-          <ol>
-            <li><strong>Confirm it's a leak</strong> with <code>jstat -gc &lt;pid&gt;</code> — Old Gen keeps growing across full GCs. (If it shrinks after full GC, it's churn, not a leak.)</li>
-            <li><strong>Capture a heap dump</strong> — <code>jmap -dump:live</code> or set <code>-XX:+HeapDumpOnOutOfMemoryError</code> + <code>-XX:HeapDumpPath</code> so we get one automatically.</li>
-            <li><strong>Open in Eclipse MAT</strong> — Leak Suspects report names the dominant objects.</li>
-            <li><strong>Look at dominator tree</strong> — which object holds the most retained heap?</li>
-          </ol>
-          <p>Common culprits: unbounded static caches, ThreadLocals not removed in pool threads, listener registrations not cleaned up, log appenders buffering forever.</p>
-          <p>At Indus Net I traced one to a Spring filter that put a large session object into a ThreadLocal but never called <code>.remove()</code> on the way out — fix was one line. Memory leveled off after deploy.</p>
+          <p class="answer-intro">A production memory leak is a senior-engineer test. The first instinct — <em>restart the pod</em> — is the wrong one: a restart <strong>destroys the evidence</strong>, the leak comes back tomorrow, and you've learned nothing. The right approach is to <strong>collect evidence first, diagnose with data, then fix</strong>.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val"><strong>Don't restart blindly.</strong> Confirm it <em>is</em> a leak (memory doesn't recover after full GC), grab a <strong>heap dump</strong>, analyse it in Eclipse MAT / VisualVM, and chase the <strong>dominator tree</strong> to the object that's holding everything else alive. Then fix the root cause — usually an unbounded cache, an uncleared <code>ThreadLocal</code>, or a static collection.</span>
+            </div>
+          </div>
+
+          <p><b>The 7-step playbook:</b></p>
+          <div class="flow">
+            <div class="flow-step">1. <strong>Check symptoms</strong> — confirm heap grows over time, GC frequency rises, latency climbs, eventually OOM</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">2. <strong>Capture heap dump</strong> — before any restart (jmap / jcmd / actuator)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">3. <strong>Read GC logs</strong> — does memory recover after full GC, or stay high?</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">4. <strong>Identify suspects</strong> in the heap dump — dominator tree, largest retained sets</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">5. <strong>Check caching layer</strong> — most common culprit in microservices</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">6. <strong>Compare two heap dumps</strong> — which class is growing?</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">7. <strong>Reproduce in staging</strong> with load → ship the fix safely</div>
+          </div>
+
+          <p><b>Step 1 — Check the symptoms (don't act on hunches):</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>What to verify</th><th>Where to look</th></tr></thead>
+              <tbody>
+                <tr><td>Heap usage trending up over hours / days</td><td>Actuator <code>/actuator/metrics/jvm.memory.used</code>, Grafana / CloudWatch dashboards</td></tr>
+                <tr><td>GC frequency increasing, GC pause times rising</td><td>GC logs (<code>-Xlog:gc*</code>), Micrometer JVM metrics</td></tr>
+                <tr><td>Response time / p99 latency creeping up</td><td>RED dashboards, APM (Datadog, New Relic, Dynatrace)</td></tr>
+                <tr><td>OOM errors in logs</td><td><code>java.lang.OutOfMemoryError: Java heap space</code> in app / container logs</td></tr>
+                <tr><td>Pod restarts spiking</td><td>K8s <code>kubectl get pods</code> — restart count climbing</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Step 2 — Capture a heap dump (the evidence):</b></p>
+          <pre><code># Find the JVM PID
+jps -l                                        # or: ps -ef | grep java
+
+# Option A — jmap (live objects only)
+jmap -dump:live,format=b,file=/tmp/heap.hprof &lt;pid&gt;
+
+# Option B — jcmd (preferred, no agent attach)
+jcmd &lt;pid&gt; GC.heap_dump /tmp/heap.hprof
+
+# Option C — Spring Boot Actuator
+curl http://localhost:8080/actuator/heapdump --output heap.hprof
+
+# Option D — auto-capture on OOM (set as JVM args)
+-XX:+HeapDumpOnOutOfMemoryError
+-XX:HeapDumpPath=/var/log/app/oom-%t.hprof</code></pre>
+          <p>Heap dumps are <strong>large</strong> (≈ heap size — often GBs) and briefly pause the JVM. Take one <em>before</em> the OOM if possible. In Kubernetes, also make sure the dump path is on a <em>persistent volume</em> — otherwise the pod restart wipes it.</p>
+
+          <p><b>Analyse it with the right tool:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Tool</th><th>Why use it</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Eclipse MAT</strong></td><td>The standard. <em>Leak Suspects</em> report often names the culprit on the first screen. Dominator tree, retained heap, histogram, OQL queries.</td></tr>
+                <tr><td><strong>VisualVM</strong></td><td>Free, bundled with the JDK historically. Lighter UI; good for live profiling + heap dump browsing.</td></tr>
+                <tr><td><strong>JProfiler / YourKit</strong></td><td>Commercial; superior UX for live profiling, allocation tracking, and CPU sampling.</td></tr>
+                <tr><td><strong>async-profiler</strong></td><td>Low-overhead live sampling — great for catching the <em>allocation site</em> of leaked objects.</td></tr>
+                <tr><td><strong>JFR (Java Flight Recorder)</strong></td><td>Always-on, low-overhead, ships with the JVM. Use <code>jcmd &lt;pid&gt; JFR.start</code>.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>What to look for in the dump:</b></p>
+          <ul>
+            <li><strong>Histogram</strong> — top classes by instance count and retained size. Anything in the hundreds of thousands that shouldn't be? Anything labelled <code>byte[]</code> / <code>char[]</code> with GBs?</li>
+            <li><strong>Dominator tree</strong> — the object that "owns" the most retained memory. Follow the chain up — usually leads to a static field or long-lived bean.</li>
+            <li><strong>GC roots</strong> — what's keeping the suspect alive? "Path to GC root excluding weak references" in MAT tells you exactly who's holding the reference.</li>
+            <li><strong>Collections growing continuously</strong> — a <code>HashMap</code> with 5M entries in a "cache" with no TTL is the classic.</li>
+            <li><strong>Class loaders</strong> — multiple instances of the same class loaded → classloader leak (common in old hot-reload setups).</li>
+          </ul>
+
+          <p><b>Step 3 — Check GC logs (is it really a leak?):</b></p>
+          <pre><code># Enable GC logging (production-safe, low overhead)
+-Xlog:gc*,gc+age=trace,safepoint:file=/var/log/app/gc.log:time,uptime,level,tags:filecount=10,filesize=20M
+
+# Quick live check
+jstat -gc &lt;pid&gt; 1000 10   # 10 samples, 1 second apart</code></pre>
+          <p>The key signal:</p>
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">Memory churn (NOT a leak)</div>
+              <ul>
+                <li>Old Gen <strong>shrinks</strong> after every full GC.</li>
+                <li>High allocation rate, but heap reclaims fine.</li>
+                <li>Fix: reduce allocations, tune GC, increase heap.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">True leak</div>
+              <ul>
+                <li>Old Gen <strong>stays high</strong> after full GC.</li>
+                <li>GC pause times keep growing.</li>
+                <li>Eventual <code>OutOfMemoryError</code>.</li>
+                <li>Fix: find &amp; remove the reference chain.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p><b>Step 4 — Common Spring Boot leak causes (the suspect list):</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Cause</th><th>Why it leaks</th><th>How to fix</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Unbounded cache</strong></td><td>Local cache (Caffeine / EhCache / a <code>HashMap</code>) with no size limit / TTL.</td><td>Set <code>maximumSize</code> + <code>expireAfterWrite</code>; move to Redis if shared.</td></tr>
+                <tr><td><strong>Static collection</strong></td><td><code>static List/Map</code> filled per request — held forever.</td><td>Remove static state; scope to bean / method.</td></tr>
+                <tr><td><strong>ThreadLocal not cleared</strong></td><td>Thread pools reuse threads → ThreadLocal entries pile up.</td><td><code>tl.remove()</code> in <code>finally</code> block, or use a filter that always cleans up.</td></tr>
+                <tr><td><strong>Large session data</strong></td><td>Putting heavy objects (PDFs, search results) in <code>HttpSession</code>.</td><td>Store minimal IDs in session; fetch the rest on demand.</td></tr>
+                <tr><td><strong>ExecutorService not shut down</strong></td><td>Each call creates a new pool; threads + queued tasks pile up.</td><td>Use Spring-managed <code>TaskExecutor</code>; call <code>shutdown()</code> in <code>@PreDestroy</code>.</td></tr>
+                <tr><td><strong>Open DB / file / HTTP connections</strong></td><td>Leaked <code>Connection</code> / <code>InputStream</code> — backing buffers retained.</td><td>Try-with-resources, connection pool monitoring (HikariCP metrics).</td></tr>
+                <tr><td><strong>Listener / observer not deregistered</strong></td><td>Event listeners that hold strong refs to their target.</td><td>Deregister on bean destroy; use <code>WeakReference</code> where appropriate.</td></tr>
+                <tr><td><strong>Log appenders buffering forever</strong></td><td>Async appender with unbounded queue and slow consumer.</td><td>Bounded queue + <code>discardingThreshold</code>; track <code>logback.events</code>.</td></tr>
+                <tr><td><strong>Class loader leak</strong></td><td>Hot reloads / repeated redeployments retain old class loaders.</td><td>Restart the JVM on deploy (the Spring Boot way); avoid in-place reload.</td></tr>
+                <tr><td><strong>Custom <code>ApplicationContext</code> never closed</strong></td><td>Tests / scripts that create child contexts.</td><td>Always <code>context.close()</code> when done; use try-with-resources.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Step 5 — Check the caching layer (top culprit in microservices):</b></p>
+          <ul>
+            <li><strong>Local cache without TTL</strong> — every unique key adds memory, never released.</li>
+            <li><strong>Too many unique keys</strong> — caching per-request data (per-user query, per-session token) explodes cache size.</li>
+            <li><strong>Large cached objects</strong> — full entity graphs with lazy collections, serialized as deep trees.</li>
+            <li><strong>Cache per pod</strong> — local cache duplicates across instances; moving to Redis frees pod memory.</li>
+          </ul>
+          <p>If using Spring Cache + Caffeine, monitor <code>cache.size</code>, <code>cache.gets</code> hit/miss ratio, and <code>cache.evictions</code> via Micrometer. A cache that never evicts is a leak.</p>
+
+          <p><b>Step 6 — Compare two heap dumps (the diff is gold):</b></p>
+          <pre><code># Snapshot 1 — early in the leak
+jcmd &lt;pid&gt; GC.heap_dump /tmp/heap-t1.hprof
+
+# Run typical traffic for 30+ minutes...
+
+# Snapshot 2 — when memory is high
+jcmd &lt;pid&gt; GC.heap_dump /tmp/heap-t2.hprof
+
+# In Eclipse MAT:
+#   File → Open both → Compare Histograms
+#   Sort by "shallow heap delta" → leaked class is at the top</code></pre>
+          <p>The class count that grew the most between dumps points directly at the source. One real example: <code>byte[]</code> grew by 1.8 GB → traced to a Logback async appender with an unbounded buffer.</p>
+
+          <p><b>Step 7 — Reproduce safely &amp; fix:</b></p>
+          <ul>
+            <li><strong>Reproduce in staging</strong> with JMeter / Gatling / k6 hitting the suspect endpoint at production-like volume.</li>
+            <li><strong>Verify the fix locally</strong> by re-running the same load test; heap should plateau, not climb.</li>
+            <li><strong>Ship behind a feature flag</strong> if the fix is invasive.</li>
+            <li><strong>Watch the same dashboards</strong> for 24-48 hours post-deploy.</li>
+          </ul>
+
+          <p><b>Fix cheat-sheet:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Cause</th><th>Fix</th></tr></thead>
+              <tbody>
+                <tr><td>Unbounded cache</td><td>Add <code>maximumSize</code> + <code>expireAfterWrite</code> (Caffeine), or TTL (Redis).</td></tr>
+                <tr><td>Static collection</td><td>Remove static state — make it bean-scoped or method-local.</td></tr>
+                <tr><td>ThreadLocal not cleared</td><td><code>tl.remove()</code> in <code>finally</code>; or use a servlet filter / interceptor.</td></tr>
+                <tr><td>Large session data</td><td>Store IDs only; fetch real objects from DB / cache on demand.</td></tr>
+                <tr><td>Resource leak</td><td>Try-with-resources; HikariCP <code>leakDetectionThreshold</code>.</td></tr>
+                <tr><td>Executor leak</td><td>Shutdown in <code>@PreDestroy</code>; use Spring-managed <code>ThreadPoolTaskExecutor</code>.</td></tr>
+                <tr><td>Log appender buffer</td><td>Bounded queue (<code>queueSize</code>) + <code>discardingThreshold</code> in Logback async appender.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Concrete real-world example — the ThreadLocal trap:</b></p>
+          <pre><code>// BAD — fills up over time on Tomcat's worker thread pool
+public class TenantContextFilter extends OncePerRequestFilter {
+    private static final ThreadLocal&lt;Tenant&gt; CURRENT = new ThreadLocal&lt;&gt;();
+
+    @Override
+    protected void doFilterInternal(req, res, chain) {
+        CURRENT.set(loadTenantFor(req));
+        chain.doFilter(req, res);              // ← if this throws, CURRENT stays set
+    }
+}
+
+// GOOD — always cleared in finally
+@Override
+protected void doFilterInternal(req, res, chain) {
+    CURRENT.set(loadTenantFor(req));
+    try { chain.doFilter(req, res); }
+    finally { CURRENT.remove(); }              // ← release the thread's slot
+}</code></pre>
+          <p>Tomcat reuses ~200 worker threads. Without <code>remove()</code>, every request leaves a <code>Tenant</code> object referenced by that thread — multiplied by 200 threads, multiplied by hours of traffic, you get GB of retained "Tenant" objects with no obvious owner. The heap dump shows them rooted at <code>java.lang.Thread → threadLocals → values</code>.</p>
+
+          <p><b>Tools cheat-sheet:</b></p>
+          <div class="use-cases">
+            <div class="use-case"><b>jcmd / jmap / jstack</b><br/>Bundled with the JDK. Heap dump, thread dump, JFR — your first line.</div>
+            <div class="use-case green"><b>Actuator</b><br/><code>/actuator/heapdump</code>, <code>/actuator/threaddump</code>, <code>/actuator/metrics</code>. Production-friendly.</div>
+            <div class="use-case pink"><b>Eclipse MAT</b><br/>The de-facto heap analyzer. <em>Leak Suspects</em> + dominator tree.</div>
+            <div class="use-case orange"><b>VisualVM</b><br/>Live profiling, GC monitoring, lightweight dump browsing.</div>
+            <div class="use-case"><b>async-profiler</b><br/>Catch the allocation site with negligible overhead.</div>
+            <div class="use-case green"><b>Grafana / Prometheus / CloudWatch</b><br/>Long-term heap, GC, and pod-restart trends.</div>
+          </div>
+
+          <p><b>Common interview gotchas:</b></p>
+          <ul>
+            <li><strong>"Would you restart the pod first?"</strong> — No. Heap dump first, <em>then</em> rotate the pod. Restart loses the evidence.</li>
+            <li><strong>"How do you distinguish a leak from churn?"</strong> — Old Gen behaviour after full GC: shrinks = churn, stays = leak.</li>
+            <li><strong>"What's in a heap dump that's not in a thread dump?"</strong> — Every live object's data; thread dump is just thread stacks.</li>
+            <li><strong>"Why are ThreadLocals dangerous in pools?"</strong> — Pool threads outlive requests; uncleared entries leak per thread.</li>
+            <li><strong>"How do you take a heap dump in Kubernetes?"</strong> — <code>kubectl exec</code> + <code>jcmd</code>, or <code>HeapDumpOnOutOfMemoryError</code> writing to a persistent volume.</li>
+            <li><strong>"What if the pod OOM-kills before you can dump?"</strong> — Enable <code>-XX:+HeapDumpOnOutOfMemoryError</code> + <code>-XX:HeapDumpPath</code> ahead of time, on a mounted volume.</li>
+            <li><strong>"Local vs distributed cache for leaks?"</strong> — local caches grow the JVM heap; Redis growth shows up in Redis, not the app.</li>
+          </ul>
+
+          <p class="takeaway">
+            <b>Interview one-liner:</b> When a Spring Boot app leaks memory in production, I <strong>never restart blindly</strong> — that destroys the evidence. I confirm the leak using Actuator / Grafana / GC logs (Old Gen stays high after full GC), then <strong>capture a heap dump</strong> via <code>jmap</code>, <code>jcmd</code>, or <code>/actuator/heapdump</code>. I analyse it in <strong>Eclipse MAT</strong> — the Leak Suspects report + dominator tree usually identifies the offender in minutes. Common culprits in Spring Boot are <strong>unbounded local caches</strong>, <strong>uncleared <code>ThreadLocal</code>s</strong> on pooled threads, <strong>static collections</strong>, <strong>large session objects</strong>, <strong>orphan <code>ExecutorService</code>s</strong>, and <strong>leaked DB / HTTP resources</strong>. Comparing two dumps over time pinpoints the growing class; I reproduce in staging with a load test, ship the fix (TTL on the cache, <code>tl.remove()</code> in <code>finally</code>, etc.), and verify the heap plateaus on the same dashboards that flagged the problem in the first place.
+          </p>
         </div>
       </details>
 
       <details class="qa">
         <summary>How do you read a thread dump?</summary>
         <div class="qa-body">
-          <p>A thread dump shows every thread's stack at the moment of capture (<code>jstack &lt;pid&gt;</code> or <code>/actuator/threaddump</code>). What I look for:</p>
+          <p>A thread dump shows every thread's stack at the moment of capture (<code>jstack &lt;pid&gt;</code> or <code>/actuator/threaddump</code>). What to look for:</p>
           <ul>
             <li><strong>Deadlocks</strong> — <code>jstack</code> explicitly says "Found one Java-level deadlock" at the bottom.</li>
             <li><strong>Hot spots</strong> — take 3 dumps a few seconds apart. Threads stuck in the same place are the candidates.</li>
@@ -109,19 +318,696 @@
       </details>
 
       <details class="qa">
-        <summary>Investigating a latency spike</summary>
+        <summary>How do you debug high CPU usage in production? <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p>"P99 jumped from 200 ms to 4 s." My approach:</p>
-          <ol>
-            <li><strong>Confirm where</strong> — is it one endpoint, one region, one downstream? Slice dashboards by route, dependency, instance, region.</li>
-            <li><strong>Check correlated events</strong> — recent deploy? config change? traffic spike? Look at the timeline.</li>
-            <li><strong>Trace a slow request</strong> — distributed tracing usually points within minutes. "Spent 3.8 s waiting on the user-service /lookup."</li>
-            <li><strong>Inspect downstream</strong> — is the slow dependency itself slow (its metrics) or are we just hitting it harder?</li>
-            <li><strong>Common culprits</strong> — DB without an index, N+1 query, GC pauses, thread pool exhaustion, downstream cascade, cold caches after deploy, hot key on cache/DB.</li>
-            <li><strong>Mitigate</strong> — rollback recent change, add cache, increase pool, scale out, circuit breaker on slow downstream.</li>
-            <li><strong>Verify and root-cause</strong> properly later.</li>
-          </ol>
-          <p>Don't fix what you can't measure — always have RED metrics per endpoint before you need them.</p>
+          <p class="answer-intro">"CPU is at 100%" is one of the most common Java production alerts. The wrong instinct is to <em>scale up</em> — that masks the symptom and the real cost. The right instinct is to figure out <strong>which thread</strong> is burning the CPU and <strong>why</strong>, using a small set of standard JDK and Linux tools.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Identify the <em>hot threads</em> with <code>top -H</code> + <code>jstack</code>, or with <strong>async-profiler</strong> for a flame graph. Map the hot stack frames to a code path. Common causes: tight loops, JSON / regex blowups, GC churn, lock spin, hash collisions, infinite recursion.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> The 5-minute triage</div>
+            <ol>
+              <li>Confirm scope — one pod or all pods? One endpoint or all? Did it start after a deploy?</li>
+              <li>Check basic JVM metrics — heap usage, GC time, GC frequency. <strong>If GC is dominating CPU, this is actually a memory problem</strong> (see Full-GC question).</li>
+              <li>Take 3 thread dumps 10 seconds apart — patterns emerge.</li>
+              <li>If pattern unclear → run async-profiler for 30 seconds → flame graph.</li>
+            </ol>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> The classic toolchain — find the hot thread</div>
+            <pre><code># 1. Find the JVM PID
+jps -lv
+
+# 2. List per-thread CPU on Linux
+top -H -p &lt;pid&gt;
+# Note the TID of the busiest thread (e.g. 12345)
+
+# 3. Convert TID to hex
+printf "%x\n" 12345        # → 3039
+
+# 4. Get a thread dump and grep for nid=0x3039
+jstack &lt;pid&gt; &gt; td.txt
+grep -A 30 "nid=0x3039" td.txt</code></pre>
+            <p>The stack trace tells you which method is burning CPU. Repeat for the top 3 threads; if they all match, you have a clear hotspot.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Better — async-profiler flame graphs</div>
+            <pre><code># Sample for 30 seconds and produce a flame graph
+./profiler.sh -d 30 -f /tmp/cpu.html &lt;pid&gt;
+
+# Or via JFR (built into JDK 11+)
+jcmd &lt;pid&gt; JFR.start name=cpu duration=30s filename=/tmp/cpu.jfr
+# View in JDK Mission Control or convert to flame graph</code></pre>
+            <p>Flame graphs show the <em>aggregate</em> CPU time across all threads — much faster than reading individual stacks. Wide bars = where the CPU is going.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Common root causes</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead><tr><th>Cause</th><th>Signature in dump / flame graph</th><th>Fix</th></tr></thead>
+                <tbody>
+                  <tr><td>Tight loop / no-sleep retry</td><td>Same method dominates the flame graph</td><td>Add backoff, reactive flow, or fix exit condition</td></tr>
+                  <tr><td>JSON serialization explosion</td><td>Jackson/Gson methods at the top</td><td>Avoid serializing huge object graphs; use streaming or DTO projection</td></tr>
+                  <tr><td>Catastrophic regex backtracking</td><td><code>Pattern.matcher</code> on the hot stack</td><td>Anchor the regex, fail fast, use possessive quantifiers, or switch library</td></tr>
+                  <tr><td>HashMap/HashSet collisions</td><td><code>HashMap.getNode</code> in hot path</td><td>Fix <code>hashCode()</code>; use TreeMap or treeified buckets (JDK 8+)</td></tr>
+                  <tr><td>GC churn</td><td>JVM GC threads (G1 / ParallelGC) at top</td><td>Find allocation hotspot; reduce object churn; tune heap</td></tr>
+                  <tr><td>Lock spin / synchronized</td><td>Many threads in <code>BLOCKED</code> on the same monitor</td><td>Use <code>ConcurrentHashMap</code>, <code>java.util.concurrent</code> primitives</td></tr>
+                  <tr><td>Logging in a hot path</td><td>Logback/Log4j formatting on stack</td><td>Move to async appender, raise log level, avoid string concat</td></tr>
+                  <tr><td>Infinite recursion / wide fanout</td><td>Stack depth growing, repeated frames</td><td>Add base case / iterative version</td></tr>
+                  <tr><td>Reflection on hot path</td><td><code>Method.invoke</code> dominates</td><td>Cache lookups, use MethodHandles or generated code</td></tr>
+                  <tr><td>Cryptography on every request</td><td>BCrypt / SHA hot</td><td>Move to async, cache results, lower work factor where appropriate</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Container-specific gotchas</div>
+            <ul>
+              <li>JVM may misread CPU limits in Kubernetes — set <code>-XX:ActiveProcessorCount=&lt;cpuLimit&gt;</code> or rely on JDK 11+ which honors cgroup limits.</li>
+              <li>"100% CPU" in K8s often means the container is being throttled, not actually busy — check <code>container_cpu_cfs_throttled_periods_total</code>.</li>
+              <li>Pod CPU limit way below request causes constant throttling — symptoms look like a CPU bug.</li>
+              <li>Noisy neighbours on the node — if only one pod is hot but the node CPU is shared, schedule with anti-affinity.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Common interview gotchas</div>
+            <ul>
+              <li>Don't restart the pod first — the evidence dies with it. Capture dumps first.</li>
+              <li>Don't blame "high traffic" without measuring per-request CPU — a 2× traffic with 10× CPU is an algorithmic regression.</li>
+              <li>Three thread dumps beats one — patterns matter, snapshots lie.</li>
+              <li>Async-profiler / JFR with sampling is preferred over instrumentation in production — &lt; 2% overhead.</li>
+              <li>If GC threads are the top consumers, this is a memory problem in disguise — see Full GC question.</li>
+              <li>The hot thread you're looking for may be a daemon thread (Kafka consumer, scheduled task) not a request thread.</li>
+              <li>Pin a baseline before changes — compare flame graph before/after the fix.</li>
+            </ul>
+          </div>
+
+          <p class="takeaway"><b>Interview one-liner:</b> When CPU spikes in production, I find the <strong>hot thread</strong>: <code>top -H -p &lt;pid&gt;</code> for the busiest TID, convert to hex, then <code>jstack</code> and grep <code>nid=0x...</code> to see its stack. For broader visibility I run <strong>async-profiler</strong> or <strong>JFR</strong> for 30 seconds and read the flame graph — the wide bars show where CPU is going. Common culprits are tight loops, regex backtracking, JSON serialization of huge graphs, GC churn (often a memory problem in disguise), lock contention, and bad <code>hashCode</code>. Container gotchas: check CPU throttling and that the JVM honors cgroup limits (<code>-XX:ActiveProcessorCount</code> or JDK 11+).</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How do you debug frequent Full GC issues? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">Frequent Full GC is the JVM's way of telling you the application is allocating faster than the GC can collect — or that the heap is permanently filling up (a leak). Either way, latency spikes and CPU climbs as GC threads run constantly. The fix is rarely "give it more heap" — it's almost always "find the allocation hotspot or the leak".</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Read GC logs to confirm the pattern (allocation pressure vs leak), find the <strong>allocation hotspot</strong> with async-profiler's allocation mode or JFR, and fix the code. If it's a leak (Old Gen stays high after Full GC), capture a heap dump and analyse with Eclipse MAT.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Confirm it really is Full GC pressure</div>
+            <pre><code># Always have GC logs on in production (G1)
+-Xlog:gc*,safepoint:file=/var/log/app/gc.log:time,uptime,level,tags:filecount=10,filesize=10M
+
+# Or via Actuator metrics:
+jvm.gc.pause                         # pause times by GC name
+jvm.gc.memory.allocated              # bytes allocated per second
+jvm.memory.used{area=heap, id="G1 Old Gen"}</code></pre>
+            <p>Three things to read from the log:</p>
+            <ul>
+              <li><strong>Frequency</strong> — Full GC every 30 s is bad; once an hour is fine.</li>
+              <li><strong>Duration</strong> — Full GC pauses &gt; 1 s are user-visible.</li>
+              <li><strong>Heap after collection</strong> — if Old Gen stays at 90% after every Full GC, you have a leak; if it drops back to 30%, you have allocation pressure.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> The two patterns and how to tell them apart</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-title">Allocation pressure (churn)</div>
+                <ul>
+                  <li>Heap usage is sawtooth — fills, GC, drops back down.</li>
+                  <li>Most collections are Young GC; Full GC is rare but pause spikes happen during traffic peaks.</li>
+                  <li>Cause: hot loop allocating millions of short-lived objects per second.</li>
+                  <li>Fix: reduce allocation in the hotspot, or grow heap so Young Gen fits.</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-title">Memory leak</div>
+                <ul>
+                  <li>Heap usage trends <em>up</em> over hours/days, even after Full GC.</li>
+                  <li>Old Gen stays near max after every Full GC.</li>
+                  <li>Eventually <code>OutOfMemoryError</code>.</li>
+                  <li>Fix: heap dump → Eclipse MAT → find dominator → patch (cache TTL, ThreadLocal cleanup, etc.).</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Find the allocation hotspot</div>
+            <pre><code># async-profiler in allocation mode
+./profiler.sh -e alloc -d 30 -f /tmp/alloc.html &lt;pid&gt;
+
+# JFR
+jcmd &lt;pid&gt; JFR.start name=alloc duration=60s filename=/tmp/alloc.jfr settings=profile</code></pre>
+            <p>Flame graph in allocation mode shows which methods allocate the most bytes. Common offenders:</p>
+            <ul>
+              <li><code>String.format</code> in hot logging.</li>
+              <li>JSON / XML parsing of large payloads on every request.</li>
+              <li>New collections inside loops (use sized constructors, reuse).</li>
+              <li>Boxing primitives (<code>Integer.valueOf</code>) in hot paths.</li>
+              <li>Streams with intermediate collectors when a primitive loop would do.</li>
+              <li>Reflection allocating small accessor objects.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Tune the GC (after fixing the code)</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead><tr><th>Knob</th><th>Effect</th></tr></thead>
+                <tbody>
+                  <tr><td><code>-Xms = -Xmx</code></td><td>Avoid heap resize during traffic — pre-commit max heap on startup</td></tr>
+                  <tr><td><code>-XX:+UseG1GC</code></td><td>Default since Java 9; balanced throughput + latency</td></tr>
+                  <tr><td><code>-XX:MaxGCPauseMillis=200</code></td><td>G1 target pause — too low forces more frequent GC</td></tr>
+                  <tr><td><code>-XX:+UseZGC</code> / <code>-XX:+UseShenandoahGC</code></td><td>Sub-10ms pauses for huge heaps; modern JDKs</td></tr>
+                  <tr><td><code>-XX:G1HeapRegionSize</code></td><td>Tune for very large heaps (32G+)</td></tr>
+                  <tr><td><code>-XX:+HeapDumpOnOutOfMemoryError</code></td><td>Capture a dump on OOM for post-mortem</td></tr>
+                  <tr><td><code>-Xlog:gc*</code></td><td>Always-on GC logging in production</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Container-specific</div>
+            <ul>
+              <li>JDK 11+ honors cgroup memory limits — older JDKs may set <code>MaxHeapSize</code> based on host memory and OOM-kill the container.</li>
+              <li>Set <code>-XX:MaxRAMPercentage=75.0</code> in containers; never <code>-Xmx</code> equal to the pod limit (need overhead for native + thread stacks).</li>
+              <li>Container OOM-kill (exit 137) is different from JVM OOM — check kernel <code>dmesg</code> and pod events to disambiguate.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Common interview gotchas</div>
+            <ul>
+              <li>"More heap" almost never fixes the underlying problem — it just delays the next OOM by a few hours.</li>
+              <li>Frequent Full GC with low heap utilization = humongous allocations in G1 (objects &gt; 50% region size); break them up or increase region size.</li>
+              <li>Latency-sensitive apps should consider ZGC or Shenandoah — sub-10ms pauses on tens of GB heaps.</li>
+              <li>Comparing two heap dumps over time is the gold standard for finding leaks (Eclipse MAT "Compare heap dumps").</li>
+              <li>SoftReference / WeakReference can be misused — they extend object life unpredictably.</li>
+              <li>Threads have their own stack (1MB default) — leaking threads leaks native memory, not heap.</li>
+              <li>Direct ByteBuffers and Netty pools live off-heap — Heap dumps won't see them; check <code>NMT</code> (Native Memory Tracking).</li>
+              <li>Production GC logs cost almost nothing — keep them on always.</li>
+            </ul>
+          </div>
+
+          <p class="takeaway"><b>Interview one-liner:</b> Frequent Full GC is either <strong>allocation pressure</strong> (sawtooth heap, churn) or a <strong>leak</strong> (Old Gen stays high after Full GC). Always-on GC logs (<code>-Xlog:gc*</code>) tell you which. For allocation pressure, use <strong>async-profiler in alloc mode</strong> or JFR to find the hotspot — common offenders are JSON parsing, String formatting, boxed primitives, and per-request collection allocations. For leaks, capture a heap dump (<code>jcmd … GC.heap_dump</code>) and analyse in Eclipse MAT. Tune G1 only after fixing the code; for sub-10ms pauses on big heaps consider ZGC/Shenandoah. In containers, set <code>-XX:MaxRAMPercentage=75</code> and rely on JDK 11+ cgroup awareness.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How do you identify bottlenecks in a distributed system? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">A distributed system's slowest hop dictates user latency, regardless of how fast the rest is. Finding that hop requires <strong>distributed tracing</strong> + <strong>RED metrics per service</strong> + <strong>resource saturation per node</strong>. Without these three signals, you're guessing.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Use <strong>distributed traces</strong> to find which span owns the latency, <strong>RED metrics</strong> (Rate / Errors / Duration) per service to localize the bad service, and the <strong>USE method</strong> (Utilization / Saturation / Errors) per resource (CPU, memory, disk, network, pool) to find the bottleneck inside that service.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> The methodology — three lenses</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead><tr><th>Lens</th><th>Question</th><th>Tool</th></tr></thead>
+                <tbody>
+                  <tr><td><strong>RED metrics</strong></td><td>"Which <em>service</em> is slow / failing?"</td><td>Prometheus + Grafana per-service dashboards</td></tr>
+                  <tr><td><strong>Distributed tracing</strong></td><td>"Which <em>hop</em> in this request owns the latency?"</td><td>Jaeger, Zipkin, Tempo, Datadog APM</td></tr>
+                  <tr><td><strong>USE method</strong></td><td>"Which <em>resource</em> in that service is saturated?"</td><td>node_exporter, JVM metrics, DB metrics, pool gauges</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Step-by-step playbook</div>
+            <div class="flow">
+              <div class="flow-step">User reports slow checkout / dashboard shows p99 spike</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Open the latency dashboard sliced by service — which service's p99 jumped?</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Open a <strong>distributed trace</strong> for a slow request — which span is wide?</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Drill into that service's metrics — CPU? GC? DB pool? HTTP client pool?</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">If DB span is wide → check slow-query log + <code>EXPLAIN</code> + lock metrics</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">If downstream span is wide → recurse into that service</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step accent">Confirm hypothesis with a controlled change (rollback, scale-out, query fix)</div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Common bottleneck categories &amp; their signatures</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead><tr><th>Bottleneck</th><th>Symptom</th><th>Where to look</th></tr></thead>
+                <tbody>
+                  <tr><td>Database (slow query, locks)</td><td>One DB span dominates trace; high DB CPU; long lock waits</td><td>slow-query log, <code>pg_stat_activity</code>, <code>EXPLAIN ANALYZE</code></td></tr>
+                  <tr><td>Database (connection pool starved)</td><td>App threads block on <code>getConnection</code>; pool active = max</td><td>HikariCP metrics, <code>hikari_connections_active</code></td></tr>
+                  <tr><td>Downstream API</td><td>Outbound span wide; downstream service's RED also bad</td><td>Distributed trace + downstream dashboards</td></tr>
+                  <tr><td>Cache miss / cold cache</td><td>p99 worse for first requests; hit rate dropped</td><td>Redis / Caffeine hit-ratio metrics</td></tr>
+                  <tr><td>Kafka consumer lag</td><td>Eventual consumers behind producers</td><td>Kafka consumer-group lag, Burrow, <code>kafka-consumer-groups.sh</code></td></tr>
+                  <tr><td>JVM GC</td><td>Pauses correlated with latency spikes</td><td><code>jvm.gc.pause</code>, GC logs</td></tr>
+                  <tr><td>Thread pool exhaustion</td><td>Tomcat / executor queues full; many threads BLOCKED</td><td><code>tomcat.threads.busy</code>, thread dumps</td></tr>
+                  <tr><td>Network saturation</td><td>Packet drops, retransmits, NAT gateway throughput</td><td>VPC flow logs, <code>netstat -s</code>, cloud egress metrics</td></tr>
+                  <tr><td>Disk I/O</td><td>High <code>iowait</code>, slow log writes</td><td><code>iostat</code>, EBS burst-balance metrics</td></tr>
+                  <tr><td>External provider</td><td>Outbound HTTP latency to a third party (Stripe, Twilio)</td><td>APM external span, vendor status page</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> The USE method per resource</div>
+            <p>For every resource ask three questions:</p>
+            <ul>
+              <li><strong>Utilization</strong> — what % of capacity is in use? (CPU 90%, pool 95%)</li>
+              <li><strong>Saturation</strong> — how much work is queued? (run queue, pool waiters, thread pool queue depth)</li>
+              <li><strong>Errors</strong> — error count on that resource (DB rejected connections, timeouts, OOM)</li>
+            </ul>
+            <p>The bottleneck is the resource where utilization is high <em>and</em> saturation &gt; 0 — that's where work is queueing.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Synthetic tests — proactive bottleneck discovery</div>
+            <ul>
+              <li>Run a baseline load test (k6, Gatling, JMeter) and watch where the latency curve goes non-linear — that's the saturation point.</li>
+              <li>Chaos testing (toxiproxy, Chaos Mesh) — inject latency / packet loss to a downstream and observe blast radius.</li>
+              <li>Continuously run shadow traffic in staging mirroring production volume.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Common interview gotchas</div>
+            <ul>
+              <li>Without <strong>distributed tracing</strong>, finding a bottleneck across services is detective work — invest early.</li>
+              <li>Average latency lies — always use p95/p99.</li>
+              <li>Tail latency (p99) is dominated by GC, lock contention, retries, cold-start — not the average code path.</li>
+              <li>"The DB is slow" is usually "one query is slow" — slice by query/endpoint, not aggregate.</li>
+              <li>Capacity issues hide as code issues at peak; reproducing requires production-like load.</li>
+              <li>One bottleneck removed exposes the next — performance work is iterative.</li>
+              <li>Connection / thread pools are silent bottlenecks until they saturate, then everything dies at once.</li>
+              <li>Don't optimize without measurement — fix the visible bottleneck, re-measure, repeat.</li>
+            </ul>
+          </div>
+
+          <p class="takeaway"><b>Interview one-liner:</b> I find bottlenecks with three lenses: <strong>RED metrics per service</strong> (Rate / Errors / Duration) tell me which service is degraded; a <strong>distributed trace</strong> of one slow request tells me which hop owns the latency; <strong>USE</strong> (Utilization / Saturation / Errors) per resource tells me which CPU / pool / disk inside that service is the actual bottleneck. The most common bottlenecks are DB queries, DB connection pool exhaustion, downstream API slowness, GC pressure, thread pool exhaustion, Kafka consumer lag, and network saturation. Always work from p99/p95, not averages — and confirm the hypothesis with a controlled change before claiming victory.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How do you scale a high-traffic Spring Boot application? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">"Scale a Spring Boot app" splits into three orthogonal axes — <strong>vertical</strong> (more resources per pod), <strong>horizontal</strong> (more pods), and <strong>architectural</strong> (caching, async, read replicas, sharding). Real systems use all three, in that order, and each unlocks the next.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Make the service <strong>stateless</strong> + <strong>well-tuned</strong> per pod, then <strong>scale horizontally</strong> with K8s HPA, then offload load with <strong>caching</strong>, <strong>async/Kafka</strong>, <strong>read replicas</strong>, and <strong>CDN</strong>. The DB is almost always the eventual bottleneck — design for it.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Layer 1 — Per-pod tuning</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead><tr><th>Knob</th><th>Setting</th><th>Why</th></tr></thead>
+                <tbody>
+                  <tr><td>JVM heap</td><td><code>-XX:MaxRAMPercentage=75</code></td><td>Honor cgroup limits; avoid OOM-kill</td></tr>
+                  <tr><td>GC</td><td>G1 (default) or ZGC for sub-10ms pauses on big heaps</td><td>p99 latency</td></tr>
+                  <tr><td>Tomcat threads</td><td><code>server.tomcat.threads.max=200</code></td><td>Match concurrency × downstream wait time</td></tr>
+                  <tr><td>HikariCP</td><td><code>maximum-pool-size = (cores × 2) + spindles</code></td><td>Avoid pool starvation under load</td></tr>
+                  <tr><td>HTTP client pool</td><td>WebClient/Apache pool sized per downstream</td><td>Per-dep bulkhead</td></tr>
+                  <tr><td>JIT warmup</td><td>CDS / AOT (Spring AOT in Boot 3 + GraalVM)</td><td>Faster pod startup → faster scale-up</td></tr>
+                  <tr><td>Logging</td><td>Async appender (<code>AsyncAppender</code>)</td><td>Logging shouldn't block hot threads</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Layer 2 — Horizontal scale (Kubernetes)</div>
+            <pre><code># Make the service truly stateless — session in Redis or stateless JWT
+spring.session.store-type=redis
+
+# Kubernetes HPA — scale on CPU + custom metric (RPS or queue depth)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+spec:
+  minReplicas: 4
+  maxReplicas: 50
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 60 } }
+    - type: Pods
+      pods:
+        metric: { name: http_server_requests_per_sec }
+        target: { type: AverageValue, averageValue: "300" }
+  behavior:
+    scaleUp:   { stabilizationWindowSeconds: 30  }
+    scaleDown: { stabilizationWindowSeconds: 300 }</code></pre>
+            <p>Pair HPA with <strong>Cluster Autoscaler / Karpenter</strong> so new nodes appear when pods are unschedulable. Tune <code>readinessProbe</code> + <code>preStop</code> hook for graceful shutdown — bad probes during deploys cause 5xx blips.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Layer 3 — Architectural scale</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-title">Caching</div>
+                <ul>
+                  <li>Local cache (Caffeine) for hot config / reference data.</li>
+                  <li>Redis distributed cache for session, hot reads, computed results.</li>
+                  <li>Cache aside with TTL; jitter TTL to avoid stampedes.</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-title">Async / Kafka</div>
+                <ul>
+                  <li>Move heavy work off the request path — emit event, return 202 Accepted.</li>
+                  <li>Background workers process at their own pace.</li>
+                  <li>Massive throughput unlock for write-heavy paths.</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-title">DB scale</div>
+                <ul>
+                  <li>Read replicas + smart routing (writes to primary, reads to replica).</li>
+                  <li>Partitioning hot tables.</li>
+                  <li>Sharding when single-node hits its limit.</li>
+                  <li>Move append-only data to a log store (Kafka, ClickHouse).</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-title">CDN + edge</div>
+                <ul>
+                  <li>Cache static + cacheable API responses at the edge (CloudFront, Cloudflare).</li>
+                  <li>Reduces origin RPS by 60–90% for read-heavy endpoints.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> The DB is the eventual bottleneck</div>
+            <p>Stateless app pods scale linearly; the database doesn't. Plan for it:</p>
+            <ul>
+              <li>Index every common query path; remove N+1.</li>
+              <li>Read replicas + routing.</li>
+              <li>Materialized views / search engine for heavy reads (Elasticsearch).</li>
+              <li>Connection pool max ≤ DB <code>max_connections</code> ÷ pod count + headroom.</li>
+              <li>Consider a connection pooler at the DB (PgBouncer) when pods × pool size exceeds DB capacity.</li>
+              <li>Partition / shard when one DB can't hold the working set.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Common interview gotchas</div>
+            <ul>
+              <li>"Just add more pods" doesn't work if your DB is the bottleneck — you'll just exhaust connections faster.</li>
+              <li>Statefulness kills horizontal scale — session in app memory means sticky load balancing forever.</li>
+              <li>Cache stampede on startup of new pods can spike the origin — use <code>singleflight</code> / probabilistic early refresh.</li>
+              <li>Slow JVM startup (60+ sec) makes HPA reactive too late — use AOT/CDS to drop to 5–10 sec.</li>
+              <li>Misconfigured connection pool: huge pool per pod × many pods = DB connection storm.</li>
+              <li>Tomcat thread count needs to be sized per-endpoint behavior (CPU vs I/O) — same number for everything is wrong.</li>
+              <li>HPA on CPU alone misses I/O-bound workloads — also scale on RPS or queue depth.</li>
+              <li>Scale-down without graceful shutdown causes 5xx — fix shutdown before raising max replicas.</li>
+              <li>Don't forget egress capacity (NAT Gateway throughput) — silent bottleneck for outbound calls.</li>
+            </ul>
+          </div>
+
+          <p class="takeaway"><b>Interview one-liner:</b> I scale a Spring Boot app in three layers: <strong>per-pod tuning</strong> (JVM heap %, G1/ZGC, Tomcat threads, HikariCP pool, async logging, AOT for fast startup), <strong>horizontal scale</strong> (stateless service + K8s HPA on CPU + RPS, plus Cluster Autoscaler / Karpenter for nodes), and <strong>architectural offloads</strong> (Redis cache, Kafka for async, DB read replicas / partitioning / sharding, CDN at the edge). The DB is almost always the eventual bottleneck — design for it with indexing, read routing, and pooler tuning. Make the service truly stateless (session in Redis or JWT), get graceful shutdown right, and pair HPA with deep readiness probes so deploys are 5xx-free.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How do you optimize a slow API? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">"This API is slow" is the most common performance ticket. The wrong instinct is to start adding caches; the right approach is to <strong>measure where the time goes</strong>, fix the dominant cost, then re-measure. Most slow APIs lose 80% of their time in 1–2 places — a missing index, an N+1, a synchronous downstream call, or a missing cache.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Profile the slow path with <strong>distributed tracing</strong>, find the dominant cost (DB / downstream / serialization / GC), apply the appropriate fix (index, batch, cache, async, parallel fan-out), and re-measure. Optimizing without measurement is guessing.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Step 1 — Reproduce and trace</div>
+            <ul>
+              <li>Capture a real slow request from production traces (APM).</li>
+              <li>Reproduce in a load test or staging with realistic data volume.</li>
+              <li>Use the trace to see how time splits between: in-app code, DB, downstream HTTP, cache, message broker.</li>
+            </ul>
+            <p>The single most useful tool is the trace waterfall — it tells you where 80% of latency lives in 30 seconds.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Step 2 — Match the bottleneck to a fix</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead><tr><th>If the bottleneck is…</th><th>Apply</th></tr></thead>
+                <tbody>
+                  <tr><td>One slow query</td><td>Add index, rewrite query, denormalize hot columns, materialized view</td></tr>
+                  <tr><td>N+1 on a list endpoint</td><td>JPA fetch join, <code>@EntityGraph</code>, batch fetch, projection DTO</td></tr>
+                  <tr><td>Many sequential downstream calls</td><td>Parallelize with <code>CompletableFuture</code> / WebClient</td></tr>
+                  <tr><td>Repeated read of slow data</td><td>Caffeine local cache or Redis with TTL</td></tr>
+                  <tr><td>Heavy work blocking the request</td><td>Move to async (Kafka event + 202 Accepted)</td></tr>
+                  <tr><td>JSON serialization of huge objects</td><td>Project DTO with only needed fields, paginate</td></tr>
+                  <tr><td>Cold cache after deploy</td><td>Pre-warm cache; jitter TTL; singleflight to avoid stampede</td></tr>
+                  <tr><td>Connection pool starvation</td><td>Bump pool size or fix the long-running query holding connections</td></tr>
+                  <tr><td>GC pauses</td><td>Reduce allocation, switch to ZGC, increase heap</td></tr>
+                  <tr><td>Slow downstream</td><td>Cache its response; add timeout + circuit breaker; mark non-critical and fall back</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Concrete examples</div>
+            <pre><code>// N+1 → fetch join
+@Query("SELECT o FROM Order o JOIN FETCH o.items WHERE o.userId = :uid")
+List&lt;Order&gt; findOrdersWithItems(@Param("uid") Long uid);
+
+// Sequential → parallel
+CompletableFuture&lt;Profile&gt; p = profileClient.getAsync(userId);
+CompletableFuture&lt;List&lt;Order&gt;&gt; o = orderClient.recentAsync(userId);
+CompletableFuture&lt;Recommendations&gt; r = recoClient.forAsync(userId);
+return CompletableFuture.allOf(p, o, r)
+    .thenApply(__ -&gt; new Dashboard(p.join(), o.join(), r.join()));
+
+// Hot read → Caffeine cache
+@Cacheable(cacheNames="productById", key="#id")
+public Product get(Long id) { return repo.findById(id).orElseThrow(); }
+
+// Heavy work → async
+@PostMapping("/reports")
+public ResponseEntity&lt;Void&gt; create(@RequestBody ReportReq req) {
+    UUID id = reportService.queue(req);                  // emit Kafka event
+    return ResponseEntity.accepted()
+        .header("Location", "/reports/" + id)
+        .build();                                        // 202 Accepted
+}</code></pre>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Quick wins to look for first</div>
+            <ul>
+              <li>One missing DB index (single biggest hit in most apps).</li>
+              <li>An N+1 on a list endpoint.</li>
+              <li>A sync HTTP call to a downstream that could be cached or parallelized.</li>
+              <li>Logging full payloads on the hot path.</li>
+              <li>JSON serialization of huge entities (project to DTO).</li>
+              <li>A misconfigured connection pool (too small or not warmed up).</li>
+              <li>A bug returning all rows when the client only needs the first 10 (missing pagination).</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Common interview gotchas</div>
+            <ul>
+              <li>"Add a cache" without measuring is the wrong first move — it can mask a leak or a query bug.</li>
+              <li>Optimizing the wrong thing (5 ms saved on a 10 ms code path while a 500 ms DB query sits unfixed).</li>
+              <li>Average latency lies — optimize p95/p99.</li>
+              <li>Caches without invalidation become correctness bugs — design TTL or write-through.</li>
+              <li>Parallel fan-out without bounding (no Semaphore / executor) → thread pool exhaustion.</li>
+              <li>Forgetting that adding async means the user can't see the result immediately — UX has to support it.</li>
+              <li>Don't keep optimizing once it's "good enough" — diminishing returns.</li>
+              <li>Always re-measure after a change — assumptions are wrong half the time.</li>
+            </ul>
+          </div>
+
+          <p class="takeaway"><b>Interview one-liner:</b> I optimize a slow API by following the data, not intuition: capture a real slow request from <strong>distributed tracing</strong>, identify the dominant span (DB / downstream / serialization / GC), then apply the matching fix — <strong>add an index</strong>, fix <strong>N+1</strong> with fetch joins, <strong>parallelize</strong> sequential downstream calls with <code>CompletableFuture</code>, add a <strong>cache</strong> for hot reads, move heavy work to <strong>async + Kafka</strong>, project to a smaller DTO. Re-measure after every change; never optimize without a baseline. Most slow APIs lose 80% of their time in one or two places, and the fix is usually small.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Investigating an API p99 latency spike — incident response playbook <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">The pager fires: <strong>p99 on the checkout API just jumped from 200 ms to 5 seconds</strong>. The wrong first instinct is to SSH into a pod, run <code>top</code>, and start "investigating" — that wastes the first 10 minutes while customers time out. The right first instinct is to <strong>confirm scope and protect users</strong>: how big is the blast radius, was anything just shipped, and what is the fastest mitigation. Root cause comes <em>after</em> the bleed stops.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val"><strong>Stabilize first, RCA later.</strong> Confirm blast radius → check dashboards / traces / recent deploys → if a release is correlated, <strong>rollback immediately</strong>; if not, isolate the bottleneck (DB, GC, threads, downstream, cache) → mitigate via rollback / scale-out / circuit breaker / cache / failover → then root-cause properly. Customers come before perfect understanding.</span>
+            </div>
+          </div>
+
+          <p><b>Step 1 — Confirm scope &amp; blast radius (60 seconds of triage):</b></p>
+          <ul>
+            <li><strong>Is it one API or all APIs?</strong> — slice the latency dashboard by endpoint / route. A single slow endpoint usually = one query / one downstream; <em>all</em> endpoints slow = JVM-wide problem (GC, CPU, pool starvation) or shared dependency.</li>
+            <li><strong>Is it one pod or all pods?</strong> — if 1/10 pods is bad, just kill it; the others absorb the traffic. If <em>all</em> pods are bad, it's the service or a shared backend.</li>
+            <li><strong>Did it start after a deployment / config change / feature-flag flip?</strong> — overlay the deploy timeline on the latency graph. A sharp step right after a release ≈ guilty until proven innocent.</li>
+            <li><strong>Is error rate also up, or only latency?</strong> — latency-only = saturation / slow path; latency + 5xx = something is breaking, not just slow.</li>
+            <li><strong>One region / one customer / one tenant?</strong> — group by region, tenant, customer-ID. A "hot tenant" can crater shared infra without anything else changing.</li>
+            <li><strong>Traffic volume vs baseline (same hour last week)?</strong> — a 5× traffic spike with the same code is a capacity problem, not a code problem.</li>
+          </ul>
+
+          <p><b>Step 2 — Check the high-signal dashboards &amp; traces:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Signal</th><th>Where to look</th><th>What it tells you</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Distributed trace of a slow request</strong></td><td>APM (Datadog, New Relic, Dynatrace, Tempo, Jaeger)</td><td>Which span owns the latency — your service, the DB, or a downstream call.</td></tr>
+                <tr><td><strong>DB query time / slow queries</strong></td><td>APM DB panel, <code>pg_stat_statements</code>, slow-query log</td><td>Spike on one query → missing index, lock, or N+1 just introduced.</td></tr>
+                <tr><td><strong>GC pause times &amp; frequency</strong></td><td><code>jvm.gc.pause</code>, GC logs, Grafana JVM dashboard</td><td>Pauses &gt; 1 s explain the spike directly — heap pressure or churn.</td></tr>
+                <tr><td><strong>Thread-pool usage / saturation</strong></td><td>Tomcat <code>http.server.requests</code>, <code>tomcat.threads.busy</code></td><td>All worker threads busy → upstream waits in the accept queue.</td></tr>
+                <tr><td><strong>Connection-pool usage</strong></td><td>HikariCP <code>hikaricp.connections.usage</code>, <code>hikaricp.connections.pending</code></td><td>Pool exhausted → every request waits on a free connection.</td></tr>
+                <tr><td><strong>Downstream service latency</strong></td><td>Outbound RPC dashboards, APM dependency map</td><td>One slow neighbour cascades into us if we don't have timeouts / breakers.</td></tr>
+                <tr><td><strong>Recent deploys / config flips</strong></td><td>Deploy tracker, feature-flag history, GitOps log</td><td>Statistically the #1 cause — check it before you check anything else.</td></tr>
+                <tr><td><strong>Traffic volume vs baseline</strong></td><td>RPS / QPS panel with week-over-week overlay</td><td>Distinguishes a capacity problem from a code regression.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Step 3 — Decision: was there a recent release?</b></p>
+          <div class="flow">
+            <div class="flow-step">Overlay <strong>deploy markers</strong> on the latency graph</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><strong>YES — spike lines up with a release / config flip</strong> → <strong>rollback first</strong> (or shift traffic to the previous stable version / disable the new feature flag). Don't investigate first. Rollback now, RCA later.</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><strong>NO — nothing shipped</strong> → continue to bottleneck identification (Step 4). Treat traffic, downstream, or infra as suspect.</div>
+          </div>
+          <p>Rollback is almost always faster than a forward-fix. The cost of a rollback is small; the cost of debugging a broken prod with users on it is huge. <em>"When in doubt, roll it back."</em></p>
+
+          <p><b>Step 4 — Symptom → likely cause map:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Symptom in dashboards</th><th>Likely cause</th><th>Quick check</th></tr></thead>
+              <tbody>
+                <tr><td><strong>DB latency high</strong></td><td>Slow query (missing index / bad plan), row-level lock, connection-pool exhausted, replication lag</td><td><code>pg_stat_activity</code>, <code>EXPLAIN ANALYZE</code>, HikariCP metrics</td></tr>
+                <tr><td><strong>GC pause high</strong></td><td>Memory pressure, heap too small, churny code path (huge allocations per request)</td><td><code>jstat -gc</code>, GC logs, <code>jvm.gc.pause</code></td></tr>
+                <tr><td><strong>Downstream call slow</strong></td><td>External dependency degraded, cascading failure, missing timeout / circuit breaker</td><td>APM dependency map, downstream's own dashboards</td></tr>
+                <tr><td><strong>CPU high (&gt; 80%)</strong></td><td>Heavy computation, traffic spike, inefficient algorithm, regex backtracking, JSON ser/de bomb</td><td><code>kubectl top pods</code>, async-profiler CPU flamegraph</td></tr>
+                <tr><td><strong>Threads BLOCKED / WAITING</strong></td><td>Thread-pool starvation, synchronous wait on a slow downstream, lock contention</td><td><code>jstack</code> / <code>/actuator/threaddump</code> — 3 dumps a few seconds apart</td></tr>
+                <tr><td><strong>Cold cache after deploy</strong></td><td>Cache hit rate plunges → DB gets hammered with origin reads</td><td>Cache hit-ratio metric, DB QPS spike right after deploy</td></tr>
+                <tr><td><strong>Hot key on cache / DB</strong></td><td>Uneven partitioning — one shard / one Redis key getting 90% of traffic</td><td>Redis <code>--hotkeys</code>, DB per-table QPS, partition / shard metrics</td></tr>
+                <tr><td><strong>Network / DNS issues</strong></td><td>Packet loss, slow DNS resolution, NAT exhaustion, cross-AZ hop</td><td><code>dig</code>, <code>mtr</code>, cloud provider's network dashboard</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Step 5 — Mitigation playbook (priority order):</b></p>
+          <div class="flow">
+            <div class="flow-step">1. <strong>Rollback the recent change</strong> — fastest reversal if a deploy / config flip / flag is correlated.</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">2. <strong>Scale out</strong> — add pods / nodes / read-replicas. Buys headroom for saturation issues.</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">3. <strong>Open the circuit breaker</strong> on a slow downstream — stop waiting on a dependency that's already dead. Fail fast.</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">4. <strong>Increase pool size / tune timeouts</strong> — bump HikariCP, HTTP-client, Tomcat thread pool; tighten outbound timeouts so slow calls don't pile up.</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">5. <strong>Throttle / shed load at the gateway</strong> — rate-limit abusive tenants, reject low-priority traffic, protect the core.</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">6. <strong>Add (or pre-warm) cache</strong> for the hot endpoint — short TTL is enough to shield the DB.</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">7. <strong>Failover to the secondary region</strong> — last resort when one region / one AZ is degraded.</div>
+          </div>
+
+          <p><b>Step 6 — Diagnostic commands &amp; endpoints cheat-sheet:</b></p>
+          <pre><code># --- APM / distributed tracing (find the slow span) ---
+# Datadog / New Relic / Dynatrace / Tempo — pull a trace of a slow request
+# Filter: env:prod service:checkout duration:&gt;2s
+
+# --- Spring Boot Actuator (per-pod, live) ---
+curl :8080/actuator/metrics/http.server.requests          # p50/p95/p99 per endpoint
+curl :8080/actuator/metrics/jvm.gc.pause                  # GC pause time
+curl :8080/actuator/metrics/hikaricp.connections.usage    # DB pool saturation
+curl :8080/actuator/metrics/tomcat.threads.busy           # worker thread saturation
+curl :8080/actuator/threaddump   &gt; threads.json           # thread dump (no SSH needed)
+curl :8080/actuator/heapdump     --output heap.hprof      # if also under memory pressure
+
+# --- JVM live (when you do have a shell) ---
+jps -l
+jstack &lt;pid&gt;                  # thread stacks — take 3, ~5 s apart
+jstat -gc &lt;pid&gt; 1000 10       # live GC stats (10 samples × 1 s)
+jcmd &lt;pid&gt; GC.heap_info       # heap occupancy right now
+
+# --- Database (Postgres example) ---
+SELECT pid, state, wait_event_type, wait_event, now() - query_start AS dur, query
+FROM pg_stat_activity
+WHERE state &lt;&gt; 'idle' ORDER BY dur DESC LIMIT 20;       # who's running long?
+
+SELECT query, calls, mean_exec_time, total_exec_time
+FROM pg_stat_statements ORDER BY mean_exec_time DESC LIMIT 20;
+
+EXPLAIN (ANALYZE, BUFFERS) SELECT ...;                  # plan + actual time
+
+# --- Kubernetes ---
+kubectl top pods -n prod                                # CPU / memory per pod
+kubectl get pods -n prod                                # restart counts, age
+kubectl describe pod &lt;pod&gt;                              # OOMKilled? Probe failures?
+kubectl logs -n prod &lt;pod&gt; --since=10m | tail -200
+
+# --- Network sanity ---
+dig +short downstream-service          # DNS still resolves?
+mtr -rwc 50 downstream-service         # packet loss / hops</code></pre>
+
+          <p><b>Tools cheat-sheet:</b></p>
+          <div class="use-cases">
+            <div class="use-case"><b>APM (Datadog / New Relic / Dynatrace)</b><br/>Distributed tracing — single screen tells you which span owns the 5 s.</div>
+            <div class="use-case green"><b>Actuator metrics</b><br/><code>http.server.requests</code>, <code>jvm.gc.pause</code>, <code>hikaricp.connections.usage</code> — no SSH needed.</div>
+            <div class="use-case pink"><b>jstack / threaddump</b><br/>Three dumps 5 s apart — threads stuck in the same place are the suspects.</div>
+            <div class="use-case orange"><b>jstat -gc / GC logs</b><br/>Live evidence of GC pause length and frequency.</div>
+            <div class="use-case"><b>pg_stat_activity / EXPLAIN ANALYZE</b><br/>Find the query that's eating the DB right now.</div>
+            <div class="use-case green"><b>kubectl top / describe</b><br/>Pod-level CPU / memory / restart counts — the orchestrator's view.</div>
+          </div>
+
+          <p><b>Common pitfalls &amp; interview gotchas:</b></p>
+          <ul>
+            <li><strong>Don't fix what you can't measure.</strong> Alert on RED metrics (Rate, Errors, Duration) per endpoint <em>before</em> you need them — flying blind during an incident is the real failure.</li>
+            <li><strong>p99 vs p50 — they tell different stories.</strong> High p99 with a normal p50 usually means <em>saturation</em> (pool/queue/GC), not broken code. High p50 too means the hot path is genuinely slower.</li>
+            <li><strong>Always compare to baseline</strong> — same hour last week, same day-of-week. "Latency is up" is meaningless without a reference.</li>
+            <li><strong>Cascade failures</strong> — one slow downstream is enough to take out the whole service if you have no timeout / no circuit breaker. Always set both, always lower than the caller's timeout.</li>
+            <li><strong>GC pause looks like a hang</strong> — threads "frozen" in unrelated code can just be paused for GC. Distinguish via GC logs / <code>jvm.gc.pause</code>; don't chase ghost lock contention.</li>
+            <li><strong>The recent deploy is the #1 cause statistically</strong> — check the deploy timeline <em>before</em> you check anything else. Rollback is the cheapest mitigation in your toolbox.</li>
+            <li><strong>Cold cache after deploy</strong> looks like the new code is slow — actually the cache just got wiped and the DB is now serving every request. Pre-warm or stagger deploys.</li>
+            <li><strong>"Stabilize first, RCA later."</strong> Customers come before perfect understanding. A heroic deep-dive that takes 45 minutes while errors pour out is the wrong call — mitigate in 5, debug in 50.</li>
+          </ul>
+
+          <p class="takeaway">
+            <b>Interview one-liner:</b> When p99 jumps from 200 ms to 5 seconds, my first job is to <strong>confirm blast radius, not chase root cause</strong> — is it one endpoint or all, one pod or all, one region / tenant / customer, errors-with-latency or latency-only, and how does traffic compare to baseline. Then I check the <strong>high-signal dashboards and a distributed trace of a slow request</strong> — APM spans, DB query time, GC pauses, thread-pool and connection-pool saturation, downstream latency, and the deploy / config / flag timeline. If the spike lines up with a recent release, I <strong>rollback first</strong> and investigate after — that's the cheapest mitigation. If nothing shipped, I isolate the bottleneck using the symptom map: DB (slow query / lock / pool exhausted), GC (memory pressure), downstream (cascade — fix with timeout + circuit breaker), CPU (computation / traffic), threads (pool starvation / synchronous wait), cold cache after deploy, hot key, or network. I mitigate in priority order — <strong>rollback → scale out → open the circuit breaker → bump pools &amp; tighten timeouts → throttle at the gateway → add or pre-warm a cache → fail over a region</strong> — then verify on the same RED dashboards that flagged it, and only <em>then</em> do the proper root-cause and post-mortem. The mantra is simple: <strong>stabilize first, RCA later — customers before curiosity.</strong>
+          </p>
         </div>
       </details>
 

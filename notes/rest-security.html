@@ -464,14 +464,504 @@ class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
       </details>
 
       <details class="qa">
-        <summary>Idempotency — why and how to implement?</summary>
+        <summary>How do you implement idempotency in distributed systems? <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p><strong>Idempotent</strong>: making the same request many times has the same effect as making it once. Critical for POST endpoints that handle money, orders, or external integrations — clients retry on network errors and you don't want duplicate charges.</p>
-          <p>Pattern: client sends an <code>Idempotency-Key</code> header (UUID). Server stores the key + first response in a fast store (Redis/Postgres) with a TTL. On retry: same key → return the stored response instead of re-executing.</p>
-          <pre><code>POST /payments
-Idempotency-Key: 5f3b...
-{ "amount": 1000, "card": "..." }</code></pre>
-          <p>Stripe popularised this and it's now the industry standard. At Indus Net I added it on the resume-upload endpoint to prevent duplicate parsing when mobile clients retried over flaky networks.</p>
+          <p class="answer-intro"><strong>Idempotent</strong> means: making the same request many times has the same effect as making it once. In distributed systems, retries are unavoidable — networks drop, clients reconnect, queues redeliver — so non-idempotent endpoints turn every retry into a duplicate charge, duplicate order, or duplicate payment. Production systems make every <em>state-changing</em> operation idempotent by design.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Stamp every write request with a stable <code>Idempotency-Key</code>. The server records the key + result on first execution; on retry with the same key, it returns the cached result without re-executing the side effect.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Where idempotency matters</div>
+            <ul>
+              <li><strong>Payments</strong> — duplicate charges are catastrophic.</li>
+              <li><strong>Order placement</strong> — duplicate orders are at best confusing, at worst inventory loss.</li>
+              <li><strong>External API calls</strong> — Stripe, Twilio, AWS SDK — anything where the network might drop after the side effect.</li>
+              <li><strong>Kafka consumers</strong> — at-least-once delivery means the same event will be processed twice.</li>
+              <li><strong>Webhook receivers</strong> — providers retry; you must dedupe.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> The HTTP idempotency-key flow (Stripe pattern)</div>
+            <div class="flow">
+              <div class="flow-step">Client generates UUID for the operation: <code>Idempotency-Key: 5f3b...</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Server checks idempotency store keyed by (key, endpoint)</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">First time → execute business logic → persist <code>(key, status, response)</code> in same DB transaction</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Return response with <code>Idempotency-Replayed: false</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step accent">Same key arrives again (retry) → return stored response with <code>Idempotency-Replayed: true</code></div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Server-side implementation</div>
+            <pre><code>// Idempotency table — colocated with the business DB
+CREATE TABLE idempotency_records (
+    key            VARCHAR(64)  NOT NULL,
+    endpoint       VARCHAR(128) NOT NULL,
+    request_hash   VARCHAR(64)  NOT NULL,    -- guard against same key, different body
+    response_body  JSONB,
+    response_code  INT,
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (key, endpoint)
+);</code></pre>
+            <pre><code>@PostMapping("/payments")
+@Transactional
+public ResponseEntity&lt;PaymentResult&gt; charge(
+        @RequestHeader("Idempotency-Key") String key,
+        @RequestBody @Valid ChargeRequest req) {
+
+    String requestHash = sha256(req);
+    String endpoint = "/payments";
+
+    Optional&lt;IdempotencyRecord&gt; existing = idempotencyRepo.findByKeyAndEndpoint(key, endpoint);
+    if (existing.isPresent()) {
+        IdempotencyRecord rec = existing.get();
+        if (!rec.getRequestHash().equals(requestHash)) {
+            return ResponseEntity.status(409)
+                .body(new PaymentResult("Idempotency-Key reused with different body"));
+        }
+        return ResponseEntity.status(rec.getResponseCode())
+            .header("Idempotency-Replayed", "true")
+            .body(deserialize(rec.getResponseBody()));
+    }
+
+    PaymentResult result = paymentService.charge(req);
+
+    idempotencyRepo.save(new IdempotencyRecord(key, endpoint, requestHash,
+                                               serialize(result), 200));
+    return ResponseEntity.ok(result);
+}</code></pre>
+            <p class="solution-desc">Persisting the idempotency record + business write in the <strong>same DB transaction</strong> is the key. If the transaction commits, both succeeded; if it rolls back, the next retry with the same key starts fresh.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Two storage choices</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-title">Same DB as business data</div>
+                <ul>
+                  <li>Atomic with the business write — no dual-write risk.</li>
+                  <li>Slower but simpler.</li>
+                  <li>Default choice for financial / order systems.</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-title">Redis with TTL</div>
+                <ul>
+                  <li>Fast — sub-millisecond lookups.</li>
+                  <li>Lossy — Redis isn't always durable across failover.</li>
+                  <li>Use only when the operation itself is also recoverable (e.g., the natural-key check would catch duplicates).</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Natural-key idempotency (no separate key needed)</div>
+            <p>Sometimes the business itself provides idempotency:</p>
+            <ul>
+              <li><code>UPSERT … ON CONFLICT (order_id) DO NOTHING</code> — same orderId twice = no-op.</li>
+              <li>Optimistic locking with <code>@Version</code> — second update with stale version fails.</li>
+              <li>Webhook providers stamp every event with a unique <code>event_id</code> — dedupe in a small <code>processed_events</code> table.</li>
+            </ul>
+            <p>Prefer natural-key idempotency where it's possible — fewer moving parts than an idempotency-key header.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Common interview gotchas</div>
+            <ul>
+              <li>Idempotency-Key on the request is <strong>generated by the client</strong>, not the server. Server-generated keys defeat the purpose.</li>
+              <li>The key must be stable across retries — same UUID for the same business operation.</li>
+              <li>Store the <em>request hash</em> alongside the key — replay with the same key but a different body should return 409, not silently succeed.</li>
+              <li>Idempotency record + business write must be in the same DB transaction, otherwise retries can run side effects twice.</li>
+              <li>TTL the table (24h–7d) — keys live forever otherwise.</li>
+              <li>GET / HEAD are inherently idempotent and need no key. PUT and DELETE are idempotent by HTTP definition. POST is the case that needs an explicit key.</li>
+              <li>Don't reuse the idempotency key for retries with logically different inputs.</li>
+              <li>For Kafka consumers, the equivalent is a <code>processed_events(event_id PRIMARY KEY)</code> dedup table.</li>
+              <li>Document the key in your API spec — clients need to know it exists.</li>
+            </ul>
+          </div>
+
+          <p class="takeaway"><b>Interview one-liner:</b> In a distributed system every state-changing call must be <strong>idempotent</strong> — same request applied N times has the same effect as once. The standard pattern (popularised by Stripe) is an <code>Idempotency-Key</code> request header plus an idempotency table keyed by <code>(key, endpoint)</code> with the request hash and stored response. The first call executes the business logic and persists the record in the <em>same DB transaction</em>; subsequent calls with the same key return the stored response without re-executing. For Kafka consumers, the equivalent is dedup by <code>event_id</code> in a <code>processed_events</code> table. Where possible, prefer <strong>natural-key idempotency</strong> (UPSERT on a business id) — simpler, no extra header.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Application Security with Spring Security — overview <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro"><strong>Spring Security</strong> is the standard framework for securing Spring / Spring Boot applications. It handles <strong>authentication</strong> (who you are), <strong>authorization</strong> (what you can do), and a bunch of cross-cutting concerns — JWT/OAuth2 integration, password hashing, CSRF protection, session management, and common attack mitigations — through a pluggable chain of servlet filters.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Every HTTP request goes through a <strong>chain of security filters</strong> <em>before</em> it ever reaches your controller. Each filter handles one concern — authentication, CSRF, CORS, authorization. Configure them once; every endpoint is protected by default.</span>
+            </div>
+          </div>
+
+          <p><b>What Spring Security gives you out of the box:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Feature</th><th>Purpose</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Authentication</strong></td><td>Verify identity — form login, Basic auth, JWT, OAuth2, LDAP, SAML, etc.</td></tr>
+                <tr><td><strong>Authorization</strong></td><td>Decide what an authenticated user can access — by role, by permission, by SpEL expression.</td></tr>
+                <tr><td><strong>JWT / OAuth2 / OIDC</strong></td><td>Modern, stateless API security via tokens — built-in resource-server support.</td></tr>
+                <tr><td><strong>Password encryption</strong></td><td><code>BCryptPasswordEncoder</code> / Argon2 / PBKDF2 — never store plain passwords.</td></tr>
+                <tr><td><strong>CSRF protection</strong></td><td>Enabled by default for session-based apps; usually disabled for stateless REST APIs.</td></tr>
+                <tr><td><strong>CORS handling</strong></td><td>First-class support for cross-origin policies on the API.</td></tr>
+                <tr><td><strong>Session management</strong></td><td>Fixation protection, concurrent-session limits, timeouts.</td></tr>
+                <tr><td><strong>Method-level security</strong></td><td><code>@PreAuthorize("hasRole('ADMIN')")</code> on service methods.</td></tr>
+                <tr><td><strong>Attack mitigation</strong></td><td>Secure headers (HSTS, X-Frame-Options, CSP), clickjacking, session fixation, etc.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Authentication vs Authorization — the foundation everyone confuses:</b></p>
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">Authentication (AuthN)</div>
+              <p><em>"Who are you?"</em></p>
+              <ul>
+                <li>Verify credentials — password, token, certificate.</li>
+                <li>Result: a verified <code>Authentication</code> object in the <code>SecurityContext</code>.</li>
+                <li>Example: <strong>Login</strong>.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Authorization (AuthZ)</div>
+              <p><em>"What are you allowed to do?"</em></p>
+              <ul>
+                <li>Decide if the authenticated user can access this resource.</li>
+                <li>Enforced via roles / authorities / SpEL rules.</li>
+                <li>Example: only <strong>ADMIN</strong> can hit <code>/admin/**</code>.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p><b>How a request flows through Spring Security:</b></p>
+          <div class="flow">
+            <div class="flow-step">Client request hits the server</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><strong>Security Filter Chain</strong> intercepts (a list of servlet filters)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><strong>Authentication filter</strong> (e.g., <code>JwtAuthFilter</code>) reads the token / credentials</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><code>AuthenticationManager</code> validates and produces an <code>Authentication</code> object</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Stored in <code>SecurityContextHolder</code> for the rest of the request</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><strong>Authorization filter</strong> checks roles/permissions for the URL or method</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">If allowed → request reaches the <code>@RestController</code>; otherwise → 401 / 403</div>
+          </div>
+
+          <p><b>The minimum modern config (Spring Security 6 / Boot 3) — stateless JWT API:</b></p>
+          <pre><code>@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity     // for @PreAuthorize / @PostAuthorize
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           JwtAuthFilter jwt) throws Exception {
+        return http
+            .csrf(csrf -&gt; csrf.disable())                             // stateless API
+            .sessionManagement(s -&gt;
+                 s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -&gt; auth
+                .requestMatchers("/auth/**", "/actuator/health").permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .anyRequest().authenticated())
+            .addFilterBefore(jwt, UsernamePasswordAuthenticationFilter.class)
+            .build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}</code></pre>
+
+          <p><b>JWT-based authentication — the typical flow:</b></p>
+          <div class="flow">
+            <div class="flow-step">User <code>POST /auth/login</code> with credentials</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Server validates credentials → issues a <strong>signed JWT</strong> (with <code>sub</code>, <code>roles</code>, <code>exp</code>)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Client stores the token, sends <code>Authorization: Bearer &lt;token&gt;</code> on every request</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Spring's <code>JwtAuthFilter</code> verifies signature + expiry, builds an <code>Authentication</code> object</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Request continues to the controller with a populated <code>SecurityContext</code></div>
+          </div>
+
+          <p><b>Password storage — never plain text:</b></p>
+          <pre><code>String hash = passwordEncoder.encode(rawPassword);    // store this
+boolean ok = passwordEncoder.matches(rawPassword, hash);</code></pre>
+          <p><code>BCryptPasswordEncoder</code> (or Argon2) — slow, salted, designed to resist brute-force. Spring Boot picks a sensible default; never roll your own hashing.</p>
+
+          <p><b>Role-based access control:</b></p>
+          <pre><code>// URL-level
+.authorizeHttpRequests(auth -&gt; auth
+    .requestMatchers("/admin/**").hasRole("ADMIN")
+    .requestMatchers("/users/**").hasAnyRole("USER", "ADMIN")
+    .anyRequest().authenticated());
+
+// Method-level
+@PreAuthorize("hasRole('ADMIN')")
+public void deleteUser(Long id) { ... }
+
+@PreAuthorize("hasRole('USER') and #userId == authentication.principal.id")
+public Profile getProfile(Long userId) { ... }</code></pre>
+
+          <p><b>Why Spring Security in production:</b></p>
+          <ul>
+            <li><strong>Secure by default</strong> — every endpoint requires authentication unless explicitly opened with <code>permitAll()</code>.</li>
+            <li><strong>Battle-tested filters</strong> — CSRF, CORS, secure headers, session fixation are handled for you.</li>
+            <li><strong>Industry-standard auth</strong> — built-in support for OAuth2, OIDC, JWT, SAML, LDAP.</li>
+            <li><strong>Fine-grained access control</strong> — per-URL, per-method, per-row with SpEL.</li>
+            <li><strong>Plays well with the ecosystem</strong> — Keycloak, Auth0, AWS Cognito, Spring Cloud Gateway.</li>
+          </ul>
+
+          <p class="takeaway">
+            <b>Interview one-liner:</b> Spring Security is the framework for securing Spring Boot applications. It handles <strong>authentication</strong> ("who you are"), <strong>authorization</strong> ("what you can do"), and common protections like JWT/OAuth2, password encryption (<code>BCryptPasswordEncoder</code>), CSRF, CORS, and secure headers — implemented as a chain of <strong>servlet filters</strong> that run before every request reaches the controller. The typical setup is a stateless <strong>JWT-based API</strong>: client logs in once, receives a signed token, and sends it on every request in the <code>Authorization: Bearer ...</code> header; Spring Security validates the signature, populates the <code>SecurityContext</code>, and enforces role-based access via <code>@PreAuthorize</code> or URL matchers.
+          </p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Spring Security Filter Chain — how requests flow through filters, and JWT auth in detail <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">Spring Security isn't magic — under the hood it is a <strong>chain of servlet filters</strong>. Every HTTP request that hits a Spring Boot app passes through this chain <em>before</em> reaching your <code>@RestController</code>. Each filter handles one concern (authentication, authorization, CSRF, CORS, JWT parsing, exception translation, security headers) and they run in a strict, well-known order. Understanding this chain is the single most useful mental model for debugging Spring Security in interviews and in production.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Spring Security is <strong>just a chain of servlet <code>Filter</code>s</strong> registered with the servlet container via <code>FilterChainProxy</code>. Every request walks the chain top-to-bottom — authentication first, authorization later — and only reaches the controller if no filter rejects it.</span>
+            </div>
+          </div>
+
+          <p><b>What the filter chain handles:</b></p>
+          <ul>
+            <li><strong>Authentication</strong> — verify the caller's identity (form login, Basic auth, JWT, OAuth2).</li>
+            <li><strong>Authorization</strong> — check the authenticated user against URL / method rules.</li>
+            <li><strong>JWT validation</strong> — extract <code>Authorization: Bearer ...</code>, verify signature + <code>exp</code>.</li>
+            <li><strong>Session management</strong> — load / save <code>SecurityContext</code> across requests, control the session creation policy.</li>
+            <li><strong>CSRF protection</strong> — token check for state-changing requests (disabled for stateless JWT APIs).</li>
+            <li><strong>CORS</strong> — pre-flight and origin checks before anything else runs.</li>
+            <li><strong>Exception translation</strong> — convert <code>AuthenticationException</code> / <code>AccessDeniedException</code> into <code>401</code> / <code>403</code>.</li>
+            <li><strong>Security headers</strong> — HSTS, X-Frame-Options, X-Content-Type-Options, Cache-Control.</li>
+          </ul>
+
+          <p><b>The request path — from socket to controller:</b></p>
+          <div class="flow">
+            <div class="flow-step">Client sends an HTTP request</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Servlet container hands it to <code>DispatcherServlet</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><strong>SecurityFilterChain</strong> intercepts (registered via <code>FilterChainProxy</code> / <code>DelegatingFilterProxy</code>)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><strong>AuthenticationFilter</strong> (e.g., <code>JwtAuthenticationFilter</code>) — reads token / credentials, builds an <code>Authentication</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><strong>AuthorizationFilter</strong> (Spring Security 6) — checks roles / SpEL rules for this URL</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Request reaches the <code>@RestController</code> (or <code>401</code> / <code>403</code> if any filter rejected it)</div>
+          </div>
+
+          <p><b>Key default filters — in the order they run:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>#</th><th>Filter</th><th>Purpose</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td><code>CorsFilter</code></td><td>Handles CORS pre-flight and adds CORS headers — runs early so <code>OPTIONS</code> calls succeed without auth.</td></tr>
+                <tr><td>2</td><td><code>CsrfFilter</code></td><td>Validates the CSRF token for state-changing requests (disabled for stateless JWT APIs).</td></tr>
+                <tr><td>3</td><td><code>HeaderWriterFilter</code></td><td>Writes security headers (HSTS, X-Frame-Options, Cache-Control, etc.).</td></tr>
+                <tr><td>4</td><td><code>SecurityContextPersistenceFilter</code></td><td>Loads <code>SecurityContext</code> from the session at request start, saves it at end (replaced by <code>SecurityContextHolderFilter</code> in newer versions).</td></tr>
+                <tr><td>5</td><td><code>UsernamePasswordAuthenticationFilter</code></td><td>Form-login filter — reads <code>username</code>/<code>password</code> from <code>POST /login</code>.</td></tr>
+                <tr><td>5</td><td><code>BasicAuthenticationFilter</code></td><td>Parses the HTTP <code>Basic</code> <code>Authorization</code> header.</td></tr>
+                <tr><td>5</td><td><code>BearerTokenAuthenticationFilter</code> / custom <code>JwtAuthenticationFilter</code></td><td>Extracts <code>Authorization: Bearer ...</code>, validates the JWT, populates <code>SecurityContextHolder</code>.</td></tr>
+                <tr><td>6</td><td><code>ExceptionTranslationFilter</code></td><td>Wraps the rest of the chain — converts <code>AuthenticationException</code> → <code>401</code> and <code>AccessDeniedException</code> → <code>403</code>.</td></tr>
+                <tr><td>7</td><td><code>FilterSecurityInterceptor</code> / <code>AuthorizationFilter</code></td><td>Final authorization gate — checks the authenticated user against URL rules. <strong>Renamed in Spring Security 6</strong>: <code>FilterSecurityInterceptor</code> → <code>AuthorizationFilter</code>.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>The modern config — Spring Security 6 / Boot 3, stateless JWT API:</b></p>
+          <pre><code>@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
+public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        return http
+            .csrf(csrf -&gt; csrf.disable())                              // stateless API — no cookies
+            .cors(Customizer.withDefaults())
+            .sessionManagement(s -&gt;
+                 s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -&gt; auth
+                .requestMatchers("/auth/**", "/actuator/health").permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .anyRequest().authenticated())
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+            .build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {
+        return cfg.getAuthenticationManager();
+    }
+}</code></pre>
+
+          <p><b>The custom <code>JwtAuthenticationFilter</code> — one job: validate the token and populate the context:</b></p>
+          <pre><code>@Component
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private final JwtUtil jwt;
+    private final UserDetailsService users;
+
+    public JwtAuthenticationFilter(JwtUtil jwt, UserDetailsService users) {
+        this.jwt = jwt;
+        this.users = users;
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest req,
+                                    HttpServletResponse res,
+                                    FilterChain chain)
+            throws ServletException, IOException {
+
+        String header = req.getHeader("Authorization");
+        if (header != null &amp;&amp; header.startsWith("Bearer ")) {
+            String token = header.substring(7);
+            try {
+                String username = jwt.extractUsername(token);              // throws if signature / exp invalid
+                if (username != null &amp;&amp;
+                    SecurityContextHolder.getContext().getAuthentication() == null) {
+
+                    UserDetails ud = users.loadUserByUsername(username);
+                    UsernamePasswordAuthenticationToken auth =
+                        new UsernamePasswordAuthenticationToken(ud, null, ud.getAuthorities());
+                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                }
+            } catch (JwtException ignored) {
+                // invalid token — leave context empty; ExceptionTranslationFilter → 401
+            }
+        }
+        chain.doFilter(req, res);                                          // hand off to next filter
+    }
+}</code></pre>
+
+          <p><b>Important — request blocked early:</b> if any filter rejects the request (bad token, expired token, missing auth, failed authorization), the response is written <em>immediately</em> by <code>ExceptionTranslationFilter</code> and <strong>the controller never runs</strong>. That's the whole point of putting auth in filters — invalid traffic dies at the edge, before any business code is touched.</p>
+
+          <p><b>JWT Authentication — the end-to-end flow</b></p>
+          <p>JWT (JSON Web Token) is the dominant pattern for stateless REST APIs. The flow has two distinct phases: <strong>login</strong> (issue a token once) and <strong>every subsequent request</strong> (validate the token cheaply, no DB hit for session lookup).</p>
+
+          <div class="flow">
+            <div class="flow-step">1. Client <code>POST /login</code> with <code>username</code> + <code>password</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">2. <code>AuthenticationManager</code> validates credentials via <code>UserDetailsService</code> + <code>PasswordEncoder</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">3. Server signs a <strong>JWT</strong> (<code>header.payload.signature</code>) and returns it in the response body</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">4. Client stores the token (<code>localStorage</code> / <code>sessionStorage</code> / HttpOnly cookie)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">5. Every subsequent request carries <code>Authorization: Bearer &lt;token&gt;</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">6. <code>JwtAuthenticationFilter</code> parses → verifies signature → checks <code>exp</code> → loads <code>UserDetails</code> → sets <code>SecurityContextHolder</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">7. Request reaches the controller (or <code>401 Unauthorized</code> if any check fails)</div>
+          </div>
+
+          <p><b>The two flows side-by-side:</b></p>
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">Login (issue token)</div>
+              <ul>
+                <li><code>POST /auth/login</code> with credentials.</li>
+                <li><code>AuthenticationManager.authenticate(...)</code> loads the user and checks the <code>BCrypt</code> hash.</li>
+                <li>On success, build a JWT with <code>sub</code>, <code>roles</code>, <code>iat</code>, <code>exp</code>.</li>
+                <li>Sign with the server secret (HS256) or private key (RS256).</li>
+                <li>Return <code>{ "token": "eyJhbGciOi..." }</code>.</li>
+                <li><strong>Happens once.</strong></li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Subsequent request (validate token)</div>
+              <ul>
+                <li>Client sends <code>Authorization: Bearer &lt;token&gt;</code>.</li>
+                <li><code>JwtAuthenticationFilter</code> extracts the token.</li>
+                <li>Verifies signature (no DB call) and <code>exp</code>.</li>
+                <li>Loads <code>UserDetails</code>, populates <code>SecurityContextHolder</code>.</li>
+                <li>Controller runs with a full auth context.</li>
+                <li><strong>Happens on every API call.</strong></li>
+              </ul>
+            </div>
+          </div>
+
+          <p><b>The three parts of a JWT — <code>header.payload.signature</code>:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Part</th><th>Contents</th><th>Encoding</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Header</strong></td><td>Algorithm (<code>HS256</code>, <code>RS256</code>) and token type (<code>JWT</code>).</td><td>Base64Url JSON</td></tr>
+                <tr><td><strong>Payload</strong></td><td>Claims — <code>sub</code> (user id), <code>roles</code>, <code>iat</code>, <code>exp</code>, custom fields.</td><td>Base64Url JSON</td></tr>
+                <tr><td><strong>Signature</strong></td><td>HMAC/RSA over <code>base64(header) + "." + base64(payload)</code> using the server's secret / private key.</td><td>Base64Url bytes</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Why JWT for modern APIs:</b></p>
+          <ul>
+            <li><strong>Stateless</strong> — the server holds no session; the token is self-contained.</li>
+            <li><strong>Scalable</strong> — any instance behind a load balancer can validate the token without sticky sessions.</li>
+            <li><strong>No server-side session store</strong> — no Redis / DB hit per request just to identify the user.</li>
+            <li><strong>Microservices-friendly</strong> — one token works across services that share the same secret / public key.</li>
+            <li><strong>Signed and tamper-proof</strong> — any change to the payload invalidates the signature.</li>
+          </ul>
+
+          <p><b>JWT gotchas — what trips people up:</b></p>
+          <ul>
+            <li><strong>Never store secrets in the payload</strong> — it's base64, not encrypted; anyone with the token can read every claim.</li>
+            <li><strong>Always validate signature <em>and</em> <code>exp</code></strong> — checking one without the other is a classic security bug.</li>
+            <li><strong>Short TTL + refresh tokens</strong> — 5–15 min access tokens, longer refresh tokens stored more securely.</li>
+            <li><strong>Hard to revoke</strong> — a valid signed token works until <code>exp</code>. Mitigations: short TTL, a server-side denylist, or token versioning.</li>
+            <li><strong>HS256 vs RS256</strong> — HS256 (shared secret) is simpler but every verifier needs the secret; RS256 (asymmetric) lets others verify with a public key without ever holding the signing key.</li>
+            <li><strong>Storage matters</strong> — <code>localStorage</code> is readable from any JS (XSS theft risk); HttpOnly + Secure cookies protect against XSS but reintroduce CSRF concerns.</li>
+          </ul>
+
+          <p><b>Common interview gotchas:</b></p>
+          <ul>
+            <li><strong>Filter order matters</strong> — use <code>addFilterBefore</code> / <code>addFilterAfter</code> deliberately; the JWT filter must run <em>before</em> <code>UsernamePasswordAuthenticationFilter</code> so the context is populated before authorization runs.</li>
+            <li><strong>Extend <code>OncePerRequestFilter</code></strong> — guarantees the filter runs exactly once per request, even with <code>RequestDispatcher</code> forwards and async dispatches.</li>
+            <li><strong><code>SecurityContextHolder</code> is <code>ThreadLocal</code></strong> — in <code>@Async</code> or reactive code the context doesn't propagate automatically; use <code>DelegatingSecurityContextExecutor</code> and clear it explicitly to avoid leaks.</li>
+            <li><strong><code>permitAll()</code> still goes through the chain</strong> — the whole filter chain runs for every request; <code>permitAll()</code> only tells the authorization filter to allow it.</li>
+            <li><strong>Disable CSRF for stateless JWT APIs</strong> — CSRF attacks rely on cookies being auto-sent; with <code>Authorization: Bearer</code> the browser never auto-attaches the token, so CSRF protection is unnecessary noise.</li>
+            <li><strong>Why JWT filter goes <em>before</em> <code>UsernamePasswordAuthenticationFilter</code></strong> — if the JWT is valid, the request is already authenticated and the username/password filter silently skips. Putting it after lets an unauthenticated context fall through and 401 the request even when the token is valid.</li>
+          </ul>
+
+          <p class="takeaway">
+            <b>Interview one-liner:</b> Spring Security is a <strong>chain of servlet filters</strong> registered by <code>FilterChainProxy</code>; every request walks the chain — CORS, CSRF, headers, <code>SecurityContext</code> persistence, an <strong>authentication filter</strong> (form login / Basic / JWT), <code>ExceptionTranslationFilter</code>, and finally the <strong>authorization filter</strong> (<code>AuthorizationFilter</code> in Spring Security 6, formerly <code>FilterSecurityInterceptor</code>). For modern stateless APIs the pattern is JWT: on <code>POST /login</code> the <code>AuthenticationManager</code> validates credentials via <code>UserDetailsService</code> + <code>BCryptPasswordEncoder</code> and the server signs a token; every subsequent request carries <code>Authorization: Bearer &lt;token&gt;</code>, a custom <code>JwtAuthenticationFilter</code> (extending <code>OncePerRequestFilter</code>, registered with <code>addFilterBefore(..., UsernamePasswordAuthenticationFilter.class)</code>) verifies the signature + <code>exp</code>, loads the user, and populates <code>SecurityContextHolder</code> — so the controller runs with full auth and rejected requests die at the filter without ever touching business code. Filters are the right abstraction because cross-cutting concerns (auth, CORS, CSRF, headers) belong outside business logic, and the stateless JWT pattern scales horizontally with zero session storage.
+          </p>
         </div>
       </details>
 
@@ -485,16 +975,621 @@ Idempotency-Key: 5f3b...
       </details>
 
       <details class="qa">
-        <summary>OAuth2 — flows and use cases</summary>
+        <summary>Session Management &amp; Cookies — how stateful auth works <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p><strong>OAuth2</strong> is a delegation framework: let a third-party app act on your behalf without sharing your password. Four main flows:</p>
+          <p class="answer-intro">HTTP is <strong>stateless</strong> — the server forgets about a request the moment it's done. <strong>Session Management</strong> is how we re-introduce state across requests so the same user stays logged in, keeps their shopping cart, and sees their preferences — usually by combining a <em>server-side session</em> with a <em>client-side cookie</em>.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">On login, the server creates a <strong>session</strong> (an object holding the user's state) and gives the browser a unique <strong>session ID</strong> via a <code>Set-Cookie</code> header. The browser sends that cookie back on every request, and the server uses it to look up "who is this?" without asking again.</span>
+            </div>
+          </div>
+
+          <p><b>How session-based auth works end-to-end:</b></p>
+          <div class="flow">
+            <div class="flow-step">User submits credentials → <code>POST /login</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Server validates user → creates a <strong>Session</strong> object on the server (memory / Redis / DB)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">A unique <strong>Session ID</strong> is generated (e.g., <code>JSESSIONID=ABC123</code>)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Response sends <code>Set-Cookie: JSESSIONID=ABC123; HttpOnly; Secure</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Browser stores the cookie and includes it on every subsequent request</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Server reads <code>JSESSIONID</code>, looks up the session, identifies the user</div>
+          </div>
+
+          <p><b>Three pieces working together:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Component</th><th>Where it lives</th><th>Purpose</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Session ID</strong></td><td>Generated on server, mirrored to browser</td><td>Unique opaque key linking the request to the user.</td></tr>
+                <tr><td><strong>Server Session</strong></td><td>Server (in-memory / Redis / DB)</td><td>Stores the actual user data — user ID, roles, cart, last-seen, etc.</td></tr>
+                <tr><td><strong>Cookie</strong></td><td>Browser</td><td>Carries the session ID back to the server on every request.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>What a cookie actually is:</b></p>
+          <p>A <strong>cookie</strong> is a small piece of data (max ~4 KB) the server sends to the browser, which the browser stores and automatically attaches to subsequent requests <em>for the same domain</em>. Used for session tracking, "remember me", and user preferences.</p>
+
+          <pre><code>// What the server sends:
+HTTP/1.1 200 OK
+Set-Cookie: JSESSIONID=ABC123; Path=/; HttpOnly; Secure; SameSite=Lax
+
+// What the browser sends back on next request:
+GET /orders HTTP/1.1
+Cookie: JSESSIONID=ABC123</code></pre>
+
+          <p><b>Types of cookies:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Type</th><th>Lifetime</th><th>Used for</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Session cookie</strong></td><td>Deleted when the browser closes (no <code>Max-Age</code>/<code>Expires</code>)</td><td>Short-lived login state.</td></tr>
+                <tr><td><strong>Persistent cookie</strong></td><td>Survives browser close until expiry (<code>Max-Age</code>/<code>Expires</code> set)</td><td>"Remember me", language/theme preferences.</td></tr>
+                <tr><td><strong>HttpOnly cookie</strong></td><td>Any lifetime — not readable from JavaScript</td><td><em>Must</em> be set for session/auth cookies — blocks XSS theft.</td></tr>
+                <tr><td><strong>Secure cookie</strong></td><td>Only sent over HTTPS</td><td>Any cookie carrying identity — never send over plain HTTP.</td></tr>
+                <tr><td><strong>SameSite cookie</strong></td><td><code>Lax</code> / <code>Strict</code> / <code>None</code></td><td>Prevents CSRF by limiting cross-site cookie attachment.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Session vs Cookie — common confusion cleared up:</b></p>
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">Session (server-side)</div>
+              <ul>
+                <li>Stored on the <strong>server</strong> — in memory, Redis, or DB.</li>
+                <li>Holds the actual user data (ID, roles, cart…).</li>
+                <li><strong>More secure</strong> — the client only ever sees an opaque ID.</li>
+                <li>Limited by server memory / requires shared store to scale horizontally.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Cookie (client-side)</div>
+              <ul>
+                <li>Stored in the <strong>browser</strong>.</li>
+                <li>Usually carries just the <strong>session ID</strong>, not user data.</li>
+                <li>Visible to the browser (and to JS unless <code>HttpOnly</code>).</li>
+                <li>Sent automatically by the browser on every same-origin request.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p><b>Session management in Spring Boot:</b></p>
+          <p>Spring Security creates and tracks sessions automatically — after login, it issues a <code>JSESSIONID</code> cookie and stores the <code>SecurityContext</code> against that session. You can tune it:</p>
+          <pre><code>http
+  .sessionManagement(s -&gt; s
+      .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)   // default
+      .sessionFixation(SessionFixationConfigurer::migrateSession) // rotate ID on login
+      .maximumSessions(1)                                         // one device per user
+      .maxSessionsPreventsLogin(false))                           // boot the old session
+  .rememberMe(rm -&gt; rm.tokenValiditySeconds(7 * 24 * 3600));     // persistent cookie</code></pre>
+          <p>For microservices with multiple instances behind a load balancer, store sessions in <strong>Redis</strong> using <strong>Spring Session</strong> so any pod can read any session:</p>
+          <pre><code>// pom.xml
+spring-session-data-redis
+
+// application.yml
+spring:
+  session:
+    store-type: redis
+    timeout: 30m</code></pre>
+
+          <p><b>Common session-security risks &amp; defences:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Risk</th><th>What it is</th><th>Defence</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Session Hijacking</strong></td><td>Attacker steals a valid session ID and impersonates the user.</td><td>HTTPS-only; <code>Secure</code> + <code>HttpOnly</code> cookies; rotate ID on privilege change.</td></tr>
+                <tr><td><strong>Session Fixation</strong></td><td>Attacker tricks user into using a session ID the attacker already knows.</td><td>Regenerate the session ID on login (Spring does this by default).</td></tr>
+                <tr><td><strong>XSS / Cookie Theft</strong></td><td>Malicious JS reads cookies via <code>document.cookie</code>.</td><td><code>HttpOnly</code> cookie flag → unreadable from JS.</td></tr>
+                <tr><td><strong>CSRF</strong></td><td>Cookie is sent automatically — attacker site triggers a state-changing request.</td><td><code>SameSite=Lax/Strict</code>; CSRF tokens for form-based apps.</td></tr>
+                <tr><td><strong>Idle / forever sessions</strong></td><td>Sessions never expire → larger attack window.</td><td>Idle timeout (e.g. 30 min); absolute max session lifetime.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Best practices I always set:</b></p>
           <ul>
-            <li><strong>Authorization Code</strong> — server-side web apps. Redirect user to login, get a code, exchange code+secret for tokens. <strong>With PKCE</strong> for mobile/SPA — most secure modern flow.</li>
-            <li><strong>Client Credentials</strong> — machine-to-machine; no user. Used for service-to-service auth with a client ID + secret.</li>
-            <li><strong>Refresh Token</strong> — get a new access token without re-auth.</li>
-            <li><strong>Implicit and Password</strong> — legacy, no longer recommended.</li>
+            <li><strong>HTTPS everywhere</strong> — no auth cookies should ever travel on plain HTTP.</li>
+            <li><strong><code>HttpOnly</code> + <code>Secure</code> + <code>SameSite</code></strong> on every auth cookie.</li>
+            <li><strong>Rotate session ID on login</strong> — kills session-fixation attacks.</li>
+            <li><strong>Idle &amp; absolute timeouts</strong> — e.g. 30 min idle, 8 h absolute.</li>
+            <li><strong>Server-side invalidation on logout</strong> — don't just delete the cookie client-side.</li>
+            <li><strong>Use Spring Session + Redis</strong> if running more than one instance — sticky sessions are fragile.</li>
           </ul>
-          <p><strong>OpenID Connect (OIDC)</strong> is a thin identity layer on top of OAuth2 that adds the ID token (a JWT identifying the user). Most "Sign in with Google" buttons are OIDC. In Spring Boot I use <code>spring-boot-starter-oauth2-resource-server</code> to validate access tokens from an identity provider like Keycloak, Auth0, or AWS Cognito.</p>
+
+          <p><b>Session-based auth vs JWT — when to pick which:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Aspect</th><th>Session-based</th><th>JWT-based</th></tr></thead>
+              <tbody>
+                <tr><td><strong>State</strong></td><td>Stateful — server stores session</td><td>Stateless — token holds claims</td></tr>
+                <tr><td><strong>Client carries</strong></td><td>Opaque session ID in cookie</td><td>Signed JWT in <code>Authorization</code> header</td></tr>
+                <tr><td><strong>Server memory</strong></td><td>Grows with active users</td><td>Constant — nothing stored per user</td></tr>
+                <tr><td><strong>Revocation</strong></td><td><strong>Easy</strong> — delete the session</td><td>Hard — needs short TTL or denylist</td></tr>
+                <tr><td><strong>Scaling</strong></td><td>Needs shared store (Redis) across pods</td><td>Scales trivially across services</td></tr>
+                <tr><td><strong>CSRF risk</strong></td><td>High (cookies sent automatically)</td><td>Low (token explicitly attached by code)</td></tr>
+                <tr><td><strong>Best for</strong></td><td>Server-rendered web apps, small/single-tenant systems</td><td>Microservices, SPAs, mobile APIs</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Many production systems use <strong>both</strong>: short-lived JWT access tokens (for stateless APIs) plus a refresh-token cookie (so the user stays logged in across days).</p>
+
+          <p class="takeaway">
+            <b>Interview one-liner:</b> HTTP is stateless, so <strong>Session Management</strong> uses a server-side <em>session</em> + a browser <em>cookie</em> to maintain user state across requests. On login, the server creates a session, generates a unique ID (e.g., <code>JSESSIONID</code>), and sets it as a <strong><code>HttpOnly</code> + <code>Secure</code> + <code>SameSite</code></strong> cookie. The browser sends that cookie on every request and the server identifies the user. Spring Security manages this automatically and supports clustering via <strong>Spring Session + Redis</strong>. For microservices and SPAs, <strong>JWT-based stateless auth</strong> is usually preferred — sessions are heavier but easier to revoke; JWTs are lighter and stateless. Always defend against hijacking, fixation, XSS, and CSRF with HTTPS, cookie flags, session-ID rotation, and timeouts.
+          </p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>OAuth2 vs JWT — what's the actual difference? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">Comparing OAuth2 and JWT is a category mistake — they solve different problems and are commonly used <strong>together</strong>. OAuth2 is a <em>protocol for delegated authorization</em>; JWT is a <em>token format</em>. The right answer in an interview is "they're not alternatives — OAuth2 typically <em>uses</em> JWT as the token format".</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val"><strong>OAuth2 = protocol</strong> (how clients obtain tokens from an Authorization Server). <strong>JWT = token format</strong> (a self-contained, signed JSON token). Most modern OAuth2 deployments issue access tokens <em>encoded as JWTs</em>.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Side-by-side</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead><tr><th>Aspect</th><th>OAuth2</th><th>JWT</th></tr></thead>
+                <tbody>
+                  <tr><td>What it is</td><td>Authorization framework / protocol (RFC 6749)</td><td>Compact, signed token format (RFC 7519)</td></tr>
+                  <tr><td>Solves</td><td>How clients get permission to access resources on behalf of a user / system</td><td>How to encode identity + claims in a self-verifiable token</td></tr>
+                  <tr><td>Defines</td><td>Authorization Server, Resource Server, Client, Resource Owner; flows (Authorization Code, Client Credentials, etc.)</td><td>Header.Payload.Signature — base64-url JSON</td></tr>
+                  <tr><td>Token format</td><td>Opaque or JWT — implementation choice</td><td>Always JWT</td></tr>
+                  <tr><td>Validation</td><td>Resource Server validates the token (locally if JWT, or via introspection if opaque)</td><td>Verify signature with public key (JWKS), check exp/iss/aud</td></tr>
+                  <tr><td>Revocation</td><td>Token revocation endpoint, short TTL + refresh tokens</td><td>None natively — JWTs are valid until expiry; need a revocation list or short TTL</td></tr>
+                  <tr><td>Use case</td><td>"Sign in with Google", third-party API access, service-to-service auth</td><td>Carrying user/service identity in stateless requests</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> OAuth2 flows you actually need to know</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-title">Authorization Code + PKCE</div>
+                <ul>
+                  <li>Web/mobile/SPA apps logging users in.</li>
+                  <li>User redirected to Auth Server → consents → returns with auth code.</li>
+                  <li>App exchanges code (+ PKCE verifier) for access token + refresh token.</li>
+                  <li><strong>The default modern flow.</strong></li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-title">Client Credentials</div>
+                <ul>
+                  <li>Machine-to-machine — no user involved.</li>
+                  <li>Service authenticates with <code>client_id</code> + <code>client_secret</code> → gets access token.</li>
+                  <li>Used for service-to-service calls inside a microservices estate.</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-title">Refresh Token</div>
+                <ul>
+                  <li>Obtain a new access token without re-prompting the user.</li>
+                  <li>Refresh token is long-lived, stored securely, rotated on use.</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-title">Device Code</div>
+                <ul>
+                  <li>Devices without browsers (TVs, CLI tools) — user logs in on a phone using a code.</li>
+                </ul>
+              </div>
+            </div>
+            <p class="solution-desc">Implicit and Password (Resource Owner Password) flows are legacy — don't use them in new systems.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> JWT structure</div>
+            <pre><code>// header.payload.signature — base64url
+
+// header
+{ "alg": "RS256", "kid": "key-1", "typ": "JWT" }
+
+// payload (claims)
+{
+  "iss": "https://auth.shop.com",
+  "sub": "user-123",
+  "aud": "orders-service",
+  "exp": 1741234567,
+  "iat": 1741230967,
+  "scope": "orders:read orders:write",
+  "roles": ["USER"]
+}
+
+// signature = RSA-SHA256(base64(header) + "." + base64(payload), privateKey)</code></pre>
+            <p>Resource servers fetch the public key from the Auth Server's JWKS endpoint (<code>/.well-known/jwks.json</code>) and validate the signature locally — no callback per request.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> The two scenarios that confuse people</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-title">"OAuth2 with JWT" (modern default)</div>
+                <ul>
+                  <li>Auth Server issues access tokens <em>as JWTs</em>.</li>
+                  <li>Resource Server validates JWT signature locally — no introspection call.</li>
+                  <li>Fast, scalable, stateless.</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-title">"OAuth2 with opaque tokens"</div>
+                <ul>
+                  <li>Token is a random string — meaningful only to Auth Server.</li>
+                  <li>Resource Server calls <code>/introspect</code> per request to validate.</li>
+                  <li>Easy to revoke (Auth Server checks DB) but slow.</li>
+                </ul>
+              </div>
+            </div>
+            <p>"Plain JWT auth" (no OAuth2) is also valid for <em>internal</em> systems — your service issues JWTs at login and validates them on every request. Cheap, fast, and doesn't need a full OAuth2 setup.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Spring Boot — both patterns</div>
+            <pre><code># JWT-only (internal API, you sign your own tokens)
+spring.security.oauth2.resourceserver.jwt.issuer-uri=https://internal-auth.local
+
+# Full OAuth2 with external IdP (Keycloak, Okta, Auth0, Cognito)
+spring.security.oauth2.resourceserver.jwt.issuer-uri=https://your-tenant.okta.com
+spring.security.oauth2.resourceserver.jwt.audiences=orders-api</code></pre>
+            <p>Spring fetches the JWKS, caches keys, and validates every <code>Bearer</code> token automatically. <code>@PreAuthorize("hasAuthority('SCOPE_orders:write')")</code> for fine-grained authorization based on token claims.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Common interview gotchas</div>
+            <ul>
+              <li>"OAuth2 vs JWT" is the wrong question — they're complementary. The right comparison is <em>OAuth2 with JWT</em> vs <em>OAuth2 with opaque tokens</em>, or <em>session cookies</em> vs <em>JWT</em>.</li>
+              <li>JWTs <strong>cannot be revoked</strong> on demand without external state — use short TTL (5–15 min) + refresh tokens.</li>
+              <li>JWTs are signed but <em>not encrypted</em> — anyone with the token can read the claims. Don't put PII or secrets in them.</li>
+              <li>Always validate <code>iss</code>, <code>aud</code>, <code>exp</code>, and the signature — accepting "any valid JWT" is a critical bug.</li>
+              <li>OAuth2 is for <strong>authorization</strong>, not authentication — for "who is the user?" use OpenID Connect (OIDC), the identity layer on top of OAuth2.</li>
+              <li>Don't store JWTs in localStorage if your app is also vulnerable to XSS — XSS reads them. Prefer HttpOnly cookies or secure mobile storage.</li>
+              <li>PKCE is mandatory for public clients (SPA, mobile) — it's no longer optional.</li>
+              <li>Symmetric (HS256) signing requires sharing a secret between Auth Server and every Resource Server — prefer asymmetric (RS256/ES256).</li>
+            </ul>
+          </div>
+
+          <p class="takeaway"><b>Interview one-liner:</b> OAuth2 and JWT solve different problems — <strong>OAuth2 is a protocol</strong> for delegated authorization (Authorization Server, Resource Server, Client, flows like Authorization Code + PKCE and Client Credentials), while <strong>JWT is a token format</strong> (signed, base64-encoded JSON with claims like <code>sub</code>, <code>scope</code>, <code>exp</code>). Modern systems combine them: OAuth2 issues access tokens encoded as JWTs, validated locally by Resource Servers via the Auth Server's JWKS. The right comparison is "<em>OAuth2 with JWT</em>" vs "<em>OAuth2 with opaque tokens</em>", or "<em>JWT-based stateless auth</em>" vs "<em>session cookies</em>". Plain JWT auth (no OAuth2) is fine for purely internal services; full OAuth2/OIDC is required when third parties or users sign in.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How do you secure microservices end-to-end? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">"Securing microservices" is not one thing — it's a layered control plane that covers <strong>perimeter authentication</strong>, <strong>service-to-service trust</strong>, <strong>authorization at the receiver</strong>, <strong>secrets management</strong>, <strong>data protection</strong>, and <strong>auditability</strong>. The principle is "never trust the network": every internal call must authenticate, authorize, and be auditable.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Defense in depth across <strong>seven layers</strong>: ingress auth (OAuth2/OIDC) → API gateway → mTLS between services → short-lived service JWTs → fine-grained authz at the receiver → secrets in a vault → audit logs end-to-end.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> The seven security layers</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead><tr><th>Layer</th><th>What it protects</th><th>Tools</th></tr></thead>
+                <tbody>
+                  <tr><td>1. <strong>Edge / API Gateway</strong></td><td>Validates user JWT/OAuth2, applies rate limiting, WAF, TLS termination</td><td>Spring Cloud Gateway, Kong, AWS API Gateway, Envoy</td></tr>
+                  <tr><td>2. <strong>Network policy</strong></td><td>Limits which services can reach which (pod-to-pod)</td><td>K8s NetworkPolicy, Calico, Cilium, AWS SG</td></tr>
+                  <tr><td>3. <strong>mTLS</strong></td><td>Encrypts internal traffic + workload identity</td><td>Istio, Linkerd, Consul Connect, SPIFFE/SPIRE</td></tr>
+                  <tr><td>4. <strong>Service-to-service tokens</strong></td><td>Caller proves identity at L7</td><td>Short-lived JWT (client_credentials), Workload identity (IRSA, GKE WI)</td></tr>
+                  <tr><td>5. <strong>Authorization at receiver</strong></td><td>Final permission check per call</td><td>Spring Security <code>@PreAuthorize</code>, OPA, Casbin</td></tr>
+                  <tr><td>6. <strong>Secrets &amp; key management</strong></td><td>API keys, DB passwords, signing keys</td><td>Vault, AWS Secrets Manager, KMS, K8s sealed secrets</td></tr>
+                  <tr><td>7. <strong>Data protection &amp; audit</strong></td><td>Encryption at rest, PII handling, who-did-what trail</td><td>Cloud KMS, column-level encryption, structured audit logs to SIEM</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Authentication flow end-to-end</div>
+            <div class="flow">
+              <div class="flow-step">User logs in via OIDC (Keycloak / Auth0 / Cognito) → receives JWT</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Browser/app calls <code>/api/orders</code> with <code>Authorization: Bearer &lt;userJwt&gt;</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">API Gateway validates JWT (signature, issuer, audience, expiry) + rate-limits</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Gateway forwards to Order Service over mTLS, propagating the user JWT</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Order Service validates user JWT + applies <code>@PreAuthorize("hasAuthority('orders:write')")</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Order Service calls Payment Service with its own short-lived service JWT (client_credentials)</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step accent">Payment validates service JWT + scope; logs caller identity to audit trail</div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Mandatory production hardening</div>
+            <ul>
+              <li><strong>TLS everywhere</strong> — even internal traffic (mTLS via service mesh).</li>
+              <li><strong>Short-lived tokens</strong> — 5–15 minutes for access tokens, refresh tokens stored securely.</li>
+              <li><strong>Rotating signing keys</strong> — Auth server rotates JWT signing keys; clients refetch JWKS on <code>kid</code> mismatch.</li>
+              <li><strong>Authorization at every service</strong> — never assume "if it reached me, the gateway already checked it".</li>
+              <li><strong>Secrets out of source</strong> — Vault / Secrets Manager + workload identity.</li>
+              <li><strong>Encryption at rest</strong> — RDS encryption, S3 SSE-KMS, EBS volume encryption.</li>
+              <li><strong>Audit log every privileged action</strong> — login, role change, sensitive data access — to immutable storage.</li>
+              <li><strong>Dependency / image scanning</strong> in CI (Trivy, Snyk) — catch known CVEs before production.</li>
+              <li><strong>Incident response runbook</strong> — token revocation, key rotation, credential reset procedures rehearsed.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Common interview gotchas</div>
+            <ul>
+              <li>"Network is private, so it's safe" — wrong. Lateral movement inside a compromised VPC is the norm.</li>
+              <li>Long-lived service credentials in env vars are a leak waiting to happen — prefer workload identity (IRSA, GKE WI) or vault dynamic secrets.</li>
+              <li>Validating JWTs only at the gateway → any service inside the mesh becomes a confused deputy if compromised.</li>
+              <li>Forwarding the user JWT to every internal service exposes user PII at every hop — consider token exchange.</li>
+              <li>Skipping mTLS because "the cluster is private" leaves you blind to misconfigured ingress or insider threats.</li>
+              <li>Storing JWTs in localStorage in the SPA → vulnerable to XSS exfiltration. Use HttpOnly cookies or in-memory + short TTL.</li>
+              <li>No revocation strategy → a stolen JWT works until <code>exp</code>. Short TTL is the practical mitigation.</li>
+              <li>Audit logs without integrity protection are forgeable — sign or stream to immutable storage.</li>
+            </ul>
+          </div>
+
+          <p class="takeaway"><b>Interview one-liner:</b> Securing microservices is layered defense: <strong>OIDC at the edge</strong> for user authentication, <strong>API Gateway</strong> for rate limiting and JWT validation, <strong>mTLS</strong> via a service mesh (Istio/Linkerd) for in-cluster encryption + workload identity, <strong>short-lived service JWTs</strong> (client_credentials) for service-to-service calls, <strong>authorization at every receiver</strong> with <code>@PreAuthorize</code>/OPA, <strong>secrets in a vault</strong> with workload identity replacing long-lived keys, and <strong>audit logging</strong> end-to-end. The rule is "never trust the network" — every internal call authenticates, authorizes, and is auditable.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How do you implement role-based access control (RBAC) in Spring? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">Role-Based Access Control assigns <strong>permissions to roles</strong> and <strong>roles to users</strong> — instead of binding users directly to permissions. It's the dominant authorization model for enterprise apps because it scales: 10,000 users × 5 roles is far easier to maintain than 10,000 × 50 permissions.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Users → Roles → Permissions. Authorization checks the <em>role membership</em> (URL or method level), or the <em>permission</em> (finer grained). Spring Security exposes both via <code>hasRole()</code>, <code>hasAuthority()</code>, and SpEL inside <code>@PreAuthorize</code>.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Roles vs Authorities (Spring Security terminology)</div>
+            <ul>
+              <li><strong>Authority</strong> — a generic permission string. Example: <code>"orders:write"</code>.</li>
+              <li><strong>Role</strong> — an authority with a <code>ROLE_</code> prefix (Spring convention). Example: <code>"ROLE_ADMIN"</code>.</li>
+              <li><code>hasRole("ADMIN")</code> ↔ <code>hasAuthority("ROLE_ADMIN")</code>.</li>
+              <li>Use <strong>roles</strong> for coarse-grained checks (USER, ADMIN, SUPPORT). Use <strong>authorities</strong> for fine-grained permissions (<code>orders:read</code>, <code>orders:write</code>).</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Data model</div>
+            <pre><code>users
++-----+----------+-------+
+| id  | email    | ...   |
++-----+----------+-------+
+
+roles
++-----+----------+
+| id  | name     |    -- ADMIN, SUPPORT, USER
++-----+----------+
+
+permissions
++-----+--------------------+
+| id  | name               |    -- orders:read, orders:write, users:delete
++-----+--------------------+
+
+user_roles      (many-to-many)
+role_permissions (many-to-many)</code></pre>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Loading roles + permissions into the SecurityContext</div>
+            <pre><code>@Service
+@RequiredArgsConstructor
+public class JpaUserDetailsService implements UserDetailsService {
+    private final UserRepository users;
+
+    @Override
+    public UserDetails loadUserByUsername(String email) {
+        User u = users.findByEmail(email)
+            .orElseThrow(() -&gt; new UsernameNotFoundException(email));
+
+        Set&lt;GrantedAuthority&gt; auths = new HashSet&lt;&gt;();
+        for (Role r : u.getRoles()) {
+            auths.add(new SimpleGrantedAuthority("ROLE_" + r.getName()));
+            for (Permission p : r.getPermissions()) {
+                auths.add(new SimpleGrantedAuthority(p.getName()));   // e.g. orders:write
+            }
+        }
+        return new org.springframework.security.core.userdetails.User(
+            u.getEmail(), u.getPasswordHash(), auths);
+    }
+}</code></pre>
+            <p class="solution-desc">For JWT-based APIs, the same authorities are encoded as <code>"scope": "orders:read orders:write"</code> or a custom <code>"roles"</code> claim, parsed into <code>SimpleGrantedAuthority</code> by a <code>JwtAuthenticationConverter</code>.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Three layers of enforcement</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-title">URL-level (gate the endpoint)</div>
+                <pre><code>http.authorizeHttpRequests(auth -&gt; auth
+    .requestMatchers("/admin/**").hasRole("ADMIN")
+    .requestMatchers(HttpMethod.GET,  "/orders/**").hasAuthority("orders:read")
+    .requestMatchers(HttpMethod.POST, "/orders/**").hasAuthority("orders:write")
+    .anyRequest().authenticated());</code></pre>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-title">Method-level (gate the service)</div>
+                <pre><code>@EnableMethodSecurity
+@PreAuthorize("hasAuthority('orders:write')")
+public Order create(OrderRequest req) { ... }
+
+@PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.id")
+public Profile getProfile(Long userId) { ... }
+
+@PostAuthorize("returnObject.ownerId == authentication.principal.id")
+public Order get(Long id) { ... }</code></pre>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-title">Object-level (the BOLA fix)</div>
+                <ul>
+                  <li>Even with role check, verify the user owns the resource.</li>
+                  <li><code>if (!order.getUserId().equals(currentUserId)) throw new AccessDeniedException();</code></li>
+                  <li>Or filter at the query: <code>findByIdAndUserId(id, currentUserId)</code>.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> When RBAC isn't enough — ABAC and ReBAC</div>
+            <ul>
+              <li><strong>ABAC (Attribute-Based)</strong> — decisions based on user attributes + resource attributes + context. Example: "Allow if <em>user.region == resource.region AND time is business-hours</em>". Implement with Spring SpEL or OPA.</li>
+              <li><strong>ReBAC (Relationship-Based)</strong> — Google Zanzibar style: "user can edit document if they're a member of the team that owns the folder". Tools: Auth0 FGA, SpiceDB, OpenFGA.</li>
+              <li><strong>Hybrid</strong> — coarse RBAC for menus + ABAC/ReBAC for fine-grained data access. Most large systems converge here.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Common interview gotchas</div>
+            <ul>
+              <li><code>hasRole("ADMIN")</code> auto-prepends <code>ROLE_</code>. <code>hasAuthority("ADMIN")</code> does not. Mixing them silently denies access.</li>
+              <li>Roles in JWT claims must be parsed by a custom <code>JwtAuthenticationConverter</code>; Spring's default reads <code>scope</code> only.</li>
+              <li>Most production "RBAC bugs" are actually <strong>BOLA</strong> (Broken Object-Level Authorization) — the user has the right role, but accesses someone else's data because no ownership check.</li>
+              <li>Don't store role names in the JWT payload as a long array — keep claims lean; resolve permissions in the service if needed.</li>
+              <li>Cache role/permission lookups — DB hit per request is slow.</li>
+              <li>Hardcoded role strings drift over time; use enums or constants.</li>
+              <li><code>@PreAuthorize</code> needs <code>@EnableMethodSecurity</code> on a config class — silent no-op otherwise.</li>
+              <li>For multi-tenant apps, include <code>tenantId</code> in every token claim and check it in every query.</li>
+            </ul>
+          </div>
+
+          <p class="takeaway"><b>Interview one-liner:</b> RBAC in Spring assigns <strong>users → roles → permissions</strong>; the role/permission set is loaded into the <code>SecurityContext</code> as <code>GrantedAuthority</code>s (with the <code>ROLE_</code> prefix for roles). Enforce at three layers: <strong>URL-level</strong> via <code>http.authorizeHttpRequests().hasRole()</code>, <strong>method-level</strong> via <code>@PreAuthorize("hasAuthority('orders:write')")</code>, and <strong>object-level</strong> by checking ownership in queries or with <code>@PostAuthorize</code>. Most "RBAC bugs" in production are actually <strong>BOLA</strong> — the user has the right role but accesses someone else's data; always check ownership. When RBAC's coarseness isn't enough, layer in <strong>ABAC</strong> or <strong>ReBAC</strong> via OPA, OpenFGA, or SpiceDB.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How do you secure APIs exposed to the public internet? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">A publicly exposed API is one Google search away from automated attackers — credential-stuffing bots, scrapers, vulnerability scanners. Securing it means combining <strong>perimeter controls</strong> (TLS, WAF, rate limit), <strong>strong authentication</strong> (OAuth2/OIDC, API keys), <strong>strict authorization</strong>, <strong>input hardening</strong>, and <strong>continuous monitoring</strong>.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Defense in depth: <strong>HTTPS only</strong>, <strong>WAF + rate limiting</strong> at the edge, <strong>strong auth</strong> (OAuth2 with short-lived tokens), <strong>strict input validation</strong>, <strong>least-privilege authorization</strong>, <strong>secure headers</strong>, and <strong>monitoring + abuse detection</strong>.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> The hardening checklist</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead><tr><th>Concern</th><th>Mitigation</th></tr></thead>
+                <tbody>
+                  <tr><td>Eavesdropping / MITM</td><td>HTTPS only (HSTS), TLS 1.2+; redirect HTTP → HTTPS at LB</td></tr>
+                  <tr><td>Volumetric attacks (DDoS)</td><td>CloudFront/Cloudflare in front, AWS Shield, Akamai</td></tr>
+                  <tr><td>SQL injection / XSS / RCE patterns</td><td>WAF (AWS WAF, Cloudflare, ModSecurity) with managed rule sets</td></tr>
+                  <tr><td>Brute force / scraping</td><td>Rate limiting per IP + per API key + global; CAPTCHA on login</td></tr>
+                  <tr><td>Unauthenticated abuse</td><td>OAuth2/OIDC for users, signed API keys for partners; never anonymous writes</td></tr>
+                  <tr><td>Authorization bypass (BOLA)</td><td>Check ownership on every endpoint; never trust client-supplied IDs</td></tr>
+                  <tr><td>Mass assignment</td><td>DTOs with explicit fields; reject unknown JSON properties</td></tr>
+                  <tr><td>Information leakage</td><td>Generic error messages externally, detailed logs internally; no stack traces in 500s</td></tr>
+                  <tr><td>Replay attacks</td><td>Short-lived tokens, nonces for sensitive operations, idempotency keys</td></tr>
+                  <tr><td>CORS abuse</td><td>Strict allow-list; never <code>Access-Control-Allow-Origin: *</code> with credentials</td></tr>
+                  <tr><td>Stale dependencies</td><td>Trivy/Snyk/Dependabot in CI; auto-PR on CVE</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Reference architecture for a public REST API</div>
+            <div class="flow">
+              <div class="flow-step">CDN / WAF (Cloudflare / CloudFront + AWS WAF) — TLS termination, DDoS, common-attack rules</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">API Gateway — auth, rate limiting, request validation, routing</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">OAuth2 / OIDC token validation (Keycloak / Okta / Cognito)</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Spring Boot service — input validation, <code>@PreAuthorize</code>, ownership check</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step accent">Audit log → SIEM (Datadog / Splunk / ELK) for anomaly detection</div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Spring Boot configuration essentials</div>
+            <pre><code>// Force HTTPS + HSTS
+http.requiresChannel(c -&gt; c.anyRequest().requiresSecure())
+    .headers(h -&gt; h
+        .httpStrictTransportSecurity(hsts -&gt; hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
+        .contentSecurityPolicy(csp -&gt; csp.policyDirectives("default-src 'self'"))
+        .frameOptions(FrameOptionsConfig::deny));
+
+// Strict input validation via Bean Validation
+public record CreateOrderRequest(
+    @NotBlank @Size(max = 64)  String customerId,
+    @NotEmpty @Size(max = 100) List&lt;@Valid LineItem&gt; items,
+    @Pattern(regexp = "USD|EUR|INR") String currency
+) {}
+
+// CORS allow-list
+@Bean
+CorsConfigurationSource cors() {
+    CorsConfiguration c = new CorsConfiguration();
+    c.setAllowedOrigins(List.of("https://app.shop.com"));
+    c.setAllowedMethods(List.of("GET","POST","PUT","DELETE"));
+    c.setAllowedHeaders(List.of("Authorization","Content-Type","Idempotency-Key"));
+    c.setAllowCredentials(true);
+    UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
+    src.registerCorsConfiguration("/api/**", c);
+    return src;
+}</code></pre>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Rate limiting per identity</div>
+            <pre><code>// Bucket4j + Redis — distributed token bucket
+ProxyManager&lt;String&gt; proxy = LettuceBasedProxyManager.builderFor(connection).build();
+BucketConfiguration cfg = BucketConfiguration.builder()
+    .addLimit(Bandwidth.simple(100, Duration.ofMinutes(1)))   // 100 req/min/key
+    .build();
+
+Bucket bucket = proxy.builder().build("rl:" + apiKey, cfg);
+if (!bucket.tryConsume(1)) {
+    throw new TooManyRequestsException("Retry-After: 60");
+}</code></pre>
+            <p>Tier limits by plan (free / paid / enterprise) and per scope (login attempts &lt; 10/min/IP, search 60/min, normal API 1000/min).</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Common interview gotchas</div>
+            <ul>
+              <li>Never expose internal IDs that leak structure — <code>/orders/12345</code> tells attackers there's an <code>/orders/12346</code>. Use opaque slugs or always check ownership.</li>
+              <li>Returning the entire entity from a query — strip internal fields (<code>passwordHash</code>, <code>internalNotes</code>) via DTO or Jackson views.</li>
+              <li>Stack traces in 500 responses leak framework versions / file paths — set <code>server.error.include-stacktrace=never</code>.</li>
+              <li>Default CORS allowing <code>*</code> with credentials is a vulnerability — must enumerate origins.</li>
+              <li>"Hidden" endpoints (<code>/internal/*</code>) reachable from the internet are a classic mistake — bind only to internal LBs.</li>
+              <li>API keys in URLs (query params) end up in access logs and analytics — always in headers.</li>
+              <li>No request size limits → DoS via huge bodies; set <code>spring.servlet.multipart.max-request-size</code>.</li>
+              <li>Unbounded pagination (<code>?limit=999999</code>) → resource exhaustion; cap server-side.</li>
+              <li>Logging full request bodies → secrets in logs; redact known sensitive fields.</li>
+              <li>No alerting on auth failures → brute-force goes unnoticed; alert on per-user/IP failed-login spikes.</li>
+            </ul>
+          </div>
+
+          <p class="takeaway"><b>Interview one-liner:</b> Securing a public API is layered: <strong>HTTPS only with HSTS</strong>, <strong>WAF + DDoS protection at the edge</strong> (Cloudflare/CloudFront + AWS WAF/Shield), <strong>API Gateway</strong> for routing/rate-limiting/auth, <strong>OAuth2/OIDC</strong> with short-lived tokens for users and signed API keys for partners, <strong>strict input validation</strong> (DTOs + Bean Validation), <strong>least-privilege authorization</strong> with ownership checks (defeats BOLA), <strong>secure headers</strong> (HSTS, CSP, X-Frame-Options), <strong>tight CORS allow-list</strong>, <strong>rate limiting per identity</strong> (Bucket4j + Redis), <strong>idempotency keys</strong> on writes, <strong>structured audit logs</strong> to a SIEM, and <strong>continuous CVE scanning</strong> in CI. The mantra: never trust client input, never leak internal structure, never assume "private" means inaccessible.</p>
         </div>
       </details>
 
@@ -616,16 +1711,160 @@ Idempotency-Key: 5f3b...
       </details>
 
       <details class="qa">
-        <summary>API versioning strategies</summary>
+        <summary>How do you manage API versioning in microservices? <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p>Once an API has external clients, breaking changes need versioning. Common approaches:</p>
-          <ul>
-            <li><strong>URI versioning</strong> — <code>/v1/users</code>, <code>/v2/users</code>. Simple, very visible, easy routing. Most popular.</li>
-            <li><strong>Header versioning</strong> — <code>Accept: application/vnd.app.v2+json</code>. Cleaner URLs, but invisible in logs and harder to test in browser.</li>
-            <li><strong>Query param</strong> — <code>?v=2</code>. Easy but messy.</li>
-            <li><strong>Media-type / content negotiation</strong> — used by GitHub and other strict APIs.</li>
-          </ul>
-          <p>Best practice — regardless of style — is to <strong>avoid versioning when you can</strong> by making additive changes (new fields, new endpoints) and using feature flags. When a breaking change is unavoidable, give at least one quarter of overlap with a clear deprecation header (<code>Sunset</code>, <code>Deprecation</code>) and migration guide.</p>
+          <p class="answer-intro">Once an API has external consumers — mobile apps, partner integrations, or other internal services — every breaking change becomes a coordination problem. Versioning gives consumers a stable contract while letting the API evolve. The non-obvious part: the best versioning strategy is to <em>avoid versioning when possible</em> by making changes <strong>backward-compatible</strong>.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Prefer <strong>backward-compatible (additive) changes</strong> so versioning isn't needed. When a breaking change is unavoidable, use <strong>URI versioning</strong> (most teams), publish a <strong>deprecation policy</strong> with <code>Sunset</code> headers, and run versions <strong>side by side</strong> until consumers migrate.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> The four versioning styles</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead><tr><th>Style</th><th>Example</th><th>Pros</th><th>Cons</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td><strong>URI versioning</strong></td>
+                    <td><code>/v1/orders</code>, <code>/v2/orders</code></td>
+                    <td>Visible, easy to route at gateway, easy to test in browser, easy to deprecate per-route</td>
+                    <td>Couples version to URL; "RESTful purists" object</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Header versioning</strong></td>
+                    <td><code>Accept: application/vnd.shop.v2+json</code></td>
+                    <td>Cleaner URLs, content-negotiation idiomatic to HTTP</td>
+                    <td>Invisible in logs/traces; harder to test in browser</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Query param</strong></td>
+                    <td><code>/orders?api-version=2</code></td>
+                    <td>Trivial to implement</td>
+                    <td>Pollutes query, easy to forget, cache-unfriendly</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Custom header</strong></td>
+                    <td><code>X-API-Version: 2</code></td>
+                    <td>Decouples from URL, doesn't abuse <code>Accept</code></td>
+                    <td>Non-standard; needs gateway support</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p>For most teams, <strong>URI versioning</strong> wins because it's visible, debuggable, and obvious at the routing layer.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Backward vs Breaking changes — the rule</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-title">Backward-compatible (no version bump)</div>
+                <ul>
+                  <li>Add a <strong>new optional field</strong> to a request or response.</li>
+                  <li>Add a <strong>new endpoint</strong>.</li>
+                  <li>Add a <strong>new enum value</strong> (only if clients tolerate unknowns).</li>
+                  <li>Loosen a constraint (max length increased).</li>
+                  <li>New optional query parameter with a default.</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-title">Breaking (requires new version)</div>
+                <ul>
+                  <li><strong>Remove</strong> or <strong>rename</strong> a field.</li>
+                  <li>Change a field's <strong>type</strong> (string → object, int → string).</li>
+                  <li>Change response schema shape.</li>
+                  <li>Make a previously optional field required.</li>
+                  <li>Change authentication / authorization rules.</li>
+                  <li>Change endpoint URL or HTTP method.</li>
+                  <li>Tighten validation that was previously permissive.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Spring Boot — URI versioning</div>
+            <pre><code>// v1 controller
+@RestController
+@RequestMapping("/v1/orders")
+public class OrderControllerV1 {
+    @GetMapping("/{id}")
+    public OrderV1Response get(@PathVariable Long id) { ... }
+}
+
+// v2 controller — separate class, separate DTO
+@RestController
+@RequestMapping("/v2/orders")
+public class OrderControllerV2 {
+    @GetMapping("/{id}")
+    public OrderV2Response get(@PathVariable Long id) { ... }
+}</code></pre>
+            <p class="solution-desc">Keep version-specific DTOs separate. Service layer is shared; only the controller + DTO mapping differs per version. Mark v1 with deprecation headers via a filter.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Deprecation policy headers (RFC 8594, draft RFC 9745)</div>
+            <pre><code>HTTP/1.1 200 OK
+Deprecation: Sun, 01 Jun 2026 00:00:00 GMT
+Sunset: Sun, 01 Sep 2026 00:00:00 GMT
+Link: &lt;https://api.shop.com/docs/migrate-v1-v2&gt;; rel="deprecation"
+Warning: 299 - "Use /v2/orders instead. v1 will be removed on 2026-09-01."</code></pre>
+            <p>Combined with consumer-side telemetry (which clients are still calling v1?) this makes deprecation a managed process, not a surprise.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Internal vs external API versioning</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-title">Internal (service-to-service)</div>
+                <ul>
+                  <li>Use <strong>schema evolution</strong> (Avro/Protobuf with backward-compat rules) — no explicit versioning needed.</li>
+                  <li>Or release v1 + v2 endpoints simultaneously and migrate caller-by-caller.</li>
+                  <li>Coordinate via a Schema Registry.</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-title">External (public)</div>
+                <ul>
+                  <li>URI versioning + long deprecation window (6–12 months).</li>
+                  <li>Publish OpenAPI spec per version.</li>
+                  <li>Track per-client usage; reach out before sunset.</li>
+                  <li>Never delete v1 without confirming zero traffic.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Versioning the events too</div>
+            <p>For event-driven systems, the same rules apply to Kafka events:</p>
+            <ul>
+              <li><strong>Schema Registry + Avro/Protobuf</strong> with backward + forward compatibility configured.</li>
+              <li>Add fields with defaults, never remove or rename.</li>
+              <li>For breaking changes, emit a new event type (<code>OrderPlaced.v2</code>) and let consumers migrate at their pace; deprecate v1 on a schedule.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">7</span> Common interview gotchas</div>
+            <ul>
+              <li>"Just version everything" — overuse of versioning creates a maintenance graveyard. Most changes can be additive.</li>
+              <li>Three concurrent live versions is the practical max — beyond that, support cost dominates.</li>
+              <li>Versions should be major numbers only (<code>/v1</code>, <code>/v2</code>) — semantic versioning belongs in libraries, not URLs.</li>
+              <li>"Version" the response shape, not internal implementation — moving from one DB to another should be invisible.</li>
+              <li>Don't set <code>additionalProperties: false</code> aggressively in JSON schemas — it makes adding new fields a breaking change.</li>
+              <li>Document the deprecation policy publicly; don't surprise consumers.</li>
+              <li>Use <strong>feature flags</strong> for behavioral changes, not version numbers — flags are reversible per request.</li>
+              <li>Keep <code>/v1</code> alive on a maintenance branch — security patches, but no new features.</li>
+              <li>Track usage per version per consumer — sunset only when traffic is zero.</li>
+            </ul>
+          </div>
+
+          <p class="takeaway"><b>Interview one-liner:</b> Prefer <strong>backward-compatible additive changes</strong> over versioning — adding fields, adding endpoints, optional new query params. When a breaking change is unavoidable, use <strong>URI versioning</strong> (<code>/v1/orders</code>, <code>/v2/orders</code>) with separate controllers and DTOs but a shared service layer; publish <strong>deprecation headers</strong> (<code>Deprecation</code>, <code>Sunset</code>, <code>Warning</code>) and a 6–12 month deprecation window. For events, use a <strong>Schema Registry</strong> (Avro/Protobuf) with forward+backward compatibility; for breaking changes, version the event type (<code>OrderPlaced.v2</code>). Track per-version, per-consumer usage so sunset is data-driven, not guesswork.</p>
         </div>
       </details>
 
@@ -644,20 +1883,131 @@ Idempotency-Key: 5f3b...
       </details>
 
       <details class="qa">
-        <summary>Common API security risks (OWASP Top 10)</summary>
+        <summary>Application Vulnerabilities — OWASP Top 10 &amp; how to prevent them <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p>OWASP API Security Top 10 highlights:</p>
+          <p class="answer-intro"><strong>Vulnerabilities</strong> are <em>security weaknesses</em> in an application that attackers can exploit to read data, take over accounts, escalate privileges, or break the system. OWASP's Top 10 catalogues the most common ones — knowing them (and the defences) is table-stakes for any backend engineer.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Most production breaches come from a small set of well-known mistakes — <em>weak input validation, missing authorization, leaked secrets, untested deps</em>. Defend in layers: <strong>validate inputs, parameterise queries, use Spring Security, encrypt sensitive data, and bake security checks into CI/CD</strong>.</span>
+            </div>
+          </div>
+
+          <p><b>The most common application vulnerabilities (OWASP Top 10 highlights):</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Vulnerability</th><th>What it is</th><th>Real-world impact</th></tr></thead>
+              <tbody>
+                <tr><td><strong>SQL Injection</strong></td><td>User input concatenated into a query — attacker runs arbitrary SQL.</td><td>Data theft, account takeover, full DB drop.</td></tr>
+                <tr><td><strong>XSS (Cross-Site Scripting)</strong></td><td>Untrusted input rendered into HTML — attacker's JS runs in another user's browser.</td><td>Session theft, defacement, phishing.</td></tr>
+                <tr><td><strong>CSRF</strong></td><td>Browser auto-sends cookies — attacker's site triggers state-changing requests on your domain.</td><td>Unwanted transfers, profile changes.</td></tr>
+                <tr><td><strong>Broken Authentication</strong></td><td>Weak passwords, missing MFA, exposed tokens, session-fixation.</td><td>Account takeover.</td></tr>
+                <tr><td><strong>Broken Object-Level Auth (BOLA)</strong></td><td>Endpoint <code>/orders/{id}</code> doesn't check ownership — anyone can read others' orders. <em>Most common API bug.</em></td><td>Mass data leak.</td></tr>
+                <tr><td><strong>Excessive Data Exposure</strong></td><td>Returning the whole entity (password hash, internal flags) when only a few fields are needed.</td><td>PII / credential leak.</td></tr>
+                <tr><td><strong>Mass Assignment</strong></td><td>Auto-binding JSON to entities lets attackers set <code>isAdmin: true</code>.</td><td>Privilege escalation.</td></tr>
+                <tr><td><strong>Hardcoded Secrets</strong></td><td>Passwords / API keys committed to git, baked into images, or sat in <code>application.yml</code>.</td><td>Total compromise once leaked.</td></tr>
+                <tr><td><strong>Vulnerable Dependencies</strong></td><td>Old library with a known CVE (Log4Shell, Spring4Shell).</td><td>Remote code execution.</td></tr>
+                <tr><td><strong>Lack of Rate Limiting</strong></td><td>Endpoint accepts unlimited requests.</td><td>Brute-force, scraping, DDoS.</td></tr>
+                <tr><td><strong>Security Misconfiguration</strong></td><td>Open S3 bucket, default credentials, stack-trace responses, missing security headers.</td><td>Data leak, easy reconnaissance.</td></tr>
+                <tr><td><strong>Insufficient Logging &amp; Monitoring</strong></td><td>No audit trail of who did what.</td><td>Attacks invisible until too late.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Each vulnerability with a fix at a glance:</b></p>
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">SQL Injection</div>
+              <pre><code>// BAD
+String sql = "SELECT * FROM users WHERE name='" + name + "'";
+
+// GOOD — parameterised
+String sql = "SELECT * FROM users WHERE name = ?";
+ps.setString(1, name);</code></pre>
+              <p>Use JPA / parameterised queries; never concatenate user input into SQL.</p>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">XSS</div>
+              <ul>
+                <li>HTML-escape any user-controlled output (Thymeleaf does this by default).</li>
+                <li>Set <code>Content-Security-Policy</code> header.</li>
+                <li>Validate &amp; sanitise rich text with OWASP Java HTML Sanitizer.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">CSRF</div>
+              <ul>
+                <li>Enable Spring Security CSRF tokens for session-based apps.</li>
+                <li>Use <code>SameSite=Lax/Strict</code> on cookies.</li>
+                <li>Stateless JWT APIs (Bearer header) aren't auto-vulnerable.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Broken Auth / BOLA</div>
+              <ul>
+                <li>MFA, strong password hashing (<code>BCrypt</code>), short-lived JWTs + refresh tokens.</li>
+                <li>Always check <em>ownership</em>: <code>order.userId == currentUser.id</code>.</li>
+                <li><code>@PreAuthorize("#userId == authentication.principal.id")</code>.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Mass Assignment / Data Exposure</div>
+              <ul>
+                <li>Bind request bodies to <strong>DTOs</strong>, never to JPA entities.</li>
+                <li>Use explicit response DTOs; never return entities directly.</li>
+                <li>Annotate hidden fields with <code>@JsonIgnore</code>.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Hardcoded Secrets</div>
+              <ul>
+                <li>Load secrets from AWS Secrets Manager / Parameter Store / Vault.</li>
+                <li>Reference via <code>${DB_PASSWORD}</code> placeholders in YAML.</li>
+                <li>Pre-commit hooks (gitleaks, trufflehog) to block accidental commits.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Vulnerable Dependencies</div>
+              <ul>
+                <li>Run OWASP Dependency-Check, Snyk, or GitHub Dependabot.</li>
+                <li>Bump libraries promptly when a CVE is announced.</li>
+                <li>Pin versions; never use <code>+</code> ranges in builds.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Rate Limiting / Misconfig / Logging</div>
+              <ul>
+                <li>Rate limit at the API Gateway (token bucket / sliding window).</li>
+                <li>Disable stack traces in prod responses.</li>
+                <li>Set HSTS, X-Frame-Options, CSP, X-Content-Type-Options.</li>
+                <li>Audit-log auth + state-changing endpoints; alarm on anomalies.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p><b>Defence-in-depth — what I always apply:</b></p>
           <ul>
-            <li><strong>Broken Object Level Authorization (BOLA)</strong> — endpoint <code>/orders/{id}</code> doesn't check ownership; user can read others' orders. <strong>The most common vulnerability.</strong></li>
-            <li><strong>Broken Authentication</strong> — weak tokens, missing MFA, exposed credentials.</li>
-            <li><strong>Excessive Data Exposure</strong> — returning entire entity when API only needs a subset (e.g., password hash or internal flags).</li>
-            <li><strong>Lack of Rate Limiting</strong> — leads to scraping, brute force.</li>
-            <li><strong>Mass Assignment</strong> — auto-binding request JSON to entity lets attackers set <code>isAdmin: true</code>. Use DTOs, never bind to entities.</li>
-            <li><strong>Injection</strong> — SQL, NoSQL, LDAP, OS command. Always use parameterized queries.</li>
-            <li><strong>Improper Asset Management</strong> — old API versions still live.</li>
-            <li><strong>Insufficient Logging &amp; Monitoring</strong> — can't detect or investigate attacks.</li>
+            <li><strong>Validate at the boundary</strong> — Bean Validation (<code>@Valid</code>, <code>@NotNull</code>, <code>@Pattern</code>) on every controller request.</li>
+            <li><strong>Parameterised queries</strong> via JPA / JDBC — never string-concatenated SQL.</li>
+            <li><strong>Spring Security</strong> for AuthN/AuthZ, CSRF, secure headers — out of the box.</li>
+            <li><strong>BCrypt / Argon2</strong> for password hashing; <strong>JWT/OAuth2</strong> for stateless APIs.</li>
+            <li><strong>Encryption in transit (TLS)</strong> and <strong>at rest (KMS / database TDE)</strong>.</li>
+            <li><strong>Least-privilege IAM</strong> roles for services; no long-lived access keys.</li>
+            <li><strong>SAST + dependency scans in CI/CD</strong> — SonarQube, Snyk, OWASP Dependency-Check, GitHub Code Scanning.</li>
+            <li><strong>Structured audit logs</strong> + monitoring alarms on anomalies (logins, privilege changes, failed-auth spikes).</li>
           </ul>
-          <p>I bake security review into every PR for endpoints touching auth, money, or PII.</p>
+
+          <p><b>Vulnerabilities also lurk in caches:</b></p>
+          <ul>
+            <li><strong>Stale data</strong> served past its TTL — use <code>@CacheEvict</code> on writes; pick a sensible TTL.</li>
+            <li><strong>Cache poisoning</strong> — attacker triggers a request that gets cached and served to others. Validate keys and inputs.</li>
+            <li><strong>Sensitive data exposure</strong> — never cache passwords, JWTs, or full account records; cache derived summaries instead.</li>
+          </ul>
+
+          <p class="takeaway">
+            <b>Interview one-liner:</b> Application <strong>vulnerabilities</strong> are exploitable security weaknesses — most production bugs come from a small list catalogued by OWASP Top 10: <em>SQL Injection, XSS, CSRF, Broken Authentication, BOLA, Excessive Data Exposure, Mass Assignment, Hardcoded Secrets, Vulnerable Dependencies, Lack of Rate Limiting, Security Misconfiguration, Insufficient Logging</em>. We prevent them with <strong>input validation, parameterised queries, Spring Security, encryption, secret management, dependency scanning, and continuous monitoring</strong> — all baked into the code, configuration, and CI/CD pipeline.
+          </p>
         </div>
       </details>
 

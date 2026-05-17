@@ -36,7 +36,7 @@
       <h1>System design — fundamentals &amp; classics</h1>
       <p class="topic-page-desc">Walk through any system design with a structured approach: requirements, capacity, high-level design, deep-dives, tradeoffs.</p>
       <div class="topic-page-meta">
-        <span><strong>11</strong> questions</span>
+        <span><strong>21</strong> questions</span>
         <span>Press <span class="hint-kbd">/</span> to search</span>
       </div>
     </div>
@@ -891,55 +891,766 @@ public class WsConfig implements WebSocketMessageBrokerConfigurer {
       </details>
 
       <details class="qa">
-        <summary>Design a URL shortener (bit.ly)</summary>
+        <summary>Design a URL shortener (bit.ly) <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p><strong>Requirements</strong>: shorten a URL, redirect short → long, ~100M new URLs/day, redirect under 100 ms.</p>
-          <p><strong>Capacity</strong>: 100M × 30 days × 5 years ≈ 18B URLs total. 6–7 chars in base62 = 56–62 billion combinations — enough.</p>
-          <p><strong>API</strong>: <code>POST /shorten {long}</code> → <code>{short}</code>. <code>GET /:code</code> → 301 to long.</p>
-          <p><strong>Architecture</strong>:</p>
+          <p class="answer-intro">A URL shortener takes a long URL and returns a short, opaque code (<code>bit.ly/aZ4kQ</code>) that <strong>301/302-redirects</strong> back to the original. The service is read-heavy (clicks far outnumber creates), latency-sensitive (redirect under 100 ms), and must handle abuse, analytics, and global scale.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Generate a globally unique short code, store <code>short → long</code> in a sharded KV with aggressive caching in front, and serve redirects from the edge so 95%+ of traffic never touches the DB.</span>
+            </div>
+          </div>
+
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Dimension</th><th>Target / Estimate</th></tr></thead>
+              <tbody>
+                <tr><td>New URLs / day</td><td>~100M (≈ 1,150 writes/sec sustained)</td></tr>
+                <tr><td>Redirects / day</td><td>~10B (read:write ≈ 100:1, ≈ 115K reads/sec, peak 5× = 575K)</td></tr>
+                <tr><td>Storage (5 yrs)</td><td>100M × 365 × 5 × ~500 B ≈ 90 TB raw</td></tr>
+                <tr><td>Code length</td><td>7 chars base62 = 62⁷ ≈ 3.5 trillion codes</td></tr>
+                <tr><td>Read latency SLO</td><td>p99 &lt; 100 ms end-to-end (edge → origin)</td></tr>
+                <tr><td>Cache hit rate target</td><td>≥ 90% (Zipfian distribution — top 10% codes get most clicks)</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="solution-desc"><strong>High-level architecture:</strong></p>
+          <pre><code>                       ┌─────────────┐
+                       │   Clients   │ (browser / app / API)
+                       └──────┬──────┘
+                              │
+                       ┌──────▼──────┐
+                       │  CDN / Edge │  ◀── 301/302 cached here
+                       └──────┬──────┘
+                              │ (miss)
+                       ┌──────▼──────┐
+                       │ API Gateway │  rate-limit, auth, WAF
+                       └──────┬──────┘
+                ┌─────────────┼─────────────┐
+         ┌──────▼─────┐ ┌─────▼─────┐ ┌─────▼──────┐
+         │  Shorten   │ │  Redirect │ │ Analytics  │
+         │  Service   │ │  Service  │ │  Service   │
+         └──────┬─────┘ └─────┬─────┘ └─────┬──────┘
+                │             │              │
+         ┌──────▼─────┐ ┌─────▼─────┐ ┌─────▼──────┐
+         │ ID Gen     │ │  Redis    │ │   Kafka    │
+         │ (Snowflake │ │  Cache    │ │ click logs │
+         │  / Zk seq) │ └─────┬─────┘ └─────┬──────┘
+         └──────┬─────┘       │              │
+                │       ┌─────▼─────┐  ┌─────▼──────┐
+                └──────▶│ KV Store  │  │ S3 / Spark │
+                        │ Dynamo/   │  │ aggregator │
+                        │ Cassandra │  └────────────┘
+                        └───────────┘</code></pre>
+
+          <p class="solution-desc"><strong>Request flow — create a short URL:</strong></p>
+          <div class="flow">
+            <div class="flow-step">Client POSTs long URL + optional alias</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Validate, normalize, malware-check</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step accent">ID generator returns unique 64-bit ID</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Base62 encode → 7-char code</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Write <code>code → long</code> to DynamoDB / Cassandra</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step accent">Return short URL to client</div>
+          </div>
+
+          <p class="solution-desc"><strong>Request flow — redirect:</strong></p>
+          <div class="flow">
+            <div class="flow-step">GET /aZ4kQ</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step accent">CDN edge — 301 cached for 24h → done</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Redis lookup <code>code → long</code> (sub-ms)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">DB fallback (single-flight to avoid stampede)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Emit click event to Kafka (async, fire-and-forget)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step accent">302 redirect to long URL</div>
+          </div>
+
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">Counter / ID-gen approach</div>
+              <ul>
+                <li>Distributed counter (Snowflake, Zookeeper sequencer, Redis INCR).</li>
+                <li>Base62 encode → fixed-length code.</li>
+                <li>No collisions, predictable storage.</li>
+                <li>Codes are guessable — wrap with random salt if that's a concern.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Hash approach</div>
+              <ul>
+                <li><code>MD5(longUrl + userId)</code> → take first 7 chars base62.</li>
+                <li>Same URL always maps to same code — good for dedup.</li>
+                <li>Must handle collisions (rehash or append nonce).</li>
+                <li>Same URL → same code can leak privacy.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p class="solution-desc"><strong>API shape:</strong></p>
+          <pre><code>POST /v1/shorten
+{ "longUrl": "https://example.com/...", "customAlias": null, "ttlDays": 365 }
+→ 201 { "shortUrl": "https://sho.rt/aZ4kQ", "code": "aZ4kQ", "expiresAt": "..." }
+
+GET /:code
+→ 302 Location: &lt;longUrl&gt;       Cache-Control: public, max-age=86400
+
+-- DynamoDB schema
+url_map:
+  PK code (string)        -- partition key
+  long_url (string)
+  owner_id (string)
+  created_at (epoch)
+  expires_at (epoch)      -- TTL attribute
+  click_count (long)      -- denormalized, updated async</code></pre>
+
+          <p class="solution-desc"><strong>Common interview gotchas:</strong></p>
           <ul>
-            <li>App service generates short codes (counter-based or hash-based) and stores <code>short → long</code> in a KV store (DynamoDB, Cassandra).</li>
-            <li><strong>Counter approach</strong>: distributed counter (Redis INCR) → base62 encode. Predictable, no collisions.</li>
-            <li><strong>Cache</strong>: Redis caches hot codes (~80% of traffic is recent URLs).</li>
-            <li><strong>CDN</strong> in front for global redirect.</li>
-            <li>Analytics events to Kafka for click tracking.</li>
+            <li><strong>Counter contention</strong> at high write QPS — shard the counter range per region or use Snowflake to avoid a global INCR hotspot.</li>
+            <li><strong>Cache stampede</strong> on a viral code that just expired — use single-flight (Redis SETNX lock) or probabilistic early refresh.</li>
+            <li><strong>301 vs 302</strong> — 301 is cached by browsers permanently and kills your analytics; prefer 302 unless SEO matters.</li>
+            <li><strong>Custom aliases</strong> live in the same keyspace — reserve a prefix or check for collision before insert.</li>
+            <li><strong>Malware / phishing</strong> — integrate Google Safe Browsing on create and async-rescan periodically.</li>
+            <li><strong>Analytics throughput</strong> — never write clicks synchronously; emit to Kafka and aggregate in Spark / Flink.</li>
+            <li><strong>Hot-key problem</strong> — one viral link can melt a single Redis node; use client-side replication or local CDN caching.</li>
+            <li><strong>GDPR &amp; retention</strong> — support per-link TTL and hard delete; click logs must be deletable.</li>
           </ul>
-          <p><strong>Bottlenecks</strong>: counter contention (shard counters per region), CDN cache hit rate, analytics throughput (async). Discuss custom alias support, abuse / spam detection, rate limiting.</p>
+
+          <p class="takeaway"><b>Interview one-liner:</b> A URL shortener is a thin write path that generates a unique base62 code via Snowflake-style ID gen and stores <code>code → long</code> in a sharded KV like DynamoDB. The hot path is the redirect — handled by CDN + Redis so 90%+ of traffic never reaches the DB, with click events fired async into Kafka for analytics. Key tradeoffs are 301 vs 302 (analytics vs cacheability), counter contention vs collision-handling for IDs, and managing hot keys for viral links.</p>
         </div>
       </details>
 
       <details class="qa">
-        <summary>Design a rate limiter</summary>
+        <summary>Design a high-scale file upload system <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p><strong>Requirements</strong>: limit each user/IP/key to N requests per time window. Must work across multiple app instances.</p>
-          <p><strong>Algorithms</strong>: Token bucket is the standard — N tokens, refilled at rate r, each request consumes one. Allows bursts. (See REST &amp; Security topic for full list.)</p>
-          <p><strong>Architecture</strong>:</p>
+          <p class="answer-intro">A file upload service has to ingest anything from tiny avatars to multi-GB videos, from millions of clients, without melting the application tier. The right design routes bytes <strong>directly from the client to object storage (S3 / GCS)</strong> using presigned URLs, while the app server handles only metadata and access control.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Never proxy bytes through your app servers. Issue a presigned, time-limited upload URL; the client PUTs straight to S3; an S3 event triggers the post-processing pipeline (scan, transcode, dedup, CDN purge).</span>
+            </div>
+          </div>
+
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">Proxied upload (anti-pattern at scale)</div>
+              <ul>
+                <li>Client → app server → S3.</li>
+                <li>App server holds the entire payload in memory / on disk.</li>
+                <li>Bandwidth, CPU, ephemeral storage all bottleneck on you.</li>
+                <li>OK only for tiny files (&lt; 1 MB) or strict mid-stream validation.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Direct-to-S3 with presigned URLs</div>
+              <ul>
+                <li>App returns a signed URL valid for N minutes for a specific key.</li>
+                <li>Client PUTs / multipart-uploads straight to S3.</li>
+                <li>App server bandwidth ≈ 0 — only handles metadata.</li>
+                <li>S3 event → SQS / Lambda → post-processing pipeline.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p class="solution-desc"><strong>High-level architecture:</strong></p>
+          <pre><code>            ┌────────────┐
+            │   Client   │
+            └─────┬──────┘
+                  │ 1. POST /uploads (metadata, size, mime)
+                  ▼
+            ┌────────────┐       ┌──────────────┐
+            │   Upload   │──────▶│  Metadata DB │ (Postgres / Dynamo)
+            │   API      │       └──────────────┘
+            └─────┬──────┘
+                  │ 2. presigned multipart URLs
+                  ▼
+            ┌────────────┐
+            │   Client   │── PUT parts ──▶ ┌──────────┐
+            └─────┬──────┘                 │   S3     │
+                  │ 3. POST complete       │  bucket  │
+                  ▼                        └────┬─────┘
+            ┌────────────┐                      │ s3:ObjectCreated
+            │  Upload    │                      ▼
+            │  API       │              ┌──────────────┐
+            └────────────┘              │     SQS      │
+                                        └──────┬───────┘
+                  ┌─────────────────────┬──────┴───────────┐
+                  ▼                     ▼                  ▼
+            ┌──────────┐         ┌──────────────┐   ┌──────────────┐
+            │ AV scan  │         │  Transcoder  │   │ Dedup hasher │
+            │ (Lambda) │         │  (Fargate)   │   │  (Lambda)    │
+            └────┬─────┘         └──────┬───────┘   └──────┬───────┘
+                 │                      │                  │
+                 └───────────┬──────────┴──────────────────┘
+                             ▼
+                       ┌──────────┐
+                       │ CDN edge │── signed GET URLs ─▶ end users
+                       └──────────┘</code></pre>
+
+          <p class="solution-desc"><strong>Upload flow — multipart, resumable:</strong></p>
+          <div class="flow">
+            <div class="flow-step">Client POST /uploads — sends filename, size, mime, sha256</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Server validates size/mime, creates DB row in state <code>INITIATED</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step accent">Server returns S3 <code>uploadId</code> + N presigned PUT URLs (one per part)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Client uploads parts (5–100 MB each) in parallel; retries failed parts</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Client POST /uploads/:id/complete with ETags</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Server calls S3 <code>CompleteMultipartUpload</code>, marks row <code>UPLOADED</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step accent">S3 event → SQS → AV scan / transcode / dedup → row <code>READY</code></div>
+          </div>
+
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Dimension</th><th>Target / Estimate</th></tr></thead>
+              <tbody>
+                <tr><td>Uploads / day</td><td>50M (avg 580/sec, peak 3K/sec)</td></tr>
+                <tr><td>Avg payload</td><td>2 MB photo, 50 MB video</td></tr>
+                <tr><td>Daily ingress</td><td>~100 TB (mostly bypassing app tier)</td></tr>
+                <tr><td>App server bandwidth</td><td>only metadata: ≈ 1 KB / request</td></tr>
+                <tr><td>Multipart threshold</td><td>files &gt; 100 MB → multipart, 8 MB parts</td></tr>
+                <tr><td>Presigned URL TTL</td><td>15 min (renew on demand)</td></tr>
+                <tr><td>CDN cache TTL</td><td>1 year for immutable, content-addressed keys</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="solution-desc"><strong>API shape:</strong></p>
+          <pre><code>POST /v1/uploads
+{ "filename":"holiday.mp4", "size":524288000, "mime":"video/mp4",
+  "sha256":"3a7b...", "purpose":"user_video" }
+→ 201
+{
+  "uploadId": "u_01HRC...",
+  "key": "users/42/videos/3a7b...mp4",
+  "parts": [
+    { "partNumber": 1, "url": "https://s3.../?...&uploadId=...", "expiresIn": 900 },
+    { "partNumber": 2, "url": "https://s3.../?...&uploadId=...", "expiresIn": 900 }
+  ],
+  "completeUrl": "/v1/uploads/u_01HRC.../complete"
+}
+
+POST /v1/uploads/u_01HRC.../complete
+{ "parts": [ { "partNumber":1, "etag":"\"abc\"" }, ... ] }
+→ 200 { "status":"UPLOADED", "downloadUrl":"https://cdn.../signed?..." }
+
+-- metadata table
+CREATE TABLE uploads (
+  id UUID PRIMARY KEY,
+  owner_id BIGINT,
+  s3_key TEXT,
+  size_bytes BIGINT,
+  mime TEXT,
+  sha256 CHAR(64),
+  state TEXT,            -- INITIATED|UPLOADED|SCANNED|READY|FAILED
+  scan_result TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX ON uploads (sha256);  -- dedup lookup</code></pre>
+
+          <p class="solution-desc"><strong>Common interview gotchas:</strong></p>
           <ul>
-            <li>Store counters in <strong>Redis</strong> — fast, atomic INCR / EXPIRE.</li>
-            <li>Key: <code>rl:&lt;user&gt;:&lt;window&gt;</code>.</li>
-            <li>Implement at the <strong>API gateway</strong> for global limits; per-service for fine-grained.</li>
-            <li>Distributed atomicity: use Lua scripts or Redis MULTI/EXEC for "check + increment" atomicity.</li>
-            <li>Respond with <strong>429 Too Many Requests</strong> + <code>Retry-After</code>.</li>
+            <li><strong>Never proxy bytes</strong> through your app servers at scale — always presigned URL.</li>
+            <li><strong>Resumability</strong> requires multipart upload; the client retries only failed parts (don't restart 5 GB).</li>
+            <li><strong>Content-type spoofing</strong> — re-validate mime by reading magic bytes after upload; don't trust client headers.</li>
+            <li><strong>Dedup via content hash</strong> — if the same <code>sha256</code> exists, point to the existing S3 key instead of re-uploading.</li>
+            <li><strong>Virus scanning</strong> must be async — quarantine bucket until ClamAV / vendor returns clean, then promote.</li>
+            <li><strong>Abandoned uploads</strong> — S3 multipart parts cost money; set a lifecycle policy to abort after 7 days.</li>
+            <li><strong>Signed download URLs</strong> for private content; never expose raw S3 URLs.</li>
+            <li><strong>CDN cache key</strong> includes the version/hash, so updates are immutable and old URLs keep working.</li>
+            <li><strong>Egress cost</strong> dominates the bill — serve via CloudFront / CloudFlare, not directly from S3.</li>
           </ul>
-          <p><strong>Tradeoffs</strong>: Redis is SPOF — use Redis cluster or local fallback (lossy but available). Network call adds latency — keep Redis close. For very high QPS, sharded counters reduce contention.</p>
-          <p>Libraries: <strong>Bucket4j</strong> (Java + Redis), <strong>Envoy rate-limit</strong>, <strong>Kong</strong> plugin.</p>
+
+          <p class="takeaway"><b>Interview one-liner:</b> A scalable upload system uses <em>presigned multipart URLs</em> so clients PUT bytes directly to object storage and the app tier only handles metadata. An S3 event triggers an async pipeline — virus scan, transcode, content-hash dedup — and the file is served through a CDN using signed URLs. The key wins are zero app-server bandwidth, resumable uploads, and clean separation between control plane (metadata) and data plane (bytes).</p>
         </div>
       </details>
 
       <details class="qa">
-        <summary>Design a chat application (WhatsApp-lite)</summary>
+        <summary>Design a rate limiter <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p><strong>Requirements</strong>: 1-to-1 + group chat, online presence, message delivery + read receipts, push notifications.</p>
-          <p><strong>Architecture</strong>:</p>
+          <p class="answer-intro">A rate limiter caps how many requests a caller (user, API key, IP, tenant) may make in a given time window. It protects downstream systems from overload, enforces commercial quotas, and provides backpressure to misbehaving clients. The classic interview design is centred on <strong>Redis + an atomic Lua script</strong>, exposed at the API gateway.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Pick the right algorithm (token bucket for bursty APIs, sliding window for fairness), store counters in a fast central store (Redis), make the check-and-update atomic (Lua), and place the limiter as close to the edge as you can.</span>
+            </div>
+          </div>
+
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Algorithm</th><th>How it works</th><th>Trade-off</th></tr></thead>
+              <tbody>
+                <tr><td>Fixed window counter</td><td><code>INCR rl:user:minute</code> with TTL = 60s</td><td>Simple, but allows 2× burst at window boundaries</td></tr>
+                <tr><td>Sliding window log</td><td>Sorted set of request timestamps, trim &gt; window</td><td>Accurate, expensive memory at high QPS</td></tr>
+                <tr><td>Sliding window counter</td><td>Weight current + previous fixed window</td><td>Cheap + smooth; the standard choice</td></tr>
+                <tr><td>Token bucket</td><td>Bucket of N tokens, refilled at r/sec</td><td>Allows controlled bursts; what most APIs want</td></tr>
+                <tr><td>Leaky bucket</td><td>Queue drained at constant rate</td><td>Smooths bursts into steady stream; less burst-friendly</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="solution-desc"><strong>Where to place the limiter:</strong></p>
+          <div class="flow">
+            <div class="flow-step">CDN / WAF — coarse IP rate limit + DDoS shielding</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step accent">API Gateway — per-API-key, per-user, per-tenant business limits</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Service mesh sidecar — per-service-pair limits (Envoy)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Inside service — fine-grained per-endpoint quotas (Bucket4j)</div>
+          </div>
+
+          <p class="solution-desc"><strong>Atomic token bucket — Redis Lua:</strong></p>
+          <pre><code>-- KEYS[1] = bucket key   ARGV: capacity, refill_per_sec, now_ms, requested
+local cap   = tonumber(ARGV[1])
+local rate  = tonumber(ARGV[2])
+local now   = tonumber(ARGV[3])
+local need  = tonumber(ARGV[4])
+
+local state   = redis.call('HMGET', KEYS[1], 'tokens', 'ts')
+local tokens  = tonumber(state[1]) or cap
+local lastTs  = tonumber(state[2]) or now
+
+local refill  = (now - lastTs) / 1000.0 * rate
+tokens        = math.min(cap, tokens + refill)
+
+if tokens &lt; need then
+  redis.call('HMSET', KEYS[1], 'tokens', tokens, 'ts', now)
+  redis.call('PEXPIRE', KEYS[1], 60000)
+  return {0, tostring(tokens)}            -- denied
+end
+
+tokens = tokens - need
+redis.call('HMSET', KEYS[1], 'tokens', tokens, 'ts', now)
+redis.call('PEXPIRE', KEYS[1], 60000)
+return {1, tostring(tokens)}              -- allowed</code></pre>
+
+          <p class="solution-desc"><strong>API shape (response on throttle):</strong></p>
+          <pre><code>HTTP/1.1 429 Too Many Requests
+Retry-After: 12
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1716100123
+Content-Type: application/json
+
+{ "error": "rate_limited", "scope": "per_api_key", "retryAfterSeconds": 12 }</code></pre>
+
+          <p class="solution-desc"><strong>Common interview gotchas:</strong></p>
           <ul>
-            <li><strong>Connection layer</strong> — WebSocket gateway servers maintain persistent connections per user. Sticky routing or a session-to-server lookup in Redis.</li>
-            <li><strong>Message service</strong> — receives messages, writes to DB, fans out to recipients via WebSocket or push.</li>
-            <li><strong>Database</strong> — Cassandra or DynamoDB for messages partitioned by <code>(chatId, timestamp)</code>; sharded for write throughput.</li>
-            <li><strong>Queue</strong> — Kafka for async fan-out, delivery to offline users via push (APNs/FCM).</li>
-            <li><strong>Presence</strong> — Redis with TTL heartbeats from each connected client.</li>
-            <li><strong>Media</strong> — uploads to S3 with signed URLs; only metadata in messages.</li>
+            <li><strong>Atomicity</strong> — naive <code>GET</code> + <code>INCR</code> races; always use Lua or <code>MULTI/EXEC</code>.</li>
+            <li><strong>Clock skew</strong> across app servers — pass <code>now</code> from the server's monotonic clock, not the client.</li>
+            <li><strong>Hot keys</strong> — a single high-traffic API key can melt one Redis shard; shard the key (<code>:bucket0..N</code>) and combine.</li>
+            <li><strong>Redis down</strong> — fail-open vs fail-closed is a business decision; usually fail-open with local-cache fallback and alarm.</li>
+            <li><strong>Granularity</strong> — per-user is fairer; per-IP punishes shared NATs (offices, mobile carriers).</li>
+            <li><strong>Burst vs steady</strong> — token bucket allows bursts, leaky bucket does not; pick by use case.</li>
+            <li><strong>Return useful headers</strong> — <code>Retry-After</code>, <code>X-RateLimit-*</code> so well-behaved clients back off.</li>
+            <li><strong>Observability</strong> — emit denied-by-rule metrics so you can tune limits without going blind.</li>
           </ul>
-          <p><strong>Tricky parts</strong>: exactly-once delivery (idempotent message IDs), ordering across devices, end-to-end encryption (Signal protocol), connection rebalancing during deployments.</p>
+
+          <p class="takeaway"><b>Interview one-liner:</b> A rate limiter caps requests per caller per window using algorithms like token bucket (bursty APIs) or sliding window counter (fair APIs). The standard implementation is a Redis Lua script that atomically refills, checks, and decrements a bucket, deployed at the API gateway so every service inherits the same quota logic. Hard parts are atomicity, hot keys, and fail-open behaviour when Redis is unavailable.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Design a distributed rate limiter <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">A distributed rate limiter must enforce the <em>same</em> quota across many app instances, regions, and tenants — without becoming a bottleneck itself. The interview question is usually: "you have 50 API gateway pods, all need to share a 1,000-RPS limit per API key. How?"</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Counters live in a shared store (Redis cluster); each app server performs an atomic check-and-decrement via Lua; for ultra-high QPS use local sub-buckets that sync periodically to global state.</span>
+            </div>
+          </div>
+
+          <p class="solution-desc"><strong>Topology — single-store vs sub-bucket sync:</strong></p>
+          <pre><code>(a) Single shared Redis cluster                (b) Local + global hybrid
+                                                (best for very hot keys)
+
+      ┌───────────┐                                  ┌───────────┐
+      │  client   │                                  │  client   │
+      └─────┬─────┘                                  └─────┬─────┘
+            │                                              │
+   ┌────────┴────────┐                            ┌────────┴────────┐
+   │   gateway pods  │                            │   gateway pods  │
+   │  ┌──┐ ┌──┐ ┌──┐ │  EVAL Lua                  │  ┌──┐ ┌──┐ ┌──┐ │
+   │  └──┘ └──┘ └──┘ │  per request               │  └──┘ └──┘ └──┘ │
+   └────────┬────────┘                            └─┬───┬───┬───┬───┘
+            │                                       │   │   │   │
+       ┌────▼────┐                              local buckets (in-mem)
+       │  Redis  │                                   │
+       │ cluster │                              periodic sync (e.g. 100ms)
+       └─────────┘                                   ▼
+                                                ┌─────────┐
+                                                │  Redis  │
+                                                └─────────┘</code></pre>
+
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">Centralized Redis (atomic Lua)</div>
+              <ul>
+                <li>One round trip per request → 0.5–1 ms added latency.</li>
+                <li>Exact quota globally — no overshoot.</li>
+                <li>Redis cluster is the bottleneck at very high QPS.</li>
+                <li>Default choice for almost everyone.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Cell-based / sharded counters</div>
+              <ul>
+                <li>One key per <em>shard</em> of the API key (<code>k:shard0..N</code>).</li>
+                <li>Eliminates single-hot-key contention.</li>
+                <li>Each pod consults one shard; sum periodically.</li>
+                <li>Trade exactness for throughput (small over/undershoot).</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Local + sync (token-stealing)</div>
+              <ul>
+                <li>Each pod pre-fetches N tokens, decrements locally.</li>
+                <li>When local pool empties, fetches another batch from Redis.</li>
+                <li>Sub-ms latency, scales linearly with pods.</li>
+                <li>Allows brief overshoot equal to (batch × pods).</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Gateway sidecar (Envoy + RLS)</div>
+              <ul>
+                <li>Sidecar offloads the limit check to an external service.</li>
+                <li>Used in Istio, Lyft's ratelimit service.</li>
+                <li>Decouples app code from limit policy.</li>
+                <li>Standard for service-mesh deployments.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Aspect</th><th>Centralised Redis</th><th>Local + sync</th></tr></thead>
+              <tbody>
+                <tr><td>Per-request latency</td><td>0.5–1 ms</td><td>&lt; 50 µs</td></tr>
+                <tr><td>Accuracy</td><td>Exact</td><td>Eventually consistent (small overshoot)</td></tr>
+                <tr><td>Max QPS per key</td><td>~50K (one Redis shard)</td><td>Millions (constrained by sync interval)</td></tr>
+                <tr><td>Failure mode if Redis down</td><td>Fail-open required</td><td>Continues from local pool, then fail-open</td></tr>
+                <tr><td>Implementation</td><td>Single Lua script</td><td>Pod-side state machine + sync loop</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="solution-desc"><strong>API + headers (RFC 9331-style):</strong></p>
+          <pre><code>POST /v1/payments
+X-API-Key: ak_live_42
+
+→ 200 OK
+   RateLimit-Policy: 1000;w=60
+   RateLimit-Limit: 1000
+   RateLimit-Remaining: 837
+   RateLimit-Reset: 41
+
+→ 429 Too Many Requests
+   Retry-After: 12
+   RateLimit-Remaining: 0
+   { "error":"rate_limited", "scope":"per_api_key" }</code></pre>
+
+          <p class="solution-desc"><strong>HA &amp; fallback flow:</strong></p>
+          <div class="flow">
+            <div class="flow-step">Request arrives at gateway pod</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">EVALSHA Lua against Redis (10 ms timeout)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step accent">If Redis OK → use returned decision</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">If Redis timeout → drop to local fallback (in-mem token bucket per pod)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Emit metric <code>limiter.fallback=true</code>, alert on rate &gt; 1%</div>
+          </div>
+
+          <p class="solution-desc"><strong>Common interview gotchas:</strong></p>
+          <ul>
+            <li><strong>Hot-key shard hotspot</strong> — one famous API key on one Redis slot = melted shard; use key sharding.</li>
+            <li><strong>Lua latency</strong> — keep scripts under 100 µs of Redis CPU; preload with <code>SCRIPT LOAD</code> and <code>EVALSHA</code>.</li>
+            <li><strong>Multi-region</strong> — true global counters need consensus; usually accept per-region quotas and sum offline.</li>
+            <li><strong>Fairness</strong> — without weighting, one greedy caller will starve others sharing a bucket.</li>
+            <li><strong>Clock drift</strong> across pods can cause double-counting at window boundaries; rely on server time in the Lua script.</li>
+            <li><strong>Fail-open vs fail-closed</strong> — fail-open keeps the site up, fail-closed protects a fragile downstream; pick deliberately.</li>
+            <li><strong>Observability</strong> — emit <code>allowed</code>, <code>denied</code>, <code>fallback</code>, <code>p99</code> per key prefix; rate-limit metrics drive product decisions.</li>
+            <li><strong>Test under chaos</strong> — kill Redis primary, induce 200 ms latency, ensure the system degrades, not collapses.</li>
+          </ul>
+
+          <p class="takeaway"><b>Interview one-liner:</b> A distributed rate limiter keeps shared counters in a Redis cluster and mutates them with an atomic Lua script per request. For very hot keys you shard the counter or use a local-token-bucket pattern that batch-syncs to Redis. The hard parts are not the algorithm — they're hot-key contention, fail-open behaviour when Redis blinks, accurate quotas across regions, and emitting the right metrics so quotas can be tuned over time.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Redis Pub/Sub vs Kafka — when to use which <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">Both Redis Pub/Sub and Kafka are messaging systems, but they sit at opposite ends of the spectrum. Redis Pub/Sub is a <em>fire-and-forget broadcast bus</em> with no persistence; Kafka is a <em>distributed, durable, replayable log</em>. Picking the wrong one is a classic production bug.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Redis Pub/Sub = "tell everyone listening right now"; Kafka = "write to a durable log so any consumer, now or tomorrow, can read it". Redis Streams sits in between — Redis-grade ops with Kafka-like consumer groups.</span>
+            </div>
+          </div>
+
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Dimension</th><th>Redis Pub/Sub</th><th>Redis Streams</th><th>Apache Kafka</th></tr></thead>
+              <tbody>
+                <tr><td>Delivery guarantee</td><td>At-most-once</td><td>At-least-once</td><td>At-least-once (exactly-once with txns)</td></tr>
+                <tr><td>Retention</td><td>None — vanishes when sent</td><td>Bounded (size/time)</td><td>Days/forever (configurable)</td></tr>
+                <tr><td>Replay</td><td>Impossible</td><td>From last ID</td><td>From any offset</td></tr>
+                <tr><td>Consumer groups</td><td>No — every subscriber gets every msg</td><td>Yes (XREADGROUP)</td><td>Yes — partition-balanced</td></tr>
+                <tr><td>Ordering</td><td>Best-effort</td><td>Per-stream</td><td>Per-partition (strict)</td></tr>
+                <tr><td>Throughput / node</td><td>~1M msg/sec (small)</td><td>~500K msg/sec</td><td>~1M msg/sec/broker, scales horizontally</td></tr>
+                <tr><td>Persistence</td><td>None (memory only)</td><td>RDB / AOF</td><td>Disk-replicated, multi-broker</td></tr>
+                <tr><td>Backpressure / lag</td><td>Slow subs are dropped</td><td>Tracked via consumer groups</td><td>Tracked via offsets</td></tr>
+                <tr><td>Operational weight</td><td>Trivial</td><td>Trivial</td><td>Heavy (ZK/KRaft, JVM, ops)</td></tr>
+                <tr><td>Typical latency</td><td>&lt; 1 ms</td><td>1–5 ms</td><td>5–50 ms</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">Use Redis Pub/Sub for…</div>
+              <ul>
+                <li>Cache invalidation broadcasts ("user 42 changed").</li>
+                <li>Chat fan-out to currently-connected WebSocket pods.</li>
+                <li>Real-time presence / typing indicators.</li>
+                <li>Cluster-wide config refresh.</li>
+                <li>Anywhere "missed = fine, we'll re-sync later" holds.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Use Kafka for…</div>
+              <ul>
+                <li>Event sourcing / change-data-capture pipelines.</li>
+                <li>Order events, payment events, audit logs.</li>
+                <li>Stream processing (Flink, Spark, ksqlDB).</li>
+                <li>Saga / outbox patterns across services.</li>
+                <li>Any "we must never lose a message" workflow.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Use Redis Streams for…</div>
+              <ul>
+                <li>Light-weight job queues with consumer groups.</li>
+                <li>When you already run Redis and don't want to operate Kafka.</li>
+                <li>Short-retention event log with replay (minutes/hours).</li>
+                <li>Replacing in-process queues across pods.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Avoid Redis Pub/Sub when…</div>
+              <ul>
+                <li>You need durability or replay.</li>
+                <li>You require fan-out with backpressure (slow consumers).</li>
+                <li>You need partition-level ordering across many consumers.</li>
+                <li>You need exactly-once semantics.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p class="solution-desc"><strong>Code shape — same producer/consumer expressed in both:</strong></p>
+          <pre><code># Redis Pub/Sub — broadcast cache invalidation
+PUBLISH cache.invalidate.user '{"userId":42}'
+
+SUBSCRIBE cache.invalidate.user
+  # each subscriber gets EVERY message; if disconnected, missed = lost
+
+# Redis Streams — durable, with consumer groups
+XADD orders * type ORDER_PAID id o_123
+XGROUP CREATE orders billing 0
+XREADGROUP GROUP billing worker-1 COUNT 10 BLOCK 5000 STREAMS orders &gt;
+XACK orders billing 1716123-0
+
+# Kafka — log + consumer groups + partition ordering
+producer.send(new ProducerRecord&lt;&gt;("orders", orderId, json));   // key = orderId
+// Consumer group "billing": each partition consumed by one member
+props.put("group.id","billing");
+props.put("enable.auto.commit","false");
+consumer.subscribe(List.of("orders"));
+for (var rec : consumer.poll(Duration.ofSeconds(1)))
+    process(rec);                                       // at-least-once
+consumer.commitSync();</code></pre>
+
+          <p class="solution-desc"><strong>Decision flow:</strong></p>
+          <div class="flow">
+            <div class="flow-step">Do I need to replay history?</div>
+            <div class="flow-arrow">↓ yes</div>
+            <div class="flow-step accent">Kafka (or Redis Streams for small retention)</div>
+            <div class="flow-arrow">↓ no</div>
+            <div class="flow-step">Is at-most-once acceptable?</div>
+            <div class="flow-arrow">↓ yes</div>
+            <div class="flow-step accent">Redis Pub/Sub</div>
+            <div class="flow-arrow">↓ no</div>
+            <div class="flow-step">Do I need partition-ordered consumer groups at huge scale?</div>
+            <div class="flow-arrow">↓ yes</div>
+            <div class="flow-step accent">Kafka</div>
+            <div class="flow-arrow">↓ no</div>
+            <div class="flow-step accent">Redis Streams</div>
+          </div>
+
+          <p class="solution-desc"><strong>Common interview gotchas:</strong></p>
+          <ul>
+            <li><strong>Redis Pub/Sub has no buffer</strong> — a slow subscriber is disconnected and loses messages.</li>
+            <li><strong>Pub/Sub for chat</strong> works as the fan-out fabric between WebSocket pods, but the durable message store must be DB/Kafka, not Pub/Sub itself.</li>
+            <li><strong>Kafka ordering</strong> is per-partition, not per-topic — choose your partition key carefully.</li>
+            <li><strong>Kafka exactly-once</strong> works only inside Kafka (transactional producer + consumer); end-to-end exactly-once requires idempotency in the consumer too.</li>
+            <li><strong>Operating Kafka</strong> is non-trivial — ZK/KRaft, broker rebalances, ISR tuning, disk planning; managed (MSK, Confluent) is usually right at startups.</li>
+            <li><strong>Redis Streams</strong> is bounded — set <code>MAXLEN ~ N</code> aggressively or you'll OOM.</li>
+            <li><strong>Cluster vs single Redis</strong> — Pub/Sub in Redis Cluster has weaker fan-out semantics; understand <code>SPUBLISH</code> in 7+.</li>
+            <li><strong>Latency vs throughput</strong> — Pub/Sub wins on latency for small payloads; Kafka wins on sustained throughput and durability.</li>
+          </ul>
+
+          <p class="takeaway"><b>Interview one-liner:</b> Redis Pub/Sub is an at-most-once, zero-retention broadcast bus — perfect for cache invalidation, real-time fanout, presence. Kafka is a durable, replayable, partition-ordered log — perfect for event sourcing, audit, ETL, sagas. Redis Streams is the middle ground: Kafka-like consumer groups inside a Redis you already operate. Choose by asking "do I need replay, durability, and ordered consumer groups?" — if any of those is yes, go Kafka.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Design a chat application (WhatsApp-lite) <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">A WhatsApp-style chat needs persistent connections per user, real-time delivery, presence, group fan-out, push notifications for offline users, and ordering guarantees across devices. The architecture splits cleanly into a <strong>connection layer</strong> (WebSocket gateways), a <strong>message layer</strong> (persistence + fan-out), and a <strong>presence layer</strong> (Redis with TTLs).</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">WebSocket gateway pods hold one socket per online user; a session registry in Redis maps <code>userId → pod</code>; messages persist to Cassandra and fan out via Kafka/Pub-Sub to the right pods. Offline users are reached via APNs/FCM push.</span>
+            </div>
+          </div>
+
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Dimension</th><th>Target / Estimate</th></tr></thead>
+              <tbody>
+                <tr><td>DAU</td><td>500M, peak 100M concurrent connections</td></tr>
+                <tr><td>Connections / pod</td><td>~100K WS conns (tuned Linux, Netty/Go)</td></tr>
+                <tr><td>Pods needed at peak</td><td>~1000 WS-gateway pods</td></tr>
+                <tr><td>Messages / day</td><td>~100B (1.2M msg/sec sustained, 5× peak)</td></tr>
+                <tr><td>Avg payload</td><td>~200 B text, media via S3 reference</td></tr>
+                <tr><td>Storage / day</td><td>~20 TB raw, ~5 TB compressed</td></tr>
+                <tr><td>Delivery latency SLO</td><td>p95 &lt; 200 ms within region</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="solution-desc"><strong>High-level architecture:</strong></p>
+          <pre><code>      ┌─────────────┐   ┌─────────────┐
+      │  Mobile A   │   │  Mobile B   │
+      └──────┬──────┘   └──────┬──────┘
+             │ WSS              │ WSS
+             ▼                  ▼
+      ┌──────────────────────────────────┐
+      │   WS Gateway pods (sticky-ish)    │ ── presence heartbeat ──▶ Redis
+      └──────┬───────────────────────┬───┘
+             │ send                  ▲ deliver
+             ▼                       │
+      ┌──────────────┐        ┌──────┴──────┐
+      │  Msg Service │───────▶│   Kafka     │── fan-out subscribers
+      │  (validate,  │        │  per-shard  │   route to target pod
+      │   persist)   │        └──────┬──────┘
+      └──────┬───────┘               │
+             ▼                       ▼
+      ┌──────────────┐        ┌─────────────┐
+      │  Cassandra   │        │ Push worker │── APNs / FCM
+      │  msgs(chatId,│        │  for offline│
+      │  ts, msgId)  │        │   users     │
+      └──────────────┘        └─────────────┘
+             ▲
+             │
+      ┌──────┴───────┐
+      │  S3 (media)  │  ── signed URLs in message body
+      └──────────────┘</code></pre>
+
+          <p class="solution-desc"><strong>Send message flow:</strong></p>
+          <div class="flow">
+            <div class="flow-step">Client A WS → gateway pod with <code>{chatId, clientMsgId, body}</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Gateway → Message Service (gRPC)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step accent">Persist to Cassandra <code>(chatId, msgId=Snowflake)</code> — idempotent on <code>clientMsgId</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Publish to Kafka topic <code>chat.fanout</code> partitioned by <code>chatId</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">For each recipient: lookup Redis <code>session:userId → pod</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step accent">If online → push to pod → WS deliver; if offline → push worker → APNs/FCM</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Client ACK travels back up the same path → delivery/read receipts</div>
+          </div>
+
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">1-to-1 chat</div>
+              <ul>
+                <li>Two participants, single shard, predictable load.</li>
+                <li>Strict per-chat ordering via <code>chatId</code> partition key.</li>
+                <li>Receipts: <code>sent → delivered → read</code>.</li>
+                <li>End-to-end encryption with Signal protocol — server stores ciphertext only.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Group chat / channels</div>
+              <ul>
+                <li>Fan-out factor = group size; large groups (1000+) need write-optimised fan-out.</li>
+                <li>For huge channels (&gt;100K), switch to pull-based timeline (Twitter-style).</li>
+                <li>Message ID must include sequence per chat for client-side ordering.</li>
+                <li>Mention / @-notification = separate event class.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p class="solution-desc"><strong>Data model — Cassandra:</strong></p>
+          <pre><code>CREATE TABLE messages (
+  chat_id   TEXT,
+  msg_id    BIGINT,        -- Snowflake, monotonic per chat
+  sender_id BIGINT,
+  body      TEXT,          -- E2EE ciphertext for E2E mode
+  media_key TEXT,
+  created_at TIMESTAMP,
+  PRIMARY KEY ((chat_id), msg_id)
+) WITH CLUSTERING ORDER BY (msg_id DESC);
+
+CREATE TABLE user_chats (
+  user_id   BIGINT,
+  chat_id   TEXT,
+  last_read_msg_id BIGINT,
+  PRIMARY KEY ((user_id), chat_id)
+);
+
+-- presence in Redis
+SET presence:u_42 "pod-37" EX 30          -- heartbeat every 10s, TTL 30s</code></pre>
+
+          <p class="solution-desc"><strong>Common interview gotchas:</strong></p>
+          <ul>
+            <li><strong>Ordering across devices</strong> — use a monotonic per-chat sequence (Snowflake-like) and let the client reconcile by msgId.</li>
+            <li><strong>Exactly-once delivery</strong> — clients send a <code>clientMsgId</code>; server dedupes; receipts use the server-assigned <code>msgId</code>.</li>
+            <li><strong>Sticky vs stateless WS</strong> — sticky simplifies session, but pod restarts force mass reconnects; prefer session registry in Redis.</li>
+            <li><strong>Connection rebalancing on deploy</strong> — drain pods slowly; clients reconnect with exponential backoff + jitter.</li>
+            <li><strong>Hot groups</strong> — a 100K-user group can swamp one Kafka partition; split into sub-shards by recipient hash.</li>
+            <li><strong>Push for offline</strong> — APNs/FCM throttle; batch and dedupe per device.</li>
+            <li><strong>E2E encryption</strong> — server cannot read messages; search and content-moderation move to the client.</li>
+            <li><strong>Media</strong> — never put bytes in chat events; upload to S3 then send a reference.</li>
+            <li><strong>Multi-region</strong> — pick a home region per chat; cross-region delivery via Kafka MirrorMaker.</li>
+          </ul>
+
+          <p class="takeaway"><b>Interview one-liner:</b> A chat system is three layers: stateful WebSocket gateways that hold one socket per user, a stateless message service that persists to Cassandra and fans out via Kafka, and a presence layer in Redis that maps users to pods. Offline users are reached via APNs/FCM push, ordering uses Snowflake-style per-chat IDs, and idempotency uses a client-supplied <code>clientMsgId</code>. The hardest production problems are connection rebalancing on deploys, hot groups, and exactly-once delivery semantics across devices.</p>
         </div>
       </details>
 
@@ -956,20 +1667,952 @@ public class WsConfig implements WebSocketMessageBrokerConfigurer {
       </details>
 
       <details class="qa">
-        <summary>Design a notification system</summary>
+        <summary>Design a notification system <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p><strong>Requirements</strong>: deliver notifications across channels (push, email, SMS, in-app); respect user preferences; high throughput.</p>
-          <p><strong>Architecture</strong>:</p>
+          <p class="answer-intro">A notification system delivers messages to users across multiple channels — push, SMS, email, in-app, webhook — driven by business events from many producing services. It must honor user preferences, dedupe across channels, retry provider failures, and never lose a notification. The standard design is an <strong>event-driven pipeline</strong>: producers publish to Kafka, an orchestrator decides what to send, and channel workers talk to providers (FCM, Twilio, SendGrid).</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Decouple producers (services emitting events) from channels (push/SMS/email) via a Kafka-backed orchestrator that applies templates, user preferences, dedup, rate limits, and then routes to per-channel workers with retries and DLQs.</span>
+            </div>
+          </div>
+
+          <p class="solution-desc"><strong>High-level architecture:</strong></p>
+          <pre><code>   ┌───────────────┐  ┌───────────────┐  ┌───────────────┐
+   │ Orders svc    │  │ Payments svc  │  │ Marketing svc │
+   └──────┬────────┘  └──────┬────────┘  └──────┬────────┘
+          │ event             │ event            │ campaign
+          └─────────┬─────────┴─────────┬────────┘
+                    ▼                   ▼
+              ┌──────────────────────────────┐
+              │   Kafka topic: events.*       │
+              └──────────────┬───────────────┘
+                             ▼
+              ┌──────────────────────────────┐
+              │   Notification Orchestrator   │
+              │ - load template                │
+              │ - load user prefs              │
+              │ - dedup, rate-limit, throttle  │
+              │ - choose channels              │
+              └──────────────┬───────────────┘
+                             ▼
+              ┌──────────────────────────────┐
+              │   Kafka topic: notif.send.*   │  (one per channel)
+              └────┬─────────┬─────────┬─────┘
+                   ▼         ▼         ▼
+              ┌────────┐ ┌────────┐ ┌────────┐
+              │ Push   │ │ SMS    │ │ Email  │  ── retry + DLQ each
+              │ worker │ │ worker │ │ worker │
+              └────┬───┘ └────┬───┘ └────┬───┘
+                   ▼         ▼         ▼
+                 FCM/APNs  Twilio   SendGrid
+
+              └──────────── Audit log (Kafka → S3/Elastic) ───────────┘</code></pre>
+
+          <p class="solution-desc"><strong>Event-to-delivery flow:</strong></p>
+          <div class="flow">
+            <div class="flow-step">Producer emits <code>OrderShipped(orderId, userId)</code> to Kafka</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Orchestrator consumes, fetches template <code>order_shipped</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step accent">Loads user preferences: push=on, sms=off, email=digest</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Dedup key <code>userId+orderId+templateId</code> — drop if seen recently</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Per-user rate limit (e.g. ≤ 5 push/min) via Redis</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Emit to <code>notif.send.push</code> + queue email into <code>digest.daily</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Channel worker calls provider, retries with backoff; DLQ on hard failures</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step accent">Audit write: who/what/when/result</div>
+          </div>
+
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Dimension</th><th>Target / Estimate</th></tr></thead>
+              <tbody>
+                <tr><td>Notifications / day</td><td>500M (≈ 6K/sec sustained, 30K/sec peak)</td></tr>
+                <tr><td>Channels</td><td>push, sms, email, in-app, webhook</td></tr>
+                <tr><td>Provider SLA</td><td>FCM ≈ 99.95%, Twilio ≈ 99.95%, SES ≈ 99.9%</td></tr>
+                <tr><td>End-to-end latency</td><td>p95 &lt; 3s real-time push, digests within window</td></tr>
+                <tr><td>Retention</td><td>30 days hot (search), 1 year cold (audit)</td></tr>
+                <tr><td>Dedup window</td><td>10 min per (user, event, template) key</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">Transactional notifications</div>
+              <ul>
+                <li>OTPs, payment alerts, password reset.</li>
+                <li>Real-time, never delayed, never deduped away.</li>
+                <li>Highest priority queue + dedicated provider account.</li>
+                <li>Per-channel SLA monitored separately.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Marketing / campaign notifications</div>
+              <ul>
+                <li>Bulk, rate-limited, quiet-hours-aware.</li>
+                <li>Honor unsubscribe + frequency caps.</li>
+                <li>A/B testing + content versioning.</li>
+                <li>Run on cheaper provider tier.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p class="solution-desc"><strong>API + schema:</strong></p>
+          <pre><code>POST /v1/notifications
+{
+  "userId": "u_42",
+  "template": "order_shipped",
+  "params": { "orderId": "o_999", "eta": "Mar 14" },
+  "channels": ["push","email"],
+  "dedupKey": "u_42:o_999:order_shipped",
+  "priority": "transactional"
+}
+→ 202 { "notificationId":"n_01H..." }
+
+-- preferences
+CREATE TABLE user_prefs (
+  user_id BIGINT PRIMARY KEY,
+  push_enabled BOOL, sms_enabled BOOL, email_mode TEXT,
+  quiet_hours TSTZRANGE, locale TEXT
+);
+
+-- audit (append-only)
+CREATE TABLE notif_audit (
+  id UUID PRIMARY KEY,
+  user_id BIGINT, channel TEXT, template TEXT,
+  status TEXT,             -- SENT|FAILED|SKIPPED|DEDUPED
+  provider_msg_id TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);</code></pre>
+
+          <p class="solution-desc"><strong>Common interview gotchas:</strong></p>
           <ul>
-            <li><strong>Event ingress</strong> — services publish events ("OrderShipped") to Kafka.</li>
-            <li><strong>Notification orchestrator</strong> — subscribes to events, applies templates and user preferences, decides channels.</li>
-            <li><strong>Channel workers</strong> — separate consumers per channel (push worker, email worker, SMS worker). Each uses provider SDKs (FCM, SendGrid, Twilio).</li>
-            <li><strong>Provider abstraction</strong> — swap providers via config.</li>
-            <li><strong>Retry + DLQ</strong> per channel — provider hiccups don't lose notifications.</li>
-            <li><strong>Rate limit per user</strong> — avoid notification spam.</li>
-            <li><strong>Audit log</strong> — what was sent when, for debugging and compliance.</li>
+            <li><strong>Idempotency</strong> — the same event can be re-consumed; key by <code>dedupKey</code> in Redis with TTL.</li>
+            <li><strong>Cross-channel dedup</strong> — don't push <em>and</em> email <em>and</em> SMS the same OTP; pick a priority per template.</li>
+            <li><strong>Quiet hours / locale</strong> — must be applied before send; campaign in user's TZ.</li>
+            <li><strong>Provider outage</strong> — retry with backoff; circuit-break; spill to DLQ; replay later from offset.</li>
+            <li><strong>Token rotation</strong> — FCM/APNs tokens expire silently; track invalid_token responses and prune.</li>
+            <li><strong>Unsubscribe + GDPR</strong> — unsubscribe is binding across channels; full delete must purge audit too (or anonymise).</li>
+            <li><strong>Cost</strong> — SMS is expensive; gate behind business logic, never run from a marketing tool unattended.</li>
+            <li><strong>Observability</strong> — per-template, per-channel, per-provider success/latency dashboards are mandatory.</li>
           </ul>
-          <p>Tradeoffs: real-time push vs digest emails, deduplication (don't send the same notification twice across channels), localization, GDPR/unsubscribe handling. At OneXtel I built a similar SMS notification pipeline.</p>
+
+          <p class="takeaway"><b>Interview one-liner:</b> A notification system is an event-driven pipeline: producers emit events to Kafka, an orchestrator applies templates, user preferences, dedup, and rate limits, then routes to per-channel workers that call FCM/Twilio/SES with retry + DLQ. Hard parts are cross-channel dedup, idempotency on at-least-once delivery, quiet hours, provider failure handling, and an immutable audit log for compliance.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Design a payment system <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">A payment system must move money correctly, exactly once, with full auditability — even when networks fail mid-call. The two interview pillars are <strong>idempotency</strong> (a retried request must never double-charge) and <strong>two-phase capture</strong> (authorize the card now, capture later when goods ship). Around those sit fraud, settlement, reconciliation, and PCI scope.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Treat every payment as an immutable state machine driven by idempotent commands. The application never holds card numbers (PCI); a vault tokenises them. Money movements are recorded in a double-entry ledger, with sagas / outbox for cross-service consistency.</span>
+            </div>
+          </div>
+
+          <p class="solution-desc"><strong>State machine:</strong></p>
+          <pre><code>  CREATED ──▶ AUTHORIZED ──▶ CAPTURED ──▶ SETTLED
+     │            │             │             │
+     │            ▼             ▼             ▼
+     └───────▶ AUTH_FAILED   REFUND_PENDING  RECONCILED
+                              │
+                              ▼
+                          REFUNDED / PARTIALLY_REFUNDED
+                              │
+                              ▼
+                          DISPUTED ──▶ CHARGEBACK</code></pre>
+
+          <p class="solution-desc"><strong>High-level architecture:</strong></p>
+          <pre><code>      ┌──────────┐
+      │  Client  │── HTTPS + Idempotency-Key ──┐
+      └──────────┘                              │
+                                                ▼
+                                        ┌─────────────┐
+                                        │ API Gateway │
+                                        │ (WAF, RL)   │
+                                        └──────┬──────┘
+                                               ▼
+                ┌──────────────────────────────────────────────┐
+                │           Payment Service (stateless)         │
+                │  ┌────────────┐ ┌────────────┐ ┌───────────┐ │
+                │  │ Idempotency│ │ Risk/Fraud │ │   Token   │ │
+                │  │  store     │ │  service   │ │   Vault   │ │
+                │  └────────────┘ └────────────┘ └───────────┘ │
+                └──────┬──────────────────────────┬────────────┘
+                       │ outbox                    │ tokenise
+                       ▼                           ▼
+                ┌───────────┐               ┌───────────────┐
+                │  Kafka    │               │  PSP gateway  │
+                │ payments.*│               │ (Stripe/Adyen │
+                └────┬──────┘               │  /Razorpay)   │
+            ┌───────┼─────────┐             └───────┬───────┘
+            ▼       ▼         ▼                     │
+       ┌──────┐ ┌──────┐ ┌──────────┐          schemes
+       │Ledger│ │Audit │ │Settle/   │          (Visa/MC)
+       │ DB   │ │ log  │ │Recon job │
+       └──────┘ └──────┘ └──────────┘</code></pre>
+
+          <p class="solution-desc"><strong>Auth + capture flow with idempotency:</strong></p>
+          <div class="flow">
+            <div class="flow-step">Client POST /payments with <code>Idempotency-Key: idem_xyz</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step accent">Server: <code>INSERT idempotency_keys ... ON CONFLICT DO NOTHING</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">If key exists → return stored response (no re-charge)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Fraud check; if fail → DECLINED</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Tokenise PAN → call PSP <code>authorize($amount, token)</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">PSP returns auth code → state = AUTHORIZED, persist + write outbox</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step accent">Later (on ship): POST /payments/:id/capture → PSP capture → CAPTURED</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Nightly settlement batch → ledger reconciliation → SETTLED/RECONCILED</div>
+          </div>
+
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Dimension</th><th>Target / Estimate</th></tr></thead>
+              <tbody>
+                <tr><td>Payments / day</td><td>10M (≈ 120/sec sustained, 1K/sec peak)</td></tr>
+                <tr><td>p99 latency</td><td>&lt; 800 ms incl. PSP round trip</td></tr>
+                <tr><td>Idempotency-key TTL</td><td>24h hot in Redis, 30d in DB</td></tr>
+                <tr><td>Ledger entries / payment</td><td>≥ 2 (double-entry: debit + credit per leg)</td></tr>
+                <tr><td>Recon SLA</td><td>T+1, exception &lt; 0.01%</td></tr>
+                <tr><td>Audit retention</td><td>7 years (regulatory)</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">Idempotency model</div>
+              <ul>
+                <li>Client generates UUID per <em>logical</em> attempt; sends as <code>Idempotency-Key</code>.</li>
+                <li>Server stores <code>(key, request_hash, response, status)</code>.</li>
+                <li>Retries with same key → return original response.</li>
+                <li>Different request body with same key → 422 conflict.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Cross-service consistency</div>
+              <ul>
+                <li>Outbox pattern — DB tx writes business row + outbox row atomically.</li>
+                <li>Outbox poller publishes to Kafka.</li>
+                <li>Saga: order ↔ payment ↔ inventory with compensations.</li>
+                <li>No 2PC across services — local txs + events only.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p class="solution-desc"><strong>API + schema:</strong></p>
+          <pre><code>POST /v1/payments
+Idempotency-Key: idem_8c4f
+{
+  "amount": { "value": 1299, "currency": "INR" },
+  "method": { "type":"card", "token":"tok_visa_4242" },
+  "orderId": "o_999", "customerId":"c_42",
+  "captureMode": "manual"
+}
+→ 201 { "id":"p_01H...", "status":"AUTHORIZED", "auth":"AB12CD" }
+
+POST /v1/payments/p_01H.../capture
+→ 200 { "status":"CAPTURED" }
+
+-- core tables
+CREATE TABLE payments (
+  id UUID PRIMARY KEY,
+  order_id TEXT, customer_id TEXT,
+  amount_minor BIGINT, currency CHAR(3),
+  status TEXT, psp_ref TEXT,
+  created_at TIMESTAMPTZ, updated_at TIMESTAMPTZ
+);
+CREATE TABLE idempotency_keys (
+  key TEXT PRIMARY KEY,
+  request_hash TEXT,
+  response_body JSONB,
+  status_code INT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE TABLE ledger_entries (
+  id BIGSERIAL PRIMARY KEY,
+  payment_id UUID,
+  account TEXT,             -- e.g. cash, merchant_payable
+  side CHAR(1),             -- D or C
+  amount_minor BIGINT, currency CHAR(3),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE TABLE outbox (
+  id BIGSERIAL PRIMARY KEY,
+  aggregate TEXT, payload JSONB,
+  published_at TIMESTAMPTZ NULL
+);</code></pre>
+
+          <p class="solution-desc"><strong>Common interview gotchas:</strong></p>
+          <ul>
+            <li><strong>Idempotency is mandatory</strong> — without it, every retry is a potential double-charge.</li>
+            <li><strong>PCI scope</strong> — never store raw PAN; use a tokenisation vault or PSP-hosted fields; this drops you from PCI-DSS Level 1 to SAQ-A scope.</li>
+            <li><strong>Two-phase capture</strong> — authorize at checkout, capture only after fulfilment; cancellable auths reduce dispute risk.</li>
+            <li><strong>Saga over 2PC</strong> — for "payment ↔ order ↔ inventory", use local transactions + compensations; never distributed locks.</li>
+            <li><strong>Reconciliation</strong> — settlement reports from the PSP rarely match exactly; have a recon job + exception queue + manual review tooling.</li>
+            <li><strong>Webhook handling</strong> — PSP callbacks are at-least-once; verify signature and dedupe by event ID.</li>
+            <li><strong>Currency &amp; rounding</strong> — store as minor units (long), never floats; one cent off compounds to lawsuits.</li>
+            <li><strong>Fraud hook</strong> — call risk service before auth; allow it to step up to 3DS challenge.</li>
+            <li><strong>Audit immutability</strong> — append-only, signed, replicated to cold storage; needed for regulators.</li>
+          </ul>
+
+          <p class="takeaway"><b>Interview one-liner:</b> A payment system is an idempotent state machine — CREATED → AUTHORIZED → CAPTURED → SETTLED — backed by a double-entry ledger, an outbox to Kafka, and sagas for cross-service consistency. Card data lives in a tokenisation vault to stay out of PCI scope, fraud is checked before authorize, and a nightly recon job compares PSP settlement reports against the ledger. The non-negotiables are idempotency keys, two-phase capture, signed webhooks, and an immutable audit log.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Design an order management system (OMS) <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">An OMS is the spine of any e-commerce platform — it owns the order's life cycle from cart checkout through fulfilment, and orchestrates inventory, payments, shipping, and notifications. The classic design is a <strong>state-machine</strong> driven by events, with each side service (inventory, payments, shipping) owning its own data and coordinating via a <strong>saga</strong> rather than distributed transactions.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">An order is a state machine — CREATED → PAID → RESERVED → SHIPPED → DELIVERED / CANCELLED / REFUNDED — coordinated across services by an event-driven saga with explicit compensations. Reads scale via a CQRS read model fed from the event stream.</span>
+            </div>
+          </div>
+
+          <p class="solution-desc"><strong>Order state machine:</strong></p>
+          <pre><code>           ┌────────────┐
+           │  CREATED   │ ── cancel ──┐
+           └─────┬──────┘             │
+                 │ payment OK         │
+                 ▼                    ▼
+           ┌────────────┐       ┌────────────┐
+           │   PAID     │       │ CANCELLED  │
+           └─────┬──────┘       └────────────┘
+                 │ inventory reserved
+                 ▼
+           ┌────────────┐
+           │ RESERVED   │ ── refund ──▶ REFUNDED
+           └─────┬──────┘
+                 │ packed + dispatched
+                 ▼
+           ┌────────────┐
+           │  SHIPPED   │
+           └─────┬──────┘
+                 ▼
+           ┌────────────┐
+           │ DELIVERED  │
+           └────────────┘</code></pre>
+
+          <p class="solution-desc"><strong>Service decomposition:</strong></p>
+          <pre><code>                     ┌─────────────────┐
+                     │  Order Service  │ ◀── state machine
+                     └────────┬────────┘
+                              │  events ▶ Kafka (orders.*)
+       ┌──────────┬───────────┼────────────┬──────────┐
+       ▼          ▼           ▼            ▼          ▼
+┌───────────┐ ┌───────────┐ ┌───────────┐ ┌────────┐ ┌──────────────┐
+│ Inventory │ │ Payments  │ │ Shipping  │ │ Notif. │ │ Read model    │
+│  service  │ │  service  │ │  service  │ │ service│ │ (CQRS, Elastic│
+└─────┬─────┘ └─────┬─────┘ └─────┬─────┘ └────────┘ │  /Postgres)   │
+      │             │             │                  └───────────────┘
+   reserve       authorize     dispatch                 ▲
+   /release      /capture       update                  │ events
+                                                         └── consumes orders.*</code></pre>
+
+          <p class="solution-desc"><strong>Saga — happy path:</strong></p>
+          <div class="flow">
+            <div class="flow-step">POST /orders (idempotent) → state CREATED, write outbox</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Outbox → Kafka <code>orders.created</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Payment service: authorize → emit <code>payments.authorized</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step accent">Order service: PAID → request inventory reservation</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Inventory service: reserve atomically → <code>inventory.reserved</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Order service: RESERVED → payment service captures</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Shipping service: <code>shipping.dispatched</code> → state SHIPPED</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step accent">Carrier webhook delivered → state DELIVERED</div>
+          </div>
+
+          <p class="solution-desc"><strong>Compensating actions:</strong></p>
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">Reserve fails after payment auth</div>
+              <ul>
+                <li>Order → CANCELLED.</li>
+                <li>Compensate: payment service VOIDs auth (no capture).</li>
+                <li>Notify customer with reason + alternative SKUs.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Customer cancels after capture</div>
+              <ul>
+                <li>Order → REFUND_PENDING.</li>
+                <li>Inventory service releases reservation.</li>
+                <li>Payment service issues refund; order → REFUNDED.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Shipping fails (lost/damaged)</div>
+              <ul>
+                <li>Order → CANCELLED or partial refund.</li>
+                <li>Inventory write-off; restock if returned.</li>
+                <li>Trigger replacement order via support flow.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Duplicate POST /orders</div>
+              <ul>
+                <li>Idempotency-Key check returns the original order.</li>
+                <li>No new state machine; no double-charge.</li>
+                <li>Same response body returned.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Dimension</th><th>Target / Estimate</th></tr></thead>
+              <tbody>
+                <tr><td>Orders / day</td><td>2M (peak sale day 20M)</td></tr>
+                <tr><td>Write QPS (orders)</td><td>~25 sustained, ~250 peak</td></tr>
+                <tr><td>Read QPS (order status)</td><td>~5K (status page polling) → CQRS read model</td></tr>
+                <tr><td>End-to-end checkout SLO</td><td>p95 &lt; 2s through full saga</td></tr>
+                <tr><td>Storage</td><td>1 KB / order × 5 years = ~4 TB</td></tr>
+                <tr><td>Event throughput</td><td>~50K events/sec at peak</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="solution-desc"><strong>API + schema:</strong></p>
+          <pre><code>POST /v1/orders
+Idempotency-Key: idem_abc
+{
+  "customerId":"c_42",
+  "items":[{"sku":"SKU-1","qty":2,"price":1299}],
+  "shipping":{"addressId":"a_7"},
+  "payment":{"method":"card","token":"tok_..."}
+}
+→ 201 { "orderId":"o_01H...","status":"CREATED" }
+
+GET /v1/orders/o_01H...  → from read model (Elastic), eventual consistency
+
+-- write model
+CREATE TABLE orders (
+  id UUID PRIMARY KEY,
+  customer_id BIGINT,
+  status TEXT,                    -- CREATED|PAID|RESERVED|SHIPPED|...
+  total_minor BIGINT, currency CHAR(3),
+  version INT,                    -- optimistic locking
+  created_at TIMESTAMPTZ, updated_at TIMESTAMPTZ
+);
+CREATE TABLE order_items (
+  order_id UUID, sku TEXT, qty INT, price_minor BIGINT
+);
+CREATE TABLE order_events (    -- append-only audit
+  id BIGSERIAL PRIMARY KEY, order_id UUID,
+  type TEXT, payload JSONB,
+  occurred_at TIMESTAMPTZ DEFAULT now()
+);</code></pre>
+
+          <p class="solution-desc"><strong>Common interview gotchas:</strong></p>
+          <ul>
+            <li><strong>State machine, not status string</strong> — illegal transitions must be rejected; use a dispatch table.</li>
+            <li><strong>Idempotent commands</strong> — every external trigger carries a key; replays don't double-execute.</li>
+            <li><strong>Saga over 2PC</strong> — local txs + events + compensations; never lock across services.</li>
+            <li><strong>Read model lag</strong> — eventual consistency means the order page may briefly show old state; show a "processing" UI until reconciled.</li>
+            <li><strong>Inventory race</strong> — reservation must be atomic (DB unique constraint or Redis decrement); see "Design an inventory reservation system" below.</li>
+            <li><strong>Refunds</strong> — both inventory release and payment refund must be idempotent and individually retryable.</li>
+            <li><strong>Audit log</strong> — every transition recorded; needed for support, disputes, regulators.</li>
+            <li><strong>Replay</strong> — if read model rots, rebuild from <code>order_events</code>; treat the event log as the source of truth.</li>
+            <li><strong>Outbox</strong> — never publish to Kafka inside the same tx as the DB write without it; you'll lose events when the broker blinks.</li>
+          </ul>
+
+          <p class="takeaway"><b>Interview one-liner:</b> An OMS is a state-machine-driven service that owns the order life cycle and orchestrates inventory, payments, shipping, and notifications via an event-driven saga. Idempotency-keys protect against replay, the outbox guarantees event delivery, a CQRS read model serves status queries, and an immutable event log lets you rebuild state on demand. The hard interview points are the state machine, saga compensations, and atomic inventory reservation.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Design an inventory reservation system <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">An inventory reservation system holds stock for a customer during checkout, prevents overselling under concurrent demand, and gracefully releases unused holds. The interview expects you to discuss <strong>optimistic vs pessimistic locking</strong>, <strong>Redis-based hot-stock counters</strong> with periodic DB reconciliation, and <strong>saga compensations</strong> when orders cancel.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Keep authoritative stock in the DB; decrement a Redis hot counter atomically during checkout with a TTL so abandoned carts auto-release; reconcile Redis back to DB periodically and on every order completion. Overselling is solved by an atomic check-and-decrement, not by application-level locks.</span>
+            </div>
+          </div>
+
+          <p class="solution-desc"><strong>Architecture:</strong></p>
+          <pre><code>     ┌──────────────┐
+     │  Checkout    │── reserve(sku, qty, holdId, ttl=15m) ─┐
+     └──────────────┘                                        ▼
+                                                    ┌────────────────┐
+                                                    │  Inventory svc │
+                                                    └─┬────────┬─────┘
+                                                      │        │
+                                              Lua DECR│        │ async
+                                                      ▼        ▼
+                                                ┌──────────┐  ┌─────────────┐
+                                                │  Redis   │  │ Postgres /  │
+                                                │ hot SKU  │  │ Warehouse DB│
+                                                │ counters │◀─│ source of    │
+                                                └──────────┘  │ truth        │
+                                                              └──────┬───────┘
+                                                                     │ events
+                                                                     ▼
+                                                               ┌──────────┐
+                                                               │  Kafka   │── WMS sync
+                                                               └──────────┘</code></pre>
+
+          <p class="solution-desc"><strong>Reservation lifecycle:</strong></p>
+          <div class="flow">
+            <div class="flow-step">Cart triggers reserve(sku, qty=2, holdId, ttl=15m)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step accent">Redis Lua: if <code>available ≥ qty</code> → decrement + write <code>hold:holdId</code> with TTL</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Customer pays → confirm(holdId) → DB row inserted, Redis hold removed</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Customer abandons → TTL expires → keyspace notification triggers release back to counter</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Order cancel/refund → release(holdId or orderId) → counter incremented</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step accent">Every N min: reconcile Redis counter ↔ DB authoritative qty</div>
+          </div>
+
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">Optimistic locking (DB only)</div>
+              <ul>
+                <li><code>UPDATE stock SET qty=qty-2, ver=ver+1 WHERE sku=? AND ver=? AND qty&gt;=2</code></li>
+                <li>If rows=0 → retry or fail.</li>
+                <li>Simple, but contention kills throughput on hot SKUs.</li>
+                <li>OK for slow-moving items.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Pessimistic locking (DB row lock)</div>
+              <ul>
+                <li><code>SELECT ... FOR UPDATE</code> then update.</li>
+                <li>Serializes writers — predictable but slow.</li>
+                <li>Risk of long-running tx blocking the DB.</li>
+                <li>Rarely the right answer at scale.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Redis hot counter (recommended)</div>
+              <ul>
+                <li>Atomic <code>EVAL</code> Lua: check &amp; decrement in one op.</li>
+                <li>Sub-ms latency, no DB contention on hot SKUs.</li>
+                <li>Periodic reconciliation back to DB.</li>
+                <li>TTL holds auto-release abandoned carts.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Token-bucket per SKU (extreme hot)</div>
+              <ul>
+                <li>Pre-allocate N tokens at sale start (Black Friday SKU).</li>
+                <li>Sharded counters per node to remove single-key bottleneck.</li>
+                <li>Sum counters periodically for accurate qty.</li>
+                <li>Accept micro-oversell, compensate via cancellation.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p class="solution-desc"><strong>Atomic reservation — Redis Lua:</strong></p>
+          <pre><code>-- KEYS[1]=stock:sku:S1   KEYS[2]=hold:hold123   ARGV: qty, ttl_sec
+local stock = tonumber(redis.call('GET', KEYS[1]) or '0')
+local qty   = tonumber(ARGV[1])
+if stock &lt; qty then return {0, stock} end
+redis.call('DECRBY', KEYS[1], qty)
+redis.call('SET', KEYS[2], qty, 'EX', tonumber(ARGV[2]))
+return {1, stock - qty}</code></pre>
+
+          <p class="solution-desc"><strong>Auto-release on TTL via Redis keyspace notification:</strong></p>
+          <pre><code># enable expiry notifications
+CONFIG SET notify-keyspace-events Ex
+
+# subscriber service
+SUBSCRIBE __keyevent@0__:expired
+  on key "hold:hold123":
+    qty = lookupQtyFromAuditLog(holdId)
+    INCRBY stock:sku:S1 qty
+    publish inventory.released to Kafka</code></pre>
+
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Dimension</th><th>Target / Estimate</th></tr></thead>
+              <tbody>
+                <tr><td>SKUs</td><td>1M total, 1K hot at any time</td></tr>
+                <tr><td>Reserve QPS</td><td>~5K sustained, ~50K peak (Black Friday)</td></tr>
+                <tr><td>Hold TTL</td><td>15 min default, 60 min cart-saved</td></tr>
+                <tr><td>Reconcile interval</td><td>every 5 min + on every order completion</td></tr>
+                <tr><td>Oversell tolerance</td><td>0 for legal goods; configurable %  for promo SKUs</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="solution-desc"><strong>API + schema:</strong></p>
+          <pre><code>POST /v1/inventory/reserve
+{ "sku":"SKU-1", "qty":2, "holdId":"hold_abc", "ttlSec":900 }
+→ 200 { "ok":true, "remaining": 47 }
+→ 409 { "ok":false, "error":"OUT_OF_STOCK", "remaining": 0 }
+
+POST /v1/inventory/confirm   { "holdId":"hold_abc", "orderId":"o_99" }
+POST /v1/inventory/release   { "holdId":"hold_abc" }
+
+CREATE TABLE stock (
+  sku TEXT PRIMARY KEY,
+  qty INT NOT NULL,
+  version INT NOT NULL DEFAULT 0,
+  reserved INT NOT NULL DEFAULT 0,
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE TABLE holds (
+  hold_id UUID PRIMARY KEY,
+  sku TEXT, qty INT,
+  order_id UUID NULL,
+  status TEXT,                   -- ACTIVE|CONFIRMED|RELEASED|EXPIRED
+  expires_at TIMESTAMPTZ
+);</code></pre>
+
+          <p class="solution-desc"><strong>Common interview gotchas:</strong></p>
+          <ul>
+            <li><strong>Check-then-update races</strong> — always atomic via Lua / SQL <code>WHERE qty &gt;= ?</code>.</li>
+            <li><strong>Cart abandonment</strong> — every reservation needs a TTL or you'll oversell holds.</li>
+            <li><strong>Hot SKU contention</strong> — single-key Redis bottlenecks; shard with bucketing or pre-allocated tokens.</li>
+            <li><strong>Reconciliation drift</strong> — Redis is faster but lossy; the DB is the source of truth; cap drift via frequent recon.</li>
+            <li><strong>Multi-warehouse</strong> — a SKU at multiple locations is per-(sku, warehouse); pick fulfillment location after reserve.</li>
+            <li><strong>Backorders / pre-orders</strong> — allow negative qty with an upper cap; emit different event.</li>
+            <li><strong>Saga compensation</strong> — order cancel must always release inventory; idempotent by holdId.</li>
+            <li><strong>WMS sync</strong> — physical movements (pick/pack) update the DB; events propagate back to Redis.</li>
+            <li><strong>Hot SKU stampede</strong> on flash sale — pre-warm counters, queue request waiting room, fall back to lottery.</li>
+          </ul>
+
+          <p class="takeaway"><b>Interview one-liner:</b> Hold stock in Redis hot counters with an atomic Lua check-and-decrement, write a <code>hold</code> key with TTL so abandoned carts auto-release, and reconcile back to the authoritative DB on every confirmation and periodically. The DB is the source of truth, Redis is the fast lane, and saga compensations release inventory on every cancel/refund. Hot SKU contention is the main scaling challenge — solved by shard-bucketing or pre-allocated token pools.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Design a scalable audit logging system <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">Audit logs record <em>who did what, when, from where, to what</em> — they are write-heavy, append-only, immutable, and frequently regulated. A scalable design ingests events via Kafka, fans out to a hot search index (Elasticsearch / OpenSearch) for recent queries and to cold object storage (S3 Parquet) for long-term and analytics. The killer constraints are throughput, retention cost, and tamper-resistance.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Treat audit as an append-only event stream. Producers emit events (directly or via transactional outbox), Kafka is the durable spine, hot tier serves search, cold tier (S3 Parquet) serves analytics + compliance. Immutability + signatures provide tamper evidence.</span>
+            </div>
+          </div>
+
+          <p class="solution-desc"><strong>Architecture:</strong></p>
+          <pre><code>  ┌────────────┐  ┌────────────┐  ┌────────────┐
+  │  Service A │  │  Service B │  │  Service C │
+  └─────┬──────┘  └─────┬──────┘  └─────┬──────┘
+        │ outbox        │ direct        │ outbox
+        └──────┬────────┴───────┬───────┘
+               ▼                ▼
+        ┌──────────────────────────────┐
+        │   Kafka topic: audit.events   │  ── partitioned by tenant_id
+        └──────┬───────────────┬───────┘
+               │ consumer      │ consumer
+               ▼               ▼
+   ┌──────────────────┐   ┌────────────────────┐
+   │  Hot tier ingest │   │ Cold tier ingest    │
+   │  (Logstash /     │   │ (Flink / Kafka      │
+   │   Fluentbit)     │   │  Connect → Parquet) │
+   └────────┬─────────┘   └────────┬────────────┘
+            ▼                       ▼
+     ┌──────────────┐         ┌──────────────┐
+     │ Elasticsearch│         │   S3 (Parquet│
+     │  hot 30d     │         │   1–7 years) │
+     └──────────────┘         └──────────────┘
+            ▲                        ▲
+            │                        │
+       audit UI / API        Athena / Spark / Glue
+       (search + filter)     (compliance queries)</code></pre>
+
+          <p class="solution-desc"><strong>Ingest flow:</strong></p>
+          <div class="flow">
+            <div class="flow-step">Service emits event (within local tx via outbox)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Outbox poller publishes to Kafka <code>audit.events</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step accent">Kafka replicates 3×, retains 7 days</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Consumer A indexes to Elasticsearch with daily indices <code>audit-YYYY.MM.DD</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Consumer B batches to Parquet on S3, partitioned by <code>year/month/day/tenant</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step accent">Compaction job — daily rollups, Glue catalog updated for Athena</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Retention job — ES rollover at 30d, S3 lifecycle to Glacier at 1 year</div>
+          </div>
+
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Dimension</th><th>Target / Estimate</th></tr></thead>
+              <tbody>
+                <tr><td>Events / day</td><td>10B (≈ 120K/sec sustained, 500K/sec peak)</td></tr>
+                <tr><td>Avg payload</td><td>~1 KB → ~10 TB/day raw, ~2 TB Parquet</td></tr>
+                <tr><td>Hot retention</td><td>30 days in ES (cost: high)</td></tr>
+                <tr><td>Cold retention</td><td>7 years in S3 Parquet (cost: very low)</td></tr>
+                <tr><td>Search SLO</td><td>p95 &lt; 2s on last 30 days, &lt; 30s on cold tier</td></tr>
+                <tr><td>Kafka partitions</td><td>~256 partitioned by <code>tenant_id</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">Hot tier — Elasticsearch / OpenSearch</div>
+              <ul>
+                <li>Last 30 days, fully indexed.</li>
+                <li>Daily index + ILM rollover.</li>
+                <li>Supports filter by actor, target, action, free-text.</li>
+                <li>Expensive — strict TTL.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Cold tier — S3 Parquet</div>
+              <ul>
+                <li>Append-only, partitioned by date + tenant.</li>
+                <li>Cheap (cents/GB-month), queried via Athena/Trino/Spark.</li>
+                <li>Compressed columnar — fast scans.</li>
+                <li>Lifecycle → Glacier after 1 year.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p class="solution-desc"><strong>Event schema (Avro / JSON):</strong></p>
+          <pre><code>{
+  "event_id": "01HRC...",            // ULID — sortable
+  "occurred_at": "2025-04-12T10:33:21Z",
+  "tenant_id": "t_42",
+  "actor": { "type":"user", "id":"u_99", "ip":"10.0.0.1" },
+  "action": "ORDER.REFUND_ISSUED",
+  "target": { "type":"order", "id":"o_001" },
+  "context": { "request_id":"req_...", "service":"order-svc" },
+  "payload": { "amountMinor": 1299, "currency":"INR" },
+  "prev_hash": "f3a...",             // hash-chain for tamper detection
+  "hash":      "b91..."
+}
+
+-- Athena query: refunds &gt; 10k in last quarter, by actor
+SELECT actor.id, count(*) refunds, sum(cast(payload.amountMinor as bigint)) total
+FROM audit
+WHERE action='ORDER.REFUND_ISSUED'
+  AND year='2025' AND month BETWEEN '01' AND '03'
+GROUP BY actor.id
+HAVING total &gt; 1000000
+ORDER BY total DESC;</code></pre>
+
+          <p class="solution-desc"><strong>Common interview gotchas:</strong></p>
+          <ul>
+            <li><strong>Write durability</strong> — lose nothing; emit via transactional outbox so business + audit row are atomic.</li>
+            <li><strong>Schema evolution</strong> — Avro + schema registry; backward + forward compatible; never silently change fields.</li>
+            <li><strong>Tamper resistance</strong> — hash-chain (Merkle-style) per tenant; periodically anchor digest to immutable store / blockchain.</li>
+            <li><strong>Partitioning</strong> — by tenant for isolation and query pushdown; small tenants colocated.</li>
+            <li><strong>GDPR right-to-erasure</strong> — can't truly delete from immutable; use tombstone fields + reversible encryption with per-user key, then drop the key.</li>
+            <li><strong>Legal hold</strong> — when a tenant is under investigation, lifecycle policies must be suspended.</li>
+            <li><strong>Search at scale</strong> — limit free-text search to recent tier; cold tier is for analytics, not interactive lookup.</li>
+            <li><strong>Sensitive payloads</strong> — never log PAN, full passwords, tokens; redact at producer.</li>
+            <li><strong>Backpressure</strong> — when ES is slow, don't drop or block business; Kafka decouples and consumers catch up.</li>
+            <li><strong>Cost</strong> — Parquet + S3 = pennies; full-text ES of all history = bankrupt. Tier ruthlessly.</li>
+          </ul>
+
+          <p class="takeaway"><b>Interview one-liner:</b> An audit log is an append-only event stream — producers emit via outbox to Kafka, a hot consumer indexes 30 days into Elasticsearch for interactive search, and a cold consumer batches Parquet onto S3 for cheap long-term retention queried by Athena. Immutability + a per-tenant hash chain provide tamper-evidence; GDPR is handled with reversible encryption + key-drop; legal hold suspends lifecycle policies. The headline trade-off is hot vs cold retention cost.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Design a system handling millions of requests per day <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">"Millions of requests per day" is a relatable but small number — it sounds large in interviews, but the math is friendly. The goal is to walk through capacity, the basic high-availability blueprint (stateless services + ALB + cache + DB + async work), and the cost-conscious rollout strategy a senior engineer would actually run with.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">For 10M requests/day, the system is roughly 115 RPS sustained and ~600 RPS peak. A small fleet of stateless services behind an ALB, with CDN for static, Redis for cache, Postgres + read replicas, and Kafka/SQS for async work, comfortably handles it in multi-AZ with strong observability.</span>
+            </div>
+          </div>
+
+          <p class="solution-desc"><strong>Capacity estimation — back-of-the-envelope:</strong></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Metric</th><th>Math</th><th>Value</th></tr></thead>
+              <tbody>
+                <tr><td>Requests / day</td><td>given</td><td>10,000,000</td></tr>
+                <tr><td>Sustained RPS</td><td>10M / 86,400 s</td><td>~115 RPS</td></tr>
+                <tr><td>Peak RPS (5×)</td><td>115 × 5</td><td>~575 RPS</td></tr>
+                <tr><td>Avg response size</td><td>~5 KB JSON</td><td>—</td></tr>
+                <tr><td>Egress / day</td><td>10M × 5 KB</td><td>~50 GB</td></tr>
+                <tr><td>App pods needed</td><td>peak / per-pod 200 RPS</td><td>~3 pods × 2 AZ = 6 (+headroom)</td></tr>
+                <tr><td>DB read QPS</td><td>peak × 3 (joins)</td><td>~1.7K reads/sec → 1 primary + 2 replicas</td></tr>
+                <tr><td>Cache size</td><td>top 10% hot keys</td><td>~5–20 GB Redis</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="solution-desc"><strong>High-level architecture:</strong></p>
+          <pre><code>                ┌─────────────┐
+                │   Browser   │
+                └──────┬──────┘
+                       │
+                  ┌────▼─────┐
+                  │   CDN    │  static, edge cache
+                  └────┬─────┘
+                       ▼
+                  ┌──────────┐
+                  │  Route53 │  DNS + health-checked failover
+                  └────┬─────┘
+                       ▼
+                  ┌──────────┐
+                  │   ALB    │  L7, TLS termination, WAF
+                  └────┬─────┘
+              ┌────────┴────────┐
+              ▼                 ▼
+        ┌──────────┐      ┌──────────┐
+        │ App pod  │ ...  │ App pod  │   stateless, 12-factor
+        │ (AZ-a)   │      │ (AZ-b)   │
+        └────┬─────┘      └────┬─────┘
+             │ cache             │ cache
+             ▼                   ▼
+        ┌──────────┐      ┌──────────────┐
+        │  Redis   │      │   Kafka /    │── workers (async)
+        │ (cluster)│      │   SQS        │
+        └────┬─────┘      └──────────────┘
+             ▼
+        ┌──────────────┐
+        │ Postgres     │── primary + 2 read replicas
+        │  (multi-AZ)  │
+        └──────────────┘</code></pre>
+
+          <p class="solution-desc"><strong>Request flow:</strong></p>
+          <div class="flow">
+            <div class="flow-step">Client → CDN; static cached, dynamic forwarded</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">DNS → ALB (multi-AZ, health-checked)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">App pod (stateless) — auth, validation, business logic</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step accent">Redis lookup; on miss → DB (primary for write, replica for read)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Heavy work (emails, analytics, exports) → Kafka/SQS</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step accent">Response served; metrics emitted to Prometheus, traces to OTel</div>
+          </div>
+
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">Stateless app tier</div>
+              <ul>
+                <li>No session in memory — JWT or Redis-backed session.</li>
+                <li>Horizontally autoscaled on CPU + p95 latency.</li>
+                <li>Rolling deploys via Kubernetes / ECS.</li>
+                <li>12-factor: config from env, logs to stdout.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Caching strategy</div>
+              <ul>
+                <li>CDN for assets — &gt; 90% hit ratio.</li>
+                <li>Redis for hot reads — cache-aside pattern.</li>
+                <li>TTL or event-driven invalidation.</li>
+                <li>Single-flight to prevent stampedes.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Database</div>
+              <ul>
+                <li>Primary + 2 read replicas, multi-AZ.</li>
+                <li>Connection pooler (PgBouncer / RDS Proxy).</li>
+                <li>Read traffic to replicas, writes to primary.</li>
+                <li>Sharding deferred until ~50K writes/sec.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Async work</div>
+              <ul>
+                <li>Anything not on the user's critical path → queue.</li>
+                <li>Emails, analytics, reports, image processing.</li>
+                <li>Retry + DLQ; bounded concurrency per consumer.</li>
+                <li>Backpressure isolates user-facing tier from spikes.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p class="solution-desc"><strong>SLOs &amp; observability (RED method):</strong></p>
+          <pre><code>SLI                    Target              How measured
+─────────────────────────────────────────────────────────────
+Availability           99.95% / 30d        ALB 5xx + synthetic probes
+p95 API latency        &lt; 250 ms            histogram in app + ALB
+p99 API latency        &lt; 600 ms            same
+Error rate             &lt; 0.1%              5xx / total
+Queue lag              &lt; 30 s              Kafka consumer-lag metric
+
+Dashboards: RED per service (Rate / Errors / Duration)
+            USE per resource (Utilization / Saturation / Errors)
+Alerts: burn-rate alerts on SLO error budget (fast + slow)</code></pre>
+
+          <p class="solution-desc"><strong>API + minimal infra example:</strong></p>
+          <pre><code># K8s deployment — stateless app
+apiVersion: apps/v1
+kind: Deployment
+spec:
+  replicas: 6                              # 3 per AZ × 2 AZs
+  template:
+    spec:
+      containers:
+        - name: api
+          image: api:v42
+          resources:
+            requests: { cpu: "500m", memory: "512Mi" }
+            limits:   { cpu: "2",    memory: "1Gi"   }
+          readinessProbe:
+            httpGet: { path: /health, port: 8080 }
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+spec:
+  minReplicas: 6
+  maxReplicas: 30
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 60 } }
+    - type: Pods
+      pods:
+        metric: { name: http_request_p95_ms }
+        target: { type: AverageValue, averageValue: 250 }</code></pre>
+
+          <p class="solution-desc"><strong>Common interview gotchas:</strong></p>
+          <ul>
+            <li><strong>RPS &lt; 1000</strong> is small — don't over-engineer; a 6-pod fleet on Postgres handles it.</li>
+            <li><strong>Peak is the design point</strong>, not the average; multiply average by 5–10×.</li>
+            <li><strong>Stateless</strong> means horizontal scaling is just "more pods"; any in-memory session destroys that.</li>
+            <li><strong>Multi-AZ</strong> is mandatory; multi-region is over-spec for most companies at this scale.</li>
+            <li><strong>Cache before sharding</strong> — caching delays the day you need to shard the DB.</li>
+            <li><strong>Async by default</strong> — anything &gt; 100 ms that doesn't need a sync response should be queued.</li>
+            <li><strong>Rollout</strong> — canary + automated rollback on SLO breach; not Friday-night deploys.</li>
+            <li><strong>Cost basics</strong> — biggest line items are DB + egress; CDN + Redis pay for themselves.</li>
+            <li><strong>Capacity headroom</strong> — run at ~50% peak utilisation; the other 50% is your incident budget.</li>
+          </ul>
+
+          <p class="takeaway"><b>Interview one-liner:</b> Millions of requests per day is roughly 115 RPS sustained with 5× peaks — comfortably handled by a small stateless fleet behind an ALB, with CDN for static, Redis for hot reads, Postgres + read replicas for data, and Kafka/SQS for async work, all in multi-AZ. The senior moves are: don't over-engineer, design for peak not average, keep the app tier stateless, push heavy work async, and instrument with RED metrics + SLO error budgets so you know when to scale and when to wait.</p>
         </div>
       </details>
 

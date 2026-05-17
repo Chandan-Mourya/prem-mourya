@@ -36,7 +36,7 @@
       <h1>Tell me about yourself &amp; soft questions</h1>
       <p class="topic-page-desc">Story-based answers tuned to your resume — Indus Net, OneXtel, Punctuations.ai, MongoDB+ES, and 5 years of microservices. Speak 30–60 seconds per answer.</p>
       <div class="topic-page-meta">
-        <span><strong>15</strong> questions</span>
+        <span><strong>19</strong> questions</span>
         <span>Press <span class="hint-kbd">/</span> to search · <span class="hint-kbd">E</span> expand all</span>
       </div>
     </div>
@@ -70,6 +70,159 @@
       </details>
 
       <details class="qa">
+        <summary>Tell me about a production issue you solved <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">On a payments service I owned, four Kubernetes pods were being <code>OOMKilled</code> every five to six hours under traffic — this is how I went from "just restart it" to a clean root-cause fix without losing the evidence.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Stabilize customers first, but never restart blindly — treat the next OOM as a data-collection opportunity, not just an outage to silence.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Situation</div>
+            <p>At one of my previous companies I was on-call for a payments microservice running 4 replicas behind a service mesh, sustaining roughly 3k RPS. Over a week we saw repeated <code>OOMKilled</code> events at the 5–6 hour mark on every pod. Customer-visible impact was 5xx spikes during rollover — about 8–12 seconds of failed authorisations each cycle, which upstream callers then amplified via retries.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Task</div>
+            <p>Three goals in order: keep customers transacting, capture enough evidence to find the real root cause, and ship a permanent fix with a guardrail so this class of bug couldn't recur silently.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Action</div>
+            <p>First, stabilize. I added a longer <code>preStopHook</code> and a graceful drain on the readiness probe so traffic shifted away cleanly before each pod died; the 5xx spikes on rollover dropped immediately. I deliberately did <em>not</em> raise the heap to "buy time" — that just makes the OOM less frequent and harder to catch.</p>
+            <p>Then, capture. Enabled <code>-XX:+HeapDumpOnOutOfMemoryError</code> with the dump path mounted on a persistent volume so the next OOM produced a usable <code>.hprof</code>. Within about 4 hours we had a dump.</p>
+            <p>Then, analyse. Opened the dump in Eclipse MAT; the <em>Leak Suspects</em> report pointed at a <code>ThreadLocal&lt;RequestContext&gt;</code> the request filter set on entry and never cleared on exit. Tomcat worker threads are pooled, so the context piled up request after request. A second offender — a per-tenant config map — was unbounded; I replaced it with a Caffeine cache (size + TTL).</p>
+            <p>The actual fix was small:</p>
+<pre><code>// Filter — the missing finally block
+public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
+    throws IOException, ServletException {
+  try {
+    CURRENT.set(buildContext(req));
+    chain.doFilter(req, res);
+  } finally {
+    CURRENT.remove();   // &lt;-- this is what was missing
+  }
+}</code></pre>
+            <p>Roll-out discipline: gated behind a feature flag, soaked 24 hours in staging under replayed prod traffic, then a 1-of-4 prod canary while I watched <code>jvm_memory_used_bytes</code> rate-of-change, then full fleet.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Result</div>
+            <p>Heap usage plateaued and stayed flat across a 72-hour soak; zero <code>OOMKilled</code> events since. p99 stabilised around 38 ms (down from a noisy 80–250 ms during the leaking window). On-call pages on this service went from ~3 per week to zero. I wrote up an "OOM checklist" runbook and added a Prometheus alert on the rolling 4-hour growth rate of heap usage — so the next leak gets noticed before customers do.</p>
+          </div>
+
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">Stabilize first</div>
+              <ul>
+                <li>Graceful drain on pod restart — kill the 5xx spikes.</li>
+                <li>Do <em>not</em> raise the heap; it hides the bug.</li>
+                <li>Communicate ETA to on-call and stakeholders.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Root-cause after</div>
+              <ul>
+                <li>Heap dump on OOM, persisted to a volume.</li>
+                <li>Eclipse MAT Leak Suspects → real offender.</li>
+                <li>Fix + soak + canary + alert on growth rate.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p><b>Common interview gotchas:</b></p>
+          <ul>
+            <li>Don't say "we just restarted it on a cron" — that's an outage workaround, not a fix.</li>
+            <li>Don't blame a teammate by name; own the system's gap instead.</li>
+            <li>Avoid vague metrics like "performance improved" — name actual numbers.</li>
+            <li>Don't skip the guardrail step (alert, runbook). A fix without prevention is incomplete.</li>
+            <li>Avoid heroics framing ("I stayed up all night"); emphasise process and discipline.</li>
+            <li>Don't claim instant root-cause — be honest that capturing the dump took hours.</li>
+          </ul>
+
+          <p class="takeaway"><b>Interview one-liner:</b> A senior engineer's first move during an OOM isn't to raise the heap — it's to capture the dump. I stabilized customers with a graceful drain, let the next OOM produce a real <code>.hprof</code>, traced it to a <code>ThreadLocal</code> we never cleared, shipped a one-line <code>finally { tl.remove(); }</code> fix behind a flag, and left behind an alert on heap growth rate. Never restart blindly — capture the dump first.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Tell me about a difficult scalability problem you handled <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">On an e-commerce catalog service, a marketing burst turned a healthy 25 ms p99 into a 3 s p99 and pushed the database to 90% CPU — this is how I rescued it with cache strategy instead of a bigger machine.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Cache strategy is a product decision, not just a code change — jittered TTLs, request coalescing, and a small near-cache are the difference between a stampede and a steady state.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Situation</div>
+            <p>On a catalog service I worked on, traffic ran around 50k RPS overall; about 95% of reads concentrated on the top 1,000 SKUs. After a marketing burst pushed homepage impressions for a flagship SKU, p99 spiked from ~25 ms to ~3 s and downstream Postgres sat at &gt;90% CPU. Each pod's local Caffeine cache expired roughly together, and on miss every pod hit the DB simultaneously — textbook stampede on a hot key.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Task</div>
+            <p>Bring p99 back to ≤ 50 ms under the burst, without vertically scaling the DB and without 10x-ing read cost on RDS.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Action</div>
+            <p>Four layered changes:</p>
+            <ul>
+              <li>Moved per-pod Caffeine to a <strong>shared Redis cache</strong> so cache fill happened once across the fleet, not once per pod.</li>
+              <li>Added <strong>jittered TTLs (5–10 minutes)</strong> per key so SKUs didn't all expire at the same wall-clock second.</li>
+              <li>Added <strong>request coalescing</strong> on cache miss using <code>SET NX EX</code> as a distributed lock — only one pod refreshes a key, the rest serve stale-while-revalidate from Redis.</li>
+              <li>Kept a small <strong>per-pod near-cache</strong> (Caffeine, ~100 entries) for the absolute hottest SKUs so most requests never crossed the network at all.</li>
+            </ul>
+            <p>Wired Micrometer cache metrics + Grafana dashboards: hit rate, miss rate, refresh latency, lock contention. The coalescing lock primitive looked like this:</p>
+<pre><code>-- KEYS[1] = "lock:sku:{id}"   ARGV[1] = pod-id   ARGV[2] = 3 (sec)
+if redis.call("SET", KEYS[1], ARGV[1], "NX", "EX", ARGV[2]) then
+  return 1   -- this pod is the refresher
+else
+  return 0   -- someone else is refreshing; serve stale-while-revalidate
+end</code></pre>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Result</div>
+            <p>Hit rate climbed from 0.78 to 0.97. p99 dropped from ~3 s back to ~35 ms under burst, comfortably under the SLO. DB CPU dropped by ~80% and we cancelled a planned RDS upsize, saving real spend. The service became cleanly horizontally scalable — adding pods now added throughput instead of multiplying DB load.</p>
+          </div>
+
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead>
+                <tr><th>Metric</th><th>Before</th><th>After</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Cache hit rate</td><td>0.78</td><td>0.97</td></tr>
+                <tr><td>p99 latency (burst)</td><td>~3,000 ms</td><td>~35 ms</td></tr>
+                <tr><td>p99 latency (steady)</td><td>~25 ms</td><td>~12 ms</td></tr>
+                <tr><td>DB CPU (peak)</td><td>~92%</td><td>~18%</td></tr>
+                <tr><td>RDS instance plan</td><td>Planned upsize</td><td>Same instance</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Common interview gotchas:</b></p>
+          <ul>
+            <li>Don't say "we added Redis and it got faster" — name the failure mode (stampede on a hot key) and the specific mitigations.</li>
+            <li>Don't skip the hit-rate metric; it's the only honest measure of cache value.</li>
+            <li>Avoid claiming "infinite scale" — say what the new bottleneck became.</li>
+            <li>Don't forget jitter — equal TTLs are themselves a synchronised failure mode.</li>
+            <li>Avoid vague language like "we tuned things"; be specific about what changed and why.</li>
+            <li>Don't ignore the cost angle — cancelling the upsize was part of the win.</li>
+          </ul>
+
+          <p class="takeaway"><b>Interview one-liner:</b> A scalability problem at this layer is usually not "the DB is slow"; it's "everyone hits the DB at the same instant". I named the failure mode — cache stampede on a hot key — then shipped shared Redis with jittered TTLs, request coalescing via <code>SET NX EX</code>, and a small near-cache. p99 went from 3 s back to 35 ms and we avoided an RDS upsize. Cache strategy was the product decision; code was the easy part.</p>
+        </div>
+      </details>
+
+      <details class="qa">
         <summary>Why are you looking to switch?</summary>
         <div class="qa-body">
           <p>I've grown a lot at Indus Net — I lead the backend for Punctuations.ai and own end-to-end design. But the product is at an early stage where the team is small and tech decisions repeat. I'm looking for a place where I can work on <strong>larger-scale distributed systems</strong>, learn from senior engineers who've built systems at scale, and operate in a stronger engineering culture with mature CI/CD, observability, and code-review practices.</p>
@@ -94,6 +247,112 @@
       </details>
 
       <details class="qa">
+        <summary>Describe a time when a deployment failed in production <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">On a Friday-evening rolling deploy of an orders service, a single schema migration started locking a 30-million-row table and writes piled up — here's how we stopped the bleed in about 12 minutes and never made that class of mistake again.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Incompatible schema changes are deployments too — design them as multi-step (expand → migrate → contract), never as a single "add NOT NULL on a hot table" release.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Situation</div>
+            <p>On an orders service I worked on, we did a routine Friday-evening rolling deploy. The migration added a <code>NOT NULL</code> column without a default to a 30-million-row table. Postgres started taking an <code>ACCESS EXCLUSIVE</code> lock while it rewrote the table. Reads were fine, but writes piled up; the writer connection pool saturated within minutes and customers started seeing 503s on order placement.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Task</div>
+            <p>Stop the customer impact, finish or revert the migration safely without data loss, and make sure we never shipped a long-locking migration unreviewed again.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Action</div>
+            <p>Step one — stop the bleed:</p>
+            <ul>
+              <li><code>kubectl rollout pause</code> on the orders deployment so no more pods picked up the new image.</li>
+              <li>Rolled back running pods to the previous image with <code>kubectl rollout undo</code>.</li>
+              <li>Identified the migration session in <code>pg_stat_activity</code> and ran <code>pg_terminate_backend</code> on it. Writes resumed within seconds.</li>
+            </ul>
+            <p>Step two — redo the migration the right way (expand → migrate → contract):</p>
+<pre><code>-- 1) EXPAND: add nullable, no rewrite, no table lock
+ALTER TABLE orders ADD COLUMN status_v2 TEXT NULL;
+
+-- 2) MIGRATE: backfill in small batches, off-peak, with sleeps
+DO $$
+DECLARE last_id BIGINT := 0;
+BEGIN
+  LOOP
+    UPDATE orders
+       SET status_v2 = status
+     WHERE id IN (
+       SELECT id FROM orders
+        WHERE id &gt; last_id AND status_v2 IS NULL
+        ORDER BY id LIMIT 5000
+     )
+    RETURNING id INTO last_id;
+    EXIT WHEN NOT FOUND;
+    PERFORM pg_sleep(0.2);
+  END LOOP;
+END $$;
+
+-- 3) CONTRACT: NOT NULL is cheap once backfilled; drop old col in a later release
+ALTER TABLE orders ALTER COLUMN status_v2 SET NOT NULL;</code></pre>
+            <p>Step three — guardrails so the next person doesn't repeat it:</p>
+            <ul>
+              <li>Added a pre-deploy CI hook that runs <code>EXPLAIN</code> on candidate migrations and parses the lock level — anything <code>ACCESS EXCLUSIVE</code> on a table over 1M rows fails the pipeline.</li>
+              <li>Added a "schema change checklist" PR template: expand-migrate-contract, batch size, off-peak window, rollback plan.</li>
+              <li>Made it a team norm: no schema changes on Friday after 3 p.m.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Result</div>
+            <p>Customer impact closed in about 12 minutes; no data loss; the month's SLO breach stayed under 0.5%. The team adopted expand-migrate-contract as the default pattern for schema changes — used cleanly on the next four migrations. The CI lock-level check caught two near-miss PRs in the following months that would have repeated the same mistake.</p>
+          </div>
+
+          <div class="flow">
+            <div class="flow-row">
+              <div class="flow-step bad">
+                <div class="flow-step-title">Wrong way</div>
+                <div class="flow-step-body">One migration: <code>ADD COLUMN … NOT NULL DEFAULT …</code> on a hot table, on a Friday. Postgres rewrites the table under <code>ACCESS EXCLUSIVE</code>. Writes stall. Customers see 503s.</div>
+              </div>
+            </div>
+            <div class="flow-row">
+              <div class="flow-step good">
+                <div class="flow-step-title">Expand</div>
+                <div class="flow-step-body">Add the column nullable. No rewrite, no table lock. App writes both new and old columns.</div>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-step good">
+                <div class="flow-step-title">Migrate</div>
+                <div class="flow-step-body">Backfill in small batches with <code>LIMIT</code> + <code>pg_sleep</code>, off-peak. Watch replication lag.</div>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-step good">
+                <div class="flow-step-title">Contract</div>
+                <div class="flow-step-body">Once backfilled, <code>SET NOT NULL</code> is cheap. Later, drop the old column in a separate release.</div>
+              </div>
+            </div>
+          </div>
+
+          <p><b>Common interview gotchas:</b></p>
+          <ul>
+            <li>Don't blame the DBA, the framework, or the migration tool — own the design call.</li>
+            <li>Don't frame it as "we rolled back and the problem was solved" — that's only step one.</li>
+            <li>Avoid vague timing ("very quickly") — give the minutes.</li>
+            <li>Don't claim zero impact if there was impact; honest SLO numbers build trust.</li>
+            <li>Avoid "we now test it in staging" as the lesson — staging never has 30M rows. The lesson is design, not test environment.</li>
+            <li>Don't skip the guardrail (the CI lock-level check is what actually prevents recurrence).</li>
+          </ul>
+
+          <p class="takeaway"><b>Interview one-liner:</b> Production deploy failures are almost never the deploy tool — they're an incompatible change shipped as one step instead of three. I stopped the bleed with a rollout pause and <code>pg_terminate_backend</code>, redesigned the migration as expand-migrate-contract, and made the lock-level check a CI gate. The fix is half the story; the guardrail is the other half.</p>
+        </div>
+      </details>
+
+      <details class="qa">
         <summary>What's your biggest strength?</summary>
         <div class="qa-body">
           <p>My biggest strength is <strong>going deep when something is broken</strong>. I don't stop at the first plausible explanation — I take thread dumps, read logs, write small reproducers, and validate the actual root cause. The SMS-gateway lock-contention bug at OneXtel is one example; another was a JVM memory leak at Indus Net that I traced to a ThreadLocal we never cleared inside a filter.</p>
@@ -110,12 +369,73 @@
       </details>
 
       <details class="qa">
-        <summary>Describe a time you mentored or led someone</summary>
+        <summary>How do you mentor junior developers? <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p>At Indus Net I mentored a junior engineer who'd just joined the Punctuations.ai team. He was strong on Java syntax but unsure about Spring Boot patterns, transactional boundaries, and writing tests. I paired with him daily for the first two weeks — we did design walk-throughs, I reviewed his PRs in detail, and we worked through a small feature together end-to-end.</p>
-          <p>Within a month he was shipping production code independently, and after three months he was reviewing other people's PRs. The proudest moment was when he found a subtle bug in <em>my</em> code during a review. Mentoring also made me a better engineer — explaining why I made a choice forced me to question whether the choice was actually right.</p>
+          <p class="answer-intro">Mentoring is one of the highest-leverage things a senior does — but only if it's structured opportunity plus frequent feedback, not just answering questions when asked.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Mentorship's success metric isn't how often they ask you for help — it's whether they're operating one level above their title within 6–12 months.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> What I do day-to-day</div>
+            <ul>
+              <li><strong>1:1s every two weeks</strong>, 30 minutes, agenda owned by them — not a status update. We talk about what's blocking, what they want next, and one piece of feedback in each direction.</li>
+              <li><strong>Pair programming on something neither of us has done before</strong> — purposely picking unfamiliar territory so they see how a senior handles uncertainty, not just how I demo something I already know.</li>
+              <li><strong>Code reviews focused on the <em>why</em>, not the <em>what</em>.</strong> I explain rationale, link to internal docs or postmortems, and phrase comments as "I'd consider… because…" rather than "change this to…".</li>
+              <li><strong>Deliberate handoff of stretch work</strong> — assigning the design doc on a service they'd normally just consume, reviewing early, then stepping back.</li>
+              <li><strong>Async written feedback</strong> after big moments (design review, incident, demo). Verbal feedback gets forgotten; written feedback they can re-read in a year.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> What I avoid</div>
+            <ul>
+              <li>Turning them into a code-typing extension of me. If I'm the architect on every story they touch, they never grow.</li>
+              <li>Jumping in too fast. Sitting with a bug for two more hours is often the lesson; I rescue only when they're stuck on the wrong thing, not when they're slow.</li>
+              <li>Vague feedback. "Good job" and "be more proactive" are equally useless. Concrete is better: "The way you scoped the PR into three commits made it easy to review — keep doing that."</li>
+              <li>Conflating mentoring with managing. I don't run their performance review; I'm a senior peer they can be honest with.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> A short STAR story</div>
+            <p>At one of my previous companies I mentored a 2-year engineer who was technically strong but quiet in design discussions. Over six months we paired on a microservice extraction, but I deliberately asked <em>them</em> to write the design doc and lead the architecture review; my role was early-stage review and defending the direction when the room pushed back. Inside two quarters they ran the next service migration on their own, and were promoted to mid-level the cycle after. The unlock wasn't more 1:1s — it was visible stretch work with a safety net.</p>
+          </div>
+
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead>
+                <tr><th>Activity</th><th>Effort spent</th><th>Growth signal</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Bi-weekly 1:1</td><td>Low</td><td>Medium — keeps trust open</td></tr>
+                <tr><td>Pair programming on unfamiliar code</td><td>Medium</td><td>High — they see how seniors think under uncertainty</td></tr>
+                <tr><td>Detailed code review with rationale</td><td>Medium</td><td>High — compounds; they review other PRs better</td></tr>
+                <tr><td>Design doc handoff with early review</td><td>Medium-High</td><td>Very high — they own a system end-to-end</td></tr>
+                <tr><td>Internal docs / write-ups</td><td>Low (one-off)</td><td>Medium — scales beyond one mentee</td></tr>
+                <tr><td>Public-speaking practice (tech talk)</td><td>Low-Medium</td><td>Medium — builds confidence in design rooms</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Common interview gotchas:</b></p>
+          <ul>
+            <li>Don't make it about you — "I taught them everything" is a red flag to interviewers.</li>
+            <li>Avoid heroics ("they couldn't have shipped without me") — it undercuts their growth.</li>
+            <li>Don't conflate hours-spent with mentoring quality.</li>
+            <li>Avoid the cliché "open-door policy" — describe the cadence and the artifacts.</li>
+            <li>Don't claim you mentor everyone equally — be honest about prioritising who needs it most.</li>
+            <li>Don't frame it as a one-way street — say what mentoring teaches <em>you</em>.</li>
+          </ul>
+
+          <p class="takeaway"><b>Interview one-liner:</b> A good mentor isn't the person juniors ask the most questions to — it's the person whose juniors stop needing to ask after six months. I run bi-weekly 1:1s, pair on unfamiliar code, hand off design docs deliberately, and give written feedback after big moments. The signal it's working is when they're operating one level above their title, not when they're praising me.</p>
         </div>
       </details>
+
 
       <details class="qa">
         <summary>Why should we hire you?</summary>
@@ -162,6 +482,94 @@
         <div class="qa-body">
           <p>I treat stress as a signal, not a badge. When I notice it building up — usually as poor sleep or short patience — I take three actions. <strong>One:</strong> shrink the scope of what I'm trying to do in a day; I pick two or three real wins instead of ten. <strong>Two:</strong> I ask for help or escalate early — I've learned that silently struggling is worse for everyone than a 5-minute conversation with my manager.</p>
           <p><strong>Three:</strong> I protect non-work time. I do DSA practice and reading on weekends because they recharge me, not because I have to. After tough on-call weeks I take a real break. I've seen burnout slow people down for months — preventing it is part of being a senior engineer, not a luxury.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How do you review code as a senior engineer? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">A code review from a senior should leave the author feeling smarter, not wrong — and it should still catch the architectural and operational issues a junior reviewer wouldn't see.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Optimise for the system, not the line. Be kind in tone, ruthless on architecture, generous with rationale.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> What I look at first</div>
+            <ul>
+              <li><strong>The PR description.</strong> Does it answer <em>what / why / how-tested</em>? If I can't follow it on one read, neither can a future on-call.</li>
+              <li><strong>PR size.</strong> Anything over ~400 lines I'll ask to be split, unless it's a pure refactor. Big PRs hide bugs.</li>
+              <li><strong>Match to design intent.</strong> Does the diff actually implement what the design doc said? Drift between design and code is where real bugs live.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> What I always check</div>
+            <ul>
+              <li><strong>Failure paths.</strong> Happy path is usually fine; I read the <code>catch</code>, the timeouts, the retries, the partial-failure semantics.</li>
+              <li><strong>Observability.</strong> Are the new code paths logged at the right level? Is there a metric? A trace span? If it breaks at 2 a.m., can we tell <em>why</em>?</li>
+              <li><strong>Security &amp; PII.</strong> No secrets in logs, no PII in metrics, auth checks on every new endpoint.</li>
+              <li><strong>Backward compatibility.</strong> API contracts, DB schema, message formats — anything consumers see.</li>
+              <li><strong>Test coverage on the branch they changed.</strong> Not coverage percentage — coverage of the specific new behaviour.</li>
+              <li><strong>Blast radius.</strong> Is this behind a feature flag? Can it roll out incrementally? Can it be turned off without a redeploy?</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Tone rules</div>
+            <ul>
+              <li><strong>Ask questions, don't demand.</strong> "What happens if this retries forever?" beats "this is wrong, add a max retries".</li>
+              <li><strong>Explain rationale.</strong> Every blocking comment has a "because…".</li>
+              <li><strong>Mark blocking vs non-blocking explicitly</strong> — "blocking:", "nit:", "consider:" — so the author isn't guessing what's mandatory.</li>
+              <li><strong>Review my own PR first.</strong> If I wouldn't approve my own diff on a cold read, I shouldn't ask anyone else to.</li>
+              <li><strong>Praise specifically.</strong> "The way you broke this into three commits made it reviewable" — concrete praise teaches the pattern.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> A short STAR story</div>
+            <p>On a payments service I reviewed, a teammate added a retry around a downstream call. The retry had no max attempt count and no backoff — it would have caused a thundering-herd cascade the first time the downstream returned 503. I flagged it as a blocking comment, but I attached a one-line code example showing <code>Resilience4j</code> with <code>maxAttempts=3</code> and exponential backoff, plus a link to a postmortem the org already had on a similar cascade. The author fixed it in 20 minutes, the team added "max attempts + backoff on every retry" to the review checklist, and we haven't seen a retry-cascade incident in that codebase since.</p>
+          </div>
+
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">Junior review style</div>
+              <ul>
+                <li>Focus on style / formatting / naming.</li>
+                <li>"This is wrong" without rationale.</li>
+                <li>Approves big PRs they didn't fully read.</li>
+                <li>Doesn't notice missing observability.</li>
+                <li>Misses backward-compat issues.</li>
+                <li>Blocks on personal preference.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Senior review style</div>
+              <ul>
+                <li>Focus on failure paths, observability, blast radius.</li>
+                <li>Every block has a "because…" and an example.</li>
+                <li>Asks for splitting big PRs; doesn't rubber-stamp.</li>
+                <li>Notices missing metric / log / trace span.</li>
+                <li>Catches contract / schema / message-format drift.</li>
+                <li>Marks nits as nits; never blocks on taste.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p><b>Common interview gotchas:</b></p>
+          <ul>
+            <li>Don't list a checklist with no opinion — interviewers want to hear your judgement.</li>
+            <li>Avoid "I never approve until it's perfect" — that's a velocity-killer flag.</li>
+            <li>Don't frame review as catching mistakes — frame it as raising the team's bar.</li>
+            <li>Avoid "I review every PR" — be honest about prioritising risky changes.</li>
+            <li>Don't dismiss style entirely — be clear about what's nit vs blocking.</li>
+            <li>Avoid attacking the author ("sloppy code") — review the code, not the person.</li>
+          </ul>
+
+          <p class="takeaway"><b>Interview one-liner:</b> A senior code review optimises for the system, not the line. I check the PR description, the design intent, the failure paths, observability, blast radius, and backward compatibility — in that order. The tone is kind, the rationale is explicit, and the bar I hold is simple: the author should leave the review feeling smarter, not wrong.</p>
         </div>
       </details>
 

@@ -55,19 +55,172 @@
       </details>
 
       <details class="qa">
-        <summary>Explain Inversion of Control and Dependency Injection <span class="qa-tag hot">hot</span></summary>
+        <summary>IoC &amp; Dependency Injection — the foundation of Spring <span class="qa-tag hot">hot</span> <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p><strong>IoC</strong> means the framework controls the flow — it decides when to create objects and how to wire them. Your code becomes mostly declarative.</p>
-          <p><strong>Dependency Injection</strong> is the specific mechanism: dependencies are <em>provided</em> to a class rather than the class creating them.</p>
-          <pre><code>@Service
-public class OrderService {
-    private final PaymentClient payment;
+          <p class="answer-intro"><strong>IoC (Inversion of Control)</strong> means the <em>Spring container</em>, not your code, creates and manages objects and their dependencies. <strong>Dependency Injection (DI)</strong> is the specific technique Spring uses to do that — it <em>injects</em> required objects automatically instead of forcing each class to instantiate its own collaborators with <code>new</code>.</p>
 
-    public OrderService(PaymentClient payment) {
-        this.payment = payment;  // injected by Spring
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-arrow-repeat"></i> Inversion of Control — what's "inverted"?</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Normal flow</span>
+              <span class="core-diff-val"><strong>Your code</strong> creates its own objects: <code>new EmployeeRepository()</code>, <code>new PaymentClient()</code>. You control wiring.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Inverted flow</span>
+              <span class="core-diff-val"><strong>The framework</strong> creates objects, resolves their dependencies, and hands them to your class. You just <em>declare</em> what you need.</span>
+            </div>
+          </div>
+
+          <p><b>Before Spring vs With Spring:</b></p>
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">WITHOUT IoC — tight coupling</div>
+              <pre><code>class EmployeeService {
+    private EmployeeRepository repo;
+
+    public EmployeeService() {
+        // EmployeeService is responsible for creating its dependencies
+        this.repo = new EmployeeRepository();
     }
 }</code></pre>
-          <p>Benefits: <strong>testability</strong> (inject a mock <code>PaymentClient</code> in tests), <strong>loose coupling</strong> (depend on an interface, swap implementations via config), <strong>configurability</strong> (pick beans by profile). I use <strong>constructor injection</strong> everywhere — fields can be <code>final</code>, dependencies are explicit, and the bean can't be in an inconsistent state.</p>
+              <ul>
+                <li>Hard-coded dependency — can't swap implementations.</li>
+                <li>Impossible to unit-test without hitting a real DB.</li>
+                <li>Lifecycle is your problem (creation, destruction, sharing).</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">WITH IoC — Spring injects the dependency</div>
+              <pre><code>@Service
+class EmployeeService {
+    private final EmployeeRepository repo;
+
+    // Spring sees this constructor and injects the bean
+    public EmployeeService(EmployeeRepository repo) {
+        this.repo = repo;
+    }
+}</code></pre>
+              <ul>
+                <li>Loose coupling — code depends on the interface, not a concrete class.</li>
+                <li>Trivially testable — pass a mock in unit tests.</li>
+                <li>Spring manages the lifecycle (creation, scope, destruction).</li>
+              </ul>
+            </div>
+          </div>
+
+          <p><b>The three flavours of Dependency Injection:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead>
+                <tr><th>Type</th><th>How it looks</th><th>When to use</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><strong>Constructor Injection</strong></td><td>Dependency passed via constructor argument.</td><td><strong>Recommended for all mandatory dependencies.</strong> Fields can be <code>final</code>; bean can't exist in a half-built state.</td></tr>
+                <tr><td><strong>Setter Injection</strong></td><td>Dependency assigned via a <code>setX(...)</code> method.</td><td>Optional dependencies, reconfiguration after creation. Bean is mutable.</td></tr>
+                <tr><td><strong>Field Injection</strong></td><td><code>@Autowired</code> directly on a private field.</td><td><strong>Avoid in production code.</strong> Hard to test, hides circular dependencies, fields can't be <code>final</code>.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Constructor Injection (the recommended style):</b></p>
+          <pre><code>@Service
+class EmployeeService {
+    private final EmployeeRepository repository;
+    private final NotificationClient notifications;
+
+    // Spring 4.3+ — no @Autowired needed when there's a single constructor
+    public EmployeeService(EmployeeRepository repository,
+                           NotificationClient notifications) {
+        this.repository = repository;
+        this.notifications = notifications;
+    }
+}</code></pre>
+          <p>With Lombok, this collapses to a single <code>@RequiredArgsConstructor</code> on the class, with <code>private final</code> fields.</p>
+
+          <p><b>Setter and Field Injection (for completeness):</b></p>
+          <pre><code>// Setter injection — optional dependency
+@Autowired
+public void setAuditLogger(AuditLogger logger) {
+    this.auditLogger = logger;
+}
+
+// Field injection — avoid in new code
+@Autowired
+private EmployeeRepository repository;</code></pre>
+
+          <p><b>Why IoC / DI are used:</b></p>
+          <ul>
+            <li><strong>Loose coupling</strong> — classes depend on interfaces, not concrete implementations. Easy to swap by profile or in tests.</li>
+            <li><strong>Easier testing</strong> — inject a mock <code>EmployeeRepository</code> in a unit test; no Spring context needed.</li>
+            <li><strong>Better maintainability</strong> — wiring lives in one place (config / annotations), not scattered through <code>new</code> calls.</li>
+            <li><strong>Lifecycle managed</strong> — Spring handles creation, scope (singleton / prototype / request), and destruction.</li>
+            <li><strong>Configurability</strong> — pick implementations via <code>@Profile</code>, <code>@ConditionalOnProperty</code>, or qualifiers without changing code.</li>
+          </ul>
+
+          <p><b>What the Spring container does behind the scenes:</b></p>
+          <div class="flow">
+            <div class="flow-step"><strong>1. Component scan</strong> — find classes annotated with <code>@Component</code>, <code>@Service</code>, <code>@Repository</code>, <code>@Controller</code>, <code>@Configuration</code>.</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><strong>2. Build BeanDefinitions</strong> — record each class's dependencies, scope, init/destroy hooks.</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><strong>3. Resolve the dependency graph</strong> — figure out instantiation order so each bean's dependencies exist first.</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><strong>4. Instantiate beans</strong> — call constructors, populate fields/setters, run <code>@PostConstruct</code>.</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><strong>5. Inject collaborators</strong> — wire the dependencies your code declared.</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><strong>6. ApplicationContext ready</strong> — beans are available for use, app starts serving requests.</div>
+          </div>
+
+          <p><b>Concrete example — the full picture:</b></p>
+          <pre><code>// 1. Spring scans this and registers a singleton bean
+@Repository
+public class EmployeeRepository {
+    public Employee findById(Long id) { ... }
+}
+
+// 2. Spring sees the constructor parameter, looks up the matching bean,
+//    and injects it automatically.
+@Service
+public class EmployeeService {
+    private final EmployeeRepository repository;
+
+    public EmployeeService(EmployeeRepository repository) {
+        this.repository = repository;
+    }
+
+    public Employee get(Long id) {
+        return repository.findById(id);
+    }
+}
+
+// 3. Same again — the controller gets the EmployeeService injected.
+@RestController
+public class EmployeeController {
+    private final EmployeeService service;
+
+    public EmployeeController(EmployeeService service) {
+        this.service = service;
+    }
+
+    @GetMapping("/employees/{id}")
+    public Employee get(@PathVariable Long id) {
+        return service.get(id);
+    }
+}</code></pre>
+
+          <p><b>Common interview gotchas:</b></p>
+          <ul>
+            <li><strong>IoC vs DI</strong> — IoC is the <em>principle</em>; DI is the <em>technique</em> Spring uses to implement it. Other forms of IoC exist (callbacks, events) but DI is the one you'll talk about.</li>
+            <li><strong>Why constructor injection?</strong> Mandatory deps are visible in the constructor signature; <code>final</code> fields are thread-safe and prevent reassignment; the bean is fully built before any method runs; no need to start the Spring context for unit tests.</li>
+            <li><strong>Circular dependency?</strong> Constructor injection makes Spring fail-fast on cycles — that's a feature, not a bug. Field injection hides them until runtime.</li>
+            <li><strong>Multiple implementations?</strong> Use <code>@Primary</code> or <code>@Qualifier("paypal")</code> to choose between candidate beans.</li>
+            <li><strong>Where does Spring find beans?</strong> Component scanning starts at the <code>@SpringBootApplication</code> package and walks downward; anything outside isn't picked up unless you tell Spring with <code>@ComponentScan(basePackages = "...")</code>.</li>
+          </ul>
+
+          <p class="takeaway">
+            <b>Interview one-liner:</b> <strong>IoC (Inversion of Control)</strong> means the Spring container — not your code — is responsible for creating, wiring, and managing the lifecycle of objects. <strong>Dependency Injection</strong> is the specific mechanism Spring uses: dependencies are <em>provided</em> to a class (via <strong>constructor</strong>, <strong>setter</strong>, or <strong>field</strong>) instead of the class creating them. The benefits are <em>loose coupling, testability, configurability, and maintainability</em>. I always use <strong>constructor injection</strong> with <code>final</code> fields — it makes dependencies explicit, beans immutable, unit tests trivial, and circular dependencies fail at startup instead of in production.
+          </p>
         </div>
       </details>
 
@@ -161,68 +314,454 @@ public class OrderService {
       </details>
 
       <details class="qa">
-        <summary>Bean lifecycle — from create to destroy</summary>
+        <summary>Spring Bean Lifecycle — from create to destroy <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p>For a typical singleton bean:</p>
-          <ol>
-            <li>Spring instantiates the bean (constructor or factory method).</li>
-            <li><strong>Populate properties</strong> — fields/setters injected.</li>
-            <li><strong><code>BeanNameAware</code>, <code>BeanFactoryAware</code></strong> callbacks if implemented.</li>
-            <li><strong><code>BeanPostProcessor.postProcessBeforeInitialization()</code></strong> for every registered processor.</li>
-            <li><strong><code>@PostConstruct</code></strong> or <code>InitializingBean.afterPropertiesSet()</code> or the <code>initMethod</code>.</li>
-            <li><strong><code>BeanPostProcessor.postProcessAfterInitialization()</code></strong> — this is where AOP proxies are wrapped around your bean.</li>
-            <li>Bean is ready and added to the container.</li>
-            <li>On shutdown: <strong><code>@PreDestroy</code></strong> or <code>DisposableBean.destroy()</code> or <code>destroyMethod</code>.</li>
-          </ol>
-          <p>I use <code>@PostConstruct</code> for one-time init (warm caches, register listeners) and <code>@PreDestroy</code> for cleanup (close pools, flush buffers).</p>
-        </div>
-      </details>
+          <p class="answer-intro">The <strong>Spring Bean Lifecycle</strong> describes the full set of stages a bean goes through inside the IoC container — from <em>instantiation</em>, through <em>dependency injection</em>, <em>initialization</em>, <em>active use</em>, and finally <em>destruction</em> at shutdown. Understanding it is essential for using <code>@PostConstruct</code>, <code>@PreDestroy</code>, AOP proxies, and custom <code>BeanPostProcessor</code>s correctly.</p>
 
-      <details class="qa">
-        <summary>Bean scopes — singleton, prototype, request, session</summary>
-        <div class="qa-body">
-          <p><strong>singleton</strong> (default) — one instance per Spring container, shared everywhere. Almost all services and repositories are singletons. <strong>Must be stateless or carefully synchronized.</strong></p>
-          <p><strong>prototype</strong> — a new instance every time the bean is requested. Spring doesn't manage its lifecycle after creation — no destroy callback. Use rarely; if you find yourself injecting prototype-into-singleton, you need <code>ObjectFactory&lt;T&gt;</code> or <code>Provider&lt;T&gt;</code> to get a fresh instance each time.</p>
-          <p>Web-aware scopes (only in web app context):</p>
-          <ul>
-            <li><strong>request</strong> — one per HTTP request.</li>
-            <li><strong>session</strong> — one per HTTP session.</li>
-            <li><strong>application</strong> — one per ServletContext.</li>
-            <li><strong>websocket</strong> — one per WebSocket session.</li>
-          </ul>
-          <p>In 5 years I've used 95% singleton and a small fraction of prototype/request for very specific cases.</p>
-        </div>
-      </details>
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Spring doesn't just call <code>new</code>. It runs each bean through a defined sequence of <strong>callbacks</strong> — populate properties, run aware hooks, apply <code>BeanPostProcessor</code>s, call <code>@PostConstruct</code>, attach AOP proxies, and on shutdown call <code>@PreDestroy</code>. Each phase is an extension point you can plug into.</span>
+            </div>
+          </div>
 
-      <details class="qa">
-        <summary>@Autowired — field, setter, or constructor?</summary>
-        <div class="qa-body">
-          <p><strong>Constructor injection</strong> (preferred):</p>
-          <pre><code>@Service
-public class OrderService {
-    private final PaymentClient payment;
-    public OrderService(PaymentClient payment) { this.payment = payment; }
+          <p><b>The simple 5-step view (interview-ready):</b></p>
+          <div class="flow">
+            <div class="flow-step"><strong>1.</strong> Bean instantiated (constructor / factory method)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><strong>2.</strong> Dependencies injected (constructor / setter / field)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><strong>3.</strong> Initialization callbacks run — <code>@PostConstruct</code> / <code>afterPropertiesSet()</code> / custom init</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><strong>4.</strong> Bean is ready to use → lives in the <code>ApplicationContext</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><strong>5.</strong> On shutdown — destruction callbacks: <code>@PreDestroy</code> / <code>destroy()</code> / custom destroy</div>
+          </div>
+
+          <p><b>The full lifecycle (what actually happens under the hood for a singleton):</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>#</th><th>Phase</th><th>What happens</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td><strong>Instantiation</strong></td><td>Spring calls the constructor or factory method to create the bean instance.</td></tr>
+                <tr><td>2</td><td><strong>Populate properties</strong></td><td>Spring injects dependencies — fields, setters, or constructor args.</td></tr>
+                <tr><td>3</td><td><strong>Aware callbacks</strong></td><td>If the bean implements <code>BeanNameAware</code>, <code>BeanFactoryAware</code>, <code>ApplicationContextAware</code>, etc., those callbacks fire so the bean can grab its name / context.</td></tr>
+                <tr><td>4</td><td><code>BeanPostProcessor</code> — <strong>before init</strong></td><td><code>postProcessBeforeInitialization()</code> runs for every registered processor. Hook for pre-init logic.</td></tr>
+                <tr><td>5</td><td><strong>Initialization</strong></td><td><code>@PostConstruct</code> → <code>InitializingBean.afterPropertiesSet()</code> → custom <code>initMethod</code>, in that order if multiple exist.</td></tr>
+                <tr><td>6</td><td><code>BeanPostProcessor</code> — <strong>after init</strong></td><td><code>postProcessAfterInitialization()</code> runs — <strong>this is where AOP proxies (<code>@Transactional</code>, <code>@Async</code>) get wrapped around your bean</strong>.</td></tr>
+                <tr><td>7</td><td><strong>Bean ready</strong></td><td>Bean lives in the container, available for injection elsewhere, serves requests.</td></tr>
+                <tr><td>8</td><td><strong>Destruction</strong> (on shutdown)</td><td><code>@PreDestroy</code> → <code>DisposableBean.destroy()</code> → custom <code>destroyMethod</code>, in that order.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Code example showing every hook in action:</b></p>
+          <pre><code>@Component
+public class CacheService
+        implements InitializingBean, DisposableBean,
+                   BeanNameAware, ApplicationContextAware {
+
+    private final RedisClient client;
+
+    public CacheService(RedisClient client) {        // 1 + 2: constructor + DI
+        this.client = client;
+    }
+
+    @Override
+    public void setBeanName(String name) {           // 3: aware callback
+        System.out.println("Bean name = " + name);
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext ctx) {
+        // grab the context if you need it
+    }
+
+    @PostConstruct                                   // 5: init (recommended)
+    public void warmUp() {
+        client.ping();                               // load caches, register listeners
+    }
+
+    @Override
+    public void afterPropertiesSet() {               // 5: same phase, alternative API
+        // prefer @PostConstruct over this
+    }
+
+    @PreDestroy                                      // 8: destroy (recommended)
+    public void shutdown() {
+        client.close();                              // close pools, flush buffers
+    }
+
+    @Override
+    public void destroy() {                          // 8: same phase, alternative API
+        // prefer @PreDestroy over this
+    }
 }</code></pre>
-          <p>Benefits: fields can be <code>final</code> (immutable, thread-safe), dependencies are explicit, easy to instantiate in tests without Spring, fails fast on missing beans. Spring 4.3+ doesn't even need <code>@Autowired</code> if there's only one constructor.</p>
-          <p><strong>Setter injection</strong> — for optional dependencies. Use sparingly.</p>
-          <p><strong>Field injection</strong> (<code>@Autowired</code> on a private field) — convenient but discouraged. Hard to test without reflection, can't be <code>final</code>, hides circular dependencies, and signals you have too many dependencies. I never write field injection in new code, and convert legacy field injection to constructor injection during refactors.</p>
+
+          <p><b>Init &amp; destroy — three ways, modern recommendation:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Style</th><th>Init callback</th><th>Destroy callback</th><th>Recommendation</th></tr></thead>
+              <tbody>
+                <tr><td>JSR-250 annotations</td><td><code>@PostConstruct</code></td><td><code>@PreDestroy</code></td><td>✅ <strong>Preferred</strong> — clean, standards-based.</td></tr>
+                <tr><td>Spring interfaces</td><td><code>InitializingBean.afterPropertiesSet()</code></td><td><code>DisposableBean.destroy()</code></td><td>⚠️ Couples your code to Spring. Avoid in modern apps.</td></tr>
+                <tr><td>XML / <code>@Bean</code> attributes</td><td><code>@Bean(initMethod="warmUp")</code></td><td><code>@Bean(destroyMethod="shutdown")</code></td><td>Useful when you can't annotate the class (3rd-party library).</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>What <code>@PostConstruct</code> &amp; <code>@PreDestroy</code> are used for:</b></p>
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">@PostConstruct — one-time setup</div>
+              <ul>
+                <li>Warm up caches.</li>
+                <li>Register message-bus listeners.</li>
+                <li>Load reference data from DB.</li>
+                <li>Open connection pools.</li>
+                <li>Validate configuration that needs injected beans.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">@PreDestroy — cleanup on shutdown</div>
+              <ul>
+                <li>Close connection pools (DB, Redis, Kafka).</li>
+                <li>Flush in-memory buffers.</li>
+                <li>Deregister from a service registry.</li>
+                <li>Cancel scheduled tasks / executors.</li>
+                <li>Persist state if needed.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p><b>Important notes:</b></p>
+          <ul>
+            <li><strong>Use constructor injection</strong> so the bean is fully built before any callback runs. With field injection, <code>@PostConstruct</code> runs after fields are injected — but the constructor itself sees <code>null</code> fields, which is a common bug.</li>
+            <li><strong>AOP proxies are attached at step 6</strong> (<code>postProcessAfterInitialization</code>). That's why <code>@Transactional</code> and <code>@Async</code> don't work on calls inside <code>@PostConstruct</code> — the proxy isn't applied yet.</li>
+            <li><strong><code>@PreDestroy</code> only runs for managed singletons</strong> — for <code>prototype</code> beans, Spring lets go after creating them; you have to clean up yourself.</li>
+            <li><strong>Shutdown order matters</strong> — Spring calls <code>@PreDestroy</code> in reverse dependency order; your beans see their dependencies still alive when they clean up.</li>
+            <li><strong>Graceful shutdown</strong> — for web apps, configure <code>server.shutdown=graceful</code> so in-flight requests complete before <code>@PreDestroy</code> fires.</li>
+          </ul>
+
+          <p><b>Common interview gotchas:</b></p>
+          <ul>
+            <li><strong>Order of init callbacks</strong> if you have all three: <code>@PostConstruct</code> → <code>afterPropertiesSet()</code> → <code>initMethod</code>.</li>
+            <li><strong>Same order for destroy</strong>: <code>@PreDestroy</code> → <code>destroy()</code> → <code>destroyMethod</code>.</li>
+            <li><strong>Prototype beans</strong> — Spring instantiates and injects, but <em>doesn't</em> call destroy. You manage their lifecycle.</li>
+            <li><strong><code>BeanPostProcessor</code></strong> applies to <em>every</em> bean. It's how Spring implements <code>@Async</code>, <code>@Transactional</code>, validation, etc.</li>
+            <li><strong>JSR-250 vs <code>InitializingBean</code></strong> — the modern recommendation is annotations; the interfaces are a holdover from older Spring.</li>
+          </ul>
+
+          <p class="takeaway">
+            <b>Interview one-liner:</b> The Spring Bean Lifecycle is the sequence Spring runs every bean through inside the IoC container: <strong>(1) instantiation</strong> → <strong>(2) dependency injection</strong> → <strong>(3) aware callbacks</strong> → <strong>(4) <code>BeanPostProcessor</code> before-init</strong> → <strong>(5) initialization (<code>@PostConstruct</code> / <code>afterPropertiesSet()</code> / init method)</strong> → <strong>(6) <code>BeanPostProcessor</code> after-init (AOP proxies attached here)</strong> → <strong>(7) bean ready</strong> → <strong>(8) destruction (<code>@PreDestroy</code> / <code>destroy()</code> / destroy method) on shutdown</strong>. We use <code>@PostConstruct</code> for one-time setup like warming caches, and <code>@PreDestroy</code> for cleanup like closing pools. The modern recommendation is the <strong>JSR-250 annotations</strong> over <code>InitializingBean</code> / <code>DisposableBean</code> — same lifecycle phase, cleaner code.
+          </p>
         </div>
       </details>
 
       <details class="qa">
-        <summary>@Component vs @Service vs @Repository vs @Controller</summary>
+        <summary>Spring Bean Scopes — singleton, prototype, request, session <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p class="answer-intro">All four are <strong>stereotype annotations</strong> — they register the class as a Spring bean via component scanning. Functionally they're almost identical, but the right choice signals architectural <em>intent</em>.</p>
+          <p class="answer-intro">A <strong>Bean Scope</strong> defines <em>how many instances of a bean Spring creates</em> and how long they live inside the IoC container. Singleton is the default (and the right answer 95% of the time) — but knowing the others matters for stateful objects, per-request state, and per-user data.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Decide <em>how often Spring should give you a new object</em>: <strong>once per app</strong> (singleton), <strong>every time</strong> (prototype), <strong>once per HTTP request / session / app</strong> (web scopes). Pick the smallest scope that satisfies your statefulness needs.</span>
+            </div>
+          </div>
+
+          <p><b>The five built-in scopes:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Scope</th><th>How many instances</th><th>When destroyed</th><th>Use case</th></tr></thead>
+              <tbody>
+                <tr><td><strong>singleton</strong> <em>(default)</em></td><td>One per Spring container — shared everywhere.</td><td>At ApplicationContext shutdown.</td><td>Stateless services, repositories, controllers, config beans.</td></tr>
+                <tr><td><strong>prototype</strong></td><td>A new instance <em>every time</em> the bean is requested.</td><td><strong>Spring lets go after creation</strong> — no destroy callback.</td><td>Stateful, mutable, short-lived objects.</td></tr>
+                <tr><td><strong>request</strong> <em>(web)</em></td><td>One per HTTP request.</td><td>When the request ends.</td><td>Per-request context (auth user, MDC, request-scoped cache).</td></tr>
+                <tr><td><strong>session</strong> <em>(web)</em></td><td>One per HTTP session.</td><td>When the session expires.</td><td>Per-user state in session-based web apps.</td></tr>
+                <tr><td><strong>application</strong> <em>(web)</em></td><td>One per <code>ServletContext</code>.</td><td>At ServletContext destruction.</td><td>Effectively a singleton scoped to the servlet context.</td></tr>
+                <tr><td><strong>websocket</strong> <em>(web)</em></td><td>One per WebSocket session.</td><td>When the WebSocket session closes.</td><td>Per-connection state in WebSocket apps.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>How to declare a scope:</b></p>
+          <pre><code>// Default — singleton, no annotation needed
+@Service
+public class EmployeeService { ... }
+
+// Prototype — fresh instance every time
+@Component
+@Scope("prototype")        // or @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+public class ReportGenerator { ... }
+
+// Web scopes — only valid in web ApplicationContext
+@Component
+@RequestScope              // shortcut for @Scope(WebApplicationContext.SCOPE_REQUEST)
+public class RequestContext { ... }
+
+@Component @SessionScope     public class UserCart   { ... }
+@Component @ApplicationScope public class GlobalInfo { ... }</code></pre>
+
+          <p><b>Singleton — the default, and what you'll use 95% of the time:</b></p>
+          <pre><code>@Service
+public class EmployeeService { ... }   // singleton — one instance per ApplicationContext</code></pre>
+          <p>Spring creates <em>one</em> <code>EmployeeService</code> when the container starts and shares it everywhere it's injected. Memory-efficient, but <strong>must be stateless or carefully synchronised</strong> — multiple threads hit the same object.</p>
+
+          <p><b>Prototype — fresh instance every time:</b></p>
+          <pre><code>@Component
+@Scope("prototype")
+public class ReportGenerator {
+    private final StringBuilder buffer = new StringBuilder();   // mutable state OK here
+    public void append(String s) { buffer.append(s); }
+    public String build() { return buffer.toString(); }
+}</code></pre>
+          <p>Every <code>getBean(ReportGenerator.class)</code> or injection point gets a <strong>brand-new instance</strong>. Lifecycle stops at creation — <strong><code>@PreDestroy</code> won't run</strong>; you clean up yourself.</p>
+
+          <p><b>Singleton vs Prototype — the comparison every interviewer asks about:</b></p>
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">Singleton (default)</div>
+              <ul>
+                <li>One shared instance per container.</li>
+                <li>Lower memory; faster (no per-request allocation).</li>
+                <li><strong>Must be thread-safe</strong> — multiple threads share it.</li>
+                <li>Lifecycle fully managed — <code>@PreDestroy</code> runs at shutdown.</li>
+                <li>Eagerly created at startup (unless <code>@Lazy</code>).</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Prototype</div>
+              <ul>
+                <li>New instance every request — independent state.</li>
+                <li>Higher GC pressure (lots of short-lived objects).</li>
+                <li>Thread-safety not an issue — each thread gets its own.</li>
+                <li><strong>No destroy callback</strong> — Spring forgets it after creation.</li>
+                <li>Created on demand.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p><b>The classic gotcha — prototype injected into a singleton:</b></p>
+          <pre><code>// BAD — singleton holds one prototype reference forever
+@Service
+public class OrderService {
+    @Autowired
+    private ReportGenerator generator;    // injected ONCE — same instance reused!
+}
+
+// GOOD — get a fresh prototype every time
+@Service
+public class OrderService {
+    @Autowired
+    private ObjectFactory&lt;ReportGenerator&gt; generatorFactory;
+
+    public void create() {
+        ReportGenerator g = generatorFactory.getObject();   // fresh each call
+    }
+}</code></pre>
+          <p>Use <code>ObjectFactory&lt;T&gt;</code> / <code>Provider&lt;T&gt;</code> / <code>@Lookup</code> to pull a new prototype bean inside a singleton. Without it, the singleton holds onto the very first prototype instance — defeating the point.</p>
+
+          <p><b>When to use which — practical guide:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Situation</th><th>Best scope</th></tr></thead>
+              <tbody>
+                <tr><td>Stateless service, repository, controller, mapper</td><td><strong>singleton</strong> (the default)</td></tr>
+                <tr><td>Mutable / stateful helper that must not be shared</td><td><strong>prototype</strong></td></tr>
+                <tr><td>Per-request data: current user, traceId, request locale</td><td><strong>request</strong></td></tr>
+                <tr><td>Per-user data in a session-based UI app</td><td><strong>session</strong></td></tr>
+                <tr><td>App-wide state inside a servlet container</td><td><strong>application</strong></td></tr>
+                <tr><td>Per-WebSocket-connection state</td><td><strong>websocket</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Important notes:</b></p>
+          <ul>
+            <li><strong>Default is singleton</strong> — you almost never need to declare it explicitly.</li>
+            <li><strong>Web scopes need a web ApplicationContext</strong> — they don't work in a plain Spring app.</li>
+            <li><strong>Prototype lifecycle is limited</strong> — Spring creates and injects it, but doesn't track destruction. <code>@PreDestroy</code> doesn't fire.</li>
+            <li><strong>Singleton beans must be thread-safe</strong> — no instance fields holding per-request state.</li>
+            <li><strong>Use the smallest scope that works</strong> — singleton scales best, request scope is heavier but isolates state.</li>
+            <li><strong>Web scopes need <code>proxyMode</code></strong> when injected into singletons: <code>@SessionScope(proxyMode = ScopedProxyMode.TARGET_CLASS)</code>.</li>
+          </ul>
+
+          <p><b>Common interview gotchas:</b></p>
+          <ul>
+            <li><strong>Is singleton thread-safe by default?</strong> No — Spring just creates one instance. <em>You</em> make sure it's stateless.</li>
+            <li><strong>Why doesn't <code>@PreDestroy</code> fire on prototype?</strong> Spring stops managing the bean after creation — by design.</li>
+            <li><strong>Prototype-in-singleton trap</strong> — without <code>ObjectFactory</code>/<code>Provider</code>/<code>@Lookup</code>, the prototype is injected once and behaves like a singleton.</li>
+            <li><strong>Singleton vs Singleton pattern</strong> — Spring singleton = one per <em>container</em>, not one per JVM. The GoF Singleton enforces JVM-wide uniqueness; Spring doesn't.</li>
+            <li><strong>How to make singleton lazy</strong> — annotate with <code>@Lazy</code> so it's created only on first use.</li>
+          </ul>
+
+          <p class="takeaway">
+            <b>Interview one-liner:</b> A Spring bean scope defines <em>how many instances Spring creates and how long they live</em>. The default is <strong>singleton</strong> — one shared instance per container, ideal for stateless services and repositories. <strong>Prototype</strong> creates a new instance every time the bean is requested — used for stateful, mutable, short-lived objects (a fresh <code>ReportGenerator</code> per report). Web-only scopes — <strong>request</strong>, <strong>session</strong>, <strong>application</strong>, <strong>websocket</strong> — bind the bean's lifetime to an HTTP request, user session, servlet context, or WebSocket connection. Pick the smallest scope that satisfies your state needs; reach for <code>ObjectFactory&lt;T&gt;</code> when injecting a prototype into a singleton.
+          </p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Constructor vs Field vs Setter Injection — which to use and why <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro"><strong>Dependency Injection (DI)</strong> means the Spring container <em>provides</em> a class with its dependencies instead of forcing the class to create them with <code>new</code>. Spring offers three ways to wire those dependencies in — <strong>constructor</strong>, <strong>setter</strong>, and <strong>field</strong> injection — and the choice has real consequences for testability, immutability, and code clarity.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Dependencies should be <strong>explicit, mandatory, and immutable</strong>. Constructor injection achieves all three for free — that's why it's the modern Spring recommendation.</span>
+            </div>
+          </div>
+
+          <p><b>The three styles at a glance:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Type</th><th>How it looks</th><th>When to use</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Constructor Injection</strong></td><td>Dependency passed as a constructor argument.</td><td><strong>Mandatory dependencies</strong> — recommended default.</td></tr>
+                <tr><td><strong>Setter Injection</strong></td><td>Dependency assigned via <code>setX(...)</code>.</td><td><strong>Optional dependencies</strong> or reconfigurable beans.</td></tr>
+                <tr><td><strong>Field Injection</strong></td><td><code>@Autowired</code> directly on a private field.</td><td><strong>Avoid in production code</strong> — convenient but problematic.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Field injection — the tempting shortcut:</b></p>
+          <pre><code>@Service
+public class EmployeeService {
+
+    @Autowired
+    private EmployeeRepository repository;   // Spring injects via reflection
+}</code></pre>
+          <p>Looks clean, but it's hiding several issues — see below.</p>
+
+          <p><b>Setter injection — for optional dependencies:</b></p>
+          <pre><code>@Service
+public class EmployeeService {
+    private EmployeeRepository repository;
+
+    @Autowired           // optional setter wiring
+    public void setRepository(EmployeeRepository repository) {
+        this.repository = repository;
+    }
+}</code></pre>
+
+          <p><b>Constructor injection — the recommended style:</b></p>
+          <pre><code>@Service
+public class EmployeeService {
+
+    private final EmployeeRepository repository;   // final → set once, never changes
+
+    // Spring 4.3+ — no @Autowired needed when there's a single constructor
+    public EmployeeService(EmployeeRepository repository) {
+        this.repository = repository;
+    }
+}</code></pre>
+          <p>With Lombok this collapses to a one-liner: <code>@RequiredArgsConstructor</code> on the class + <code>private final</code> fields.</p>
+
+          <p><b>Why constructor injection is preferred — every reason matters:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Reason</th><th>Why it matters</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Better testability</strong></td><td>Just pass mocks to the constructor in unit tests — no Spring context, no reflection magic, no Mockito field injection trickery.</td></tr>
+                <tr><td><strong>Immutability</strong></td><td>Fields can be <code>final</code> → thread-safe, can't be accidentally reassigned later.</td></tr>
+                <tr><td><strong>Mandatory dependencies enforced</strong></td><td>The bean <em>cannot exist</em> in a half-built state — you literally cannot construct it without its dependencies.</td></tr>
+                <tr><td><strong>Avoids NullPointerException</strong></td><td>Dependencies are always initialised before any method runs.</td></tr>
+                <tr><td><strong>Explicit dependencies</strong></td><td>The constructor signature documents every collaborator the class needs — visible at the top of the file.</td></tr>
+                <tr><td><strong>Surfaces "god class" smells</strong></td><td>A 10-parameter constructor screams "this class does too much". Field injection hides that.</td></tr>
+                <tr><td><strong>Fails fast on missing beans</strong></td><td>Spring reports a clear startup error pointing at the constructor instead of a runtime NPE much later.</td></tr>
+                <tr><td><strong>Catches circular dependencies at startup</strong></td><td>Field/setter injection silently allows cycles; constructor injection refuses to start — that's a feature.</td></tr>
+                <tr><td><strong>Recommended by the Spring team</strong></td><td>It's the documented best practice since Spring 4.3+ — no <code>@Autowired</code> needed on a single constructor.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Why field injection is discouraged:</b></p>
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">Field Injection — the problems</div>
+              <ul>
+                <li><strong>Hard to unit test</strong> — fields are private, so you either start the Spring context or use reflection to set them.</li>
+                <li><strong>Reflection at runtime</strong> — Spring writes to private fields via reflection; slower and less safe.</li>
+                <li><strong>Fields can't be <code>final</code></strong> — bean is mutable, prone to accidental reassignment.</li>
+                <li><strong>Hidden dependencies</strong> — the class advertises a no-arg constructor while really needing 6 things. Anyone reading the file has to scan the body for <code>@Autowired</code>.</li>
+                <li><strong>Hides cycles</strong> — circular dependencies fail silently at runtime instead of refusing to start.</li>
+                <li><strong>"God class" disguise</strong> — easy to keep adding more <code>@Autowired</code> fields without noticing the class is too big.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">Constructor Injection — the wins</div>
+              <ul>
+                <li><strong>Unit-test ready</strong> — <code>new EmployeeService(mockRepo)</code>, done.</li>
+                <li><strong>No reflection</strong> — pure Java constructor.</li>
+                <li><strong><code>final</code> fields</strong> — immutable, thread-safe.</li>
+                <li><strong>Explicit at a glance</strong> — constructor signature lists every dependency.</li>
+                <li><strong>Cycles caught at startup</strong> — Spring fails fast with a clear error.</li>
+                <li><strong>Big constructors → refactor signal</strong> — pushes you to split the class.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p><b>Side-by-side comparison:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Aspect</th><th>Constructor</th><th>Setter</th><th>Field</th></tr></thead>
+              <tbody>
+                <tr><td>Mandatory dependency</td><td>✅ Enforced by constructor</td><td>❌ Bean can exist without it</td><td>❌ Field can be null</td></tr>
+                <tr><td><code>final</code> field possible</td><td>✅</td><td>❌</td><td>❌</td></tr>
+                <tr><td>Testability without Spring</td><td>✅ Pass mocks directly</td><td>⚠️ Call setter manually</td><td>❌ Needs reflection</td></tr>
+                <tr><td>Uses reflection at runtime</td><td>❌</td><td>❌</td><td>✅</td></tr>
+                <tr><td>Catches circular deps at startup</td><td>✅</td><td>⚠️ Allowed</td><td>⚠️ Allowed</td></tr>
+                <tr><td>Dependencies visible at top of class</td><td>✅</td><td>⚠️ Scattered</td><td>⚠️ Scattered</td></tr>
+                <tr><td>Used for</td><td>Mandatory deps</td><td>Optional deps</td><td>Avoid in new code</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Same example, three styles — to make the choice visceral:</b></p>
+          <pre><code>// 1) Field injection — looks short, hides issues
+@Service
+public class EmployeeService {
+    @Autowired private EmployeeRepository repository;
+}
+
+// 2) Setter injection — for optional dependencies
+@Service
+public class EmployeeService {
+    private EmployeeRepository repository;
+    @Autowired public void setRepository(EmployeeRepository r) { this.repository = r; }
+}
+
+// 3) Constructor injection — what to actually write
+@Service
+public class EmployeeService {
+    private final EmployeeRepository repository;
+    public EmployeeService(EmployeeRepository repository) {
+        this.repository = repository;
+    }
+}</code></pre>
+
+          <p class="takeaway">
+            <b>Interview one-liner:</b> Spring supports three styles of Dependency Injection — <strong>constructor</strong>, <strong>setter</strong>, and <strong>field</strong>. <strong>Constructor injection is the recommended approach</strong> because it makes dependencies <em>explicit</em> (visible in the constructor signature), <em>mandatory</em> (the bean cannot exist without them), and <em>immutable</em> (fields can be <code>final</code>). It also makes unit testing trivial (just pass mocks), avoids reflection, and catches circular dependencies at startup. <strong>Field injection</strong> (<code>@Autowired</code> on a private field) is convenient but discouraged — it hides dependencies, blocks <code>final</code>, breaks testability, and silently allows cycles. <strong>Setter injection</strong> is reserved for genuinely optional dependencies.
+          </p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>@Component vs @Service vs @Repository vs @Controller — Spring stereotypes explained <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">All four are <strong>Spring stereotype annotations</strong> — they mark a class as a Spring-managed bean so component scanning picks it up. <em>Functionally</em> they're almost identical, but each one signals which <strong>architectural layer</strong> the class belongs to — and <code>@Repository</code> adds one bit of real behaviour.</p>
 
           <div class="core-diff">
             <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
             <div class="core-diff-row">
               <span class="core-diff-key">@Component</span>
-              <span class="core-diff-val">Generic — any Spring-managed bean.</span>
+              <span class="core-diff-val">Generic — any Spring-managed bean. Catch-all.</span>
             </div>
             <div class="core-diff-row">
               <span class="core-diff-key">@Service</span>
-              <span class="core-diff-val">Business / domain layer.</span>
+              <span class="core-diff-val">Business / domain layer — business logic, validation, orchestration.</span>
             </div>
             <div class="core-diff-row">
               <span class="core-diff-key">@Repository</span>
@@ -230,74 +769,153 @@ public class OrderService {
             </div>
             <div class="core-diff-row">
               <span class="core-diff-key">@Controller / @RestController</span>
-              <span class="core-diff-val">Web layer — participates in MVC handler mapping.</span>
+              <span class="core-diff-val">Web layer — handles HTTP requests via MVC handler mapping.</span>
             </div>
           </div>
 
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> @Component vs the Others</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> @Component</div>
-                <ul>
-                  <li>Generic catch-all stereotype.</li>
-                  <li>Use for utilities, configuration helpers, anything that doesn't fit a specific layer.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> @Service / @Repository / @Controller</div>
-                <ul>
-                  <li>Specializations of <code>@Component</code> (each is meta-annotated with it).</li>
-                  <li>Communicate architectural intent.</li>
-                  <li>Help static analysis tools and AOP pointcuts (e.g., apply something only to <code>@Service</code>).</li>
-                </ul>
-              </div>
+          <p><b>Side-by-side reference:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Annotation</th><th>Layer</th><th>Purpose</th><th>Extra behaviour</th></tr></thead>
+              <tbody>
+                <tr><td><code>@Component</code></td><td>Generic</td><td>Any Spring bean — utility, helper, mapper.</td><td>None (just registration).</td></tr>
+                <tr><td><code>@Service</code></td><td>Service / business</td><td>Business logic, validation, orchestration.</td><td>None (semantic only).</td></tr>
+                <tr><td><code>@Repository</code></td><td>Persistence / DAO</td><td>Database access.</td><td>✅ Exception translation to <code>DataAccessException</code>.</td></tr>
+                <tr><td><code>@Controller</code></td><td>Web (MVC)</td><td>HTTP endpoints — returns <em>view names</em> by default.</td><td>Participates in MVC handler mapping.</td></tr>
+                <tr><td><code>@RestController</code></td><td>Web (REST)</td><td>HTTP endpoints — returns <em>JSON bodies</em>.</td><td><code>@Controller</code> + <code>@ResponseBody</code>.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>The standard Spring Boot layered architecture:</b></p>
+          <pre class="tree-viz">  HTTP Request
+        ↓
+  @RestController        ← Web layer        (REST endpoints)
+        ↓
+  @Service               ← Service layer    (business logic, validation)
+        ↓
+  @Repository            ← Persistence      (DB access, exception translation)
+        ↓
+  Database (MySQL / Mongo / Redis ...)</pre>
+
+          <p><b>Concrete code — one class per stereotype:</b></p>
+          <pre><code>// 1) @Component — generic helper (no specific layer)
+@Component
+public class IdGenerator {
+    public String nextId() { return UUID.randomUUID().toString(); }
+}
+
+// 2) @Repository — persistence layer + automatic exception translation
+@Repository
+public interface EmployeeRepository extends JpaRepository&lt;Employee, Long&gt; {
+    Optional&lt;Employee&gt; findByEmail(String email);
+}
+
+// 3) @Service — business logic
+@Service
+public class EmployeeService {
+    private final EmployeeRepository repository;
+
+    public EmployeeService(EmployeeRepository repository) {
+        this.repository = repository;
+    }
+
+    public Employee getById(Long id) {
+        return repository.findById(id)
+            .orElseThrow(() -&gt; new ResourceNotFoundException("Employee " + id));
+    }
+}
+
+// 4) @RestController — REST endpoints (returns JSON)
+@RestController
+@RequestMapping("/api/employees")
+public class EmployeeController {
+    private final EmployeeService service;
+
+    public EmployeeController(EmployeeService service) {
+        this.service = service;
+    }
+
+    @GetMapping("/{id}")
+    public Employee getEmployee(@PathVariable Long id) {
+        return service.getById(id);
+    }
+}</code></pre>
+
+          <p><b>@Component vs the others — what's actually different:</b></p>
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">@Component (generic)</div>
+              <ul>
+                <li>Catch-all stereotype.</li>
+                <li>Use for utilities, mappers, validators, helpers — anything that doesn't fit a specific layer.</li>
+                <li>No special behaviour.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">@Service / @Repository / @Controller</div>
+              <ul>
+                <li>All are <strong>meta-annotated with</strong> <code>@Component</code> — same scanning behaviour.</li>
+                <li>Communicate <em>architectural intent</em> to readers and tools.</li>
+                <li>Useful as AOP pointcuts (e.g., "log every <code>@Service</code> method").</li>
+                <li><code>@Repository</code> adds <em>exception translation</em>.</li>
+              </ul>
             </div>
           </div>
 
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> @Repository — Extra Behavior</div>
-            <ul style="margin:0;">
-              <li><strong>Only</strong> stereotype that adds <em>real technical behavior</em> beyond bean registration.</li>
-              <li>Spring wraps it with a <code>PersistenceExceptionTranslationPostProcessor</code>.</li>
-              <li>Converts vendor-specific exceptions (SQL, JPA, MongoDB) into Spring's unified <code>DataAccessException</code> hierarchy.</li>
-              <li>This lets your service layer catch one consistent exception family regardless of underlying DB tech.</li>
-            </ul>
-          </div>
+          <p><b><code>@Repository</code> — the one with real extra behaviour:</b></p>
+          <ul>
+            <li>The <strong>only</strong> stereotype that adds a runtime feature beyond bean registration.</li>
+            <li>Spring's <code>PersistenceExceptionTranslationPostProcessor</code> wraps the bean so vendor-specific exceptions (JDBC <code>SQLException</code>, JPA <code>PersistenceException</code>, Mongo errors) are converted into Spring's unified <strong><code>DataAccessException</code></strong> hierarchy.</li>
+            <li>This lets the <em>service layer</em> catch one consistent exception family regardless of which DB technology sits underneath.</li>
+            <li>With Spring Data repositories you don't write your own DAO — the interface plus <code>JpaRepository</code> / <code>MongoRepository</code> is enough; <code>@Repository</code> is often implicit.</li>
+          </ul>
 
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> @Controller vs @RestController</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> @Controller</div>
-                <ul>
-                  <li>Returns a <strong>view name</strong> by default (resolved by ViewResolver).</li>
-                  <li>Used with Thymeleaf, JSP, server-rendered HTML.</li>
-                  <li>Add <code>@ResponseBody</code> on a method to return JSON instead.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> @RestController</div>
-                <ul>
-                  <li>Shortcut for <code>@Controller</code> + <code>@ResponseBody</code> on every method.</li>
-                  <li>Every method returns the body directly — typically JSON via Jackson.</li>
-                  <li>Default choice for REST APIs.</li>
-                </ul>
-              </div>
+          <p><b><code>@Controller</code> vs <code>@RestController</code> — pick the right one:</b></p>
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">@Controller</div>
+              <ul>
+                <li>Returns a <strong>view name</strong> resolved by ViewResolver (Thymeleaf, JSP).</li>
+                <li>Used in server-rendered web apps.</li>
+                <li>Add <code>@ResponseBody</code> on a method to return JSON instead.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">@RestController</div>
+              <ul>
+                <li>Shortcut for <code>@Controller</code> + <code>@ResponseBody</code> on every method.</li>
+                <li>Every method returns the response <em>body</em> directly — usually JSON via Jackson.</li>
+                <li><strong>The default choice for REST APIs.</strong></li>
+              </ul>
             </div>
           </div>
 
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">4</span> Typical Layer Mapping</div>
-            <pre><code>@RestController         // /api/users
-└─ @Service             // UserService — business logic
-   └─ @Repository       // UserRepository — DB access (JPA/Mongo)
-   └─ @Component        // UserMapper, validation helpers</code></pre>
+          <p><b>How Spring discovers them — under the hood:</b></p>
+          <div class="flow">
+            <div class="flow-step"><code>@SpringBootApplication</code> includes <code>@ComponentScan</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Spring scans the package tree of the main class</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Picks up any class annotated with <code>@Component</code> <em>or any meta-annotation of it</em> (<code>@Service</code>, <code>@Repository</code>, <code>@Controller</code>, <code>@RestController</code>)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">Registers each as a bean in the <code>ApplicationContext</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><code>@Repository</code> beans get wrapped by the exception-translation post-processor</div>
           </div>
 
-          <div class="takeaway">
-            <b>Rule of thumb:</b> always pick the most <strong>specific</strong> stereotype available. It costs nothing and pays off in readability, tooling, and the one real behavioral perk — <code>@Repository</code>'s exception translation.
-          </div>
+          <p><b>Common interview gotchas:</b></p>
+          <ul>
+            <li><strong>Functionally equivalent</strong> — at runtime, all four register a bean. The difference is <em>semantic + the one perk in <code>@Repository</code></em>.</li>
+            <li><strong>Always pick the most specific</strong> — <code>@Service</code> over <code>@Component</code> for a service class, etc. Costs nothing, improves readability.</li>
+            <li><strong>Spring Data repositories</strong> — you don't usually annotate them with <code>@Repository</code>; the interface is registered automatically by Spring Data.</li>
+            <li><strong><code>@Controller</code> + <code>@ResponseBody</code> = <code>@RestController</code></strong>. The shortcut exists because REST APIs always need it.</li>
+            <li><strong>Static analysis &amp; AOP</strong> — tools like SonarQube and Spring AOP can target specific stereotypes (e.g., apply transactions only to <code>@Service</code>).</li>
+          </ul>
+
+          <p class="takeaway">
+            <b>Interview one-liner:</b> <code>@Component</code>, <code>@Service</code>, <code>@Repository</code>, and <code>@Controller</code> are all <strong>Spring stereotype annotations</strong> — every one of them registers the class as a Spring-managed bean via component scanning. <code>@Component</code> is the <em>generic</em> stereotype; <code>@Service</code>, <code>@Repository</code>, and <code>@Controller</code> are <em>specialisations</em> that signal the architectural layer (business, persistence, web). The only one with extra runtime behaviour is <strong><code>@Repository</code></strong>, which converts vendor-specific DB exceptions into Spring's unified <code>DataAccessException</code>. <strong>Always pick the most specific stereotype</strong> — it costs nothing and pays off in readability, tooling, and AOP targeting.
+          </p>
         </div>
       </details>
 
@@ -345,17 +963,335 @@ public class AppConfig {
       </details>
 
       <details class="qa">
-        <summary>@Transactional — how does it actually work?</summary>
+        <summary>How @Transactional Works Internally — Proxy-based AOP, commit & rollback <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p><strong><code>@Transactional</code></strong> wraps a method in a database transaction via AOP. On method entry, the transaction interceptor begins a tx (or joins an existing one); on success it commits; on exception it rolls back.</p>
-          <p>Key parameters:</p>
+          <p class="answer-intro"><strong><code>@Transactional</code></strong> is Spring's way of declaratively managing database transactions. You annotate a method, and Spring takes care of <em>begin → commit → rollback</em> around it — no <code>connection.commit()</code> in your code. The magic? <strong>Proxy-based AOP</strong>.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Spring wraps your bean in a <strong>proxy</strong>. Every call to a <code>@Transactional</code> method goes <em>through the proxy first</em> — the proxy <strong>starts a transaction</strong>, calls your method, then <strong>commits on success or rolls back on exception</strong>.</span>
+            </div>
+          </div>
+
+          <p><b>What @Transactional guarantees:</b></p>
           <ul>
-            <li><strong>propagation</strong> — REQUIRED (default; join or create), REQUIRES_NEW (always new), NESTED, SUPPORTS, NEVER, etc.</li>
-            <li><strong>isolation</strong> — READ_COMMITTED, REPEATABLE_READ, SERIALIZABLE — controls visibility of concurrent changes.</li>
-            <li><strong>rollbackFor</strong> — by default rolls back only on <strong>unchecked</strong> exceptions; checked exceptions commit unless you set <code>rollbackFor = Exception.class</code>.</li>
-            <li><strong>readOnly</strong> — hints to the driver/Hibernate for optimizations.</li>
+            <li><strong>Commit</strong> if the method returns normally.</li>
+            <li><strong>Rollback</strong> if a <code>RuntimeException</code> / <code>Error</code> is thrown (checked exceptions don't roll back unless you say so).</li>
+            <li><strong>One connection</strong> bound to the thread for the whole method — every JDBC / JPA call inside reuses it.</li>
+            <li><strong>ACID</strong> — atomicity, isolation, consistency, durability — handled by the DB; Spring just controls the boundaries.</li>
           </ul>
-          <p>Common bugs: self-invocation skipping the proxy (no transaction), missing <code>rollbackFor</code> on checked exceptions, putting <code>@Transactional</code> on private methods (proxy can't intercept). I almost always put it on the public service layer method, not on repositories.</p>
+
+          <p><b>The internal flow — what happens on every call:</b></p>
+          <div class="flow">
+            <div class="flow-step">1. Client calls <code>service.transferMoney(...)</code></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">2. Call hits the <strong>Spring proxy</strong> (not the real bean)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">3. <code>TransactionInterceptor</code> kicks in — reads <code>@Transactional</code> metadata (propagation, isolation, rollbackFor)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">4. <strong>BEGIN TRANSACTION</strong> — gets a DB connection, binds it to the current thread, sets autoCommit=false</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">5. Proxy delegates to the <strong>real method</strong> — your business logic runs (debit, credit, …)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">6a. Method returns normally → <strong>COMMIT</strong> &nbsp;|&nbsp; 6b. Exception thrown → <strong>ROLLBACK</strong></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">7. Connection released, thread unbound, result returned to caller</div>
+          </div>
+
+          <p><b>What is proxy-based AOP?</b></p>
+          <p>AOP = <em>Aspect-Oriented Programming</em> — a way to add <strong>cross-cutting behaviour</strong> (transactions, logging, security, metrics) <em>around</em> your business code without polluting the business code itself. Spring's implementation is <strong>proxy-based</strong>: when the container creates a bean that has AOP advice (like <code>@Transactional</code>), it wraps the bean in a proxy and registers <em>the proxy</em> in the context — so anyone who autowires that bean actually gets the proxy.</p>
+
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">Without proxy</div>
+              <pre><code>service.transferMoney();
+// → directly calls the real method
+// → no transaction, no rollback</code></pre>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">With Spring proxy</div>
+              <pre><code>proxy.transferMoney();
+//   ├─ begin tx
+//   ├─ real.transferMoney()
+//   └─ commit / rollback</code></pre>
+            </div>
+          </div>
+
+          <p><b>JDK Dynamic Proxy vs CGLIB — how Spring picks:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Proxy type</th><th>When Spring uses it</th><th>How it works</th></tr></thead>
+              <tbody>
+                <tr><td><strong>JDK Dynamic Proxy</strong></td><td>Bean implements <em>at least one interface</em>.</td><td>Generates a runtime class that implements the same interface; delegates via reflection.</td></tr>
+                <tr><td><strong>CGLIB Proxy</strong></td><td>No interface — bean is a plain class.</td><td>Generates a <em>subclass</em> at runtime; overrides methods to add the around-advice.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Spring Boot defaults to <strong>CGLIB</strong> since 2.0 (works for both interface and class beans). You can force JDK with <code>spring.aop.proxy-target-class=false</code>.</p>
+
+          <p><b>Concrete example — money transfer with rollback:</b></p>
+          <pre><code>@Service
+public class BankService {
+
+    private final AccountRepository accounts;
+
+    public BankService(AccountRepository accounts) { this.accounts = accounts; }
+
+    @Transactional                                  // proxy wraps this method
+    public void transfer(Long fromId, Long toId, BigDecimal amount) {
+        accounts.debit(fromId, amount);             // SQL UPDATE
+        if (amount.compareTo(BigDecimal.ZERO) &lt; 0)
+            throw new IllegalArgumentException();   // → ROLLBACK both updates
+        accounts.credit(toId, amount);              // SQL UPDATE
+    }                                               // success → COMMIT
+}</code></pre>
+          <p>If the credit fails halfway, the debit is rolled back too — both updates are atomic.</p>
+
+          <p><b>Key @Transactional parameters:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Parameter</th><th>Meaning</th><th>Common values</th></tr></thead>
+              <tbody>
+                <tr><td><strong>propagation</strong></td><td>What to do if a transaction already exists.</td><td><code>REQUIRED</code> (default — join or create), <code>REQUIRES_NEW</code> (always new), <code>NESTED</code>, <code>SUPPORTS</code>, <code>MANDATORY</code>, <code>NEVER</code>, <code>NOT_SUPPORTED</code></td></tr>
+                <tr><td><strong>isolation</strong></td><td>How concurrent transactions see each other.</td><td><code>READ_COMMITTED</code>, <code>REPEATABLE_READ</code>, <code>SERIALIZABLE</code>, <code>READ_UNCOMMITTED</code></td></tr>
+                <tr><td><strong>rollbackFor</strong></td><td>Which exception types trigger rollback.</td><td>Default: <code>RuntimeException</code> / <code>Error</code> only. Use <code>rollbackFor = Exception.class</code> for checked.</td></tr>
+                <tr><td><strong>noRollbackFor</strong></td><td>Exceptions to <em>not</em> roll back on.</td><td>e.g. <code>noRollbackFor = NotFoundException.class</code></td></tr>
+                <tr><td><strong>readOnly</strong></td><td>Hint for optimisations (Hibernate skips dirty checking).</td><td><code>true</code> for SELECT-only methods.</td></tr>
+                <tr><td><strong>timeout</strong></td><td>Max seconds before the transaction times out.</td><td>e.g. <code>timeout = 30</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>The self-invocation gotcha — interviewer's favourite:</b></p>
+          <pre><code>@Service
+public class OrderService {
+
+    @Transactional
+    public void placeOrder() {
+        sendEmail();        // ❌ direct self-call — bypasses the proxy!
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void sendEmail() { ... }
+}</code></pre>
+          <p>Because <code>this.sendEmail()</code> doesn't go through the proxy, the <code>REQUIRES_NEW</code> is silently ignored. Fixes:</p>
+          <ul>
+            <li><strong>Inject the bean into itself</strong> (<code>@Autowired private OrderService self;</code>) and call <code>self.sendEmail()</code>.</li>
+            <li><strong>Split into two beans</strong> — usually the cleanest answer.</li>
+            <li><strong>Switch to AspectJ compile/load-time weaving</strong> — works without proxies, but adds build complexity.</li>
+          </ul>
+
+          <p><b>Other common gotchas:</b></p>
+          <ul>
+            <li><strong>Doesn't work on <code>private</code> or <code>final</code> methods</strong> — the proxy can't override them.</li>
+            <li><strong>Checked exceptions don't roll back by default</strong> — use <code>rollbackFor = Exception.class</code> if you throw checked exceptions you want to roll back on.</li>
+            <li><strong>Catching the exception inside the method</strong> — if you swallow it, Spring sees a normal return and <strong>commits</strong>. Re-throw or call <code>TransactionAspectSupport.currentTransactionStatus().setRollbackOnly()</code>.</li>
+            <li><strong>Put it on the service layer</strong>, not on repositories — that's the natural transaction boundary.</li>
+            <li><strong>Doesn't work in <code>@PostConstruct</code></strong> — AOP proxies are attached <em>after</em> initialization (step 6 of the bean lifecycle), so the tx interceptor isn't active yet.</li>
+            <li><strong>Long transactions = held connections</strong> — keep methods short; never put HTTP calls or Thread.sleep inside.</li>
+          </ul>
+
+          <p><b>Propagation — the one that catches people out:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Propagation</th><th>Behaviour</th></tr></thead>
+              <tbody>
+                <tr><td><strong>REQUIRED</strong> (default)</td><td>Join existing tx, or create a new one.</td></tr>
+                <tr><td><strong>REQUIRES_NEW</strong></td><td>Suspend any existing tx, always start a new one.</td></tr>
+                <tr><td><strong>NESTED</strong></td><td>Run inside a savepoint of the existing tx (partial rollback possible).</td></tr>
+                <tr><td><strong>SUPPORTS</strong></td><td>Use existing tx if there is one, else run non-transactionally.</td></tr>
+                <tr><td><strong>MANDATORY</strong></td><td>Must be called inside an existing tx — else throw.</td></tr>
+                <tr><td><strong>NEVER</strong></td><td>Must NOT be inside a tx — else throw.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Where it shows up in real apps:</b></p>
+          <div class="use-cases">
+            <div class="uc-card"><div class="uc-title">Money transfer</div><div class="uc-body">Debit + credit must be atomic — exception on either rolls back both.</div></div>
+            <div class="uc-card"><div class="uc-title">Order creation</div><div class="uc-body">Insert order + decrement inventory + create payment row — all-or-nothing.</div></div>
+            <div class="uc-card"><div class="uc-title">Batch update</div><div class="uc-body">Update 1000 rows; one failure rolls back the whole batch.</div></div>
+            <div class="uc-card"><div class="uc-title">Audit logging</div><div class="uc-body"><code>REQUIRES_NEW</code> so audit row commits even if outer tx rolls back.</div></div>
+          </div>
+
+          <p class="takeaway">
+            <b>Interview one-liner:</b> <code>@Transactional</code> works through <strong>proxy-based AOP</strong>. When Spring creates a bean with <code>@Transactional</code> methods, it wraps it in a <strong>JDK dynamic proxy</strong> (if interfaces exist) or a <strong>CGLIB subclass proxy</strong>. Every call goes through the proxy — the <code>TransactionInterceptor</code> reads the annotation, starts a transaction, delegates to the real method, then <strong>commits on success</strong> or <strong>rolls back on a runtime exception</strong>. Because it's proxy-based, <strong>self-invocation bypasses the aspect</strong>, <code>private</code>/<code>final</code> methods can't be advised, and AOP isn't active inside <code>@PostConstruct</code>. The same mechanism powers <code>@Cacheable</code>, <code>@Async</code>, <code>@PreAuthorize</code>, and Spring's metrics — pure cross-cutting magic without touching business code.
+          </p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Transaction Propagation in Spring — REQUIRED, REQUIRES_NEW, NESTED & friends <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro"><strong>Propagation</strong> answers one specific question: <em>"What should happen when a <code>@Transactional</code> method is called from inside another <code>@Transactional</code> method?"</em> Should it <strong>join</strong> the existing transaction? <strong>Start a new one</strong>? <strong>Run with no transaction</strong>? <strong>Fail</strong>? That's the choice <code>propagation</code> controls.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Propagation decides how a transactional method behaves <em>relative to an already-running transaction</em>. The default — <code>REQUIRED</code> — joins it. <code>REQUIRES_NEW</code> suspends it and starts a fresh one. Other modes let you express "must already exist", "must not exist", or "don't care".</span>
+            </div>
+          </div>
+
+          <p><b>All 7 propagation levels — what each one does:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Propagation</th><th>If a tx already exists</th><th>If no tx exists</th><th>Common use</th></tr></thead>
+              <tbody>
+                <tr><td><strong>REQUIRED</strong> <em>(default)</em></td><td>Join it.</td><td>Start a new one.</td><td>99% of business methods.</td></tr>
+                <tr><td><strong>REQUIRES_NEW</strong></td><td><strong>Suspend</strong> existing, start a brand-new tx.</td><td>Start a new one.</td><td>Audit, logs, notifications that must commit independently.</td></tr>
+                <tr><td><strong>NESTED</strong></td><td>Run inside a <strong>savepoint</strong> of the existing tx.</td><td>Start a new one.</td><td>Partial rollback inside a bigger tx (JDBC only).</td></tr>
+                <tr><td><strong>SUPPORTS</strong></td><td>Join it.</td><td>Run <strong>without</strong> a tx.</td><td>Read methods that work either way.</td></tr>
+                <tr><td><strong>NOT_SUPPORTED</strong></td><td>Suspend the existing tx, run non-transactionally.</td><td>Run without a tx.</td><td>Long-running reads / external calls.</td></tr>
+                <tr><td><strong>MANDATORY</strong></td><td>Join it.</td><td><strong>Throws</strong> <code>IllegalTransactionStateException</code>.</td><td>Methods that <em>must</em> be called inside an existing tx.</td></tr>
+                <tr><td><strong>NEVER</strong></td><td><strong>Throws</strong> <code>IllegalTransactionStateException</code>.</td><td>Run without a tx.</td><td>Methods that must <em>never</em> be inside a tx.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>REQUIRED — the default, the safe choice:</b></p>
+          <pre><code>@Transactional                              // REQUIRED is default
+public void placeOrder(Order o) {
+    orderRepo.save(o);
+    inventoryService.decrement(o.getItems());  // also @Transactional(REQUIRED)
+    paymentService.charge(o.getAmount());      // also @Transactional(REQUIRED)
+}
+// → all three run in ONE transaction
+// → if any of them throws, the WHOLE thing rolls back</code></pre>
+          <p>This is the right choice 95% of the time — atomic "all or nothing" behaviour.</p>
+
+          <p><b>REQUIRES_NEW — the independent transaction:</b></p>
+          <pre><code>@Service
+public class OrderService {
+    @Autowired AuditService audit;
+
+    @Transactional                              // outer tx (REQUIRED)
+    public void placeOrder(Order o) {
+        orderRepo.save(o);
+        audit.log("ORDER_CREATED", o.getId());  // commits independently
+        paymentService.charge(o);               // if THIS throws, only order rolls back
+    }                                           // — audit row is already committed!
+}
+
+@Service
+public class AuditService {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void log(String event, Long id) { auditRepo.save(...); }
+}</code></pre>
+          <p><strong>Use REQUIRES_NEW when an inner operation must persist even if the outer transaction rolls back</strong> — audit trails, error logs, "we tried to do X" markers, sending notifications you've already enqueued.</p>
+
+          <p><b>The internal flow of REQUIRES_NEW:</b></p>
+          <div class="flow">
+            <div class="flow-step">1. Outer <code>@Transactional</code> starts — tx<sub>1</sub> begins, connection<sub>1</sub> bound to thread</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">2. Inner method with <code>REQUIRES_NEW</code> is invoked through the proxy</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">3. Spring <strong>suspends</strong> tx<sub>1</sub> — unbinds connection<sub>1</sub> from the thread</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">4. Spring starts tx<sub>2</sub> with connection<sub>2</sub> — bound to the thread</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">5. Inner method runs → <strong>commit / rollback tx<sub>2</sub></strong> (independent of tx<sub>1</sub>)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">6. Spring <strong>resumes</strong> tx<sub>1</sub> — connection<sub>1</sub> rebound, outer continues</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">7. Outer commits / rolls back <em>tx<sub>1</sub> only</em> — tx<sub>2</sub> is already settled</div>
+          </div>
+          <p>Note: <strong>two connections from the pool</strong> are held simultaneously — keep an eye on your pool size if you use REQUIRES_NEW heavily.</p>
+
+          <p><b>REQUIRED vs REQUIRES_NEW — when to pick which:</b></p>
+          <div class="cmp-grid">
+            <div class="cmp-card">
+              <div class="cmp-card-title">REQUIRED <em>(default)</em></div>
+              <ul>
+                <li>Inner joins outer — one transaction.</li>
+                <li>Rollback of inner = rollback of <em>everything</em>.</li>
+                <li>One connection from the pool.</li>
+                <li>Atomic "all or nothing".</li>
+                <li>Use for: order + inventory + payment.</li>
+              </ul>
+            </div>
+            <div class="cmp-card">
+              <div class="cmp-card-title">REQUIRES_NEW</div>
+              <ul>
+                <li>Inner runs in its own tx — outer is suspended.</li>
+                <li>Inner can commit even if outer rolls back.</li>
+                <li>Two connections held simultaneously.</li>
+                <li>Independence.</li>
+                <li>Use for: audit logs, notifications, retry markers.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p><b>NESTED — savepoint-based partial rollback:</b></p>
+          <pre><code>@Transactional                              // outer tx
+public void importBatch(List&lt;Row&gt; rows) {
+    for (Row r : rows) {
+        try { processOne(r); }              // savepoint per row
+        catch (Exception e) { log.warn("skipped {}", r); }
+    }
+}
+
+@Transactional(propagation = Propagation.NESTED)
+public void processOne(Row r) { ... }</code></pre>
+          <p>If <code>processOne</code> fails, only that savepoint rolls back — the outer tx continues. Useful for "process what we can, skip bad rows". <strong>Caveat:</strong> NESTED works with JDBC savepoints; JPA/Hibernate support is limited. <code>JpaTransactionManager</code> doesn't fully support NESTED by default.</p>
+
+          <p><b>SUPPORTS, NOT_SUPPORTED, MANDATORY, NEVER — the rest:</b></p>
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Mode</th><th>What it's for</th></tr></thead>
+              <tbody>
+                <tr><td><strong>SUPPORTS</strong></td><td>Method works either way. If called inside a tx → joins. If called standalone → runs without one. Common for read-only utility methods.</td></tr>
+                <tr><td><strong>NOT_SUPPORTED</strong></td><td>Explicitly run <em>outside</em> a transaction. If one exists, Spring suspends it. Use for long reports, external HTTP calls — anything you don't want holding a DB connection.</td></tr>
+                <tr><td><strong>MANDATORY</strong></td><td>"You must call me from inside a transaction." Throws if there isn't one. Good for forcing callers into the right context.</td></tr>
+                <tr><td><strong>NEVER</strong></td><td>"You must NOT call me from inside a transaction." Throws if one exists. Rare — mainly for safety on operations that shouldn't be transactional (e.g., file system ops).</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><b>Real-world example — money transfer with audit:</b></p>
+          <pre><code>@Service
+public class BankService {
+    @Autowired AuditService audit;
+
+    @Transactional                                       // REQUIRED — atomic
+    public void transfer(Long from, Long to, BigDecimal amt) {
+        accounts.debit(from, amt);
+        audit.log("DEBIT", from, amt);                   // REQUIRES_NEW
+        accounts.credit(to, amt);                        // if THIS fails…
+        audit.log("CREDIT", to, amt);                    // REQUIRES_NEW
+    }
+}
+
+@Service
+public class AuditService {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void log(String type, Long acc, BigDecimal amt) { ... }
+}</code></pre>
+          <p>If <code>credit</code> fails: the <strong>debit rolls back</strong> (it was in the outer tx) but the <strong>DEBIT audit row stays</strong> (it was in its own tx). You have a forensic trail of what was attempted, even when the business operation failed.</p>
+
+          <p><b>Where each propagation level shows up:</b></p>
+          <div class="use-cases">
+            <div class="uc-card"><div class="uc-title">REQUIRED</div><div class="uc-body">Order creation, money transfer, any "all-or-nothing" business operation.</div></div>
+            <div class="uc-card"><div class="uc-title">REQUIRES_NEW</div><div class="uc-body">Audit logs, error logs, sending notifications, exception tracking, retry counters.</div></div>
+            <div class="uc-card"><div class="uc-title">NESTED</div><div class="uc-body">Batch imports where some rows can fail without killing the whole batch.</div></div>
+            <div class="uc-card"><div class="uc-title">NOT_SUPPORTED</div><div class="uc-body">Long reports, external API calls, heavy reads you don't want holding a connection.</div></div>
+            <div class="uc-card"><div class="uc-title">MANDATORY</div><div class="uc-body">Internal helpers that must run inside a caller-controlled tx.</div></div>
+            <div class="uc-card"><div class="uc-title">SUPPORTS</div><div class="uc-body">Utility reads that work fine with or without a tx.</div></div>
+          </div>
+
+          <p><b>Common interview gotchas:</b></p>
+          <ul>
+            <li><strong>REQUIRES_NEW only works through the proxy.</strong> If the outer method calls the inner one via <code>this.log(...)</code>, the propagation is ignored — same self-invocation trap as <code>@Transactional</code> in general. Inject the bean into itself or split into two beans.</li>
+            <li><strong>REQUIRES_NEW holds two connections.</strong> If your pool is size 10 and 6 threads use REQUIRES_NEW concurrently, you'll deadlock waiting for connections.</li>
+            <li><strong>Exception in REQUIRES_NEW doesn't roll back the outer</strong> — unless you let it propagate. Catch carefully.</li>
+            <li><strong>NESTED needs savepoint support.</strong> Works with <code>DataSourceTransactionManager</code> + JDBC; JPA support is limited.</li>
+            <li><strong>If outer rolls back, joined REQUIRED inner rolls back too</strong> — even if the inner method "succeeded". They're the same transaction.</li>
+            <li><strong><code>readOnly=true</code> is independent of propagation</strong> — readOnly is a hint to the DB/Hibernate, propagation controls boundaries.</li>
+          </ul>
+
+          <p class="takeaway">
+            <b>Interview one-liner:</b> <strong>Propagation</strong> in Spring's <code>@Transactional</code> defines how a transactional method behaves when it's called from inside another transaction. <strong>REQUIRED</strong> (default) joins the existing transaction or creates a new one — gives "all-or-nothing" atomicity. <strong>REQUIRES_NEW</strong> suspends the outer transaction and starts a brand-new independent one — ideal for audit logging or notifications that must persist even if the outer rolls back. <strong>NESTED</strong> uses a savepoint for partial rollback inside a bigger transaction. <strong>SUPPORTS</strong>, <strong>NOT_SUPPORTED</strong>, <strong>MANDATORY</strong>, and <strong>NEVER</strong> express "use one if available", "run outside", "must be inside", and "must not be inside". The key trade-off — REQUIRED gives atomicity with one connection; REQUIRES_NEW gives independence at the cost of holding two connections at once.
+          </p>
         </div>
       </details>
 

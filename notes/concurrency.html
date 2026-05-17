@@ -338,17 +338,158 @@
       </details>
 
       <details class="qa">
-        <summary>ThreadPoolExecutor — sizing and parameters</summary>
+        <summary>Thread pool tuning in Java applications — sizing and parameters <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p>The full constructor: <code>new ThreadPoolExecutor(core, max, keepAlive, unit, queue, threadFactory, rejectionHandler)</code>.</p>
-          <p>How it actually behaves: tasks first fill up to <em>core</em> threads, then <em>queue up</em>, then create extra threads up to <em>max</em> when queue is full, then trigger the <strong>rejection handler</strong>. People expect "create more threads first, then queue" — it's the opposite, which is why <code>newFixedThreadPool</code> uses an unbounded queue (core == max).</p>
-          <p>Sizing rules of thumb:</p>
-          <ul>
-            <li><strong>CPU-bound</strong>: pool size ≈ number of cores.</li>
-            <li><strong>I/O-bound</strong>: cores × (1 + wait/compute ratio); often 50–200 threads.</li>
-            <li>Use a <strong>bounded queue</strong> and a sensible <strong>rejection policy</strong> (<code>CallerRunsPolicy</code> applies back-pressure on the submitter).</li>
-            <li>Name threads via <code>ThreadFactory</code> — invaluable in thread dumps.</li>
-          </ul>
+          <p class="answer-intro">A correctly sized thread pool is the difference between a service that scales linearly and one that thrashes under load. Most production tuning bugs come from <strong>misunderstanding how <code>ThreadPoolExecutor</code> actually grows threads</strong>, choosing the wrong queue, picking a CPU-bound formula for an I/O-bound workload, or forgetting the rejection policy.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Tasks first fill <strong>core</strong> threads → then <strong>queue</strong> → then grow to <strong>max</strong> threads only if the queue is <em>full</em> → then the <strong>rejection policy</strong> fires. Size the pool from the workload type (CPU vs I/O), pick a <strong>bounded queue</strong>, and choose a rejection policy that creates back-pressure (<code>CallerRunsPolicy</code>) instead of dropping work.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> The full constructor</div>
+            <pre><code>new ThreadPoolExecutor(
+    int corePoolSize,                  // always-warm threads
+    int maximumPoolSize,               // upper limit
+    long keepAliveTime,                // idle timeout for above-core threads
+    TimeUnit unit,
+    BlockingQueue&lt;Runnable&gt; workQueue, // bounded queue is the key
+    ThreadFactory threadFactory,        // name your threads!
+    RejectedExecutionHandler handler    // what happens when both pool and queue are full
+);</code></pre>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> How it actually grows threads (the gotcha)</div>
+            <div class="flow">
+              <div class="flow-step">Submit task</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">If active threads &lt; <code>corePoolSize</code> → create a new thread</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Else if queue has space → enqueue (no new thread!)</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Else if active threads &lt; <code>maximumPoolSize</code> → create a new thread</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step accent">Else → <code>RejectedExecutionHandler</code> fires</div>
+            </div>
+            <p class="solution-desc">Most engineers expect "grow to max first, then queue" — it's the <em>opposite</em>. That's why <code>newFixedThreadPool</code> with its <code>LinkedBlockingQueue</code> (unbounded) never grows beyond <code>corePoolSize</code> and can OOM under sustained load. Pick a <strong>bounded queue</strong> (e.g., <code>ArrayBlockingQueue</code>) for production.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Sizing — by workload type</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead><tr><th>Workload</th><th>Formula</th><th>Example</th></tr></thead>
+                <tbody>
+                  <tr><td><strong>CPU-bound</strong></td><td>≈ number of cores (or cores + 1 for hyper-threading slack)</td><td>Image transform, encryption, in-memory compute → 8 cores → ~8 threads</td></tr>
+                  <tr><td><strong>I/O-bound</strong></td><td>Little's law: <code>N = cores × targetCpuUtil × (1 + waitTime/computeTime)</code></td><td>Mostly waiting on DB/HTTP → cores × 10 → 50–200 threads</td></tr>
+                  <tr><td><strong>Mixed</strong></td><td>Split into two pools, one per workload type — bulkhead</td><td>API thread pool + DB-write pool + downstream-call pool</td></tr>
+                  <tr><td><strong>Tomcat / web layer</strong></td><td>Sized for concurrent in-flight requests; typically 100–400</td><td>Each thread blocks on DB / downstream → high count justified</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>Always validate with a load test — formulas give you a starting point; production behaviour wins.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Queue choice matters as much as size</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-title">Bounded ArrayBlockingQueue</div>
+                <ul>
+                  <li>Fixed capacity → memory-safe.</li>
+                  <li>When full, pool grows to max, then rejects.</li>
+                  <li><strong>Recommended</strong> for production.</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-title">Unbounded LinkedBlockingQueue</div>
+                <ul>
+                  <li>Default in <code>newFixedThreadPool</code>.</li>
+                  <li>Pool never grows past core; queue can OOM under load.</li>
+                  <li>Use only if you fully control input rate.</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-title">SynchronousQueue</div>
+                <ul>
+                  <li>No buffering — direct hand-off; pool must grow to handle each task.</li>
+                  <li>Used by <code>newCachedThreadPool</code> — unbounded thread growth, dangerous.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Rejection policies — pick back-pressure over dropping</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead><tr><th>Policy</th><th>What it does</th><th>When to use</th></tr></thead>
+                <tbody>
+                  <tr><td><code>AbortPolicy</code> (default)</td><td>Throws <code>RejectedExecutionException</code></td><td>API endpoints — surface a 503 to the caller</td></tr>
+                  <tr><td><code>CallerRunsPolicy</code></td><td>Caller thread runs the task</td><td><strong>Best for back-pressure</strong> on producers — slows them down naturally</td></tr>
+                  <tr><td><code>DiscardPolicy</code></td><td>Silently drops the task</td><td>Almost never; metrics-only fire-and-forget</td></tr>
+                  <tr><td><code>DiscardOldestPolicy</code></td><td>Drops the oldest queued task</td><td>Rare — when newer is more important than older</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Spring Boot — declarative pool</div>
+            <pre><code>@Bean("ioExecutor")
+public ThreadPoolTaskExecutor ioExecutor(MeterRegistry registry) {
+    ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
+    ex.setCorePoolSize(20);
+    ex.setMaxPoolSize(80);
+    ex.setQueueCapacity(500);                                 // bounded
+    ex.setKeepAliveSeconds(60);
+    ex.setThreadNamePrefix("io-");                            // shows up in dumps
+    ex.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+    ex.setWaitForTasksToCompleteOnShutdown(true);             // graceful shutdown
+    ex.setAwaitTerminationSeconds(20);
+    ex.initialize();
+    new ExecutorServiceMetrics(ex.getThreadPoolExecutor(), "io.executor",
+                               List.of()).bindTo(registry);    // Micrometer
+    return ex;
+}</code></pre>
+            <p>Always export pool metrics — active threads, queue depth, completed tasks, rejections — to Prometheus. The first sign of trouble is a growing queue.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">7</span> Production tuning checklist</div>
+            <ul>
+              <li>Bound the queue. Always.</li>
+              <li>Name threads via <code>ThreadFactory</code> — invaluable in thread dumps.</li>
+              <li>Use <strong>per-dependency pools</strong> (bulkheads) so one slow downstream doesn't drain the global pool.</li>
+              <li>Pick <code>CallerRunsPolicy</code> for back-pressure or <code>AbortPolicy</code> + 503 for HTTP services.</li>
+              <li>Export metrics: <code>active</code>, <code>queue.size</code>, <code>queue.remaining</code>, <code>rejected</code>, <code>completed</code>.</li>
+              <li>Alert on <code>queue.size</code> close to capacity or any rejections.</li>
+              <li>Configure graceful shutdown (<code>setWaitForTasksToCompleteOnShutdown(true)</code>).</li>
+              <li>Validate with a load test that gradually exceeds capacity — observe behavior at saturation.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">8</span> Common interview gotchas</div>
+            <ul>
+              <li>The growth order is <strong>core → queue → max → reject</strong>, not "core → max → queue".</li>
+              <li><code>newFixedThreadPool</code> uses an unbounded queue → silent OOM risk.</li>
+              <li><code>newCachedThreadPool</code> grows threads without limit → can crash the JVM.</li>
+              <li>CPU-bound formulas applied to I/O workloads under-utilize cores → low throughput.</li>
+              <li>I/O-bound formulas applied to CPU workloads → context-switch thrash.</li>
+              <li>One global pool for everything = no bulkhead = one slow downstream takes the whole service down.</li>
+              <li>Pool sizing depends on the JVM cgroup CPU limits in containers — check with <code>Runtime.availableProcessors()</code>.</li>
+              <li>Virtual threads (Java 21+) make many of these tradeoffs irrelevant for pure I/O — but you still need pools for CPU-bound work.</li>
+              <li>Forgetting to set thread names → impossible to debug a thread dump.</li>
+              <li>Default rejection of tasks → silent failures unless you wire <code>CallerRunsPolicy</code> or surface a 503.</li>
+            </ul>
+          </div>
+
+          <p class="takeaway"><b>Interview one-liner:</b> Tune a thread pool by understanding its growth order — <strong>core → queue → max → reject</strong> — and choosing each piece deliberately. Size from workload type: <strong>~cores</strong> for CPU-bound, <strong>cores × (1 + waitTime/computeTime)</strong> for I/O-bound. Use a <strong>bounded queue</strong> (<code>ArrayBlockingQueue</code>) and a back-pressure rejection policy (<code>CallerRunsPolicy</code>) — never <code>newCachedThreadPool</code> or <code>newFixedThreadPool</code> in production. Use <strong>per-dependency bulkhead pools</strong> so one slow downstream doesn't drain the global pool. Always name threads, export pool metrics to Prometheus (active / queue size / rejections), and configure graceful shutdown. Validate sizing with a load test that pushes past capacity.</p>
         </div>
       </details>
 

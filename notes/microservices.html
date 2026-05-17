@@ -36,7 +36,7 @@
       <h1>Microservices architecture</h1>
       <p class="topic-page-desc">Why split a monolith, how services communicate, where it goes wrong.</p>
       <div class="topic-page-meta">
-        <span><strong>13</strong> questions</span>
+        <span><strong>16</strong> questions</span>
         <span>Press <span class="hint-kbd">/</span> to search</span>
       </div>
     </div>
@@ -189,6 +189,295 @@
           </ul>
           <p>You get all the complexity of distributed systems with none of the independence benefits.</p>
           <p>Avoidance: <strong>per-service database</strong>, <strong>API contracts via OpenAPI/proto with backward compatibility</strong>, <strong>async events</strong> where possible (Kafka), <strong>tolerant readers</strong>, careful Domain-Driven Design with explicit bounded contexts. At Indus Net I pushed back on splitting CRUD-heavy modules — they stayed in one service and we only carved out async/LLM workloads.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Breaking a Monolith into Microservices — a step-by-step migration playbook <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">The interview question is rarely <em>"what are microservices?"</em> — it's <strong>"how would you break this existing monolith into microservices?"</strong>. The expected answer is not a big-bang rewrite. It's an <strong>incremental, domain-driven migration</strong>: identify <strong>bounded contexts</strong> from the business, extract one service at a time using the <strong>Strangler Fig</strong> pattern, route new traffic to the new service through an API gateway, and keep the monolith running until the last bounded context is carved out. The split is by <em>business capability</em> — not by technical layer — and the database is separated <em>gradually</em>, not on day one.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-diagram-3-fill"></i> Core Idea</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Decompose by domain</span>
+              <span class="core-diff-val">Identify <strong>bounded contexts</strong> in the monolith, extract one low-risk service at a time behind an API gateway (<strong>Strangler Fig</strong>), give each service its <strong>own database</strong>, and let asynchronous events glue them together — never a big-bang rewrite.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Understand the existing monolith</div>
+            <p class="solution-desc">Before drawing any new boxes, map what's already there. You can't split what you don't understand — and most "failed microservices" stories start with skipping this step.</p>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>Modules &amp; packages</strong> — what code lives where, which packages are tangled, which are already cleanly separated.</li>
+              <li><strong>Database tables &amp; foreign keys</strong> — which tables are joined together in queries, which span multiple business areas, which are owned by one module vs shared.</li>
+              <li><strong>Business flows</strong> — end-to-end user journeys (signup, checkout, refund) and which modules each flow touches.</li>
+              <li><strong>Dependencies &amp; coupling</strong> — call graphs between services / classes, shared models, shared utilities, hidden cross-module DB writes.</li>
+              <li><strong>Pain points</strong> — slow build / deploy times, modules that block other teams' PRs, areas with the highest defect / incident rate.</li>
+              <li><strong>Scaling hotspots</strong> — which subsystem actually needs to scale independently (search, notifications, image processing). That's almost always a strong candidate for extraction.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Identify bounded contexts — split by business capability, not by technical layer</div>
+            <p class="solution-desc">A <strong>bounded context</strong> (Domain-Driven Design) is a piece of the business with its <em>own language, its own model, and its own data</em> — User, Order, Payment, Inventory, Notification, Catalog, Pricing. <strong>Each bounded context becomes a candidate microservice.</strong> The single biggest mistake is splitting by technical layer (Controller / Service / Repository / Validation) — that creates a <em>distributed monolith</em> where every business request still touches every service.</p>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-x-circle-fill" style="color: #ff7b72;"></i>
+                  <span>Bad split — by technical layer</span>
+                </div>
+                <ul>
+                  <li><code>controller-service</code>, <code>repository-service</code>, <code>validation-service</code>, <code>dto-service</code></li>
+                  <li>Every business request still hops through <em>all</em> services synchronously</li>
+                  <li>A single feature change touches every repo → coordinated deploys</li>
+                  <li>No service owns a bounded context — they all share the same data model</li>
+                  <li>You inherit <strong>all</strong> the pain of distribution and <strong>none</strong> of the autonomy</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-check-circle-fill" style="color: var(--green);"></i>
+                  <span>Good split — by business capability</span>
+                </div>
+                <ul>
+                  <li><code>user-service</code>, <code>order-service</code>, <code>payment-service</code>, <code>inventory-service</code>, <code>notification-service</code></li>
+                  <li>Each service owns its <strong>own data, own API, own deploy pipeline</strong></li>
+                  <li>Most features change exactly one service</li>
+                  <li>Teams align with services — clear ownership and on-call</li>
+                  <li>Maps directly to the business — easy to reason about at every level</li>
+                </ul>
+              </div>
+            </div>
+            <p class="solution-desc">Practical heuristic: if two pieces of code <em>change for different business reasons</em> and <em>are owned by different teams</em>, they probably belong in different services. If they always change together, they probably belong in the same service.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Start with a low-risk service — pick the right first cut</div>
+            <p class="solution-desc">The first extraction is the most important — it sets the template, builds team confidence, and forces you to put real platform plumbing (CI/CD, observability, gateway) in place. Pick a module that is:</p>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>Loosely coupled</strong> from the rest of the monolith — few inbound calls, few shared tables.</li>
+              <li><strong>High business value</strong> — extraction is justified by a real benefit (independent scaling, faster iteration, distinct compliance boundary).</li>
+              <li><strong>Low DB dependency</strong> — owns its own tables (or close to it); you don't have to untangle a giant join graph on day one.</li>
+              <li><strong>Independently testable</strong> — clear inputs / outputs, can be exercised end-to-end without spinning up the whole platform.</li>
+            </ul>
+            <p class="solution-desc">Classic safe first cuts: <strong>Notification</strong> service (email / SMS / push — already async), <strong>Reporting / Analytics</strong> (read-only, eventually consistent is fine), <strong>Audit Log</strong>, <strong>Image / Document Processing</strong>, <strong>Search Indexer</strong>. Avoid starting with the <em>core transactional</em> module (Order, Payment) — extract those last, once the platform is mature.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Strangler Fig Pattern — extract incrementally behind a gateway</div>
+            <p class="solution-desc">Named after the strangler fig vine that gradually grows around a tree until the host is gone — the pattern, popularized by Martin Fowler, is to <strong>route new traffic to a new microservice while the monolith keeps serving the rest</strong>. Over time the monolith shrinks until nothing is left to call.</p>
+            <div class="flow">
+              <div class="flow-step"><strong>1.</strong> Stand up an <strong>API Gateway</strong> (or reverse proxy) in front of the monolith — all traffic now flows through it</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step"><strong>2.</strong> Build the new microservice with the same contract for one bounded context (e.g. <code>/notifications/*</code>)</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step"><strong>3.</strong> Update the gateway: route <code>/notifications/*</code> → <strong>new service</strong>, everything else → <strong>monolith</strong></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step"><strong>4.</strong> Run both in parallel — shadow traffic, compare responses, monitor errors and latency</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step"><strong>5.</strong> When confident, <strong>delete the old code path</strong> from the monolith — bounded context is fully extracted</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step"><strong>6.</strong> Repeat for the next bounded context — the monolith strangles one capability at a time</div>
+            </div>
+            <div class="tree-viz">                       ┌─────────────────────┐
+   client ───────────▶│    API Gateway      │
+                      │  (path-based route) │
+                      └────────┬────────────┘
+                               │
+              ┌────────────────┼─────────────────┐
+              │                │                 │
+   /notifications/*    /orders/*, /users/*   /reports/*
+              │                │                 │
+              ▼                ▼                 ▼
+   ┌──────────────────┐  ┌────────────┐   ┌──────────────────┐
+   │ Notification svc │  │  Monolith  │   │  Reporting svc   │
+   │   (extracted)    │  │ (shrinking)│   │   (extracted)    │
+   └──────────────────┘  └────────────┘   └──────────────────┘</div>
+            <p class="solution-desc">Why this works: <strong>no big-bang cutover</strong>, easy rollback (flip the gateway rule back), users never notice, and you only carry the migration risk for one bounded context at a time.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Separate the database — gradually, not on day one</div>
+            <p class="solution-desc"><strong>Database-per-service</strong> is the <em>target</em>, not the starting state. Splitting the schema is the hardest, riskiest part of the migration — do it in stages.</p>
+            <div class="flow">
+              <div class="flow-step"><strong>Stage A — Shared DB.</strong> The new microservice talks to the <em>same</em> database the monolith uses, but only to <strong>its own tables</strong>. Fast to extract, but coupling remains.</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step"><strong>Stage B — Schema split.</strong> Move the service's tables into a separate schema (or separate logical DB) on the same physical engine. Foreign keys to other contexts are dropped — replaced by IDs only.</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step"><strong>Stage C — Physical split.</strong> The service gets its own DB instance. <code>order-service</code> → <code>orders_db</code>, <code>payment-service</code> → <code>payments_db</code>, <code>inventory-service</code> → <code>inventory_db</code>. Cross-context reads happen via <strong>API calls or events</strong>, never SQL joins.</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step"><strong>Stage D — Dual-write &amp; backfill.</strong> While migrating data, write to both old and new stores, backfill historical data, then cut reads over, then cut writes. CDC tools (Debezium) or the <strong>Outbox</strong> pattern make this safe.</div>
+            </div>
+            <p class="solution-desc">Once a service owns its data, schema changes stop blocking other teams, performance issues stop bleeding across services, and you've finally bought the autonomy microservices are supposed to give you.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Inter-service communication — sync where you must, async where you can</div>
+            <p class="solution-desc">Once data is split, services need to talk. Pick the right channel for the right job:</p>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Style</th><th>Tech</th><th>When to use</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><strong>Synchronous request/response</strong></td><td>REST / HTTP, gRPC, GraphQL</td><td>The caller genuinely needs the result <em>now</em> — login, "is this user allowed?", reading a product detail.</td></tr>
+                  <tr><td><strong>Asynchronous events</strong></td><td>Kafka, RabbitMQ, AWS SNS/SQS</td><td>State changes that other services react to — <code>OrderCreated</code>, <code>PaymentCompleted</code>, <code>UserSignedUp</code>. Decouples deploy timing and isolates failures.</td></tr>
+                  <tr><td><strong>Streaming / pub-sub</strong></td><td>Kafka topics, change-data-capture</td><td>Many consumers reacting to the same event stream — analytics, search indexing, audit, notifications.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="solution-desc"><strong>Worked example — placing an order:</strong></p>
+            <div class="flow">
+              <div class="flow-step">Client → <strong>Order Service</strong> creates order in <code>PENDING</code> state and publishes <code>OrderCreated</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step"><strong>Inventory Service</strong> consumes <code>OrderCreated</code> → reserves stock → publishes <code>InventoryReserved</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step"><strong>Payment Service</strong> consumes <code>InventoryReserved</code> → charges card → publishes <code>PaymentCompleted</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step"><strong>Notification Service</strong> consumes <code>PaymentCompleted</code> → emails the customer</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step"><strong>Order Service</strong> consumes <code>PaymentCompleted</code> → flips order to <code>CONFIRMED</code></div>
+            </div>
+            <p class="solution-desc">No service synchronously waits on another for the whole flow — each one does its local work and emits what it knows. That's how services stay independently deployable.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">7</span> Handle distributed transactions — Saga, Outbox, idempotency</div>
+            <p class="solution-desc">Once you've split the database, a single business flow no longer fits in one ACID transaction. You need patterns that give you <strong>eventual consistency</strong> without 2PC. (See the dedicated <em>Saga Pattern</em> and <em>Transactional Outbox</em> entries for full depth.)</p>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>Saga pattern</strong> — model the cross-service flow as a sequence of local transactions, each with a <em>compensating</em> action that semantically undoes it on failure. Pick <strong>orchestration</strong> (a central state machine) for non-trivial flows, <strong>choreography</strong> (event-driven) for tiny ones.</li>
+              <li><strong>Transactional Outbox</strong> — never dual-write to DB and Kafka. Save the business row <em>and</em> the event in the same DB transaction (an <code>outbox</code> table); a relay publishes the event afterwards. Solves the dual-write problem.</li>
+              <li><strong>Event-driven architecture</strong> — services emit domain events as the source of truth for cross-service reactions; consumers project them into their own read models.</li>
+              <li><strong>Idempotency</strong> — every consumer must handle the same message twice with the same effect. Use natural business keys, idempotency-key tables, or version checks. At-least-once delivery + idempotent consumers ≈ effective exactly-once.</li>
+              <li><strong>Outbound retries with backoff</strong> and <strong>dead-letter queues</strong> for poison messages — don't let a single bad event jam the whole pipeline.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">8</span> Add observability <em>before</em> you split too much</div>
+            <p class="solution-desc">Debugging "why did this order fail?" across one process is easy. Across ten services it's impossible without instrumentation. Put this in place <strong>before</strong> the third or fourth extraction, not after a production incident:</p>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>Centralized logging</strong> — every service ships structured JSON logs to one place (ELK / Loki / CloudWatch / Datadog).</li>
+              <li><strong>Correlation IDs</strong> — the gateway stamps a <code>trace-id</code> / <code>request-id</code> header; every service propagates it on every log line and every outbound call. Without this, cross-service debugging is archaeology.</li>
+              <li><strong>Distributed tracing</strong> — OpenTelemetry / Jaeger / Zipkin / Datadog APM — see the full span tree of a request as it hops services.</li>
+              <li><strong>Metrics</strong> — RED (rate / errors / duration) per endpoint, USE (utilization / saturation / errors) per resource. Prometheus + Grafana is the default stack.</li>
+              <li><strong>Health checks &amp; readiness probes</strong> — <code>/actuator/health</code>, Kubernetes liveness / readiness probes; the orchestrator restarts unhealthy pods automatically.</li>
+              <li><strong>Alerting on SLOs</strong>, not on raw thresholds — wake people up when the user experience degrades, not when CPU briefly spikes.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">9</span> Challenges &amp; how to handle them</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Challenge</th><th>Why it hurts</th><th>How to handle</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Data consistency</strong></td>
+                    <td>No more single ACID transaction across the flow — partial failures leave the system in inconsistent states.</td>
+                    <td><strong>Saga</strong> pattern with compensations, <strong>Outbox</strong> for atomic write-and-publish, idempotent consumers, and <em>eventual</em> consistency contracts on the API.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Too many service calls (chatty graph)</strong></td>
+                    <td>One user request fans out to 8 sync hops → high tail latency, cascading failures, brittle dependency chain.</td>
+                    <td>Prefer <strong>async events</strong> for state propagation; use <strong>BFF / gateway aggregation</strong> for read fan-out; cache cross-service reads; reconsider the boundary if it's too chatty.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Debugging across services</strong></td>
+                    <td>A failure can originate three hops upstream — <code>tail -f</code> on one container tells you nothing.</td>
+                    <td><strong>Correlation IDs</strong>, <strong>distributed tracing</strong> (OpenTelemetry / Jaeger), centralized log aggregation, structured logs, runbooks per service.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Deployment complexity</strong></td>
+                    <td>10 services × N environments = a lot of moving parts; manual deploys collapse under their own weight.</td>
+                    <td><strong>CI/CD per service</strong>, container images, <strong>Kubernetes</strong> + Helm / Argo CD, blue-green or canary deploys, contract tests in the pipeline.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Duplicate logic / shared code</strong></td>
+                    <td>Auth, validation, DTOs end up copy-pasted across services and drift over time.</td>
+                    <td>Tiny, <em>stable</em> shared libraries for cross-cutting concerns only (logging, tracing, security primitives); rich domain logic stays inside its owning service.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Service ownership &amp; on-call</strong></td>
+                    <td>Without a clear owner, services rot — nobody upgrades the framework, nobody triages incidents, nobody owns the SLOs.</td>
+                    <td>One <strong>owning team</strong> per service, on-call rotation, service catalog (Backstage), explicit SLOs and runbooks. Conway's Law: align teams to services.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Schema / contract evolution</strong></td>
+                    <td>A breaking change in one service quietly breaks every consumer.</td>
+                    <td>Backward-compatible APIs (additive changes only), <strong>OpenAPI / protobuf</strong> with versioning, <strong>consumer-driven contract tests</strong> (Pact), <em>tolerant readers</em>.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Resilience &amp; cascading failures</strong></td>
+                    <td>One slow downstream service ties up threads in every caller until the whole platform stalls.</td>
+                    <td><strong>Timeouts</strong>, <strong>retries with backoff + jitter</strong>, <strong>circuit breakers</strong> (Resilience4j), <strong>bulkheads</strong>, fallback responses, async where possible.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">10</span> What to migrate first — safe early extractions</div>
+            <div class="use-cases">
+              <div class="use-case">
+                <h4><i class="bi bi-bell-fill"></i> Notification service</h4>
+                <p>Email / SMS / push. Already async by nature, no transactional coupling, owns its own templates and provider keys.</p>
+              </div>
+              <div class="use-case green">
+                <h4><i class="bi bi-bar-chart-line-fill"></i> Reporting / Analytics</h4>
+                <p>Read-only, eventually consistent is fine, can be fed by events from the monolith without changing any write paths.</p>
+              </div>
+              <div class="use-case pink">
+                <h4><i class="bi bi-journal-text"></i> Audit log</h4>
+                <p>Append-only, narrow API, no business logic — perfect first cut to validate the platform plumbing.</p>
+              </div>
+              <div class="use-case orange">
+                <h4><i class="bi bi-image-fill"></i> Image / document processing</h4>
+                <p>CPU-heavy, scales differently from the rest of the app, naturally async behind a queue.</p>
+              </div>
+              <div class="use-case">
+                <h4><i class="bi bi-search"></i> Search indexer</h4>
+                <p>Consumes domain events, owns its own Elasticsearch / OpenSearch index, easy to rebuild from scratch.</p>
+              </div>
+              <div class="use-case green">
+                <h4><i class="bi bi-shield-lock-fill"></i> Auth / identity</h4>
+                <p>Often <em>already</em> a separate concern (Keycloak, Auth0, Cognito) — extracting it first gives the gateway a clean place to enforce auth.</p>
+              </div>
+              <div class="use-case pink">
+                <h4><i class="bi bi-cpu-fill"></i> ML / scoring service</h4>
+                <p>Different stack (Python), different scaling, low coupling to the monolith — typical wedge for the first non-Java service.</p>
+              </div>
+              <div class="use-case orange">
+                <h4><i class="bi bi-toggles2"></i> Feature flags / config</h4>
+                <p>Tiny, read-heavy, well-understood contract; gives every other team a self-service control plane.</p>
+              </div>
+            </div>
+            <p class="solution-desc">Avoid extracting the <em>core transactional</em> module (Order, Payment, Inventory) first — those have the most coupling, the most data, and the highest blast radius. Earn the right to touch them by first proving the platform on the safe edges.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">11</span> Common interview gotchas</div>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>Don't do a big-bang rewrite.</strong> Rewriting the monolith from scratch in parallel is the canonical way to fail. <strong>Strangler Fig</strong> + incremental extraction is the expected answer.</li>
+              <li><strong>Don't split by technical layer.</strong> "Controller service / Repository service / Validation service" is the textbook anti-pattern — split by <em>business capability</em> (bounded context).</li>
+              <li><strong>Database-per-service is a target, not a starting point.</strong> Stage it: shared DB → schema split → physical split. Trying to split data on day one is how migrations get cancelled.</li>
+              <li><strong>Shared libraries should be tiny and stable.</strong> Logging, tracing, auth primitives — yes. Domain models — no. Big shared libs recreate the monolith at the dependency layer.</li>
+              <li><strong>Cross-service joins are an anti-pattern.</strong> If you need data from another service, call its API or subscribe to its events and project a local read model — never reach into another service's tables.</li>
+              <li><strong>Not every system needs microservices.</strong> A small team on a small product is faster shipping a <strong>modular monolith</strong>. Microservices pay off when independent scaling, independent deploys, or independent teams become a real constraint.</li>
+              <li><strong>Conway's Law — team structure must match service structure.</strong> If two teams share a service, or one team owns ten services, you'll feel it. Services are sociotechnical, not just technical.</li>
+              <li><strong>CI/CD and observability maturity is a prerequisite.</strong> If you can't deploy the monolith reliably and trace a request through it, you definitely can't run ten microservices. Build the platform <em>before</em> you split.</li>
+              <li><strong>Synchronous chains are silent killers.</strong> A 5-hop sync call graph multiplies tail latency and failure probability. Default to async events; use sync only where the caller truly needs the answer now.</li>
+              <li><strong>Versioning and backward compatibility</strong> matter from day one — once two services depend on a contract, breaking it without a migration plan breaks production.</li>
+            </ul>
+          </div>
+
+          <div class="takeaway">
+            <b>Interview one-liner:</b> The way to break a monolith is <strong>incrementally, by domain — not by big-bang rewrite</strong>. Start by mapping the existing modules, tables, flows, and pain points; identify <strong>bounded contexts</strong> (User, Order, Payment, Inventory, Notification) and split by <em>business capability</em>, never by technical layer. Pick a <strong>low-risk, loosely-coupled module first</strong> (notifications, reporting, audit) and extract it behind an <strong>API gateway</strong> using the <strong>Strangler Fig</strong> pattern — the gateway routes the carved-out paths to the new service while everything else still hits the monolith, and the monolith shrinks one bounded context at a time. Move to <strong>database-per-service</strong> in stages — shared DB → schema split → physical split — and replace cross-context joins with API calls or events. Glue services together with <strong>REST/gRPC</strong> for sync calls and <strong>Kafka / RabbitMQ events</strong> for async state propagation, so deploys and failures are isolated. Handle distributed transactions with the <strong>Saga</strong> pattern and the <strong>Transactional Outbox</strong> for atomic write-and-publish, with <strong>idempotent consumers</strong> for at-least-once delivery. Put <strong>centralized logging, correlation IDs, distributed tracing, metrics, and health checks</strong> in place <em>before</em> the third extraction — observability is a prerequisite, not a follow-up. And remember the meta-rules: <em>not every system needs microservices, team structure must match service structure (Conway's Law), and CI/CD maturity is a non-negotiable prerequisite.</em>
+          </div>
         </div>
       </details>
 
@@ -596,16 +885,635 @@
       </details>
 
       <details class="qa">
-        <summary>What is the Saga pattern? <span class="qa-tag hot">hot</span></summary>
+        <summary>Distributed Caching with Redis in Microservices — design, implementation, and production concerns <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p>Distributed transactions across microservices are hard — 2PC is slow and brittle. The <strong>Saga pattern</strong> is the standard alternative: model the transaction as a sequence of local transactions in each service, with <strong>compensating actions</strong> if a step fails.</p>
-          <p>Example — booking flow: <code>reserveSeat → chargeCard → confirmBooking</code>. If <code>chargeCard</code> fails, run <code>cancelReservation</code> compensation.</p>
-          <p>Two coordination styles:</p>
-          <ul>
-            <li><strong>Choreography</strong> — services react to events from each other; no central coordinator. Loose coupling, but flow is implicit and hard to trace.</li>
-            <li><strong>Orchestration</strong> — a coordinator service explicitly drives the saga. Easier to observe and modify. Tools: <strong>Camunda</strong>, <strong>Temporal</strong>, <strong>AWS Step Functions</strong>.</li>
-          </ul>
-          <p>I lean orchestration for non-trivial flows — observability and recoverability are worth the central service. Always ensure all steps and compensations are <strong>idempotent</strong>.</p>
+          <p class="answer-intro">In a microservices architecture each service runs as <strong>multiple replicas</strong> behind a load balancer. An <em>in-process</em> cache (HashMap, Caffeine, EhCache local) lives inside <strong>one JVM</strong> — replica A's cache is invisible to replica B. The result is duplicated work, inconsistent reads, and stale data after a write. The fix is a <strong>centralized distributed cache</strong> — typically <strong>Redis</strong> — that every replica of every service reads from and writes to over the network.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-lightning-charge-fill"></i> Core Idea</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Pattern</span>
+              <span class="core-diff-val"><strong>Cache-aside (read-aside)</strong> — every replica reads and writes the <em>same</em> Redis. The service first checks Redis; on a miss it falls through to the DB / upstream service, populates Redis with a <strong>TTL</strong>, then returns the response.</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Why Redis</span>
+              <span class="core-diff-val">In-memory, sub-millisecond latency, shared across all service instances, horizontally scalable via Cluster / Sentinel, rich data types (string, hash, set, sorted-set, stream).</span>
+            </div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Net effect</span>
+              <span class="core-diff-val">Lower response time, less DB load, consistent reads across replicas, ability to scale services horizontally without multiplying cache misses.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Without vs With a distributed cache</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-x-circle-fill" style="color: #ff7b72;"></i>
+                  <span>Local in-process cache per replica</span>
+                </div>
+                <ul>
+                  <li>Each replica warms its <strong>own</strong> cache — N copies of the same data</li>
+                  <li>A write on replica A leaves replica B serving stale data → <strong>inconsistent reads</strong></li>
+                  <li>Auto-scaling adds new pods with <strong>cold caches</strong> → DB spike</li>
+                  <li>Cache is lost on every restart / rolling deploy</li>
+                  <li>No way to invalidate a key across the fleet</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-check-circle-fill" style="color: var(--green);"></i>
+                  <span>Distributed Redis cache</span>
+                </div>
+                <ul>
+                  <li><strong>Shared</strong> across every replica and every service that needs it</li>
+                  <li>Write once → all replicas see the new value immediately</li>
+                  <li>New pods join with a <strong>warm</strong> cache — no cold-start spike</li>
+                  <li>Survives app restarts; lives in its own tier</li>
+                  <li>Central place to evict, broadcast invalidations, and observe hit ratio</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Architecture — every replica points at the same Redis</div>
+            <div class="tree-viz">   ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐
+   │ Product  │  │ Product  │  │  Order   │  │Inventory │   (N replicas
+   │  svc #1  │  │  svc #2  │  │  svc #1  │  │  svc #1  │    each)
+   └─────┬────┘  └─────┬────┘  └─────┬────┘  └─────┬────┘
+         │             │             │             │
+         └─────────────┴──────┬──────┴─────────────┘
+                              ▼
+                    ┌────────────────────┐
+                    │   REDIS  CLUSTER   │  ← shared distributed cache
+                    │  (Sentinel / HA)   │     sub-ms latency, TTL'd keys
+                    └─────────┬──────────┘
+                              │  miss → fetch from source of truth
+                              ▼
+                    ┌────────────────────┐
+                    │     Database       │   (Postgres / Mongo / …)
+                    └────────────────────┘</div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Read flow — cache-aside step by step</div>
+            <div class="flow">
+              <div class="flow-step"><strong>1.</strong> Service receives a request — e.g. <code>GET /products/123</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step"><strong>2.</strong> Check Redis: <code>GET product:123</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step"><strong>3a. HIT</strong> → deserialize the cached value and return it (sub-ms, no DB call)</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step"><strong>3b. MISS</strong> → fall through to the DB / upstream service</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step"><strong>4.</strong> Store the result in Redis with a TTL: <code>SETEX product:123 600 {…json…}</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step"><strong>5.</strong> Return response to the client; next request from any replica hits cache</div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Spring Boot implementation</div>
+
+            <p class="solution-desc"><strong>pom.xml</strong> — pull in Spring Cache + the Redis starter:</p>
+            <pre><code>&lt;dependency&gt;
+  &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+  &lt;artifactId&gt;spring-boot-starter-data-redis&lt;/artifactId&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+  &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+  &lt;artifactId&gt;spring-boot-starter-cache&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+
+            <p class="solution-desc"><strong>application.yml</strong> — point Spring Cache at Redis. In prod, <code>host</code> usually points at <strong>AWS ElastiCache</strong>, <strong>Azure Cache for Redis</strong>, or a self-managed <strong>Redis Cluster</strong> endpoint:</p>
+            <pre><code>spring:
+  data:
+    redis:
+      host: redis-master.cache.svc.cluster.local   # ElastiCache / Azure Cache / Redis Cluster in prod
+      port: 6379
+      password: ${REDIS_PASSWORD}
+      timeout: 2s
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000        # default TTL = 10 min (ms)
+      cache-null-values: false
+      use-key-prefix: true
+      enable-statistics: true</code></pre>
+
+            <p class="solution-desc"><strong>CacheConfig.java</strong> — enable caching and set <em>per-cache</em> TTLs via a <code>RedisCacheManager</code> bean:</p>
+            <pre><code>@Configuration
+@EnableCaching
+public class CacheConfig {
+
+  @Bean
+  public RedisCacheManager cacheManager(RedisConnectionFactory cf) {
+
+    RedisCacheConfiguration defaults = RedisCacheConfiguration.defaultCacheConfig()
+        .entryTtl(Duration.ofMinutes(10))
+        .disableCachingNullValues()
+        .serializeValuesWith(SerializationPair.fromSerializer(
+            new GenericJackson2JsonRedisSerializer()));
+
+    Map&lt;String, RedisCacheConfiguration&gt; perCache = Map.of(
+        "products",     defaults.entryTtl(Duration.ofMinutes(10)),
+        "userProfiles", defaults.entryTtl(Duration.ofMinutes(5)),
+        "config",       defaults.entryTtl(Duration.ofHours(1))
+    );
+
+    return RedisCacheManager.builder(cf)
+        .cacheDefaults(defaults)
+        .withInitialCacheConfigurations(perCache)
+        .build();
+  }
+}</code></pre>
+
+            <p class="solution-desc"><strong>ProductService.java</strong> — use Spring Cache annotations on the read/write paths:</p>
+            <pre><code>@Service
+@CacheConfig(cacheNames = "products")
+public class ProductService {
+
+  private final ProductRepository repo;
+
+  @Cacheable(key = "#productId")                 // read-through: cache miss → run method, cache result
+  public Product getProduct(Long productId) {
+    return repo.findById(productId)
+               .orElseThrow(() -&gt; new NotFoundException(productId));
+  }
+
+  @CachePut(key = "#product.id")                 // always run method, refresh cache with new value
+  public Product update(Product product) {
+    return repo.save(product);
+  }
+
+  @CacheEvict(key = "#product.id")               // remove the key on delete
+  public void delete(Product product) {
+    repo.delete(product);
+  }
+}</code></pre>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Spring Cache annotations — what each one does</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Annotation</th><th>When it runs</th><th>What it does</th><th>Typical use</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><code>@Cacheable</code></td><td><em>Before</em> the method — only runs the method on a miss</td><td>Read-through: returns cached value if present; otherwise executes and stores the result</td><td>Heavy GETs — <code>findById</code>, product detail, user profile</td></tr>
+                  <tr><td><code>@CachePut</code></td><td><em>Always</em> runs the method, <em>then</em> writes its result to the cache</td><td>Refreshes the cached value — use for create / update paths</td><td><code>update(Product)</code> — keep cache consistent with DB</td></tr>
+                  <tr><td><code>@CacheEvict</code></td><td><em>After</em> (or before) the method, removes the key</td><td>Invalidates a specific key or the whole cache (<code>allEntries=true</code>)</td><td><code>delete(Product)</code>, bulk reload, admin purge</td></tr>
+                  <tr><td><code>@Caching</code></td><td>Combination of the above on one method</td><td>Lets a method evict one cache <em>and</em> put into another in a single call</td><td>Cross-entity writes that affect multiple caches</td></tr>
+                  <tr><td><code>@CacheConfig</code></td><td>Class-level metadata</td><td>Sets default <code>cacheNames</code> / <code>keyGenerator</code> so each method annotation stays short</td><td>Service classes with many cache annotations</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Cache invalidation strategies</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Strategy</th><th>How it works</th><th>When you pick it</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>TTL-based expiry</td><td>Every key gets a time-to-live; Redis deletes it on expiry</td><td>Default — data tolerates being slightly stale (catalogs, configs, feature flags)</td></tr>
+                  <tr><td>Write-through (<code>@CachePut</code>)</td><td>Update path refreshes the cache with the new value</td><td>You always want the cache to reflect the latest write — single-writer scenarios</td></tr>
+                  <tr><td>Evict on write (<code>@CacheEvict</code>)</td><td>Update / delete path removes the key; next read repopulates</td><td>Simplest correctness model — small extra DB hit on the first read after a write</td></tr>
+                  <tr><td>Event-based invalidation</td><td>Service publishes a <em>"key changed"</em> message on <strong>Kafka / Redis Pub-Sub</strong>; all consumers evict locally</td><td>Many services share the same entity and each owns its own cache view</td></tr>
+                  <tr><td>Manual purge / admin endpoint</td><td>Ops endpoint hits <code>cacheManager.getCache(name).clear()</code> or <code>SCAN + UNLINK</code></td><td>Schema migrations, incidents, after a bad write — operator escape hatch</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">7</span> Key naming convention — why namespacing matters</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Example key</th><th>Pattern</th><th>Why it matters</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><code>product:123</code></td><td><code>&lt;entity&gt;:&lt;id&gt;</code></td><td>Avoids collisions when many services share one Redis</td></tr>
+                  <tr><td><code>user-profile:456</code></td><td><code>&lt;entity&gt;:&lt;id&gt;</code></td><td>Self-documenting — easy to find &amp; debug</td></tr>
+                  <tr><td><code>order-summary:789</code></td><td><code>&lt;view&gt;:&lt;id&gt;</code></td><td>Cached projections / DTOs get their own namespace</td></tr>
+                  <tr><td><code>config:feature-flags:checkout</code></td><td>Hierarchical with <code>:</code></td><td>Bulk delete by prefix using <code>SCAN MATCH config:feature-flags:*</code> + <code>UNLINK</code></td></tr>
+                  <tr><td><code>session:abc-def-ghi</code></td><td><code>&lt;subsystem&gt;:&lt;id&gt;</code></td><td>Lets ops scope invalidations and monitoring per subsystem</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="solution-desc">Use <code>SCAN</code> + <code>UNLINK</code> (non-blocking) instead of <code>KEYS</code> + <code>DEL</code> for bulk deletes — <code>KEYS</code> is O(N) and blocks Redis' single thread.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">8</span> Production concerns — the real-world checklist</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Concern</th><th>What to do</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Always set a TTL</td><td>Every key gets <code>entryTtl(...)</code>. Untimed keys fill Redis and trigger unpredictable eviction.</td></tr>
+                  <tr><td>Don't cache sensitive data</td><td>No raw passwords, no full PII, no long-lived tokens in plaintext. If you must cache auth state, encrypt and use short TTLs.</td></tr>
+                  <tr><td>Size limits — cache slim DTOs</td><td>Cache the projection the API needs, not the full JPA entity with lazy collections. Keeps payloads small and serialization cheap.</td></tr>
+                  <tr><td>Mutable user data needs invalidation</td><td>Pair <code>@Cacheable</code> on reads with <code>@CachePut</code>/<code>@CacheEvict</code> on writes — never set-and-forget.</td></tr>
+                  <tr><td>Connection pooling</td><td>Use <strong>Lettuce</strong> (Netty, async, thread-safe — Spring's default) or <strong>Jedis</strong> with a pool; never one connection per request.</td></tr>
+                  <tr><td>High availability</td><td><strong>Redis Sentinel</strong> for primary/replica failover, or <strong>Redis Cluster</strong> for sharding + HA. Never a single Redis node in prod.</td></tr>
+                  <tr><td>Observability</td><td>Watch <code>INFO</code> stats, <code>MEMORY USAGE</code>, hit ratio, evictions; scrape Redis exporter into <strong>Prometheus</strong> + Grafana.</td></tr>
+                  <tr><td>Serializer choice</td><td>Default JDK serializer is slow and brittle across version changes. Use <code>GenericJackson2JsonRedisSerializer</code>, or Kryo / Protobuf for hot paths.</td></tr>
+                  <tr><td>Compress large values</td><td>For multi-KB payloads, GZIP-wrap or use Kryo. Big values fragment memory and slow the wire.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">9</span> Resilience — what if Redis goes down?</div>
+            <p class="solution-desc">Treat Redis as an <em>optional accelerator</em>, not a hard dependency. If it's unreachable the app must <strong>degrade to the source of truth</strong>, not crash. Three layered patterns:</p>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-shield-exclamation"></i>
+                  <span>Graceful fallback</span>
+                </div>
+                <ul>
+                  <li>Wrap cache calls in <code>try / catch</code> — on any Redis error, log and fall through to the DB</li>
+                  <li>Register a <code>CacheErrorHandler</code> so <code>@Cacheable</code> failures don't propagate</li>
+                  <li>Enable <code>spring.cache.redis.enable-statistics</code> to track miss / error rates</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-head">
+                  <i class="bi bi-arrow-counterclockwise"></i>
+                  <span>Circuit breaker + bulkhead</span>
+                </div>
+                <ul>
+                  <li>Wrap the cache layer with <strong>Resilience4j</strong> (<code>@CircuitBreaker</code>, <code>@TimeLimiter</code>)</li>
+                  <li>If Redis latency or error rate spikes, the breaker opens → calls skip Redis entirely</li>
+                  <li>Half-open probes restore traffic gradually once Redis recovers</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">10</span> Common pitfalls</div>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>Cache stampede (thundering herd).</strong> A popular key expires → every replica misses simultaneously and hammers the DB. Fix: add <strong>TTL jitter</strong> (random offset on each key), use a single-flight lock (<code>Redisson getLock</code>) so only one request repopulates, or use a <strong>stale-while-revalidate</strong> pattern.</li>
+              <li><strong>Stale data.</strong> Without invalidation, the cache drifts from the DB. Fix: set sensible TTLs, evict on writes, or use event-driven invalidation via <strong>Kafka</strong> / Redis Pub-Sub.</li>
+              <li><strong>Hot-key problem.</strong> One "celebrity" key (top product, viral post) absorbs all traffic → Redis CPU spikes. Fix: add an L1 in-process cache (<strong>Caffeine</strong>) in front of L2 Redis (<em>two-tier caching</em>), or shard the key.</li>
+              <li><strong>Big-key problem.</strong> Multi-MB values block Redis' single thread on every read/write. Fix: split into smaller keys, use hashes (<code>HSET</code>), or store the big blob in S3 / blob storage and cache only its metadata.</li>
+              <li><strong>Serialization mismatch.</strong> Default JDK serializer is slow and version-fragile — one DTO field rename and every cached entry becomes unreadable. Use <code>GenericJackson2JsonRedisSerializer</code> or Kryo.</li>
+              <li><strong>Thundering herd on cold start.</strong> A newly deployed pod with an empty cache hits the DB hard on first traffic. Fix: <strong>warm critical caches at startup</strong> (preload top-N keys in <code>@PostConstruct</code> / <code>ApplicationReadyEvent</code>).</li>
+              <li><strong>Cache penetration.</strong> Repeated requests for keys that <em>don't exist</em> bypass cache and hit the DB every time. Fix: cache the negative result (shorter TTL) or front Redis with a <strong>Bloom filter</strong>.</li>
+              <li><strong>Not setting TTL.</strong> Untimed keys accumulate forever; Redis fills up and starts evicting unpredictably under <code>maxmemory-policy</code>. <em>Always</em> set a TTL.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">11</span> Where this shows up in production</div>
+            <div class="use-cases">
+              <div class="use-case">
+                <h4><i class="bi bi-bag-fill"></i> Product catalog reads</h4>
+                <p>Read-heavy, write-rare. Cache product detail / search facets with a 5–15 min TTL.</p>
+              </div>
+              <div class="use-case green">
+                <h4><i class="bi bi-person-fill"></i> User profile lookups</h4>
+                <p>Cache profile + roles fetched on every request. Evict on profile update.</p>
+              </div>
+              <div class="use-case pink">
+                <h4><i class="bi bi-toggles2"></i> Configuration / feature flags</h4>
+                <p>Hot read path, rare writes. Long TTL with Pub-Sub invalidation when flags change.</p>
+              </div>
+              <div class="use-case orange">
+                <h4><i class="bi bi-shield-lock-fill"></i> Authorization tokens</h4>
+                <p>Cache JWT introspection / opaque-token lookups carefully — short TTL, never log the value.</p>
+              </div>
+              <div class="use-case">
+                <h4><i class="bi bi-speedometer2"></i> Rate-limit counters</h4>
+                <p>Atomic <code>INCR</code> + <code>EXPIRE</code> per <em>user / IP / API key</em> — classic Redis use case.</p>
+              </div>
+              <div class="use-case green">
+                <h4><i class="bi bi-clock-history"></i> Session store</h4>
+                <p>Spring Session + Redis — sessions shared across all replicas of the gateway / web tier.</p>
+              </div>
+              <div class="use-case pink">
+                <h4><i class="bi bi-trophy-fill"></i> Leaderboards</h4>
+                <p>Sorted sets (<code>ZADD</code> / <code>ZRANGE</code>) — top-N queries in O(log N), updated in real time.</p>
+              </div>
+              <div class="use-case orange">
+                <h4><i class="bi bi-key-fill"></i> Distributed locks</h4>
+                <p><code>SET key value NX EX 30</code> or Redisson <code>RLock</code> — cross-service mutual exclusion.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="takeaway">
+            <b>Interview one-liner:</b> In microservices each service runs as many replicas, so an in-process cache no longer works — you need a <strong>shared distributed cache</strong>, and <strong>Redis</strong> is the standard choice. The pattern is <em>cache-aside</em>: check Redis → on a miss, load from DB / upstream and write back with a <strong>TTL</strong>. In Spring Boot you wire it with <code>spring-boot-starter-data-redis</code> + <code>spring-boot-starter-cache</code>, configure a <code>RedisCacheManager</code> with <strong>per-cache TTLs</strong>, and use <code>@Cacheable</code> / <code>@CachePut</code> / <code>@CacheEvict</code> on the service layer. Pick an <strong>invalidation strategy</strong> (TTL, write-through, evict-on-write, or event-driven via Kafka), namespace your keys (<code>product:123</code>, <code>user-profile:456</code>) to avoid collisions, and handle <strong>production concerns</strong> — resilience (circuit breaker, fallback to DB if Redis is down), <em>never</em> cache sensitive data, watch for hot-key / big-key / stampede / penetration pitfalls, and use <code>Lettuce</code> + <strong>Redis Cluster / Sentinel</strong> for HA. <strong>Redis is preferred in microservices because it provides a shared distributed cache, improves response time, reduces database load, and works well with horizontally scaled service instances.</strong>
+          </div>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Distributed Transactions &amp; the Saga Pattern in microservices <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">In microservices, one business flow typically touches many services — an e-commerce checkout hits <code>Order</code> → <code>Payment</code> → <code>Inventory</code> → <code>Delivery</code>, each owning its own database. Wrapping all four in a single ACID transaction isn't realistic: there's no shared DB, no shared connection, and brokers like Kafka don't participate in XA. So we deliberately trade <strong>strong consistency</strong> for <strong>eventual consistency</strong> and coordinate the flow with a pattern — the <strong>Saga</strong> being the standard answer.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Idea</div>
+            <div class="core-diff-row">
+              <span class="core-diff-key">Saga</span>
+              <span class="core-diff-val">A saga is a sequence of <strong>local transactions</strong> in different services. Each step commits in its own DB and publishes an event (or replies to a command). If any step fails, the saga runs <strong>compensating transactions</strong> in reverse order to semantically undo the work already done — no global lock, no 2PC.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Why not 2PC / XA across microservices?</div>
+            <p class="solution-desc">2PC (the classic distributed-commit protocol) <em>does</em> give you ACID across systems — at a cost that's unacceptable in a microservices world.</p>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>Tight coupling.</strong> Every participant must speak XA and trust the same transaction manager — the opposite of independent services.</li>
+              <li><strong>Blocking locks.</strong> The coordinator holds locks on every participant from <em>prepare</em> until <em>commit</em>. A slow participant freezes everyone.</li>
+              <li><strong>Low scalability.</strong> Lock duration grows with the slowest hop; throughput collapses under network latency.</li>
+              <li><strong>Poor heterogeneous support.</strong> Modern stacks barely support XA — <strong>Kafka</strong>, most NoSQL stores, and many cloud DBs don't participate in 2PC at all.</li>
+              <li><strong>Bad failure semantics.</strong> If the coordinator dies between <em>prepare</em> and <em>commit</em>, participants are stuck in a doubt state holding locks until manual intervention.</li>
+              <li><strong>Single point of failure.</strong> The transaction manager becomes a global SPOF for the whole platform.</li>
+            </ul>
+            <p>Use a <strong>Saga</strong> instead: many small local transactions + compensations + asynchronous events. No global locks, each service stays independent, and the broker stays out of the transaction.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Happy path — Order checkout saga</div>
+            <div class="flow">
+              <div class="flow-step">Order Service — create <code>Order</code> in <code>PENDING</code> <span class="badge">local tx</span></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Inventory Service — reserve stock for the order <span class="badge">local tx</span></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Payment Service — charge the customer <span class="badge">local tx</span></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Delivery Service — schedule shipment <span class="badge">local tx</span></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step accent">Order Service — mark order <code>CONFIRMED</code> <span class="badge">saga complete</span></div>
+            </div>
+            <p class="solution-desc">Each step is a normal local ACID transaction in its own service. The saga is only "complete" once the final step commits — until then the order is in an intermediate state and clients must be prepared to see <code>PENDING</code> / <code>RESERVING</code> / <code>PAYING</code>.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Failure path — compensating transactions</div>
+            <div class="flow">
+              <div class="flow-step">Order created <span class="badge">ok</span></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Inventory reserved <span class="badge">ok</span></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step warn">Payment <strong>fails</strong> (insufficient funds / gateway timeout)</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Compensation 1 — Inventory Service <strong>releases the reservation</strong></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step accent">Compensation 2 — Order Service marks order <code>CANCELLED</code></div>
+            </div>
+            <p class="solution-desc"><strong>Compensation ≠ rollback.</strong> The earlier steps already <em>committed</em> in their local DBs — you can't undo a commit. Instead each service exposes a <em>new business transaction</em> that semantically reverses the effect: <code>releaseReservation</code>, <code>refundPayment</code>, <code>cancelOrder</code>. Compensations run in <strong>reverse order</strong> of the steps that already succeeded, and must themselves be idempotent (they will be retried).</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Two saga styles — Choreography vs Orchestration</div>
+            <div class="cmp-grid">
+              <div class="cmp-card left">
+                <div class="cmp-card-head"><span class="dot"></span> Choreography (event-driven)</div>
+                <ul>
+                  <li>No central brain — each service <strong>listens to events</strong> from peers and decides what to do next.</li>
+                  <li>Order publishes <code>OrderCreated</code> → Inventory reacts and publishes <code>InventoryReserved</code> → Payment reacts and publishes <code>PaymentCompleted</code> → …</li>
+                  <li><b>Pros:</b> loose coupling, no orchestrator to deploy, easy to bootstrap for small flows.</li>
+                  <li><b>Cons:</b> business flow is <em>implicit</em> in event subscriptions — hard to visualize, hard to debug, easy to turn into a tangled "event spaghetti" past 3–4 services.</li>
+                  <li>Compensation is also distributed — each service listens for failure events (e.g. <code>PaymentFailed</code>) and runs its own compensation.</li>
+                </ul>
+              </div>
+              <div class="cmp-card right">
+                <div class="cmp-card-head"><span class="dot"></span> Orchestration (command-driven)</div>
+                <ul>
+                  <li>A central <strong>Saga Orchestrator</strong> (often its own service) drives the flow — sends commands, waits for replies, decides the next step.</li>
+                  <li>Orchestrator calls <code>ReserveInventory</code> → on success calls <code>ProcessPayment</code> → on success calls <code>ScheduleDelivery</code> → marks order <code>CONFIRMED</code>.</li>
+                  <li><b>Pros:</b> the saga is <em>explicit and centralized</em> — easy to visualize as a state machine, easy to monitor, easy to add a new step.</li>
+                  <li><b>Cons:</b> the orchestrator becomes critical infrastructure (must be HA + persistent); slightly more upfront design.</li>
+                  <li>Built with state-machine engines like <strong>Camunda</strong>, <strong>Temporal</strong>, <strong>AWS Step Functions</strong>, or a hand-rolled <code>SAGA_INSTANCE</code> table.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Pick</th><th>When</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><strong>Choreography</strong></td><td>2–3 services, simple linear flow, team comfortable with event-driven design, no strict need for a visual saga view.</td></tr>
+                  <tr><td><strong>Orchestration</strong></td><td>4+ services, branching / conditional steps, regulated / audit-heavy flows (payments, banking), or whenever you need a single place to monitor saga status and retry stuck instances.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="solution-desc">Rule of thumb: <em>start with choreography for tiny flows, but switch to orchestration earlier than you think</em> — most teams regret staying on pure choreography past 3–4 services because debugging "why did this order get stuck?" becomes archaeology across N Kafka topics.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Choreography flow — events driving each other</div>
+            <div class="flow">
+              <div class="flow-step">Order Service — commit <code>Order(PENDING)</code> + publish <code>OrderCreated</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Inventory Service consumes <code>OrderCreated</code> → reserves stock → publishes <code>InventoryReserved</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Payment Service consumes <code>InventoryReserved</code> → charges card → publishes <code>PaymentCompleted</code> or <code>PaymentFailed</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Delivery Service consumes <code>PaymentCompleted</code> → schedules shipment → publishes <code>DeliveryScheduled</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step accent">Order Service consumes <code>DeliveryScheduled</code> → marks <code>Order(CONFIRMED)</code></div>
+            </div>
+            <p class="solution-desc">No central coordinator — the saga "exists" only as the sum of these event subscriptions. On failure (e.g. <code>PaymentFailed</code>), Inventory and Order also listen and run their own compensations.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Orchestration flow — central coordinator</div>
+            <div class="flow">
+              <div class="flow-step">Order Service — commit <code>Order(PENDING)</code> → call <strong>Saga Orchestrator</strong>: <code>startCheckoutSaga(orderId)</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Orchestrator → Inventory: <code>ReserveInventory</code> command → reply <code>InventoryReserved</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Orchestrator → Payment: <code>ProcessPayment</code> command → reply <code>PaymentCompleted</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Orchestrator → Delivery: <code>ScheduleDelivery</code> command → reply <code>DeliveryScheduled</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step accent">Orchestrator → Order: <code>ConfirmOrder</code> → saga state = <code>COMPLETED</code></div>
+            </div>
+            <p class="solution-desc">The orchestrator persists saga state at every step (<code>SAGA_INSTANCE</code> table or workflow engine). On any failure reply (e.g. <code>PaymentFailed</code>), it walks back through the compensations: <code>RefundPayment</code> (no-op here), <code>ReleaseInventory</code>, <code>CancelOrder</code>.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">7</span> Spring Boot — an orchestration step + compensation</div>
+            <pre><code>// --- Saga state persisted in the orchestrator's DB ---
+@Entity
+@Table(name = "saga_instance")
+public class SagaInstance {
+    @Id private String sagaId;            // correlation id propagated to every service
+    private String  orderId;
+    private String  currentStep;          // RESERVE_INVENTORY | PROCESS_PAYMENT | …
+    private String  status;               // RUNNING | COMPLETED | COMPENSATING | FAILED
+    private Instant updatedAt;
+    // getters / setters omitted
+}
+
+// --- Orchestrator: drive the next step based on the latest reply ---
+@Service
+@RequiredArgsConstructor
+public class CheckoutSagaOrchestrator {
+    private final SagaInstanceRepository sagas;
+    private final KafkaTemplate&lt;String, Object&gt; kafka;
+
+    @KafkaListener(topics = "inventory.replies", groupId = "checkout-saga")
+    @Transactional                                       // local tx in orchestrator DB
+    public void onInventoryReply(InventoryReply reply) {
+        SagaInstance s = sagas.findById(reply.sagaId()).orElseThrow();
+
+        if (reply.success()) {
+            s.setCurrentStep("PROCESS_PAYMENT");
+            sagas.save(s);
+            kafka.send("payment.commands",
+                new ProcessPaymentCmd(s.getSagaId(), s.getOrderId()));
+        } else {
+            // Inventory said "no stock" — compensate Order, no payment yet
+            s.setStatus("COMPENSATING");
+            sagas.save(s);
+            kafka.send("order.commands",
+                new CancelOrderCmd(s.getSagaId(), s.getOrderId(), "OUT_OF_STOCK"));
+        }
+    }
+
+    @KafkaListener(topics = "payment.replies", groupId = "checkout-saga")
+    @Transactional
+    public void onPaymentReply(PaymentReply reply) {
+        SagaInstance s = sagas.findById(reply.sagaId()).orElseThrow();
+
+        if (reply.success()) {
+            s.setCurrentStep("SCHEDULE_DELIVERY");
+            sagas.save(s);
+            kafka.send("delivery.commands",
+                new ScheduleDeliveryCmd(s.getSagaId(), s.getOrderId()));
+        } else {
+            // Payment failed — walk compensations backwards
+            s.setStatus("COMPENSATING");
+            sagas.save(s);
+            kafka.send("inventory.commands",
+                new ReleaseInventoryCmd(s.getSagaId(), s.getOrderId()));   // compensation
+            kafka.send("order.commands",
+                new CancelOrderCmd(s.getSagaId(), s.getOrderId(), "PAYMENT_FAILED"));
+        }
+    }
+}
+
+// --- Inventory service: forward step + compensation, both idempotent ---
+@Service
+@RequiredArgsConstructor
+public class InventoryService {
+    private final StockRepository       stock;
+    private final ReservationRepository reservations;
+    private final KafkaTemplate&lt;String, Object&gt; kafka;
+
+    @KafkaListener(topics = "inventory.commands", groupId = "inventory")
+    @Transactional
+    public void handle(Object cmd) {
+        if (cmd instanceof ReserveInventoryCmd c) reserve(c);
+        else if (cmd instanceof ReleaseInventoryCmd c) release(c);     // compensation
+    }
+
+    private void reserve(ReserveInventoryCmd c) {
+        // idempotency — saga may retry; same sagaId must not double-reserve
+        if (reservations.existsBySagaId(c.sagaId())) return;
+        stock.decrement(c.orderId());
+        reservations.save(new Reservation(c.sagaId(), c.orderId()));
+        kafka.send("inventory.replies", InventoryReply.ok(c.sagaId()));
+    }
+
+    private void release(ReleaseInventoryCmd c) {                       // compensation
+        reservations.findBySagaId(c.sagaId()).ifPresent(r -&gt; {
+            stock.increment(c.orderId());
+            reservations.delete(r);
+        });
+        // safe to call twice — no-op if reservation already gone
+    }
+}</code></pre>
+            <p class="solution-desc">Two things to notice: (1) the orchestrator persists <code>SagaInstance</code> in its <em>own</em> DB at every transition — a crash mid-flight can be resumed from the last persisted step; (2) every command handler (both forward and compensation) is written to be safely retried — <code>existsBySagaId</code> on the forward path, <code>ifPresent</code> on the compensation path. In a real codebase you'd publish these commands and replies via the <strong>Transactional Outbox</strong> pattern so the event publishing is atomic with the local DB write.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">8</span> Production essentials</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Concern</th><th>Best practice</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Idempotency</td><td>Every step (forward <em>and</em> compensation) must be safe to retry. Key on <code>sagaId</code> + <code>stepName</code>; check-then-act inside a local tx.</td></tr>
+                  <tr><td>Duplicate event handling</td><td>Stamp every event with an <code>event_id</code> and dedupe via a <code>processed_events</code> table — at-least-once delivery means consumers <em>will</em> see duplicates.</td></tr>
+                  <tr><td>Retries + backoff</td><td>Exponential backoff with jitter for transient failures; cap retries and route to DLQ after N attempts so a single poison message can't stall the saga.</td></tr>
+                  <tr><td>Compensation logic</td><td>Model compensations as <em>new business transactions</em> (<code>refund</code>, <code>release</code>, <code>cancel</code>). Make them idempotent. If a compensation itself fails permanently, escalate — emit a <code>SagaFailedEvent</code>, page on-call, and stash the saga in a manual-review queue.</td></tr>
+                  <tr><td>Tracking saga status</td><td>Persist a <code>SAGA_INSTANCE</code> row per saga with <code>currentStep</code> + <code>status</code> (<code>RUNNING</code> / <code>COMPLETED</code> / <code>COMPENSATING</code> / <code>FAILED</code>). With Temporal / Camunda the engine does this for you.</td></tr>
+                  <tr><td>Correlation ID</td><td>Propagate a single <code>sagaId</code> (and a tracing <code>traceId</code>) through every event header and log line. Without it, end-to-end debugging across services is impossible.</td></tr>
+                  <tr><td>Reliable event publishing</td><td>Pair every step with the <strong>Transactional Outbox</strong> pattern (see the Transactional Outbox Q&amp;A in <code>messaging.html</code>) so the DB commit + event publish are atomic. Otherwise the saga can silently lose steps.</td></tr>
+                  <tr><td>Timeouts / step expiry</td><td>Each step has a max duration. If no reply within the SLA, the orchestrator times out and triggers compensation — never wait forever.</td></tr>
+                  <tr><td>Monitoring stuck sagas</td><td>Metrics for <code>saga_started</code>, <code>saga_completed</code>, <code>saga_compensating</code>, <code>saga_failed</code>; alert on sagas in <code>RUNNING</code> &gt; N minutes. A dashboard of stuck/failed sagas is non-negotiable in production.</td></tr>
+                  <tr><td>Schema evolution</td><td>Saga state and command/reply schemas live for as long as in-flight sagas — version events (<code>v1</code>, <code>v2</code>) and never delete fields a running saga might still read.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">9</span> Where sagas actually show up</div>
+            <div class="use-cases">
+              <div class="use-case">
+                <h4><i class="bi bi-bag-check-fill"></i> E-commerce checkout</h4>
+                <p>Order → Inventory → Payment → Delivery. Failure in payment must release inventory and cancel the order.</p>
+              </div>
+              <div class="use-case green">
+                <h4><i class="bi bi-credit-card-2-front-fill"></i> Payment processing</h4>
+                <p>Authorize → Capture → Update ledger → Notify merchant. Each step compensated by reverse / void / refund.</p>
+              </div>
+              <div class="use-case pink">
+                <h4><i class="bi bi-airplane-fill"></i> Travel booking</h4>
+                <p>Reserve flight + hotel + car as one user-facing trip. If any leg fails, release the others — the classic Saga paper example.</p>
+              </div>
+              <div class="use-case orange">
+                <h4><i class="bi bi-bank2"></i> Money transfer between banks</h4>
+                <p>Debit source → credit destination → emit settlement record. A failed credit must trigger a reversal on the source — strict idempotency and audit trail required.</p>
+              </div>
+              <div class="use-case">
+                <h4><i class="bi bi-person-plus-fill"></i> Multi-step user onboarding</h4>
+                <p>Create account → provision tenant → seed default data → send welcome email. Partial failure rolls back the tenant and account; non-compensable steps (email) are pushed to the end.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">10</span> Common interview gotchas</div>
+            <ul style="margin: 0 0 10px;">
+              <li><strong>Sagas give eventual consistency, not ACID.</strong> Clients can briefly observe inconsistent intermediate states (<code>order PENDING but payment already charged</code>). UI and APIs must be designed for it.</li>
+              <li><strong>Compensation is not rollback.</strong> The earlier local tx already committed — you can't undo it. Compensation is a <em>new business transaction</em> (<code>refund</code>, <code>release</code>, <code>cancel</code>) that semantically reverses the effect.</li>
+              <li><strong>Some operations have no compensation.</strong> "Send email", "fire missile", "print receipt" — you can't unsend. Order saga steps so non-compensable actions happen <strong>last</strong>, or expose a forward-recovery action (apology email, refund) instead.</li>
+              <li><strong>Don't reach for 2PC because it sounds simpler.</strong> It buys "easier" semantics at the cost of locks, coupling, and a global SPOF — it's worse at scale, not better.</li>
+              <li><strong>Choreography looks simple, then explodes.</strong> Past 3–4 services it becomes "event spaghetti" — switch to orchestration earlier than you think, especially when flows branch or have conditional steps.</li>
+              <li><strong>Outbox is almost always paired with Saga.</strong> Without the Transactional Outbox, "commit local tx + publish event" is two non-atomic steps — your saga can silently lose a step.</li>
+              <li><strong>Saga state must be persisted.</strong> An orchestrator that holds state only in memory loses every in-flight saga on a pod restart. Use a <code>SAGA_INSTANCE</code> table or a workflow engine (Temporal / Camunda) that persists for you.</li>
+              <li><strong>Idempotency on every step is non-negotiable.</strong> At-least-once delivery + retries + crash recovery <em>guarantee</em> you'll process the same command twice. Key on <code>sagaId</code> + <code>stepName</code>.</li>
+              <li><strong>Always set step timeouts.</strong> A silent downstream that never replies will leave the saga <code>RUNNING</code> forever — define an SLA per step and trigger compensation when it elapses.</li>
+            </ul>
+          </div>
+
+          <div class="takeaway">
+            <b>Interview one-liner:</b> A microservices business flow spans many services and DBs, so a single ACID transaction across all of them isn't realistic — <strong>2PC / XA</strong> is rejected because it's blocking, tightly coupled, doesn't work with brokers like <strong>Kafka</strong>, and creates a global SPOF. The standard answer is the <strong>Saga pattern</strong>: model the flow as a sequence of <em>local transactions</em>, each committing in its own service and publishing an event; if any step fails, run <strong>compensating transactions</strong> in reverse order (which are <em>new</em> business transactions like <code>refund</code> / <code>release</code> / <code>cancel</code>, not real rollbacks). Two flavors — <strong>Choreography</strong> (services react to each other's events; loose coupling but quickly becomes event spaghetti) and <strong>Orchestration</strong> (a central coordinator persists <code>SAGA_INSTANCE</code> state and drives every step; clearer, easier to monitor, scales to complex flows — Temporal / Camunda / AWS Step Functions). Production essentials are non-negotiable: <strong>idempotency</strong> on every step and compensation, dedup via <code>event_id</code>, the <strong>Transactional Outbox</strong> pattern to atomically commit DB + event, a <strong>correlation / sagaId</strong> across services, retries with backoff + DLQ, step timeouts, and monitoring + alerts on stuck or compensating sagas. The trade-off you accept is <strong>eventual consistency</strong> in exchange for independent, scalable services that don't share locks.</div>
         </div>
       </details>
 
@@ -638,32 +1546,435 @@
       </details>
 
       <details class="qa">
-        <summary>How do you handle distributed transactions?</summary>
+        <summary>How do you handle distributed transactions in microservices? <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p>Three practical patterns:</p>
-          <ul>
-            <li><strong>Saga</strong> (see earlier) — sequence of local transactions with compensations. Best for multi-service workflows.</li>
-            <li><strong>Outbox pattern</strong> — write the business state and an outbox row in the same local DB transaction; a separate process publishes outbox rows to Kafka. Guarantees "if the DB says it happened, the event will be published."</li>
-            <li><strong>Transactional messaging</strong> — Kafka transactions (within the same producer) for exactly-once semantics across topics; useful when you produce to multiple topics atomically.</li>
-          </ul>
-          <p>What I <strong>don't</strong> use: 2PC across microservices — it's slow, fragile, and most modern DBs/queues don't support XA well together. The combination of <strong>outbox + idempotent consumers + saga</strong> covers nearly every real-world distributed-transaction need.</p>
+          <p class="answer-intro">A "distributed transaction" in microservices means coordinating state changes across multiple services / databases / brokers so the system never ends up half-committed. Classical 2PC (XA) is the textbook answer but rarely the right one — modern systems use <strong>Saga</strong> + <strong>Outbox</strong> + <strong>idempotent consumers</strong>, which trade strict ACID for practical, scalable correctness.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Replace one global transaction with a sequence of <strong>local ACID transactions</strong> (Saga), use the <strong>Transactional Outbox</strong> to atomically commit DB state and outgoing events, and require all consumers to be <strong>idempotent</strong>. No 2PC, no XA — just well-designed eventual consistency.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Why 2PC (XA) is avoided</div>
+            <ul>
+              <li><strong>Synchronous blocking</strong> — every participant locks its data while the coordinator decides commit/abort.</li>
+              <li><strong>Coordinator SPOF</strong> — coordinator crash leaves participants stuck holding locks.</li>
+              <li><strong>Heterogeneous systems</strong> — Kafka has no XA; Mongo's XA is limited; cross-cloud DBs rarely cooperate.</li>
+              <li><strong>Latency penalty</strong> — multiple round trips per transaction.</li>
+              <li><strong>Operationally fragile</strong> — recovery scripts, in-doubt transactions, manual cleanup.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> The three patterns that replace 2PC</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead>
+                  <tr><th>Pattern</th><th>Solves</th><th>How it works</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Saga</strong></td>
+                    <td>Workflow spanning multiple services</td>
+                    <td>Sequence of local transactions; if step N fails, run compensations for steps 1…N-1. Choreography (event-driven) for small flows, Orchestration (central coordinator) for complex ones.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Transactional Outbox</strong></td>
+                    <td>Dual-write between DB and broker</td>
+                    <td>Write business row + outbox row in one DB transaction; a publisher relays the outbox to Kafka with at-least-once delivery.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Idempotent consumer</strong></td>
+                    <td>At-least-once delivery means duplicates</td>
+                    <td>Every event has an <code>event_id</code>; consumer dedupes via a table inside the same DB transaction as the business write.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Worked example — placing an order across 4 services</div>
+            <div class="flow">
+              <div class="flow-step">Order Service: create <code>Order(PENDING)</code> + outbox <code>OrderPlaced</code> in one DB tx</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Outbox publisher → Kafka <code>orders.events</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Inventory consumes <code>OrderPlaced</code> → reserves stock + emits <code>StockReserved</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Payment consumes <code>StockReserved</code> → charges card + emits <code>PaymentCaptured</code> (or <code>PaymentFailed</code>)</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step accent">On <code>PaymentCaptured</code> → Order moves to <code>CONFIRMED</code></div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step accent">On <code>PaymentFailed</code> → emit <code>ReleaseStock</code> (compensation) → Order moves to <code>CANCELLED</code></div>
+            </div>
+            <p>Each hop is one local ACID transaction. There is no global lock. If any step fails, the saga unwinds via compensating transactions.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Outbox snippet — the dual-write fix</div>
+            <pre><code>@Service
+@RequiredArgsConstructor
+public class OrderService {
+    private final OrderRepository  orders;
+    private final OutboxRepository outbox;
+
+    @Transactional
+    public Order create(OrderRequest req) {
+        Order saved = orders.save(new Order(req, Status.PENDING));
+        outbox.save(OutboxEvent.of("Order", saved.getId(), "OrderPlaced", saved));
+        return saved;
+        // both rows commit atomically — no partial state can exist
+    }
+}</code></pre>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> When to choose what</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-title">Use Saga when</div>
+                <ul>
+                  <li>Workflow spans 2+ services with side effects.</li>
+                  <li>Each step has a meaningful business compensation (refund, release inventory).</li>
+                  <li>Eventual consistency in seconds is acceptable.</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-title">Use Outbox when</div>
+                <ul>
+                  <li>One service needs to update DB and publish events atomically.</li>
+                  <li>You're hitting "DB committed but Kafka publish failed" bugs.</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-title">Use 2PC/XA only when</div>
+                <ul>
+                  <li>All participants are XA-capable databases under your control.</li>
+                  <li>Latency budget allows synchronous coordination.</li>
+                  <li>You truly cannot tolerate eventual consistency (rare).</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Common interview gotchas</div>
+            <ul>
+              <li>Sagas don't roll back — they <em>compensate</em>. Compensations must be designed up front (and may have their own side effects, e.g., refunds visible to the customer).</li>
+              <li>Each saga step is independently committed — the system passes through legal intermediate states (PENDING, RESERVED) that downstream code must tolerate.</li>
+              <li>Outbox + Kafka gives at-least-once → consumers must dedupe by <code>event_id</code>.</li>
+              <li>Don't confuse Saga with workflow engines (Temporal, Camunda) — those are tools that can implement orchestrated sagas.</li>
+              <li>Choreography across 5+ services becomes "what just happened?" debugging — switch to orchestration earlier than you think.</li>
+              <li>Long-running sagas need timeouts on each step + a watchdog to cancel stuck instances.</li>
+              <li>Idempotency keys must be <em>stable</em> — using a UUID generated at consume time defeats dedup.</li>
+            </ul>
+          </div>
+
+          <p class="takeaway"><b>Interview one-liner:</b> In microservices we don't use 2PC — instead we combine <strong>Saga</strong> (a sequence of local transactions with compensations), the <strong>Transactional Outbox</strong> (atomic DB write + event publish), and <strong>idempotent consumers</strong> (dedup by <code>event_id</code>). Each step is a local ACID transaction; failures unwind via compensating transactions, not rollback. For complex flows we prefer orchestration (a central state machine like Temporal/Camunda or a custom orchestrator) over choreography. The system is eventually consistent in seconds, scales horizontally, and never holds cross-service locks.</p>
         </div>
       </details>
 
       <details class="qa">
-        <summary>Inter-service communication failures — how to handle?</summary>
+        <summary>How do you implement secure service-to-service communication? <span class="qa-tag must">must</span></summary>
         <div class="qa-body">
-          <p>The fundamental rule: <strong>networks fail, downstreams slow down</strong> — your service must remain healthy when its dependencies aren't.</p>
-          <p>My toolkit:</p>
+          <p class="answer-intro">In a microservices estate, every internal HTTP/gRPC call is potentially a privilege boundary — a compromised service should not be able to impersonate another or call APIs it doesn't own. Production systems combine <strong>mutual TLS</strong>, <strong>short-lived service tokens</strong>, and <strong>fine-grained authorization</strong> at the receiver, often delivered by a service mesh.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Authenticate <em>both ends</em> of every call (mTLS / SPIFFE), pass the <em>caller identity</em> via short-lived JWT or workload tokens, and authorize at the receiver based on the caller's identity and scope — never trust the network.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Layered defenses</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead><tr><th>Layer</th><th>What it protects</th><th>Tool</th></tr></thead>
+                <tbody>
+                  <tr><td>Network policy</td><td>Only Order can reach Payment over the wire</td><td>K8s NetworkPolicy, AWS Security Groups, Calico, Cilium</td></tr>
+                  <tr><td>Mutual TLS (mTLS)</td><td>Both parties authenticate via X.509 certificates</td><td>Istio / Linkerd / Consul Connect, SPIFFE/SPIRE</td></tr>
+                  <tr><td>Service identity token</td><td>The caller proves <em>who</em> it is at L7</td><td>Short-lived JWT (5–15 min), workload identity, AWS IAM Roles for Service Accounts (IRSA)</td></tr>
+                  <tr><td>End-user context propagation</td><td>"Is this user allowed?" at every hop</td><td>Forwarded user JWT or signed user-context header</td></tr>
+                  <tr><td>Authorization at receiver</td><td>Final check: does the caller's role have permission?</td><td>Spring Security <code>@PreAuthorize</code>, OPA, in-app RBAC</td></tr>
+                  <tr><td>Secrets at rest</td><td>API keys, DB credentials</td><td>AWS Secrets Manager, HashiCorp Vault, K8s Secrets (encrypted)</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> Two common architectures</div>
+            <div class="cmp-grid">
+              <div class="cmp-card">
+                <div class="cmp-card-title">Service-mesh based (Istio / Linkerd)</div>
+                <ul>
+                  <li>Sidecar injects mTLS automatically — every pod-to-pod call is encrypted and mutually authenticated.</li>
+                  <li><strong>SPIFFE IDs</strong> like <code>spiffe://cluster.local/ns/orders/sa/order-svc</code> identify each workload.</li>
+                  <li>L7 authorization policies declared in YAML — "<code>orders</code> SA can call <code>POST /payments/charge</code> on <code>payments</code>".</li>
+                  <li>Application code stays clean — no auth code in services.</li>
+                </ul>
+              </div>
+              <div class="cmp-card">
+                <div class="cmp-card-title">Application-level (no mesh)</div>
+                <ul>
+                  <li>Each service obtains a <strong>short-lived JWT</strong> from an internal auth server (Spring Authorization Server, Keycloak) using client_credentials.</li>
+                  <li>Caller adds <code>Authorization: Bearer &lt;token&gt;</code> on every call.</li>
+                  <li>Receiver validates signature + issuer + audience + expiry, applies <code>@PreAuthorize</code>.</li>
+                  <li>Plus mTLS at the ingress/load-balancer level for transport encryption.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Service-to-service token (Spring example)</div>
+            <pre><code>// Client side — get JWT once, reuse until near expiry
+@Service
+@RequiredArgsConstructor
+public class PaymentClient {
+    private final WebClient webClient;
+    private final OAuth2AuthorizedClientManager clientManager;
+
+    public PaymentResult charge(ChargeRequest req) {
+        OAuth2AuthorizeRequest auth = OAuth2AuthorizeRequest
+            .withClientRegistrationId("payment-svc")    // client_credentials flow
+            .principal("order-svc").build();
+        String token = clientManager.authorize(auth).getAccessToken().getTokenValue();
+
+        return webClient.post().uri("/v1/charges")
+            .header("Authorization", "Bearer " + token)
+            .header("X-Request-Id", MDC.get("traceId"))
+            .bodyValue(req)
+            .retrieve()
+            .bodyToMono(PaymentResult.class)
+            .block();
+    }
+}</code></pre>
+            <pre><code>// Server side — Spring Security validates JWT + scope
+@PostMapping("/v1/charges")
+@PreAuthorize("hasAuthority('SCOPE_payments:charge')")
+public PaymentResult charge(@RequestBody ChargeRequest req,
+                            JwtAuthenticationToken caller) {
+    log.info("charge by {}", caller.getName());           // = "order-svc"
+    return paymentService.charge(req);
+}</code></pre>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> End-user identity propagation</div>
+            <p>When a user-initiated request flows through 5 services, each downstream service needs to know <em>who the end user is</em> to apply authorization. Two approaches:</p>
+            <ul>
+              <li><strong>Forward the original user JWT</strong> — pass through unchanged in <code>Authorization</code> or a custom <code>X-User-Token</code> header. Each service validates it.</li>
+              <li><strong>Token exchange</strong> — gateway swaps the user token for a service-internal token that contains the user claims (RFC 8693). Lets the gateway strip external scopes.</li>
+            </ul>
+            <p>Avoid blindly trusting headers from the network — anyone inside the cluster could spoof them.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Secrets — never in source, never in plaintext at rest</div>
+            <ul>
+              <li>Use a secrets manager (Vault, AWS Secrets Manager, GCP Secret Manager).</li>
+              <li>Inject at runtime via env vars or mounted files (K8s + CSI Secrets Store driver).</li>
+              <li>Rotate regularly; short-lived dynamic credentials (Vault DB engine) where possible.</li>
+              <li>For workloads, prefer instance/pod identity (IRSA, GKE Workload Identity) over long-lived API keys.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">6</span> Common interview gotchas</div>
+            <ul>
+              <li>"VPC isolation is enough" — no, lateral movement inside a compromised VPC is the norm. Defense in depth.</li>
+              <li>Long-lived bearer tokens are a footgun — keep TTLs at minutes, not days.</li>
+              <li>mTLS without authorization policies just encrypts; any service with a valid cert can still call any other. Add <em>L7 authz</em>.</li>
+              <li>Forwarding the end-user JWT raw exposes user PII to every hop — consider a stripped internal token.</li>
+              <li>Don't sign your own JWTs in each service — central auth server with rotating keys (JWKS endpoint).</li>
+              <li>API gateways enforce <em>perimeter</em> auth, but east-west calls still need their own auth — never trust "we're inside the cluster".</li>
+              <li>Secret rotation is meaningless if applications cache secrets forever — design refresh.</li>
+              <li>Audit who calls what — service-call audit logs are gold during incident response.</li>
+            </ul>
+          </div>
+
+          <p class="takeaway"><b>Interview one-liner:</b> Secure service-to-service communication is layered: <strong>mTLS</strong> (often via a service mesh like Istio/Linkerd or SPIFFE/SPIRE) for transport encryption + workload identity; <strong>short-lived JWTs</strong> (client_credentials flow with internal Auth Server) for caller identity over HTTP/gRPC; <strong>L7 authorization</strong> at the receiver via <code>@PreAuthorize</code> with scopes; <strong>end-user identity propagation</strong> via forwarded or token-exchanged JWTs; and <strong>secrets in a vault</strong> with workload identity (IRSA, GKE WI) replacing long-lived API keys. The rule is "never trust the network" — every internal call is authenticated, authorized, and audited.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>How do you prevent cascading failures in microservices? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">A cascading failure is when one slow or failing service drags down its callers, which drag down their callers, until a single downstream issue takes the whole system offline. The defense is a stack of patterns that <strong>isolate failure</strong>, <strong>shed load early</strong>, and <strong>fail fast</strong> instead of fail slowly.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Combine <strong>timeouts + retries with backoff + circuit breakers + bulkheads + rate limiters + load shedding + graceful degradation</strong>. The goal: a slow downstream causes <em>controlled, partial degradation</em> in callers, not a total outage.</span>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> How cascades happen</div>
+            <div class="flow">
+              <div class="flow-step">Payment downstream becomes slow (5s instead of 100ms)</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Order Service threads pile up waiting on Payment</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step accent">Order's Tomcat thread pool exhausts → all endpoints (even unrelated) start failing</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step">Checkout (which calls Order) sees timeouts → its threads pile up</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step accent">Cascading thread starvation → entire request path is dead</div>
+            </div>
+            <p>The root cause is almost always <strong>missing timeouts + missing isolation</strong> — a single slow dependency consumes shared resources (threads, connections, memory) until nothing else can run.</p>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">2</span> The defense stack</div>
+            <div class="note-table-wrap">
+              <table class="note-table">
+                <thead><tr><th>Pattern</th><th>What it stops</th><th>Tool</th></tr></thead>
+                <tbody>
+                  <tr><td><strong>Aggressive timeouts</strong></td><td>Threads waiting forever on a slow downstream</td><td>HTTP client connect/read timeout, Resilience4j <code>TimeLimiter</code></td></tr>
+                  <tr><td><strong>Circuit breaker</strong></td><td>Hammering a known-broken downstream</td><td>Resilience4j <code>CircuitBreaker</code></td></tr>
+                  <tr><td><strong>Bulkhead</strong></td><td>Slow downstream starving threads needed by other endpoints</td><td>Resilience4j <code>Bulkhead</code> (semaphore or thread pool)</td></tr>
+                  <tr><td><strong>Retry with jitter</strong></td><td>Synchronized retry storms after a recovery</td><td>Resilience4j <code>Retry</code> with exponential backoff + jitter</td></tr>
+                  <tr><td><strong>Rate limiter</strong></td><td>One client overwhelming the service</td><td>Resilience4j <code>RateLimiter</code>, API gateway, Bucket4j</td></tr>
+                  <tr><td><strong>Load shedding</strong></td><td>Service taking work it can't possibly complete</td><td>Reject-with-503 above queue threshold, AIMD admission control</td></tr>
+                  <tr><td><strong>Graceful degradation</strong></td><td>Returning nothing when a degraded answer would do</td><td>Fallback method (cached data, default response)</td></tr>
+                  <tr><td><strong>Async / event-driven</strong></td><td>Synchronous chains that propagate failure</td><td>Kafka events, fire-and-forget</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">3</span> Resilience4j stack — typical Spring Boot wiring</div>
+            <pre><code>resilience4j:
+  timelimiter:
+    instances:
+      paymentApi:
+        timeout-duration: 800ms                # cap p99 of the call
+        cancel-running-future: true
+  circuitbreaker:
+    instances:
+      paymentApi:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 50
+        failure-rate-threshold: 50            # %
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 5
+  bulkhead:
+    instances:
+      paymentApi:
+        max-concurrent-calls: 20              # cap on threads waiting on this dep
+  retry:
+    instances:
+      paymentApi:
+        max-attempts: 3
+        wait-duration: 200ms
+        retry-exceptions:
+          - java.io.IOException
+          - org.springframework.web.client.HttpServerErrorException</code></pre>
+            <pre><code>@CircuitBreaker(name = "paymentApi", fallbackMethod = "fallback")
+@Bulkhead(name = "paymentApi")
+@TimeLimiter(name = "paymentApi")
+@Retry(name = "paymentApi")
+public CompletableFuture&lt;PaymentResult&gt; charge(ChargeRequest req) {
+    return paymentClient.chargeAsync(req);
+}
+
+private CompletableFuture&lt;PaymentResult&gt; fallback(ChargeRequest req, Throwable t) {
+    metrics.increment("payment.fallback");
+    return CompletableFuture.completedFuture(PaymentResult.deferred(req.getOrderId()));
+}</code></pre>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">4</span> Architectural choices that prevent cascades</div>
+            <ul>
+              <li><strong>Async over sync</strong> — if the caller doesn't need the answer in this request, send a Kafka event instead.</li>
+              <li><strong>Read-side caching</strong> — Redis cache absorbs transient downstream outages for read-heavy endpoints.</li>
+              <li><strong>Per-dependency thread pools / connection pools</strong> — one slow API can't exhaust the pool another API uses.</li>
+              <li><strong>Backpressure</strong> on producers when consumer / DB is unhealthy.</li>
+              <li><strong>Bulkheading at the resource level</strong> — separate DB user/connection pools for hot vs cold endpoints.</li>
+              <li><strong>Multi-AZ / multi-region</strong> for the dependency itself so partial failure doesn't take all traffic down.</li>
+            </ul>
+          </div>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">5</span> Common interview gotchas</div>
+            <ul>
+              <li>The single most common production bug: <strong>no timeout on an HTTP client</strong>. Default infinite timeout is a cascade waiting to happen.</li>
+              <li>Retries without circuit breakers amplify outages — multiply request load on an already-broken service.</li>
+              <li>Retries without jitter cause synchronized recovery storms ("thundering herd").</li>
+              <li>Tomcat / undertow shared thread pool means one slow endpoint can starve all others — use bulkheads or per-route executors.</li>
+              <li>Circuit breakers need <em>sufficient sample size</em> — too small and they trip on noise; too large and they trip too late.</li>
+              <li>Fallbacks must be cheap and side-effect-free — falling back to a "cached price" beats failing, but only if the cache is healthy.</li>
+              <li>Don't put retries at every layer — pick one layer (typically the client) and don't multiply.</li>
+              <li>Health checks must be deep enough to fail when the downstream is broken, but shallow enough not to cascade themselves.</li>
+            </ul>
+          </div>
+
+          <p class="takeaway"><b>Interview one-liner:</b> Cascading failures happen when a slow downstream consumes shared resources (threads, connections) in callers until everything dies. Prevent them with a stack of patterns: <strong>timeouts</strong> on every outbound call, <strong>circuit breakers</strong> to fail fast, <strong>bulkheads</strong> to isolate per-dependency thread pools, <strong>retries with exponential backoff + jitter</strong> for transient errors, <strong>rate limiters</strong> at the edge, <strong>load shedding</strong> when overloaded, and <strong>graceful degradation</strong> via fallbacks. In Spring Boot the toolkit is Resilience4j; architecturally, prefer <strong>async over sync</strong> and cache hot reads. The rule: a slow dependency should cause <em>controlled, partial degradation</em>, never a system-wide outage.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Inter-service communication failures — how to handle? <span class="qa-tag must">must</span></summary>
+        <div class="qa-body">
+          <p class="answer-intro">Networks fail and downstreams slow down — a healthy microservice assumes every call can fail and degrades in a controlled way instead of blocking the whole fleet.</p>
+
+          <div class="core-diff">
+            <div class="core-diff-row">
+              <span class="core-diff-key">CORE IDEA</span>
+              <span class="core-diff-val">Timeout → retry (transient only) → circuit breaker → bulkhead → fallback — in that order, with idempotency on writes.</span>
+            </div>
+          </div>
+
+          <div class="note-table-wrap">
+            <table class="note-table">
+              <thead><tr><th>Failure</th><th>Symptom</th><th>Fix</th></tr></thead>
+              <tbody>
+                <tr><td>Downstream down</td><td>Connection refused, 503</td><td>Circuit breaker + fallback</td></tr>
+                <tr><td>Downstream slow</td><td>Threads pile up, p99 spikes</td><td>Timeout + bulkhead</td></tr>
+                <tr><td>Transient blip</td><td>Single timeout</td><td>Retry with backoff + jitter</td></tr>
+                <tr><td>Thundering herd after recovery</td><td>All services retry at once</td><td>Jitter + half-open probe limits</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+<pre><code>@CircuitBreaker(name = "inventory", fallbackMethod = "inventoryFallback")
+@Retry(name = "inventory")
+@Bulkhead(name = "inventory", type = Bulkhead.Type.SEMAPHORE)
+@TimeLimiter(name = "inventory")
+public CompletableFuture&lt;StockDto&gt; getStock(String sku) {
+    return CompletableFuture.supplyAsync(() -&gt; inventoryClient.get(sku));
+}
+
+public CompletableFuture&lt;StockDto&gt; inventoryFallback(String sku, Throwable t) {
+    return CompletableFuture.completedFuture(cache.get(sku)); // stale OK for browse
+}</code></pre>
+
+          <div class="cmp-section">
+            <div class="cmp-section-title"><span class="cmp-num">1</span> Sync vs async</div>
+            <ul>
+              <li><strong>Sync HTTP</strong> when the user waits for the answer — stack all resilience patterns above.</li>
+              <li><strong>Async events</strong> when the user does not need the result now — publish to Kafka; consumer retries with DLQ.</li>
+            </ul>
+          </div>
+
+          <p><b>Common interview gotchas:</b></p>
           <ul>
-            <li><strong>Timeouts</strong> on every outbound call — never block forever. Set them generous-but-realistic.</li>
-            <li><strong>Retries with exponential backoff + jitter</strong> for transient errors only. Make calls idempotent.</li>
-            <li><strong>Circuit breaker</strong> — fail fast when a downstream is unhealthy.</li>
-            <li><strong>Bulkheads</strong> — separate thread pools / connection pools per downstream so one slow dependency doesn't starve the rest.</li>
-            <li><strong>Fallbacks</strong> — return cached / degraded responses where possible.</li>
-            <li><strong>Async over sync</strong> — if the caller doesn't need the result immediately, send an event instead.</li>
+            <li>Retrying non-idempotent POST without an idempotency key — double charges.</li>
+            <li>Retry without a circuit breaker — you amplify the outage.</li>
+            <li>One shared thread pool for all downstreams — one slow service kills everything (no bulkhead).</li>
+            <li>Fallback that calls another failing service — fallback must be cheap and local.</li>
           </ul>
-          <p>All of this is Resilience4j in Spring Boot. Combined with timeouts at the HTTP client level, this stack has saved my services through multiple downstream outages.</p>
+
+          <p class="takeaway"><b>Interview one-liner:</b> Every outbound call gets a timeout, retries only for transient idempotent failures, a circuit breaker to fail fast, a bulkhead so one bad dependency cannot starve the rest, and a local fallback. Prefer async when the user is not waiting. A slow dependency should mean partial degradation, not a fleet-wide outage.</p>
         </div>
       </details>
 
