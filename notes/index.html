@@ -24,7 +24,7 @@
       </a>
       <div class="search-wrap">
         <i class="bi bi-search"></i>
-        <input id="search" type="search" placeholder="Search topics, e.g. java, kafka, system design..." autocomplete="off" spellcheck="false">
+        <input id="search" type="search" placeholder="Search modules…" autocomplete="off" spellcheck="false" aria-label="Search topic modules">
         <span class="search-shortcut">/</span>
       </div>
       <div class="topbar-actions">
@@ -40,13 +40,24 @@
       <h1>Interview &amp; Reference Notes</h1>
       <p>Quick-access answers for backend, system design, and AI engineering interviews.</p>
       <div class="hub-stats">
-        <span><strong>380+</strong> questions</span>
-        <span><strong>19</strong> topics</span>
-        <span>Press <span class="hint-kbd">/</span> to search</span>
+        <span><strong>710+</strong> questions</span>
+        <span><strong>29</strong> topics</span>
+        <span>Press <span class="hint-kbd">/</span> modules · <span class="hint-kbd">?</span> all questions</span>
       </div>
     </div>
 
-    <div class="no-results" id="noResults">No matches. Try a different keyword.</div>
+    <div class="hub-global-search" aria-label="Search all questions">
+      <label class="hub-global-search-label" for="searchQuestions">Search all questions</label>
+      <div class="search-wrap search-wrap-hub">
+        <i class="bi bi-chat-left-text"></i>
+        <input id="searchQuestions" type="search" placeholder="Search 700+ questions across every topic…" autocomplete="off" spellcheck="false" aria-label="Search all questions">
+        <span class="search-shortcut">?</span>
+      </div>
+      <p class="hub-global-search-status" id="questionSearchStatus">Loading question index…</p>
+      <div id="questionResults" class="question-results" hidden></div>
+    </div>
+
+    <div class="no-results" id="noResults">No modules match. Try a different keyword.</div>
 
     <!-- =====================================================
          CROSS-TOPIC — Hot / Must shortcuts
@@ -85,7 +96,7 @@
           <h3>Behavioral</h3>
           <p>Tell me about yourself, projects, conflicts, leadership, weaknesses — tailored to your resume.</p>
           <div class="topic-card-foot">
-            <span>15 questions</span>
+            <span>115 questions</span>
             <span class="topic-card-arrow">→</span>
           </div>
         </a>
@@ -98,7 +109,7 @@
           <h3>Core Java</h3>
           <p>JVM internals, Collections, OOP, Java 8+ — HashMap and Streams come up in nearly every interview.</p>
           <div class="topic-card-foot">
-            <span>45 questions</span>
+            <span>100 questions</span>
             <span class="topic-card-arrow">→</span>
           </div>
         </a>
@@ -111,7 +122,7 @@
           <h3>Concurrency</h3>
           <p>Threads, locks, executors, java.util.concurrent. Where senior interviews dig hardest.</p>
           <div class="topic-card-foot">
-            <span>15 questions</span>
+            <span>35 questions</span>
             <span class="topic-card-arrow">→</span>
           </div>
         </a>
@@ -137,7 +148,7 @@
           <h3>Spring Boot</h3>
           <p>Auto-config, starters, profiles, actuator, REST, resilience patterns. Your daily stack.</p>
           <div class="topic-card-foot">
-            <span>30 questions</span>
+            <span>52 questions</span>
             <span class="topic-card-arrow">→</span>
           </div>
         </a>
@@ -150,7 +161,20 @@
           <h3>REST &amp; Security</h3>
           <p>HTTP, JWT, OAuth, CORS, idempotency, status codes. Cross-cutting API knowledge.</p>
           <div class="topic-card-foot">
-            <span>11 questions</span>
+            <span>58 questions</span>
+            <span class="topic-card-arrow">→</span>
+          </div>
+        </a>
+
+        <a href="soap.html" class="topic-card" data-color="teal">
+          <div class="topic-card-head">
+            <span class="topic-card-num">06b</span>
+            <span class="topic-card-icon"><i class="bi bi-envelope-paper"></i></span>
+          </div>
+          <h3>SOAP Web Services</h3>
+          <p>WSDL, XSD, envelope, WS-Security — essential for core banking integrations.</p>
+          <div class="topic-card-foot">
+            <span>15 questions</span>
             <span class="topic-card-arrow">→</span>
           </div>
         </a>
@@ -173,7 +197,20 @@
           <h3>SQL &amp; RDBMS</h3>
           <p>Joins, transactions, indexing, query optimization, ACID, sharding, scaling.</p>
           <div class="topic-card-foot">
-            <span>25 questions</span>
+            <span>79 questions</span>
+            <span class="topic-card-arrow">→</span>
+          </div>
+        </a>
+
+        <a href="plsql.html" class="topic-card" data-color="teal">
+          <div class="topic-card-head">
+            <span class="topic-card-num">07b</span>
+            <span class="topic-card-icon"><i class="bi bi-braces"></i></span>
+          </div>
+          <h3>Oracle PL/SQL</h3>
+          <p>Procedures, packages, triggers, cursors, bulk collect — Oracle implementation interviews.</p>
+          <div class="topic-card-foot">
+            <span>41 questions</span>
             <span class="topic-card-arrow">→</span>
           </div>
         </a>
@@ -222,7 +259,7 @@
           <h3>Microservices</h3>
           <p>Monolith vs micro, inter-service comms, patterns, anti-patterns, data consistency.</p>
           <div class="topic-card-foot">
-            <span>13 questions</span>
+            <span>42 questions</span>
             <span class="topic-card-arrow">→</span>
           </div>
         </a>
@@ -235,7 +272,7 @@
           <h3>Messaging</h3>
           <p>Kafka vs RabbitMQ, queues, DLQ, delivery guarantees, ordering.</p>
           <div class="topic-card-foot">
-            <span>4 questions</span>
+            <span>31 questions</span>
             <span class="topic-card-arrow">→</span>
           </div>
         </a>
@@ -248,11 +285,35 @@
           <h3>System Design</h3>
           <p>Scalability, load balancing, caching, rate limiting, common designs: URL shortener, chat, etc.</p>
           <div class="topic-card-foot">
-            <span>15 questions</span>
+            <span>62 questions</span>
             <span class="topic-card-arrow">→</span>
           </div>
         </a>
 
+      </div>
+    </section>
+
+    <section class="hub-section">
+      <h2 class="hub-section-title">Oracle &amp; Banking</h2>
+      <div class="hub-grid">
+        <a href="bfsi.html" class="topic-card" data-color="amber">
+          <div class="topic-card-head"><span class="topic-card-num">B1</span><span class="topic-card-icon"><i class="bi bi-bank"></i></span></div>
+          <h3>Core Banking &amp; BFSI</h3>
+          <p>CASA, KYC, posting, EOD, FLEXCUBE.</p>
+          <div class="topic-card-foot"><span>52 questions</span><span class="topic-card-arrow">→</span></div>
+        </a>
+        <a href="sdlc.html" class="topic-card">
+          <div class="topic-card-head"><span class="topic-card-num">B2</span><span class="topic-card-icon"><i class="bi bi-kanban"></i></span></div>
+          <h3>SDLC &amp; Agile</h3>
+          <p>Waterfall, Agile, UAT, go-live.</p>
+          <div class="topic-card-foot"><span>21 questions</span><span class="topic-card-arrow">→</span></div>
+        </a>
+        <a href="scenarios.html" class="topic-card" data-color="pink">
+          <div class="topic-card-head"><span class="topic-card-num">B3</span><span class="topic-card-icon"><i class="bi bi-lightning"></i></span></div>
+          <h3>Scenario-Based</h3>
+          <p>Production debugging scenarios.</p>
+          <div class="topic-card-foot"><span>15 questions</span><span class="topic-card-arrow">→</span></div>
+        </a>
       </div>
     </section>
 
@@ -379,6 +440,8 @@
 
   </main>
 
+  <script src="topics.js"></script>
   <script src="main.js"></script>
+  <script src="hub-question-search.js"></script>
 </body>
 </html>

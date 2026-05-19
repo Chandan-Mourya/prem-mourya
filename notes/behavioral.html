@@ -1,102 +1,152 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex,nofollow,noarchive">
-  <title>Behavioral · Notes</title>
-  <link rel="icon" href="../assets/img/logo.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<title>Behavioral · Notes</title>
+<link href="../assets/img/logo.png" rel="icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
-
-  <header class="topbar">
-    <div class="topbar-inner">
-      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
-      <div class="search-wrap">
-        <i class="bi bi-search"></i>
-        <input id="search" type="search" placeholder="Search within Behavioral..." autocomplete="off" spellcheck="false">
-        <span class="search-shortcut">/</span>
-      </div>
-      <div class="topbar-actions">
-        <button class="action-btn" id="expandAll" title="Expand all (E)"><i class="bi bi-arrows-expand"></i> Expand</button>
-        <button class="action-btn" id="collapseAll" title="Collapse all (C)"><i class="bi bi-arrows-collapse"></i> Collapse</button>
-      </div>
-    </div>
-  </header>
-
-  <main class="topic-page">
-
-    <div class="topic-page-header">
-      <div class="topic-page-eyebrow">01 · Behavioral</div>
-      <h1>Tell me about yourself &amp; soft questions</h1>
-      <p class="topic-page-desc">Story-based answers tuned to your resume — Indus Net, OneXtel, Punctuations.ai, MongoDB+ES, and 5 years of microservices. Speak 30–60 seconds per answer.</p>
-      <div class="topic-page-meta">
-        <span><strong>19</strong> questions</span>
-        <span>Press <span class="hint-kbd">/</span> to search · <span class="hint-kbd">E</span> expand all</span>
-      </div>
-    </div>
-
-    <div class="no-results" id="noResults">No matches. Try a different keyword.</div>
-
-    <div class="qa-list">
-
-      <details class="qa">
-        <summary>Tell me about yourself <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p>I'm Chandan Mourya, a Senior Software Engineer with around 5 years of experience building scalable backend systems in Java, Spring Boot, and microservices. I'm currently at <strong>Indus Net Technologies</strong>, where I work on the <strong>Punctuations.ai</strong> platform — an AI-driven HR &amp; recruitment product. There I built features like resume parsing, AI-powered candidate matching using embeddings, and a search layer on top of <strong>MongoDB and Elasticsearch</strong> handling thousands of profiles.</p>
-          <p>Before that, I was at <strong>OneXtel Media</strong>, working on telecom &amp; messaging products — services for SMS, voice, and bulk campaigns at scale, integrating with operator APIs and Kafka. Across both roles I've also handled production debugging, AWS deployments, Docker/Kubernetes, and CI/CD. Outside work I've solved <strong>450+ DSA problems</strong> and write engineering articles on Medium.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Walk me through your most recent project <span class="qa-tag hot">hot</span></summary>
-        <div class="qa-body">
-          <p>The most recent one is <strong>Punctuations.ai</strong> at Indus Net — an AI hiring platform. Recruiters upload thousands of resumes, and we extract structured data, match candidates to job descriptions using embeddings, and let recruiters search via natural language. I designed the <strong>resume-parsing microservice</strong> using Spring Boot, with async processing through Kafka so heavy LLM calls don't block the API.</p>
-          <p>For storage I used MongoDB for the raw documents and Elasticsearch for searchable fields plus dense vectors for semantic match. The biggest engineering win was reducing match latency from 4 seconds to under 600 ms by caching JD embeddings in Redis and using kNN on Elasticsearch. We also added circuit breakers around the LLM provider so a vendor outage didn't take the platform down.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>What's the most challenging problem you've solved?</summary>
-        <div class="qa-body">
-          <p>At OneXtel we had an SMS-gateway service that started timing out during peak hours — about 5 p.m. when campaigns ran. From outside it looked like a database issue, but DB metrics were fine. I took thread dumps from the JVM and saw most threads stuck on a <strong>synchronized block around a connection pool</strong> we had wrapped for logging — a classic case of accidental lock contention.</p>
-          <p>I replaced the synchronized wrapper with HikariCP's native instrumentation and moved logging to an async appender. Throughput went from 200 to 1,200 messages per second on the same hardware, and p99 latency dropped from 4 s to 80 ms. That experience taught me to always reach for thread dumps and async-profiler before blaming the database.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Tell me about a production issue you solved <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">On a payments service I owned, four Kubernetes pods were being <code>OOMKilled</code> every five to six hours under traffic — this is how I went from "just restart it" to a clean root-cause fix without losing the evidence.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-row">
-              <span class="core-diff-key">CORE IDEA</span>
-              <span class="core-diff-val">Stabilize customers first, but never restart blindly — treat the next OOM as a data-collection opportunity, not just an outage to silence.</span>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> Situation</div>
-            <p>At one of my previous companies I was on-call for a payments microservice running 4 replicas behind a service mesh, sustaining roughly 3k RPS. Over a week we saw repeated <code>OOMKilled</code> events at the 5–6 hour mark on every pod. Customer-visible impact was 5xx spikes during rollover — about 8–12 seconds of failed authorisations each cycle, which upstream callers then amplified via retries.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> Task</div>
-            <p>Three goals in order: keep customers transacting, capture enough evidence to find the real root cause, and ship a permanent fix with a guardrail so this class of bug couldn't recur silently.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> Action</div>
-            <p>First, stabilize. I added a longer <code>preStopHook</code> and a graceful drain on the readiness probe so traffic shifted away cleanly before each pod died; the 5xx spikes on rollover dropped immediately. I deliberately did <em>not</em> raise the heap to "buy time" — that just makes the OOM less frequent and harder to catch.</p>
-            <p>Then, capture. Enabled <code>-XX:+HeapDumpOnOutOfMemoryError</code> with the dump path mounted on a persistent volume so the next OOM produced a usable <code>.hprof</code>. Within about 4 hours we had a dump.</p>
-            <p>Then, analyse. Opened the dump in Eclipse MAT; the <em>Leak Suspects</em> report pointed at a <code>ThreadLocal&lt;RequestContext&gt;</code> the request filter set on entry and never cleared on exit. Tomcat worker threads are pooled, so the context piled up request after request. A second offender — a per-tenant config map — was unbounded; I replaced it with a Caffeine cache (size + TTL).</p>
-            <p>The actual fix was small:</p>
+<header class="topbar">
+<div class="topbar-inner">
+<a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+<div class="search-wrap">
+<i class="bi bi-search"></i>
+<input autocomplete="off" id="search" placeholder="Search within Behavioral..." spellcheck="false" type="search"/>
+<span class="search-shortcut">/</span>
+</div>
+<div class="topbar-actions">
+<button class="action-btn" id="expandAll" title="Expand all (E)"><i class="bi bi-arrows-expand"></i> Expand</button>
+<button class="action-btn" id="collapseAll" title="Collapse all (C)"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+</div>
+</div>
+</header>
+<main class="topic-page">
+<div class="topic-page-header">
+<div class="topic-page-eyebrow">01 · Behavioral</div>
+<h1>Tell me about yourself &amp; soft questions</h1>
+<p class="topic-page-desc">Story-based answers tuned to your resume — Indus Net, OneXtel, Punctuations.ai, MongoDB+ES, and 5 years of microservices. Speak 30–60 seconds per answer.</p>
+<div class="topic-page-meta">
+<span><strong>108</strong> questions</span>
+<span>Press <span class="hint-kbd">/</span> to search · <span class="hint-kbd">E</span> expand all</span>
+</div>
+</div>
+<div class="no-results" id="noResults">No matches. Try a different keyword.</div>
+<div class="qa-list">
+<details class="qa">
+<summary>Tell me about yourself <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p>I'm Chandan Mourya, a Senior Software Engineer with around 5 years of experience building scalable backend systems in Java, Spring Boot, and microservices. I'm currently at <strong>Indus Net Technologies</strong>, where I work on the <strong>Punctuations.ai</strong> platform — an AI-driven HR &amp; recruitment product. There I built features like resume parsing, AI-powered candidate matching using embeddings, and a search layer on top of <strong>MongoDB and Elasticsearch</strong> handling thousands of profiles.</p>
+<p>Before that, I was at <strong>OneXtel Media</strong>, working on telecom &amp; messaging products — services for SMS, voice, and bulk campaigns at scale, integrating with operator APIs and Kafka. Across both roles I've also handled production debugging, AWS deployments, Docker/Kubernetes, and CI/CD. Outside work I've solved <strong>450+ DSA problems</strong> and write engineering articles on Medium.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Walk me through your most recent project <span class="qa-tag hot">hot</span></summary>
+<div class="qa-body">
+<p>The most recent one is <strong>Punctuations.ai</strong> at Indus Net — an AI hiring platform. Recruiters upload thousands of resumes, and we extract structured data, match candidates to job descriptions using embeddings, and let recruiters search via natural language. I designed the <strong>resume-parsing microservice</strong> using Spring Boot, with async processing through Kafka so heavy LLM calls don't block the API.</p>
+<p>For storage I used MongoDB for the raw documents and Elasticsearch for searchable fields plus dense vectors for semantic match. The biggest engineering win was reducing match latency from 4 seconds to under 600 ms by caching JD embeddings in Redis and using kNN on Elasticsearch. We also added circuit breakers around the LLM provider so a vendor outage didn't take the platform down.</p>
+</div>
+</details>
+<details class="qa">
+<summary>What is your role in the project? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim">
+<p class="answer-intro">When an interviewer asks about my role, they are checking whether I only write code or whether I understand delivery, quality, and production responsibility end to end.</p>
+<p>I answer by tying my role to the <strong>project phase</strong> and <strong>outcomes</strong>, not only to job title keywords.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to how I structure the answer.</div>
+<p>I usually cover four areas:</p>
+<p>what the system does</p>
+<p>what I own technically</p>
+<p>how I work with the team and client</p>
+<p>what impact I delivered</p>
+<p>Example opening:</p>
+<p><em>"I work as a Senior Java / Spring Boot engineer on a microservices-based platform. I own the design and delivery of two services — account inquiry and payment initiation — and I also support production for the payment module."</em></p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to technical responsibilities.</div>
+<p>In most of my projects, my technical role includes:</p>
+<p>understanding requirements and breaking them into tasks</p>
+<p>designing REST APIs and database changes</p>
+<p>implementing Spring Boot services and integrations (DB, messaging, external APIs)</p>
+<p>writing unit and integration tests (JUnit, Mockito)</p>
+<p>code reviews and mentoring juniors</p>
+<p>fixing production defects and performance issues</p>
+<p>preparing deployment notes and supporting UAT/go-live</p>
+<p>For banking implementations, I also work on:</p>
+<p>maker-checker flows</p>
+<p>audit logging</p>
+<p>reconciliation and batch support</p>
+<p>interface development with core banking or payment switches</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to non-coding responsibilities.</div>
+<p>Senior role is not only coding. I also:</p>
+<p>join sprint planning and estimation</p>
+<p>clarify requirements with BA/client when stories are vague</p>
+<p>document technical design and API contracts</p>
+<p>coordinate with QA on test scenarios and defect triage</p>
+<p>participate in release and rollback discussions</p>
+<p>communicate status during production incidents</p>
+<p>This is especially important in Oracle consulting roles where the client expects clear communication, not only delivery.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to a concrete example (Punctuations.ai style).</div>
+<p>On the AI hiring platform, my role was:</p>
+<p>designing the resume parsing microservice architecture</p>
+<p>implementing Kafka-based async processing so LLM calls do not block APIs</p>
+<p>integrating MongoDB, Elasticsearch, and Redis for search and caching</p>
+<p>adding resilience (circuit breaker, retries) around external LLM APIs</p>
+<p>optimizing latency from ~4s to under 600ms for matching</p>
+<p>supporting deployment on Kubernetes and debugging production issues</p>
+<p>This shows ownership from design → build → operate.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to what I avoid in the interview.</div>
+<p>I do not say only: <em>"I develop features."</em></p>
+<p>I do not list twenty technologies without linking them to responsibility.</p>
+<p>I do not claim I did everything alone — I mention team, QA, DevOps, and client where relevant.</p>
+<p>In conclusion, my role is to deliver reliable backend services, guide technical decisions, ensure quality and production stability, and communicate clearly with the team and stakeholders.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What's the most challenging problem you've solved?</summary>
+<div class="qa-body">
+<p>At OneXtel we had an SMS-gateway service that started timing out during peak hours — about 5 p.m. when campaigns ran. From outside it looked like a database issue, but DB metrics were fine. I took thread dumps from the JVM and saw most threads stuck on a <strong>synchronized block around a connection pool</strong> we had wrapped for logging — a classic case of accidental lock contention.</p>
+<p>I replaced the synchronized wrapper with HikariCP's native instrumentation and moved logging to an async appender. Throughput went from 200 to 1,200 messages per second on the same hardware, and p99 latency dropped from 4 s to 80 ms. That experience taught me to always reach for thread dumps and async-profiler before blaming the database.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Tell me about a production issue you solved <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro">On a payments service I owned, four Kubernetes pods were being <code>OOMKilled</code> every five to six hours under traffic — this is how I went from "just restart it" to a clean root-cause fix without losing the evidence.</p>
+<div class="core-diff">
+<div class="core-diff-row">
+<span class="core-diff-key">CORE IDEA</span>
+<span class="core-diff-val">Stabilize customers first, but never restart blindly — treat the next OOM as a data-collection opportunity, not just an outage to silence.</span>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> Situation</div>
+<p>At one of my previous companies I was on-call for a payments microservice running 4 replicas behind a service mesh, sustaining roughly 3k RPS. Over a week we saw repeated <code>OOMKilled</code> events at the 5–6 hour mark on every pod. Customer-visible impact was 5xx spikes during rollover — about 8–12 seconds of failed authorisations each cycle, which upstream callers then amplified via retries.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> Task</div>
+<p>Three goals in order: keep customers transacting, capture enough evidence to find the real root cause, and ship a permanent fix with a guardrail so this class of bug couldn't recur silently.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">3</span> Action</div>
+<p>First, stabilize. I added a longer <code>preStopHook</code> and a graceful drain on the readiness probe so traffic shifted away cleanly before each pod died; the 5xx spikes on rollover dropped immediately. I deliberately did <em>not</em> raise the heap to "buy time" — that just makes the OOM less frequent and harder to catch.</p>
+<p>Then, capture. Enabled <code>-XX:+HeapDumpOnOutOfMemoryError</code> with the dump path mounted on a persistent volume so the next OOM produced a usable <code>.hprof</code>. Within about 4 hours we had a dump.</p>
+<p>Then, analyse. Opened the dump in Eclipse MAT; the <em>Leak Suspects</em> report pointed at a <code>ThreadLocal&lt;RequestContext&gt;</code> the request filter set on entry and never cleared on exit. Tomcat worker threads are pooled, so the context piled up request after request. A second offender — a per-tenant config map — was unbounded; I replaced it with a Caffeine cache (size + TTL).</p>
+<p>The actual fix was small:</p>
 <pre><code>// Filter — the missing finally block
 public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
     throws IOException, ServletException {
@@ -107,176 +157,155 @@ public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
     CURRENT.remove();   // &lt;-- this is what was missing
   }
 }</code></pre>
-            <p>Roll-out discipline: gated behind a feature flag, soaked 24 hours in staging under replayed prod traffic, then a 1-of-4 prod canary while I watched <code>jvm_memory_used_bytes</code> rate-of-change, then full fleet.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">4</span> Result</div>
-            <p>Heap usage plateaued and stayed flat across a 72-hour soak; zero <code>OOMKilled</code> events since. p99 stabilised around 38 ms (down from a noisy 80–250 ms during the leaking window). On-call pages on this service went from ~3 per week to zero. I wrote up an "OOM checklist" runbook and added a Prometheus alert on the rolling 4-hour growth rate of heap usage — so the next leak gets noticed before customers do.</p>
-          </div>
-
-          <div class="cmp-grid">
-            <div class="cmp-card">
-              <div class="cmp-card-title">Stabilize first</div>
-              <ul>
-                <li>Graceful drain on pod restart — kill the 5xx spikes.</li>
-                <li>Do <em>not</em> raise the heap; it hides the bug.</li>
-                <li>Communicate ETA to on-call and stakeholders.</li>
-              </ul>
-            </div>
-            <div class="cmp-card">
-              <div class="cmp-card-title">Root-cause after</div>
-              <ul>
-                <li>Heap dump on OOM, persisted to a volume.</li>
-                <li>Eclipse MAT Leak Suspects → real offender.</li>
-                <li>Fix + soak + canary + alert on growth rate.</li>
-              </ul>
-            </div>
-          </div>
-
-          <p><b>Common interview gotchas:</b></p>
-          <ul>
-            <li>Don't say "we just restarted it on a cron" — that's an outage workaround, not a fix.</li>
-            <li>Don't blame a teammate by name; own the system's gap instead.</li>
-            <li>Avoid vague metrics like "performance improved" — name actual numbers.</li>
-            <li>Don't skip the guardrail step (alert, runbook). A fix without prevention is incomplete.</li>
-            <li>Avoid heroics framing ("I stayed up all night"); emphasise process and discipline.</li>
-            <li>Don't claim instant root-cause — be honest that capturing the dump took hours.</li>
-          </ul>
-
-          <p class="takeaway"><b>Interview one-liner:</b> A senior engineer's first move during an OOM isn't to raise the heap — it's to capture the dump. I stabilized customers with a graceful drain, let the next OOM produce a real <code>.hprof</code>, traced it to a <code>ThreadLocal</code> we never cleared, shipped a one-line <code>finally { tl.remove(); }</code> fix behind a flag, and left behind an alert on heap growth rate. Never restart blindly — capture the dump first.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Tell me about a difficult scalability problem you handled <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">On an e-commerce catalog service, a marketing burst turned a healthy 25 ms p99 into a 3 s p99 and pushed the database to 90% CPU — this is how I rescued it with cache strategy instead of a bigger machine.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-row">
-              <span class="core-diff-key">CORE IDEA</span>
-              <span class="core-diff-val">Cache strategy is a product decision, not just a code change — jittered TTLs, request coalescing, and a small near-cache are the difference between a stampede and a steady state.</span>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> Situation</div>
-            <p>On a catalog service I worked on, traffic ran around 50k RPS overall; about 95% of reads concentrated on the top 1,000 SKUs. After a marketing burst pushed homepage impressions for a flagship SKU, p99 spiked from ~25 ms to ~3 s and downstream Postgres sat at &gt;90% CPU. Each pod's local Caffeine cache expired roughly together, and on miss every pod hit the DB simultaneously — textbook stampede on a hot key.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> Task</div>
-            <p>Bring p99 back to ≤ 50 ms under the burst, without vertically scaling the DB and without 10x-ing read cost on RDS.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> Action</div>
-            <p>Four layered changes:</p>
-            <ul>
-              <li>Moved per-pod Caffeine to a <strong>shared Redis cache</strong> so cache fill happened once across the fleet, not once per pod.</li>
-              <li>Added <strong>jittered TTLs (5–10 minutes)</strong> per key so SKUs didn't all expire at the same wall-clock second.</li>
-              <li>Added <strong>request coalescing</strong> on cache miss using <code>SET NX EX</code> as a distributed lock — only one pod refreshes a key, the rest serve stale-while-revalidate from Redis.</li>
-              <li>Kept a small <strong>per-pod near-cache</strong> (Caffeine, ~100 entries) for the absolute hottest SKUs so most requests never crossed the network at all.</li>
-            </ul>
-            <p>Wired Micrometer cache metrics + Grafana dashboards: hit rate, miss rate, refresh latency, lock contention. The coalescing lock primitive looked like this:</p>
+<p>Roll-out discipline: gated behind a feature flag, soaked 24 hours in staging under replayed prod traffic, then a 1-of-4 prod canary while I watched <code>jvm_memory_used_bytes</code> rate-of-change, then full fleet.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">4</span> Result</div>
+<p>Heap usage plateaued and stayed flat across a 72-hour soak; zero <code>OOMKilled</code> events since. p99 stabilised around 38 ms (down from a noisy 80–250 ms during the leaking window). On-call pages on this service went from ~3 per week to zero. I wrote up an "OOM checklist" runbook and added a Prometheus alert on the rolling 4-hour growth rate of heap usage — so the next leak gets noticed before customers do.</p>
+</div>
+<div class="cmp-grid">
+<div class="cmp-card">
+<div class="cmp-card-title">Stabilize first</div>
+<ul>
+<li>Graceful drain on pod restart — kill the 5xx spikes.</li>
+<li>Do <em>not</em> raise the heap; it hides the bug.</li>
+<li>Communicate ETA to on-call and stakeholders.</li>
+</ul>
+</div>
+<div class="cmp-card">
+<div class="cmp-card-title">Root-cause after</div>
+<ul>
+<li>Heap dump on OOM, persisted to a volume.</li>
+<li>Eclipse MAT Leak Suspects → real offender.</li>
+<li>Fix + soak + canary + alert on growth rate.</li>
+</ul>
+</div>
+</div>
+<p><b>Common interview gotchas:</b></p>
+<ul>
+<li>Don't say "we just restarted it on a cron" — that's an outage workaround, not a fix.</li>
+<li>Don't blame a teammate by name; own the system's gap instead.</li>
+<li>Avoid vague metrics like "performance improved" — name actual numbers.</li>
+<li>Don't skip the guardrail step (alert, runbook). A fix without prevention is incomplete.</li>
+<li>Avoid heroics framing ("I stayed up all night"); emphasise process and discipline.</li>
+<li>Don't claim instant root-cause — be honest that capturing the dump took hours.</li>
+</ul>
+<p class="takeaway"><b>Interview one-liner:</b> A senior engineer's first move during an OOM isn't to raise the heap — it's to capture the dump. I stabilized customers with a graceful drain, let the next OOM produce a real <code>.hprof</code>, traced it to a <code>ThreadLocal</code> we never cleared, shipped a one-line <code>finally { tl.remove(); }</code> fix behind a flag, and left behind an alert on heap growth rate. Never restart blindly — capture the dump first.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Tell me about a difficult scalability problem you handled <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro">On an e-commerce catalog service, a marketing burst turned a healthy 25 ms p99 into a 3 s p99 and pushed the database to 90% CPU — this is how I rescued it with cache strategy instead of a bigger machine.</p>
+<div class="core-diff">
+<div class="core-diff-row">
+<span class="core-diff-key">CORE IDEA</span>
+<span class="core-diff-val">Cache strategy is a product decision, not just a code change — jittered TTLs, request coalescing, and a small near-cache are the difference between a stampede and a steady state.</span>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> Situation</div>
+<p>On a catalog service I worked on, traffic ran around 50k RPS overall; about 95% of reads concentrated on the top 1,000 SKUs. After a marketing burst pushed homepage impressions for a flagship SKU, p99 spiked from ~25 ms to ~3 s and downstream Postgres sat at &gt;90% CPU. Each pod's local Caffeine cache expired roughly together, and on miss every pod hit the DB simultaneously — textbook stampede on a hot key.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> Task</div>
+<p>Bring p99 back to ≤ 50 ms under the burst, without vertically scaling the DB and without 10x-ing read cost on RDS.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">3</span> Action</div>
+<p>Four layered changes:</p>
+<ul>
+<li>Moved per-pod Caffeine to a <strong>shared Redis cache</strong> so cache fill happened once across the fleet, not once per pod.</li>
+<li>Added <strong>jittered TTLs (5–10 minutes)</strong> per key so SKUs didn't all expire at the same wall-clock second.</li>
+<li>Added <strong>request coalescing</strong> on cache miss using <code>SET NX EX</code> as a distributed lock — only one pod refreshes a key, the rest serve stale-while-revalidate from Redis.</li>
+<li>Kept a small <strong>per-pod near-cache</strong> (Caffeine, ~100 entries) for the absolute hottest SKUs so most requests never crossed the network at all.</li>
+</ul>
+<p>Wired Micrometer cache metrics + Grafana dashboards: hit rate, miss rate, refresh latency, lock contention. The coalescing lock primitive looked like this:</p>
 <pre><code>-- KEYS[1] = "lock:sku:{id}"   ARGV[1] = pod-id   ARGV[2] = 3 (sec)
 if redis.call("SET", KEYS[1], ARGV[1], "NX", "EX", ARGV[2]) then
   return 1   -- this pod is the refresher
 else
   return 0   -- someone else is refreshing; serve stale-while-revalidate
 end</code></pre>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">4</span> Result</div>
-            <p>Hit rate climbed from 0.78 to 0.97. p99 dropped from ~3 s back to ~35 ms under burst, comfortably under the SLO. DB CPU dropped by ~80% and we cancelled a planned RDS upsize, saving real spend. The service became cleanly horizontally scalable — adding pods now added throughput instead of multiplying DB load.</p>
-          </div>
-
-          <div class="note-table-wrap">
-            <table class="note-table">
-              <thead>
-                <tr><th>Metric</th><th>Before</th><th>After</th></tr>
-              </thead>
-              <tbody>
-                <tr><td>Cache hit rate</td><td>0.78</td><td>0.97</td></tr>
-                <tr><td>p99 latency (burst)</td><td>~3,000 ms</td><td>~35 ms</td></tr>
-                <tr><td>p99 latency (steady)</td><td>~25 ms</td><td>~12 ms</td></tr>
-                <tr><td>DB CPU (peak)</td><td>~92%</td><td>~18%</td></tr>
-                <tr><td>RDS instance plan</td><td>Planned upsize</td><td>Same instance</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <p><b>Common interview gotchas:</b></p>
-          <ul>
-            <li>Don't say "we added Redis and it got faster" — name the failure mode (stampede on a hot key) and the specific mitigations.</li>
-            <li>Don't skip the hit-rate metric; it's the only honest measure of cache value.</li>
-            <li>Avoid claiming "infinite scale" — say what the new bottleneck became.</li>
-            <li>Don't forget jitter — equal TTLs are themselves a synchronised failure mode.</li>
-            <li>Avoid vague language like "we tuned things"; be specific about what changed and why.</li>
-            <li>Don't ignore the cost angle — cancelling the upsize was part of the win.</li>
-          </ul>
-
-          <p class="takeaway"><b>Interview one-liner:</b> A scalability problem at this layer is usually not "the DB is slow"; it's "everyone hits the DB at the same instant". I named the failure mode — cache stampede on a hot key — then shipped shared Redis with jittered TTLs, request coalescing via <code>SET NX EX</code>, and a small near-cache. p99 went from 3 s back to 35 ms and we avoided an RDS upsize. Cache strategy was the product decision; code was the easy part.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Why are you looking to switch?</summary>
-        <div class="qa-body">
-          <p>I've grown a lot at Indus Net — I lead the backend for Punctuations.ai and own end-to-end design. But the product is at an early stage where the team is small and tech decisions repeat. I'm looking for a place where I can work on <strong>larger-scale distributed systems</strong>, learn from senior engineers who've built systems at scale, and operate in a stronger engineering culture with mature CI/CD, observability, and code-review practices.</p>
-          <p>I'm not running away from anything — my current team and managers have been supportive. I'm pulling toward a role where the scale, mentorship, and product impact match where I want to be in the next 2–3 years.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Tell me about a conflict with a teammate</summary>
-        <div class="qa-body">
-          <p>At Indus Net, a frontend teammate and I disagreed on whether the resume-upload API should return parsed fields synchronously or push to a queue. He wanted a synchronous response so the UI could show extracted data immediately; I argued an async pipeline was safer because parsing involved a 3-second LLM call and we couldn't hold an HTTP thread that long under load.</p>
-          <p>Instead of escalating, we built a quick prototype. I added a polling endpoint plus a WebSocket fallback, and he agreed once he saw the UX. We shipped the async approach and added a "parsing..." state. The lesson for me was that "disagree and prototype" beats "disagree and argue" — within a day we had data instead of opinions.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Describe a time you failed</summary>
-        <div class="qa-body">
-          <p>Early in my OneXtel days I pushed a Kafka consumer change without enough load testing. I assumed the new consumer group would catch up quickly after deployment, but it processed messages 4× slower because I'd serialized JSON inefficiently. The lag piled up to 2 million messages overnight and woke up the on-call engineer.</p>
-          <p>I owned the rollback the same hour and stayed late to drain the backlog. After that I made <strong>load testing mandatory</strong> in our team's deployment checklist for any consumer change, and I added <strong>Grafana alerts on consumer lag</strong>. We never had that class of issue again. The takeaway: my speed of fixing it mattered, but preventing the next person from making the same mistake mattered more.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Describe a time when a deployment failed in production <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">On a Friday-evening rolling deploy of an orders service, a single schema migration started locking a 30-million-row table and writes piled up — here's how we stopped the bleed in about 12 minutes and never made that class of mistake again.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-row">
-              <span class="core-diff-key">CORE IDEA</span>
-              <span class="core-diff-val">Incompatible schema changes are deployments too — design them as multi-step (expand → migrate → contract), never as a single "add NOT NULL on a hot table" release.</span>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> Situation</div>
-            <p>On an orders service I worked on, we did a routine Friday-evening rolling deploy. The migration added a <code>NOT NULL</code> column without a default to a 30-million-row table. Postgres started taking an <code>ACCESS EXCLUSIVE</code> lock while it rewrote the table. Reads were fine, but writes piled up; the writer connection pool saturated within minutes and customers started seeing 503s on order placement.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> Task</div>
-            <p>Stop the customer impact, finish or revert the migration safely without data loss, and make sure we never shipped a long-locking migration unreviewed again.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> Action</div>
-            <p>Step one — stop the bleed:</p>
-            <ul>
-              <li><code>kubectl rollout pause</code> on the orders deployment so no more pods picked up the new image.</li>
-              <li>Rolled back running pods to the previous image with <code>kubectl rollout undo</code>.</li>
-              <li>Identified the migration session in <code>pg_stat_activity</code> and ran <code>pg_terminate_backend</code> on it. Writes resumed within seconds.</li>
-            </ul>
-            <p>Step two — redo the migration the right way (expand → migrate → contract):</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">4</span> Result</div>
+<p>Hit rate climbed from 0.78 to 0.97. p99 dropped from ~3 s back to ~35 ms under burst, comfortably under the SLO. DB CPU dropped by ~80% and we cancelled a planned RDS upsize, saving real spend. The service became cleanly horizontally scalable — adding pods now added throughput instead of multiplying DB load.</p>
+</div>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead>
+<tr><th>Metric</th><th>Before</th><th>After</th></tr>
+</thead>
+<tbody>
+<tr><td>Cache hit rate</td><td>0.78</td><td>0.97</td></tr>
+<tr><td>p99 latency (burst)</td><td>~3,000 ms</td><td>~35 ms</td></tr>
+<tr><td>p99 latency (steady)</td><td>~25 ms</td><td>~12 ms</td></tr>
+<tr><td>DB CPU (peak)</td><td>~92%</td><td>~18%</td></tr>
+<tr><td>RDS instance plan</td><td>Planned upsize</td><td>Same instance</td></tr>
+</tbody>
+</table>
+</div>
+<p><b>Common interview gotchas:</b></p>
+<ul>
+<li>Don't say "we added Redis and it got faster" — name the failure mode (stampede on a hot key) and the specific mitigations.</li>
+<li>Don't skip the hit-rate metric; it's the only honest measure of cache value.</li>
+<li>Avoid claiming "infinite scale" — say what the new bottleneck became.</li>
+<li>Don't forget jitter — equal TTLs are themselves a synchronised failure mode.</li>
+<li>Avoid vague language like "we tuned things"; be specific about what changed and why.</li>
+<li>Don't ignore the cost angle — cancelling the upsize was part of the win.</li>
+</ul>
+<p class="takeaway"><b>Interview one-liner:</b> A scalability problem at this layer is usually not "the DB is slow"; it's "everyone hits the DB at the same instant". I named the failure mode — cache stampede on a hot key — then shipped shared Redis with jittered TTLs, request coalescing via <code>SET NX EX</code>, and a small near-cache. p99 went from 3 s back to 35 ms and we avoided an RDS upsize. Cache strategy was the product decision; code was the easy part.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Why are you looking to switch?</summary>
+<div class="qa-body">
+<p>I've grown a lot at Indus Net — I lead the backend for Punctuations.ai and own end-to-end design. But the product is at an early stage where the team is small and tech decisions repeat. I'm looking for a place where I can work on <strong>larger-scale distributed systems</strong>, learn from senior engineers who've built systems at scale, and operate in a stronger engineering culture with mature CI/CD, observability, and code-review practices.</p>
+<p>I'm not running away from anything — my current team and managers have been supportive. I'm pulling toward a role where the scale, mentorship, and product impact match where I want to be in the next 2–3 years.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Tell me about a conflict with a teammate</summary>
+<div class="qa-body">
+<p>At Indus Net, a frontend teammate and I disagreed on whether the resume-upload API should return parsed fields synchronously or push to a queue. He wanted a synchronous response so the UI could show extracted data immediately; I argued an async pipeline was safer because parsing involved a 3-second LLM call and we couldn't hold an HTTP thread that long under load.</p>
+<p>Instead of escalating, we built a quick prototype. I added a polling endpoint plus a WebSocket fallback, and he agreed once he saw the UX. We shipped the async approach and added a "parsing..." state. The lesson for me was that "disagree and prototype" beats "disagree and argue" — within a day we had data instead of opinions.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Describe a time you failed</summary>
+<div class="qa-body">
+<p>Early in my OneXtel days I pushed a Kafka consumer change without enough load testing. I assumed the new consumer group would catch up quickly after deployment, but it processed messages 4× slower because I'd serialized JSON inefficiently. The lag piled up to 2 million messages overnight and woke up the on-call engineer.</p>
+<p>I owned the rollback the same hour and stayed late to drain the backlog. After that I made <strong>load testing mandatory</strong> in our team's deployment checklist for any consumer change, and I added <strong>Grafana alerts on consumer lag</strong>. We never had that class of issue again. The takeaway: my speed of fixing it mattered, but preventing the next person from making the same mistake mattered more.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Describe a time when a deployment failed in production <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro">On a Friday-evening rolling deploy of an orders service, a single schema migration started locking a 30-million-row table and writes piled up — here's how we stopped the bleed in about 12 minutes and never made that class of mistake again.</p>
+<div class="core-diff">
+<div class="core-diff-row">
+<span class="core-diff-key">CORE IDEA</span>
+<span class="core-diff-val">Incompatible schema changes are deployments too — design them as multi-step (expand → migrate → contract), never as a single "add NOT NULL on a hot table" release.</span>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> Situation</div>
+<p>On an orders service I worked on, we did a routine Friday-evening rolling deploy. The migration added a <code>NOT NULL</code> column without a default to a 30-million-row table. Postgres started taking an <code>ACCESS EXCLUSIVE</code> lock while it rewrote the table. Reads were fine, but writes piled up; the writer connection pool saturated within minutes and customers started seeing 503s on order placement.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> Task</div>
+<p>Stop the customer impact, finish or revert the migration safely without data loss, and make sure we never shipped a long-locking migration unreviewed again.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">3</span> Action</div>
+<p>Step one — stop the bleed:</p>
+<ul>
+<li><code>kubectl rollout pause</code> on the orders deployment so no more pods picked up the new image.</li>
+<li>Rolled back running pods to the previous image with <code>kubectl rollout undo</code>.</li>
+<li>Identified the migration session in <code>pg_stat_activity</code> and ran <code>pg_terminate_backend</code> on it. Writes resumed within seconds.</li>
+</ul>
+<p>Step two — redo the migration the right way (expand → migrate → contract):</p>
 <pre><code>-- 1) EXPAND: add nullable, no rewrite, no table lock
 ALTER TABLE orders ADD COLUMN status_v2 TEXT NULL;
 
@@ -300,283 +329,1958 @@ END $$;
 
 -- 3) CONTRACT: NOT NULL is cheap once backfilled; drop old col in a later release
 ALTER TABLE orders ALTER COLUMN status_v2 SET NOT NULL;</code></pre>
-            <p>Step three — guardrails so the next person doesn't repeat it:</p>
-            <ul>
-              <li>Added a pre-deploy CI hook that runs <code>EXPLAIN</code> on candidate migrations and parses the lock level — anything <code>ACCESS EXCLUSIVE</code> on a table over 1M rows fails the pipeline.</li>
-              <li>Added a "schema change checklist" PR template: expand-migrate-contract, batch size, off-peak window, rollback plan.</li>
-              <li>Made it a team norm: no schema changes on Friday after 3 p.m.</li>
-            </ul>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">4</span> Result</div>
-            <p>Customer impact closed in about 12 minutes; no data loss; the month's SLO breach stayed under 0.5%. The team adopted expand-migrate-contract as the default pattern for schema changes — used cleanly on the next four migrations. The CI lock-level check caught two near-miss PRs in the following months that would have repeated the same mistake.</p>
-          </div>
-
-          <div class="flow">
-            <div class="flow-row">
-              <div class="flow-step bad">
-                <div class="flow-step-title">Wrong way</div>
-                <div class="flow-step-body">One migration: <code>ADD COLUMN … NOT NULL DEFAULT …</code> on a hot table, on a Friday. Postgres rewrites the table under <code>ACCESS EXCLUSIVE</code>. Writes stall. Customers see 503s.</div>
-              </div>
-            </div>
-            <div class="flow-row">
-              <div class="flow-step good">
-                <div class="flow-step-title">Expand</div>
-                <div class="flow-step-body">Add the column nullable. No rewrite, no table lock. App writes both new and old columns.</div>
-              </div>
-              <div class="flow-arrow">→</div>
-              <div class="flow-step good">
-                <div class="flow-step-title">Migrate</div>
-                <div class="flow-step-body">Backfill in small batches with <code>LIMIT</code> + <code>pg_sleep</code>, off-peak. Watch replication lag.</div>
-              </div>
-              <div class="flow-arrow">→</div>
-              <div class="flow-step good">
-                <div class="flow-step-title">Contract</div>
-                <div class="flow-step-body">Once backfilled, <code>SET NOT NULL</code> is cheap. Later, drop the old column in a separate release.</div>
-              </div>
-            </div>
-          </div>
-
-          <p><b>Common interview gotchas:</b></p>
-          <ul>
-            <li>Don't blame the DBA, the framework, or the migration tool — own the design call.</li>
-            <li>Don't frame it as "we rolled back and the problem was solved" — that's only step one.</li>
-            <li>Avoid vague timing ("very quickly") — give the minutes.</li>
-            <li>Don't claim zero impact if there was impact; honest SLO numbers build trust.</li>
-            <li>Avoid "we now test it in staging" as the lesson — staging never has 30M rows. The lesson is design, not test environment.</li>
-            <li>Don't skip the guardrail (the CI lock-level check is what actually prevents recurrence).</li>
-          </ul>
-
-          <p class="takeaway"><b>Interview one-liner:</b> Production deploy failures are almost never the deploy tool — they're an incompatible change shipped as one step instead of three. I stopped the bleed with a rollout pause and <code>pg_terminate_backend</code>, redesigned the migration as expand-migrate-contract, and made the lock-level check a CI gate. The fix is half the story; the guardrail is the other half.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>What's your biggest strength?</summary>
-        <div class="qa-body">
-          <p>My biggest strength is <strong>going deep when something is broken</strong>. I don't stop at the first plausible explanation — I take thread dumps, read logs, write small reproducers, and validate the actual root cause. The SMS-gateway lock-contention bug at OneXtel is one example; another was a JVM memory leak at Indus Net that I traced to a ThreadLocal we never cleared inside a filter.</p>
-          <p>That habit pays off in two ways. First, we fix issues correctly the first time. Second, when I share the writeup, the team learns — I've written 4 internal post-mortems and a few Medium articles based on these debugging sessions. It's also why I enjoy mentoring juniors on debugging skills.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>What's your biggest weakness?</summary>
-        <div class="qa-body">
-          <p>Earlier in my career I struggled with <strong>over-engineering</strong>. I'd add abstractions and "future-proofing" before the product needed them — extra interfaces, generic frameworks, configuration files for things that never changed. It slowed down both me and reviewers.</p>
-          <p>I've been working on it by asking three questions before adding abstraction: is there a second caller today, is the change concrete or speculative, and can I refactor later in under an hour? Most of the time the simple version wins. I now ship smaller PRs, get faster reviews, and refactor only when the actual second use case appears. I still catch myself sometimes, but feedback in code reviews has improved noticeably.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>How do you mentor junior developers? <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">Mentoring is one of the highest-leverage things a senior does — but only if it's structured opportunity plus frequent feedback, not just answering questions when asked.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-row">
-              <span class="core-diff-key">CORE IDEA</span>
-              <span class="core-diff-val">Mentorship's success metric isn't how often they ask you for help — it's whether they're operating one level above their title within 6–12 months.</span>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> What I do day-to-day</div>
-            <ul>
-              <li><strong>1:1s every two weeks</strong>, 30 minutes, agenda owned by them — not a status update. We talk about what's blocking, what they want next, and one piece of feedback in each direction.</li>
-              <li><strong>Pair programming on something neither of us has done before</strong> — purposely picking unfamiliar territory so they see how a senior handles uncertainty, not just how I demo something I already know.</li>
-              <li><strong>Code reviews focused on the <em>why</em>, not the <em>what</em>.</strong> I explain rationale, link to internal docs or postmortems, and phrase comments as "I'd consider… because…" rather than "change this to…".</li>
-              <li><strong>Deliberate handoff of stretch work</strong> — assigning the design doc on a service they'd normally just consume, reviewing early, then stepping back.</li>
-              <li><strong>Async written feedback</strong> after big moments (design review, incident, demo). Verbal feedback gets forgotten; written feedback they can re-read in a year.</li>
-            </ul>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> What I avoid</div>
-            <ul>
-              <li>Turning them into a code-typing extension of me. If I'm the architect on every story they touch, they never grow.</li>
-              <li>Jumping in too fast. Sitting with a bug for two more hours is often the lesson; I rescue only when they're stuck on the wrong thing, not when they're slow.</li>
-              <li>Vague feedback. "Good job" and "be more proactive" are equally useless. Concrete is better: "The way you scoped the PR into three commits made it easy to review — keep doing that."</li>
-              <li>Conflating mentoring with managing. I don't run their performance review; I'm a senior peer they can be honest with.</li>
-            </ul>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> A short STAR story</div>
-            <p>At one of my previous companies I mentored a 2-year engineer who was technically strong but quiet in design discussions. Over six months we paired on a microservice extraction, but I deliberately asked <em>them</em> to write the design doc and lead the architecture review; my role was early-stage review and defending the direction when the room pushed back. Inside two quarters they ran the next service migration on their own, and were promoted to mid-level the cycle after. The unlock wasn't more 1:1s — it was visible stretch work with a safety net.</p>
-          </div>
-
-          <div class="note-table-wrap">
-            <table class="note-table">
-              <thead>
-                <tr><th>Activity</th><th>Effort spent</th><th>Growth signal</th></tr>
-              </thead>
-              <tbody>
-                <tr><td>Bi-weekly 1:1</td><td>Low</td><td>Medium — keeps trust open</td></tr>
-                <tr><td>Pair programming on unfamiliar code</td><td>Medium</td><td>High — they see how seniors think under uncertainty</td></tr>
-                <tr><td>Detailed code review with rationale</td><td>Medium</td><td>High — compounds; they review other PRs better</td></tr>
-                <tr><td>Design doc handoff with early review</td><td>Medium-High</td><td>Very high — they own a system end-to-end</td></tr>
-                <tr><td>Internal docs / write-ups</td><td>Low (one-off)</td><td>Medium — scales beyond one mentee</td></tr>
-                <tr><td>Public-speaking practice (tech talk)</td><td>Low-Medium</td><td>Medium — builds confidence in design rooms</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <p><b>Common interview gotchas:</b></p>
-          <ul>
-            <li>Don't make it about you — "I taught them everything" is a red flag to interviewers.</li>
-            <li>Avoid heroics ("they couldn't have shipped without me") — it undercuts their growth.</li>
-            <li>Don't conflate hours-spent with mentoring quality.</li>
-            <li>Avoid the cliché "open-door policy" — describe the cadence and the artifacts.</li>
-            <li>Don't claim you mentor everyone equally — be honest about prioritising who needs it most.</li>
-            <li>Don't frame it as a one-way street — say what mentoring teaches <em>you</em>.</li>
-          </ul>
-
-          <p class="takeaway"><b>Interview one-liner:</b> A good mentor isn't the person juniors ask the most questions to — it's the person whose juniors stop needing to ask after six months. I run bi-weekly 1:1s, pair on unfamiliar code, hand off design docs deliberately, and give written feedback after big moments. The signal it's working is when they're operating one level above their title, not when they're praising me.</p>
-        </div>
-      </details>
-
-
-      <details class="qa">
-        <summary>Why should we hire you?</summary>
-        <div class="qa-body">
-          <p>Three reasons. First, I bring <strong>5 years of production experience</strong> across backend, AI integration, and distributed systems — I've shipped real features at OneXtel and Indus Net, not just side projects. Second, I'm someone who <strong>owns problems end-to-end</strong> — from design and code to deployment, observability, and debugging at 2 a.m. when needed.</p>
-          <p>Third, I keep learning publicly — 450+ DSA problems, Medium articles, and 7 certifications show I invest in the craft. If you hire me, you get an engineer who can ramp up quickly, ask good design questions, and help juniors level up. I'm looking for a place where I can do that work for the long term, and from what I've seen of your team, this looks like the right fit.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Where do you see yourself in 3–5 years?</summary>
-        <div class="qa-body">
-          <p>In 3–5 years I want to be a <strong>technical lead or staff-level engineer</strong> — someone who owns the architecture of a non-trivial product area, mentors several engineers, and is the go-to person when there's a hard production problem. I want to be deep on distributed systems and platform work, with credibility built on shipped systems rather than just titles.</p>
-          <p>I'm not chasing management for its own sake; I prefer the technical track. But I do enjoy mentoring and design reviews, so a tech-lead role that mixes both is ideal. Concretely, I'd love to be the person on a team who designs a service from scratch, ships it, and is still around two years later to see how it held up — and improve it.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>How do you handle tight deadlines?</summary>
-        <div class="qa-body">
-          <p>My approach has three steps. First, I <strong>cut scope</strong> with the product owner — I list what's strictly needed for the deadline versus what's nice-to-have, and we agree on a minimum cut. Second, I <strong>parallelize work</strong> — I unblock teammates by sharing API contracts and mock data first, so frontend and QA can start while I finish the backend.</p>
-          <p>Third, I'm honest about risk. If I sense we're slipping, I raise it early — not on the day before launch. At Punctuations.ai we had a 2-week deadline for the candidate-match feature; by cutting fancy filters from V1 and shipping a working core, we hit the date, and added the filters in V2 the next sprint. Cutting scope cleanly is usually cheaper than rushing low-quality code.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Tell me about a time you disagreed with your manager</summary>
-        <div class="qa-body">
-          <p>At Indus Net my manager wanted to add a new microservice for every feature we shipped. I felt we were creating <strong>distributed monoliths</strong> — too many tiny services tightly coupled through synchronous calls, all sharing the same database under the hood. Each one added deployment overhead without real isolation.</p>
-          <p>I prepared a one-pager comparing the existing approach with a modular monolith plus carve-outs only for the LLM-calling parts. I walked him through deployment time, on-call burden, and observability overhead with real numbers. He pushed back, we discussed for a week, and we settled on a hybrid: consolidate the CRUD-heavy services and keep async/LLM workloads as separate services. Result was faster deploys and clearer ownership.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Describe a time you took ownership beyond your role</summary>
-        <div class="qa-body">
-          <p>At Indus Net we had recurring deploy failures — every Friday someone's PR would break the build because we had no consistent CI. It wasn't strictly my role, but I volunteered to fix it. I spent a week setting up <strong>GitHub Actions</strong> with a proper pipeline: lint, unit tests, integration tests against a Mongo + ES test container, then a staging deploy with smoke tests.</p>
-          <p>I wrote a short doc on how to use it and ran a 30-minute team session. After rollout, broken-build incidents dropped to nearly zero, deploys became boring (in a good way), and juniors felt safer pushing code. The work was outside my JD but it made the whole team faster — and it's now a standard pattern across our other repos.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>How do you handle stress and burnout?</summary>
-        <div class="qa-body">
-          <p>I treat stress as a signal, not a badge. When I notice it building up — usually as poor sleep or short patience — I take three actions. <strong>One:</strong> shrink the scope of what I'm trying to do in a day; I pick two or three real wins instead of ten. <strong>Two:</strong> I ask for help or escalate early — I've learned that silently struggling is worse for everyone than a 5-minute conversation with my manager.</p>
-          <p><strong>Three:</strong> I protect non-work time. I do DSA practice and reading on weekends because they recharge me, not because I have to. After tough on-call weeks I take a real break. I've seen burnout slow people down for months — preventing it is part of being a senior engineer, not a luxury.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>How do you review code as a senior engineer? <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">A code review from a senior should leave the author feeling smarter, not wrong — and it should still catch the architectural and operational issues a junior reviewer wouldn't see.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-row">
-              <span class="core-diff-key">CORE IDEA</span>
-              <span class="core-diff-val">Optimise for the system, not the line. Be kind in tone, ruthless on architecture, generous with rationale.</span>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> What I look at first</div>
-            <ul>
-              <li><strong>The PR description.</strong> Does it answer <em>what / why / how-tested</em>? If I can't follow it on one read, neither can a future on-call.</li>
-              <li><strong>PR size.</strong> Anything over ~400 lines I'll ask to be split, unless it's a pure refactor. Big PRs hide bugs.</li>
-              <li><strong>Match to design intent.</strong> Does the diff actually implement what the design doc said? Drift between design and code is where real bugs live.</li>
-            </ul>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> What I always check</div>
-            <ul>
-              <li><strong>Failure paths.</strong> Happy path is usually fine; I read the <code>catch</code>, the timeouts, the retries, the partial-failure semantics.</li>
-              <li><strong>Observability.</strong> Are the new code paths logged at the right level? Is there a metric? A trace span? If it breaks at 2 a.m., can we tell <em>why</em>?</li>
-              <li><strong>Security &amp; PII.</strong> No secrets in logs, no PII in metrics, auth checks on every new endpoint.</li>
-              <li><strong>Backward compatibility.</strong> API contracts, DB schema, message formats — anything consumers see.</li>
-              <li><strong>Test coverage on the branch they changed.</strong> Not coverage percentage — coverage of the specific new behaviour.</li>
-              <li><strong>Blast radius.</strong> Is this behind a feature flag? Can it roll out incrementally? Can it be turned off without a redeploy?</li>
-            </ul>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> Tone rules</div>
-            <ul>
-              <li><strong>Ask questions, don't demand.</strong> "What happens if this retries forever?" beats "this is wrong, add a max retries".</li>
-              <li><strong>Explain rationale.</strong> Every blocking comment has a "because…".</li>
-              <li><strong>Mark blocking vs non-blocking explicitly</strong> — "blocking:", "nit:", "consider:" — so the author isn't guessing what's mandatory.</li>
-              <li><strong>Review my own PR first.</strong> If I wouldn't approve my own diff on a cold read, I shouldn't ask anyone else to.</li>
-              <li><strong>Praise specifically.</strong> "The way you broke this into three commits made it reviewable" — concrete praise teaches the pattern.</li>
-            </ul>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">4</span> A short STAR story</div>
-            <p>On a payments service I reviewed, a teammate added a retry around a downstream call. The retry had no max attempt count and no backoff — it would have caused a thundering-herd cascade the first time the downstream returned 503. I flagged it as a blocking comment, but I attached a one-line code example showing <code>Resilience4j</code> with <code>maxAttempts=3</code> and exponential backoff, plus a link to a postmortem the org already had on a similar cascade. The author fixed it in 20 minutes, the team added "max attempts + backoff on every retry" to the review checklist, and we haven't seen a retry-cascade incident in that codebase since.</p>
-          </div>
-
-          <div class="cmp-grid">
-            <div class="cmp-card">
-              <div class="cmp-card-title">Junior review style</div>
-              <ul>
-                <li>Focus on style / formatting / naming.</li>
-                <li>"This is wrong" without rationale.</li>
-                <li>Approves big PRs they didn't fully read.</li>
-                <li>Doesn't notice missing observability.</li>
-                <li>Misses backward-compat issues.</li>
-                <li>Blocks on personal preference.</li>
-              </ul>
-            </div>
-            <div class="cmp-card">
-              <div class="cmp-card-title">Senior review style</div>
-              <ul>
-                <li>Focus on failure paths, observability, blast radius.</li>
-                <li>Every block has a "because…" and an example.</li>
-                <li>Asks for splitting big PRs; doesn't rubber-stamp.</li>
-                <li>Notices missing metric / log / trace span.</li>
-                <li>Catches contract / schema / message-format drift.</li>
-                <li>Marks nits as nits; never blocks on taste.</li>
-              </ul>
-            </div>
-          </div>
-
-          <p><b>Common interview gotchas:</b></p>
-          <ul>
-            <li>Don't list a checklist with no opinion — interviewers want to hear your judgement.</li>
-            <li>Avoid "I never approve until it's perfect" — that's a velocity-killer flag.</li>
-            <li>Don't frame review as catching mistakes — frame it as raising the team's bar.</li>
-            <li>Avoid "I review every PR" — be honest about prioritising risky changes.</li>
-            <li>Don't dismiss style entirely — be clear about what's nit vs blocking.</li>
-            <li>Avoid attacking the author ("sloppy code") — review the code, not the person.</li>
-          </ul>
-
-          <p class="takeaway"><b>Interview one-liner:</b> A senior code review optimises for the system, not the line. I check the PR description, the design intent, the failure paths, observability, blast radius, and backward compatibility — in that order. The tone is kind, the rationale is explicit, and the bar I hold is simple: the author should leave the review feeling smarter, not wrong.</p>
-        </div>
-      </details>
-
-    </div>
-
-  </main>
-
-  <script src="main.js"></script>
+<p>Step three — guardrails so the next person doesn't repeat it:</p>
+<ul>
+<li>Added a pre-deploy CI hook that runs <code>EXPLAIN</code> on candidate migrations and parses the lock level — anything <code>ACCESS EXCLUSIVE</code> on a table over 1M rows fails the pipeline.</li>
+<li>Added a "schema change checklist" PR template: expand-migrate-contract, batch size, off-peak window, rollback plan.</li>
+<li>Made it a team norm: no schema changes on Friday after 3 p.m.</li>
+</ul>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">4</span> Result</div>
+<p>Customer impact closed in about 12 minutes; no data loss; the month's SLO breach stayed under 0.5%. The team adopted expand-migrate-contract as the default pattern for schema changes — used cleanly on the next four migrations. The CI lock-level check caught two near-miss PRs in the following months that would have repeated the same mistake.</p>
+</div>
+<div class="flow">
+<div class="flow-row">
+<div class="flow-step bad">
+<div class="flow-step-title">Wrong way</div>
+<div class="flow-step-body">One migration: <code>ADD COLUMN … NOT NULL DEFAULT …</code> on a hot table, on a Friday. Postgres rewrites the table under <code>ACCESS EXCLUSIVE</code>. Writes stall. Customers see 503s.</div>
+</div>
+</div>
+<div class="flow-row">
+<div class="flow-step good">
+<div class="flow-step-title">Expand</div>
+<div class="flow-step-body">Add the column nullable. No rewrite, no table lock. App writes both new and old columns.</div>
+</div>
+<div class="flow-arrow">→</div>
+<div class="flow-step good">
+<div class="flow-step-title">Migrate</div>
+<div class="flow-step-body">Backfill in small batches with <code>LIMIT</code> + <code>pg_sleep</code>, off-peak. Watch replication lag.</div>
+</div>
+<div class="flow-arrow">→</div>
+<div class="flow-step good">
+<div class="flow-step-title">Contract</div>
+<div class="flow-step-body">Once backfilled, <code>SET NOT NULL</code> is cheap. Later, drop the old column in a separate release.</div>
+</div>
+</div>
+</div>
+<p><b>Common interview gotchas:</b></p>
+<ul>
+<li>Don't blame the DBA, the framework, or the migration tool — own the design call.</li>
+<li>Don't frame it as "we rolled back and the problem was solved" — that's only step one.</li>
+<li>Avoid vague timing ("very quickly") — give the minutes.</li>
+<li>Don't claim zero impact if there was impact; honest SLO numbers build trust.</li>
+<li>Avoid "we now test it in staging" as the lesson — staging never has 30M rows. The lesson is design, not test environment.</li>
+<li>Don't skip the guardrail (the CI lock-level check is what actually prevents recurrence).</li>
+</ul>
+<p class="takeaway"><b>Interview one-liner:</b> Production deploy failures are almost never the deploy tool — they're an incompatible change shipped as one step instead of three. I stopped the bleed with a rollout pause and <code>pg_terminate_backend</code>, redesigned the migration as expand-migrate-contract, and made the lock-level check a CI gate. The fix is half the story; the guardrail is the other half.</p>
+</div>
+</details>
+<details class="qa">
+<summary>What's your biggest strength?</summary>
+<div class="qa-body">
+<p>My biggest strength is <strong>going deep when something is broken</strong>. I don't stop at the first plausible explanation — I take thread dumps, read logs, write small reproducers, and validate the actual root cause. The SMS-gateway lock-contention bug at OneXtel is one example; another was a JVM memory leak at Indus Net that I traced to a ThreadLocal we never cleared inside a filter.</p>
+<p>That habit pays off in two ways. First, we fix issues correctly the first time. Second, when I share the writeup, the team learns — I've written 4 internal post-mortems and a few Medium articles based on these debugging sessions. It's also why I enjoy mentoring juniors on debugging skills.</p>
+</div>
+</details>
+<details class="qa">
+<summary>What's your biggest weakness?</summary>
+<div class="qa-body">
+<p>Earlier in my career I struggled with <strong>over-engineering</strong>. I'd add abstractions and "future-proofing" before the product needed them — extra interfaces, generic frameworks, configuration files for things that never changed. It slowed down both me and reviewers.</p>
+<p>I've been working on it by asking three questions before adding abstraction: is there a second caller today, is the change concrete or speculative, and can I refactor later in under an hour? Most of the time the simple version wins. I now ship smaller PRs, get faster reviews, and refactor only when the actual second use case appears. I still catch myself sometimes, but feedback in code reviews has improved noticeably.</p>
+</div>
+</details>
+<details class="qa">
+<summary>How do you mentor junior developers? <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro">Mentoring is one of the highest-leverage things a senior does — but only if it's structured opportunity plus frequent feedback, not just answering questions when asked.</p>
+<div class="core-diff">
+<div class="core-diff-row">
+<span class="core-diff-key">CORE IDEA</span>
+<span class="core-diff-val">Mentorship's success metric isn't how often they ask you for help — it's whether they're operating one level above their title within 6–12 months.</span>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> What I do day-to-day</div>
+<ul>
+<li><strong>1:1s every two weeks</strong>, 30 minutes, agenda owned by them — not a status update. We talk about what's blocking, what they want next, and one piece of feedback in each direction.</li>
+<li><strong>Pair programming on something neither of us has done before</strong> — purposely picking unfamiliar territory so they see how a senior handles uncertainty, not just how I demo something I already know.</li>
+<li><strong>Code reviews focused on the <em>why</em>, not the <em>what</em>.</strong> I explain rationale, link to internal docs or postmortems, and phrase comments as "I'd consider… because…" rather than "change this to…".</li>
+<li><strong>Deliberate handoff of stretch work</strong> — assigning the design doc on a service they'd normally just consume, reviewing early, then stepping back.</li>
+<li><strong>Async written feedback</strong> after big moments (design review, incident, demo). Verbal feedback gets forgotten; written feedback they can re-read in a year.</li>
+</ul>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> What I avoid</div>
+<ul>
+<li>Turning them into a code-typing extension of me. If I'm the architect on every story they touch, they never grow.</li>
+<li>Jumping in too fast. Sitting with a bug for two more hours is often the lesson; I rescue only when they're stuck on the wrong thing, not when they're slow.</li>
+<li>Vague feedback. "Good job" and "be more proactive" are equally useless. Concrete is better: "The way you scoped the PR into three commits made it easy to review — keep doing that."</li>
+<li>Conflating mentoring with managing. I don't run their performance review; I'm a senior peer they can be honest with.</li>
+</ul>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">3</span> A short STAR story</div>
+<p>At one of my previous companies I mentored a 2-year engineer who was technically strong but quiet in design discussions. Over six months we paired on a microservice extraction, but I deliberately asked <em>them</em> to write the design doc and lead the architecture review; my role was early-stage review and defending the direction when the room pushed back. Inside two quarters they ran the next service migration on their own, and were promoted to mid-level the cycle after. The unlock wasn't more 1:1s — it was visible stretch work with a safety net.</p>
+</div>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead>
+<tr><th>Activity</th><th>Effort spent</th><th>Growth signal</th></tr>
+</thead>
+<tbody>
+<tr><td>Bi-weekly 1:1</td><td>Low</td><td>Medium — keeps trust open</td></tr>
+<tr><td>Pair programming on unfamiliar code</td><td>Medium</td><td>High — they see how seniors think under uncertainty</td></tr>
+<tr><td>Detailed code review with rationale</td><td>Medium</td><td>High — compounds; they review other PRs better</td></tr>
+<tr><td>Design doc handoff with early review</td><td>Medium-High</td><td>Very high — they own a system end-to-end</td></tr>
+<tr><td>Internal docs / write-ups</td><td>Low (one-off)</td><td>Medium — scales beyond one mentee</td></tr>
+<tr><td>Public-speaking practice (tech talk)</td><td>Low-Medium</td><td>Medium — builds confidence in design rooms</td></tr>
+</tbody>
+</table>
+</div>
+<p><b>Common interview gotchas:</b></p>
+<ul>
+<li>Don't make it about you — "I taught them everything" is a red flag to interviewers.</li>
+<li>Avoid heroics ("they couldn't have shipped without me") — it undercuts their growth.</li>
+<li>Don't conflate hours-spent with mentoring quality.</li>
+<li>Avoid the cliché "open-door policy" — describe the cadence and the artifacts.</li>
+<li>Don't claim you mentor everyone equally — be honest about prioritising who needs it most.</li>
+<li>Don't frame it as a one-way street — say what mentoring teaches <em>you</em>.</li>
+</ul>
+<p class="takeaway"><b>Interview one-liner:</b> A good mentor isn't the person juniors ask the most questions to — it's the person whose juniors stop needing to ask after six months. I run bi-weekly 1:1s, pair on unfamiliar code, hand off design docs deliberately, and give written feedback after big moments. The signal it's working is when they're operating one level above their title, not when they're praising me.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Why should we hire you?</summary>
+<div class="qa-body">
+<p>Three reasons. First, I bring <strong>5 years of production experience</strong> across backend, AI integration, and distributed systems — I've shipped real features at OneXtel and Indus Net, not just side projects. Second, I'm someone who <strong>owns problems end-to-end</strong> — from design and code to deployment, observability, and debugging at 2 a.m. when needed.</p>
+<p>Third, I keep learning publicly — 450+ DSA problems, Medium articles, and 7 certifications show I invest in the craft. If you hire me, you get an engineer who can ramp up quickly, ask good design questions, and help juniors level up. I'm looking for a place where I can do that work for the long term, and from what I've seen of your team, this looks like the right fit.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Where do you see yourself in 3–5 years?</summary>
+<div class="qa-body">
+<p>In 3–5 years I want to be a <strong>technical lead or staff-level engineer</strong> — someone who owns the architecture of a non-trivial product area, mentors several engineers, and is the go-to person when there's a hard production problem. I want to be deep on distributed systems and platform work, with credibility built on shipped systems rather than just titles.</p>
+<p>I'm not chasing management for its own sake; I prefer the technical track. But I do enjoy mentoring and design reviews, so a tech-lead role that mixes both is ideal. Concretely, I'd love to be the person on a team who designs a service from scratch, ships it, and is still around two years later to see how it held up — and improve it.</p>
+</div>
+</details>
+<details class="qa">
+<summary>How do you handle tight deadlines?</summary>
+<div class="qa-body">
+<p>My approach has three steps. First, I <strong>cut scope</strong> with the product owner — I list what's strictly needed for the deadline versus what's nice-to-have, and we agree on a minimum cut. Second, I <strong>parallelize work</strong> — I unblock teammates by sharing API contracts and mock data first, so frontend and QA can start while I finish the backend.</p>
+<p>Third, I'm honest about risk. If I sense we're slipping, I raise it early — not on the day before launch. At Punctuations.ai we had a 2-week deadline for the candidate-match feature; by cutting fancy filters from V1 and shipping a working core, we hit the date, and added the filters in V2 the next sprint. Cutting scope cleanly is usually cheaper than rushing low-quality code.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Tell me about a time you disagreed with your manager</summary>
+<div class="qa-body">
+<p>At Indus Net my manager wanted to add a new microservice for every feature we shipped. I felt we were creating <strong>distributed monoliths</strong> — too many tiny services tightly coupled through synchronous calls, all sharing the same database under the hood. Each one added deployment overhead without real isolation.</p>
+<p>I prepared a one-pager comparing the existing approach with a modular monolith plus carve-outs only for the LLM-calling parts. I walked him through deployment time, on-call burden, and observability overhead with real numbers. He pushed back, we discussed for a week, and we settled on a hybrid: consolidate the CRUD-heavy services and keep async/LLM workloads as separate services. Result was faster deploys and clearer ownership.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Describe a time you took ownership beyond your role</summary>
+<div class="qa-body">
+<p>At Indus Net we had recurring deploy failures — every Friday someone's PR would break the build because we had no consistent CI. It wasn't strictly my role, but I volunteered to fix it. I spent a week setting up <strong>GitHub Actions</strong> with a proper pipeline: lint, unit tests, integration tests against a Mongo + ES test container, then a staging deploy with smoke tests.</p>
+<p>I wrote a short doc on how to use it and ran a 30-minute team session. After rollout, broken-build incidents dropped to nearly zero, deploys became boring (in a good way), and juniors felt safer pushing code. The work was outside my JD but it made the whole team faster — and it's now a standard pattern across our other repos.</p>
+</div>
+</details>
+<details class="qa">
+<summary>How do you handle stress and burnout?</summary>
+<div class="qa-body">
+<p>I treat stress as a signal, not a badge. When I notice it building up — usually as poor sleep or short patience — I take three actions. <strong>One:</strong> shrink the scope of what I'm trying to do in a day; I pick two or three real wins instead of ten. <strong>Two:</strong> I ask for help or escalate early — I've learned that silently struggling is worse for everyone than a 5-minute conversation with my manager.</p>
+<p><strong>Three:</strong> I protect non-work time. I do DSA practice and reading on weekends because they recharge me, not because I have to. After tough on-call weeks I take a real break. I've seen burnout slow people down for months — preventing it is part of being a senior engineer, not a luxury.</p>
+</div>
+</details>
+<details class="qa">
+<summary>How do you review code as a senior engineer? <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro">A code review from a senior should leave the author feeling smarter, not wrong — and it should still catch the architectural and operational issues a junior reviewer wouldn't see.</p>
+<div class="core-diff">
+<div class="core-diff-row">
+<span class="core-diff-key">CORE IDEA</span>
+<span class="core-diff-val">Optimise for the system, not the line. Be kind in tone, ruthless on architecture, generous with rationale.</span>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> What I look at first</div>
+<ul>
+<li><strong>The PR description.</strong> Does it answer <em>what / why / how-tested</em>? If I can't follow it on one read, neither can a future on-call.</li>
+<li><strong>PR size.</strong> Anything over ~400 lines I'll ask to be split, unless it's a pure refactor. Big PRs hide bugs.</li>
+<li><strong>Match to design intent.</strong> Does the diff actually implement what the design doc said? Drift between design and code is where real bugs live.</li>
+</ul>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> What I always check</div>
+<ul>
+<li><strong>Failure paths.</strong> Happy path is usually fine; I read the <code>catch</code>, the timeouts, the retries, the partial-failure semantics.</li>
+<li><strong>Observability.</strong> Are the new code paths logged at the right level? Is there a metric? A trace span? If it breaks at 2 a.m., can we tell <em>why</em>?</li>
+<li><strong>Security &amp; PII.</strong> No secrets in logs, no PII in metrics, auth checks on every new endpoint.</li>
+<li><strong>Backward compatibility.</strong> API contracts, DB schema, message formats — anything consumers see.</li>
+<li><strong>Test coverage on the branch they changed.</strong> Not coverage percentage — coverage of the specific new behaviour.</li>
+<li><strong>Blast radius.</strong> Is this behind a feature flag? Can it roll out incrementally? Can it be turned off without a redeploy?</li>
+</ul>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">3</span> Tone rules</div>
+<ul>
+<li><strong>Ask questions, don't demand.</strong> "What happens if this retries forever?" beats "this is wrong, add a max retries".</li>
+<li><strong>Explain rationale.</strong> Every blocking comment has a "because…".</li>
+<li><strong>Mark blocking vs non-blocking explicitly</strong> — "blocking:", "nit:", "consider:" — so the author isn't guessing what's mandatory.</li>
+<li><strong>Review my own PR first.</strong> If I wouldn't approve my own diff on a cold read, I shouldn't ask anyone else to.</li>
+<li><strong>Praise specifically.</strong> "The way you broke this into three commits made it reviewable" — concrete praise teaches the pattern.</li>
+</ul>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">4</span> A short STAR story</div>
+<p>On a payments service I reviewed, a teammate added a retry around a downstream call. The retry had no max attempt count and no backoff — it would have caused a thundering-herd cascade the first time the downstream returned 503. I flagged it as a blocking comment, but I attached a one-line code example showing <code>Resilience4j</code> with <code>maxAttempts=3</code> and exponential backoff, plus a link to a postmortem the org already had on a similar cascade. The author fixed it in 20 minutes, the team added "max attempts + backoff on every retry" to the review checklist, and we haven't seen a retry-cascade incident in that codebase since.</p>
+</div>
+<div class="cmp-grid">
+<div class="cmp-card">
+<div class="cmp-card-title">Junior review style</div>
+<ul>
+<li>Focus on style / formatting / naming.</li>
+<li>"This is wrong" without rationale.</li>
+<li>Approves big PRs they didn't fully read.</li>
+<li>Doesn't notice missing observability.</li>
+<li>Misses backward-compat issues.</li>
+<li>Blocks on personal preference.</li>
+</ul>
+</div>
+<div class="cmp-card">
+<div class="cmp-card-title">Senior review style</div>
+<ul>
+<li>Focus on failure paths, observability, blast radius.</li>
+<li>Every block has a "because…" and an example.</li>
+<li>Asks for splitting big PRs; doesn't rubber-stamp.</li>
+<li>Notices missing metric / log / trace span.</li>
+<li>Catches contract / schema / message-format drift.</li>
+<li>Marks nits as nits; never blocks on taste.</li>
+</ul>
+</div>
+</div>
+<p><b>Common interview gotchas:</b></p>
+<ul>
+<li>Don't list a checklist with no opinion — interviewers want to hear your judgement.</li>
+<li>Avoid "I never approve until it's perfect" — that's a velocity-killer flag.</li>
+<li>Don't frame review as catching mistakes — frame it as raising the team's bar.</li>
+<li>Avoid "I review every PR" — be honest about prioritising risky changes.</li>
+<li>Don't dismiss style entirely — be clear about what's nit vs blocking.</li>
+<li>Avoid attacking the author ("sloppy code") — review the code, not the person.</li>
+</ul>
+<p class="takeaway"><b>Interview one-liner:</b> A senior code review optimises for the system, not the line. I check the PR description, the design intent, the failure paths, observability, blast radius, and backward compatibility — in that order. The tone is kind, the rationale is explicit, and the bar I hold is simple: the author should leave the review feeling smarter, not wrong.</p>
+</div>
+</details>
+<details class="qa">
+<summary>How do you review SQL/PLSQL code? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">SQL/PL/SQL code review focuses on correctness, performance (index usage, bulk ops), security (injection risks), and maintainability.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Checklist</div>
+<p>Performance: verify WHERE clause columns are indexed; avoid functions on indexed columns (e.g., TO_CHAR(date_col)).</p>
+<p>Bulk operations: replace row-by-row loops with BULK COLLECT + FORALL for DML on large datasets.</p>
+<p>Security: parameterize all dynamic SQL; never concatenate user input into EXECUTE IMMEDIATE strings.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking specifics</div>
+<p>Check that financial calculations use NUMBER(precision, scale) — never FLOAT — to avoid rounding errors.</p>
+<p>Ensure audit columns (created_by, modified_date) are populated; verify triggers log sensitive changes.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always run EXPLAIN PLAN on new queries touching core tables like account_master or transaction_log.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you check performance issues in code? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Performance issues are identified by profiling, database explain plans, GC logs, and application metrics rather than guessing.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Java side</div>
+<p>Use JProfiler or async-profiler to find hot methods; check GC logs for long stop-the-world pauses.</p>
+<p>Review code for N+1 queries: loading a list then calling DB inside a loop — replace with JOIN or batch fetch.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Database side</div>
+<p>Run EXPLAIN PLAN or DBMS_XPLAN.DISPLAY for suspect queries; look for FULL TABLE SCAN on large tables.</p>
+<p>Check V$SQL for high buffer_gets/executions ratio — indicates poorly selective queries or missing indexes.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Fix database issues first — they usually account for 80% of Java app performance problems.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you handle disagreement in code review? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Code review disagreements are resolved by focusing on objective technical criteria, data, and team conventions rather than personal preference.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Approach</div>
+<p>Explain the technical reason: reference performance data, coding standards doc, or security policy rather than opinion.</p>
+<p>If genuinely ambiguous, propose a spike or benchmark to compare approaches with real data.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Process</div>
+<p>Escalate to tech lead if unresolved after two rounds — avoid prolonged blocking of a PR merge.</p>
+<p>Document the decision and rationale in the PR or Confluence for future reference.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Keep ego out of code reviews — the goal is better software, not winning arguments.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What are common code smells? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Code smells</strong> are patterns that indicate design problems: long methods, duplicate code, inappropriate intimacy, feature envy, and magic numbers.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Common smells</div>
+<p>Long method: method doing too many things — split into focused private methods.</p>
+<p>Duplicate code: copy-pasted logic — extract to utility method or base class.</p>
+<p>Magic numbers/strings: hardcoded values like if (status == 4) — replace with named constants or enums.</p>
+<p>Feature envy: method that accesses another class's data more than its own — move it closer to the data.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking examples</div>
+<p>Hardcoded transaction type codes ('NEFT', 'RTGS') scattered across code — centralize in enum.</p>
+<p>500-line stored procedure mixing validation, calculation, and posting — split into focused sub-procedures.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Tools like SonarQube automatically detect many code smells and track technical debt over time.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is SOLID principle? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>SOLID</strong> is five object-oriented design principles that make code maintainable, extensible, and testable.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Principles</div>
+<p>S — Single Responsibility: a class should have one reason to change (e.g., separate TransactionService from TransactionEmailNotifier).</p>
+<p>O — Open/Closed: open for extension, closed for modification — use interfaces/abstract classes for new behavior.</p>
+<p>L — Liskov Substitution: subclasses must be substitutable for their base class without breaking behavior.</p>
+<p>I — Interface Segregation: prefer small focused interfaces over fat ones — client shouldn't implement methods it doesn't use.</p>
+<p>D — Dependency Inversion: depend on abstractions (interfaces) not concretions — enables mocking in unit tests.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking example</div>
+<p>PaymentProcessor interface with implementations NeftProcessor, RtgsProcessor, ImpsProcessor — Open/Closed in action.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>SOLID principles reduce coupling and make banking business logic easier to test and extend.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What design patterns have you used? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">I have applied creational, structural, and behavioral patterns including Factory, Strategy, Observer, Singleton, and Template Method in enterprise banking applications.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Creational</div>
+<p>Factory: creating payment processor objects (NeftProcessor, RtgsProcessor) based on transaction type code.</p>
+<p>Singleton: Spring beans are singletons by default; also used for connection pool manager and config cache.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Behavioral</div>
+<p>Strategy: switching interest calculation strategy (simple vs compound) based on product type at runtime.</p>
+<p>Template Method: base batch job defines execute() flow; subclasses override processRecord() for specific EOD jobs.</p>
+<p>Observer: event-driven notification after transaction posting — triggers audit log, SMS alert, ledger update.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Patterns should solve real design problems, not be applied for their own sake.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Factory vs Strategy pattern. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Factory</strong> handles object creation; <strong>Strategy</strong> defines interchangeable algorithms — both use polymorphism but for different concerns.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Factory</div>
+<p>Factory method / Abstract Factory: encapsulates object creation logic, hiding which concrete class is instantiated.</p>
+<p>Example: PaymentFactory.getProcessor('NEFT') returns a NeftProcessor without the caller knowing the concrete type.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Strategy</div>
+<p>Encapsulates a family of algorithms and makes them interchangeable at runtime via a common interface.</p>
+<p>Example: InterestCalculator interface with SimpleInterestStrategy and CompoundInterestStrategy; swap at account level.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Key difference</div>
+<p>Factory = which object to create; Strategy = which algorithm to use on an already-created object.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>In banking: use Factory for processor/handler selection, Strategy for business rule variation by product type.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Singleton pattern and its issues. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">The <strong>Singleton</strong> pattern ensures a class has only one instance, but introduces hidden global state and makes unit testing difficult.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Implementation</div>
+<p>Thread-safe: use enum singleton (safest), or double-checked locking with volatile, or static inner holder class.</p>
+<p>Spring beans are singleton-scoped by default — preferred over manual singleton for dependency injection support.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Issues</div>
+<p>Global state: singletons hold state shared across all threads — concurrency bugs if mutable state is not synchronized.</p>
+<p>Testability: hard to mock in unit tests without DI frameworks; callers are tightly coupled to the concrete class.</p>
+<p>Class loader issues: in app servers multiple class loaders can create multiple 'singletons'.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Prefer Spring-managed beans over manual singletons — you get singleton scope with full DI and testability.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you design reusable components? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Reusable components are designed with single responsibility, interface-driven contracts, parameterization, and minimal dependencies on caller context.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Principles</div>
+<p>Define a clear interface; implementation details are hidden — callers depend only on the abstraction.</p>
+<p>Parameterize behavior via constructor/config rather than hardcoding; avoid static calls to external systems.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking example</div>
+<p>AuditLogger component accepts entity type, action, user, and old/new values — reused across all banking modules.</p>
+<p>CurrencyConverter utility takes amount, from-currency, to-currency and exchange-rate source via interface — swappable for test.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Reusable components must be independently testable with no hidden dependencies on specific screens or business flows.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you avoid duplicate code? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Duplicate code is avoided through extraction into shared utilities, base classes, template methods, and applying DRY (Don't Repeat Yourself) during design.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Techniques</div>
+<p>Extract method: move repeated logic into a private/utility method with a meaningful name.</p>
+<p>Inheritance / template method: base class defines flow; subclasses override the varying steps.</p>
+<p>Shared libraries: common validation, formatting, audit logging packaged as an internal library module.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking example</div>
+<p>Transaction validation (amount &gt; 0, account active, sufficient balance) extracted to TransactionValidator used by NEFT, RTGS, IMPS processors.</p>
+<p>Oracle package with common PL/SQL helper functions (format_amount, get_customer_name) shared across procedures.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Duplicate code is a maintenance liability — a bug fix in one copy gets missed in the other.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is clean code? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Clean code</strong> is code that is readable, simple, and expresses intent clearly — it can be understood by another developer without explanation.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Characteristics</div>
+<p>Meaningful names: variables, methods, and classes named for what they do (creditAccount, not ca or method1).</p>
+<p>Small functions: each method does one thing and fits on a screen; no hidden side effects.</p>
+<p>Minimal comments: code should explain itself; comments explain WHY not WHAT.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Practices</div>
+<p>Consistent formatting (enforced by Checkstyle/Spotless); no dead code or commented-out blocks.</p>
+<p>Unit tests as living documentation — test names describe expected behavior.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Clean code reduces the time it takes to understand, debug, and extend banking application logic safely.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you ensure maintainability? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Maintainability is ensured through SOLID design, comprehensive tests, consistent coding standards, and thorough documentation of non-obvious decisions.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Technical practices</div>
+<p>High unit test coverage (70%+ for business logic); tests catch regressions when code changes.</p>
+<p>Enforce standards via SonarQube, Checkstyle, PMD in CI pipeline — fail build on critical violations.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Process practices</div>
+<p>Mandatory code review before merge; architecture decision records (ADRs) for significant design choices.</p>
+<p>Javadoc on public APIs; inline comments only for non-obvious business rules (e.g., regulatory calculation logic).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Maintainability is built in from the start — retrofitting it onto legacy banking code is expensive.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Why Oracle? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Oracle Database is the industry standard for mission-critical banking applications due to its ACID guarantees, PL/SQL procedural power, partitioning, and proven enterprise support.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Technical reasons</div>
+<p>Mature ACID transactions, RAC for HA, Data Guard for DR, Advanced Queuing (AQ) for messaging — all in one platform.</p>
+<p>PL/SQL enables complex business logic close to data, minimizing network round trips for batch processing.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking reasons</div>
+<p>Most core banking products (FLEXCUBE, Finacle, Temenos T24) are built on Oracle; regulatory tools and interfaces expect Oracle-specific features.</p>
+<p>Oracle's partitioning (range/hash) handles billions of transaction records with manageable query performance.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Oracle's combination of reliability, PL/SQL, and enterprise ecosystem makes it the default choice for banking core systems.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Why do you want to work in banking domain? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Banking domain combines complex business logic, high-stakes data integrity requirements, and cutting-edge technology challenges that make it technically stimulating.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Technical appeal</div>
+<p>Distributed transactions, high-TPS systems, real-time reconciliation, and regulatory compliance provide deep technical challenges.</p>
+<p>Exposure to core banking platforms (FLEXCUBE), Oracle PL/SQL at scale, and integration with SWIFT, RBI payment rails.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Business impact</div>
+<p>Banking software directly impacts millions of customers — correctness is non-negotiable, making engineering discipline critical.</p>
+<p>Opportunity to understand financial products (loans, CASA, FX) at implementation level, not just surface.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Banking domain rewards engineers who combine deep technical skill with business domain understanding.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Explain your strongest technical skill. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">My strongest technical skill is <strong>Oracle PL/SQL and database design</strong> for high-volume banking applications, combining query tuning, procedural logic, and bulk operations.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Core competency</div>
+<p>Writing optimized PL/SQL: packages, procedures, bulk collect/FORALL for EOD batch processing millions of records efficiently.</p>
+<p>Query tuning using EXPLAIN PLAN, SQL Trace, DBMS_XPLAN — identifying full table scans and adding composite indexes.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Applied in banking</div>
+<p>Designed and tuned the EOD interest accrual procedure processing 5M+ accounts using bulk collect with batch size 1000.</p>
+<p>Implemented reconciliation queries between GL and account ledger detecting mismatch within seconds using analytic functions.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Combined with Java/Spring, this DB expertise allows me to choose where logic runs — app tier or DB — for optimal performance.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Explain your current project. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">I work on a <strong>core banking implementation</strong> project involving Oracle FLEXCUBE customization, Java/Spring integration services, and Oracle PL/SQL batch processing.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Architecture</div>
+<p>FLEXCUBE on Oracle WebLogic with Oracle 19c DB; custom Java microservices expose REST APIs for digital channels.</p>
+<p>Oracle Service Bus (OSB) mediates between FLEXCUBE and external payment systems (SWIFT, NEFT/RTGS gateway).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">My role</div>
+<p>Develop and tune PL/SQL procedures for EOD batch (interest accrual, charge posting, statement generation).</p>
+<p>Build Spring Boot REST APIs for customer onboarding and account inquiry consumed by the mobile banking app.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>The project follows a phased go-live approach: SIT, UAT, parallel run, then production cutover with rollback plan.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What was your most challenging task? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">My most challenging task was diagnosing and fixing a <strong>data reconciliation mismatch</strong> in the GL vs. account ledger during an EOD run affecting 10,000+ accounts.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Problem</div>
+<p>EOD GL posting job completed successfully but account ledger showed different closing balances for a subset of accounts.</p>
+<p>Root cause: a trigger on the account table was firing autonomously and updating balances mid-batch, causing dirty reads.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Resolution</div>
+<p>Used autonomous transaction isolation analysis and traced trigger execution order; refactored trigger to queue changes for post-batch processing.</p>
+<p>Added a reconciliation procedure that runs immediately after EOD and alerts ops team if GL != ledger sum beyond tolerance.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>The incident led to a mandatory reconciliation check as part of every EOD job — a lasting improvement to the platform.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Are you comfortable working from customer location? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Yes — I have experience working from customer (bank) premises for implementation, UAT support, and go-live activities.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Experience</div>
+<p>Worked on-site during SIT and UAT phases for a core banking implementation, collaborating directly with bank's IT team.</p>
+<p>On-site presence accelerates issue resolution — direct access to bank staff, environments, and data avoids communication lag.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Benefits</div>
+<p>Faster decision-making on customization requirements; immediate feedback during user acceptance testing.</p>
+<p>Builds trust with client — visible commitment to project success.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Are you comfortable with support activities? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Yes — production support is part of my current role and I am experienced in incident triage, RCA, and hotfix delivery.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Support experience</div>
+<p>Handle L2/L3 production incidents: log analysis, DB query debugging, API timeout investigation, batch job recovery.</p>
+<p>Participate in on-call rotation for critical banking batch windows (EOD/BOD) and payment cutoffs.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Process</div>
+<p>Follow ITIL-based incident process: classify severity, communicate ETA to business, fix or workaround, document RCA.</p>
+<p>Every Sev1 results in an RCA document with timeline, root cause, fix, and preventive measures.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Production support experience makes me a better developer — I understand real-world failure modes.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Are you comfortable learning FLEXCUBE? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Yes — I am already familiar with Oracle FLEXCUBE's architecture and am comfortable learning its customization framework, APIs, and extension points.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Current knowledge</div>
+<p>FLEXCUBE runs on Oracle WebLogic + Oracle DB; business logic in PL/SQL packages; front-end via JSF/FCUBS web.</p>
+<p>Familiar with FLEXCUBE's GCLIF (Generic Customer Lifecycle Framework) and extensibility through custom hooks.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Learning approach</div>
+<p>Oracle provides FLEXCUBE documentation, SDEs (Software Development Exercises), and online training resources.</p>
+<p>Pairing with functional consultants on each module (CASA, Loans, Trade Finance) accelerates domain + technical learning.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>FLEXCUBE customization is essentially Oracle PL/SQL + Java EE expertise applied to a structured banking framework.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What are your strengths? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">My key strengths are <strong>deep Oracle SQL/PL/SQL expertise</strong>, strong problem-solving ability in production incidents, and the ability to bridge technical and functional banking domains.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Technical strengths</div>
+<p>Oracle PL/SQL: writing efficient bulk-processing procedures, query tuning, and stored procedure debugging.</p>
+<p>Java/Spring: building REST APIs, designing transactional services, and integrating with JMS/OSB.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Soft strengths</div>
+<p>Systematic root cause analysis: I don't apply quick fixes without understanding the underlying cause.</p>
+<p>Communication: able to explain technical issues to non-technical banking stakeholders in plain language.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Explain your role and responsibilities. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">My role is <strong>Senior Java/Oracle Developer</strong> responsible for backend service development, PL/SQL batch procedures, production support, and code reviews.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Development</div>
+<p>Design and implement Spring Boot REST APIs consumed by digital banking channels; write Oracle PL/SQL for EOD batch.</p>
+<p>Participate in solution design, database schema design, and integration architecture with OSB/MQ.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Support and quality</div>
+<p>L2/L3 production support: triage incidents, fix bugs, deploy hotfixes under change management process.</p>
+<p>Conduct code reviews for team members; enforce coding standards and performance guidelines.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Java OOP concepts. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Java OOP is built on four pillars: <strong>encapsulation, inheritance, polymorphism, and abstraction</strong>, enabling modular and maintainable enterprise banking code.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Core concepts</div>
+<p>Encapsulation: hide internal state via private fields + public getters/setters; prevents invalid state in domain objects.</p>
+<p>Inheritance: AccountBase → SavingsAccount, CurrentAccount — share common fields (accountNumber, balance) and override behavior.</p>
+<p>Polymorphism: runtime dispatch via overriding; PaymentProcessor interface resolved to NeftProcessor at runtime.</p>
+<p>Abstraction: interface or abstract class defines contract; callers don't need to know implementation details.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>OOP principles directly support SOLID design — encapsulation enables SRP, polymorphism enables OCP.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>HashMap internal working. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>HashMap</strong> uses an array of buckets; each bucket is a linked list (Java 7) or balanced tree (Java 8+) of entries with the same hash bucket index.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Internals</div>
+<p>put(k,v): computes hash(key), finds bucket index (hash &amp; (n-1)); if key exists updates value, else appends to bucket chain.</p>
+<p>Java 8+: bucket chain converts to red-black tree when size exceeds 8 (TREEIFY_THRESHOLD) — O(log n) worst case.</p>
+<p>Resize: when load factor (default 0.75) is exceeded, capacity doubles and all entries are rehashed.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Thread safety</div>
+<p>HashMap is not thread-safe — concurrent put() can cause infinite loop (Java 7) or lost updates.</p>
+<p>Use ConcurrentHashMap in multi-threaded contexts; it uses segment-level (Java 7) or CAS+synchronized (Java 8) locking.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always override both hashCode() and equals() consistently for keys; violating the contract causes silent data loss.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Multithreading and ExecutorService. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>ExecutorService</strong> manages a pool of threads, decoupling task submission from thread lifecycle management, avoiding the overhead of creating a new thread per task.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Core APIs</div>
+<p>Executors.newFixedThreadPool(n): fixed pool; newCachedThreadPool(): grows/shrinks; newScheduledThreadPool(): for scheduled tasks.</p>
+<p>submit(Callable) returns a Future&lt;T&gt; for result retrieval; execute(Runnable) for fire-and-forget.</p>
+<p>shutdown() initiates orderly shutdown; awaitTermination() blocks until all tasks complete or timeout.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking usage</div>
+<p>EOD batch: ExecutorService with 10 threads processing account interest accrual in parallel across account partitions.</p>
+<p>Parallel report generation: split report by branch, submit each branch report task to a fixed thread pool.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always shut down ExecutorService explicitly and handle Future exceptions — unhandled exceptions in pool threads are swallowed silently.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Exception handling best practices. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Exception handling should be specific, logged with context, handled at the right layer, and never swallowed silently.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Practices</div>
+<p>Catch specific exceptions (SQLException, IOException) rather than catching Exception or Throwable.</p>
+<p>Log exception with full stack trace and business context (account number, transaction id) before rethrowing or converting.</p>
+<p>Convert checked exceptions to meaningful custom unchecked exceptions at service boundary (e.g., AccountNotFoundException).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Anti-patterns</div>
+<p>Empty catch block: silently swallows errors — one of the worst patterns in banking code.</p>
+<p>Catching Exception at every level: loses type information; catch only what you can handle.</p>
+<p>Using exceptions for flow control: throw/catch is expensive — use return values for expected conditions.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>In Spring Boot, use @ControllerAdvice with @ExceptionHandler to centralize REST error responses.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Java 8 Stream API. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Java 8 <strong>Stream API</strong> enables functional-style data processing pipelines with operations like filter, map, collect, reduce, and groupingBy.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Key operations</div>
+<p>Intermediate (lazy): filter(), map(), flatMap(), sorted(), distinct(), limit() — not executed until terminal op.</p>
+<p>Terminal (eager): collect(), forEach(), reduce(), count(), findFirst(), anyMatch() — trigger pipeline execution.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking examples</div>
+<p>Filter active accounts and sum balances: accounts.stream().filter(Account::isActive).mapToDouble(Account::getBalance).sum()</p>
+<p>Group transactions by type: transactions.stream().collect(Collectors.groupingBy(Transaction::getType, Collectors.summingDouble(Transaction::getAmount)))</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Prefer streams for in-memory data transformation; avoid for complex stateful logic where a loop is clearer.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>REST vs SOAP. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>REST</strong> is a lightweight architectural style using HTTP verbs and JSON/XML; <strong>SOAP</strong> is a protocol with strict XML envelope, WSDL contract, and WS-Security.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">REST</div>
+<p>Uses HTTP methods (GET, POST, PUT, DELETE); stateless; JSON or XML payload; versioning via URL or header.</p>
+<p>Easier to consume from mobile/web; caching support via HTTP cache headers.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">SOAP</div>
+<p>Strict XML envelope (Header + Body); WSDL defines contract; WS-Security for enterprise-grade message-level security.</p>
+<p>Supports WS-AtomicTransaction for distributed transactions — important in banking interoperability.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking angle</div>
+<p>Internal microservices use REST; legacy core banking integrations (SWIFT, NEFT) use SOAP/ISO 20022 XML.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>SOAP remains dominant in inter-bank communication; REST is standard for bank-to-digital-channel APIs.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>HTTP methods and status codes. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">HTTP methods define the intended action (GET=read, POST=create, PUT=update, DELETE=remove) and status codes communicate the outcome.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Methods</div>
+<p>GET: retrieve resource, idempotent, cacheable. POST: create new resource, not idempotent.</p>
+<p>PUT: full replace, idempotent. PATCH: partial update. DELETE: remove resource, idempotent.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Status codes</div>
+<p>200 OK, 201 Created, 204 No Content. 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 409 Conflict.</p>
+<p>500 Internal Server Error, 503 Service Unavailable. 429 Too Many Requests for rate limiting.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always return meaningful status codes — returning 200 with an error body breaks client error handling.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>API security. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">REST API security involves authentication (who are you), authorization (what can you do), transport security (TLS), and input validation.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Mechanisms</div>
+<p>OAuth2 + JWT: client authenticates to auth server, receives JWT; API gateway validates token signature and claims.</p>
+<p>mTLS (mutual TLS): both client and server present certificates — used for bank-to-bank API calls.</p>
+<p>API gateway: enforces rate limiting, JWT validation, IP whitelisting before requests reach microservices.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking specifics</div>
+<p>OWASP Top 10 compliance: validate all inputs, parameterize queries, encrypt sensitive fields in response (mask PAN, account).</p>
+<p>Audit every API call with user, timestamp, request hash — required for regulatory compliance.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Security must be layered: transport (TLS) + token (JWT) + authorization (RBAC) + audit logging.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>JWT/OAuth2 basics. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>JWT</strong> is a signed, self-contained token carrying claims; <strong>OAuth2</strong> is the authorization framework that issues JWT tokens via flows like client_credentials or authorization_code.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">JWT structure</div>
+<p>Three base64url-encoded parts: header (alg, typ), payload (claims: sub, exp, roles), signature (HMAC or RSA).</p>
+<p>Stateless: server validates signature without DB lookup — scales horizontally in banking microservices.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">OAuth2 flows</div>
+<p>client_credentials: service-to-service (no user), e.g., batch service calling payment API.</p>
+<p>authorization_code: user login flows; PKCE variant for mobile banking apps.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always validate JWT expiry, issuer, audience claims, and signature — never just decode the payload.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>SOAP/WSDL/XSD. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">In SOAP web services, <strong>WSDL</strong> describes the service contract (operations, messages, bindings) and <strong>XSD</strong> defines the XML schema for request/response message types.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">WSDL structure</div>
+<p>types (XSD schemas), message (input/output), portType (operations), binding (SOAP/HTTP binding), service (endpoint URL).</p>
+<p>Consumers use WSDL to generate client stubs via wsimport or CXF wsdl2java.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">XSD role</div>
+<p>XSD enforces structure and data types on XML messages — rejected at validation before business logic runs.</p>
+<p>In banking interfaces (SWIFT, ISO 20022), strict XSD compliance is mandatory for message interoperability.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always version WSDL carefully — adding mandatory elements is a breaking change for existing consumers.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Oracle indexes. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Oracle indexes (B-tree, bitmap, function-based) speed up query execution by providing fast access paths to rows without full table scans.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Index types</div>
+<p>B-tree (default): optimal for high-cardinality columns (account_number, customer_id) and range queries.</p>
+<p>Bitmap: for low-cardinality columns (status, gender) — efficient for data warehouse queries; avoid on OLTP due to locking.</p>
+<p>Function-based: index on UPPER(email) to support case-insensitive lookups without full scan.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking usage</div>
+<p>Composite index on (account_number, transaction_date) for account statement queries — column order matters.</p>
+<p>Never index every column — indexes slow DML (INSERT/UPDATE/DELETE); choose based on query patterns.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Run EXPLAIN PLAN and check for INDEX RANGE SCAN vs FULL TABLE SCAN to verify index usage.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Query tuning. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Oracle query tuning involves identifying slow queries via V$SQL/AWR, analyzing EXPLAIN PLAN, adding indexes, and rewriting inefficient SQL.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Identification</div>
+<p>Query V$SQL: SELECT sql_text, elapsed_time/executions avg_ms FROM V$SQL ORDER BY elapsed_time DESC.</p>
+<p>AWR report (DBA) shows top SQL by CPU, elapsed time, buffer gets — identifies the worst offenders.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Fixes</div>
+<p>Add missing index on WHERE/JOIN columns; avoid functions on indexed columns in WHERE clause.</p>
+<p>Rewrite correlated subqueries as JOINs; use analytic functions instead of self-joins for ranking.</p>
+<p>Gather fresh statistics: EXEC DBMS_STATS.GATHER_TABLE_STATS('schema','table') — stale stats cause bad plans.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Never tune without measuring first — always compare execution plans and elapsed times before and after changes.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Explain plan. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>EXPLAIN PLAN</strong> in Oracle shows the optimizer's execution plan — the steps (TABLE ACCESS, INDEX SCAN, HASH JOIN) it will use to execute a query.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Usage</div>
+<p>EXPLAIN PLAN FOR &lt;your query&gt;; SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY) to view the plan.</p>
+<p>Or use: SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(sql_id)) for plans of recently executed queries.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Key operations</div>
+<p>TABLE ACCESS FULL: full scan — acceptable for small tables, bad for large transaction tables.</p>
+<p>INDEX RANGE SCAN: optimal for selective queries on indexed columns.</p>
+<p>HASH JOIN vs NESTED LOOPS: hash join preferred for large tables; NL for small driving table with indexed lookup.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>The E-Rows vs A-Rows mismatch in DBMS_XPLAN.DISPLAY_CURSOR indicates stale statistics causing poor plans.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Procedure vs function vs package. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">In PL/SQL, a <strong>procedure</strong> performs an action (no return), a <strong>function</strong> returns a value, and a <strong>package</strong> groups related procedures/functions with shared state.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Differences</div>
+<p>Procedure: can have IN, OUT, IN OUT params; no RETURN value; called with EXEC or from another block.</p>
+<p>Function: must return a value via RETURN clause; can be used in SQL SELECT statements.</p>
+<p>Package: spec (public interface) + body (implementation); package-level variables act as session-scoped state.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking usage</div>
+<p>Procedures for EOD batch steps: calculate_interest(p_date), post_charges(p_account_no).</p>
+<p>Functions for calculations used in SQL: calculate_emi(p_principal, p_rate, p_months) called in SELECT for loan reports.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Prefer packages over standalone procedures/functions — they reduce recompilation dependencies and encapsulate module logic.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Cursor vs ref cursor. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>static cursor</strong> has a fixed query defined at compile time; a <strong>ref cursor</strong> is a pointer to a cursor result set whose query is determined at runtime.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Static cursor</div>
+<p>CURSOR c IS SELECT * FROM accounts WHERE status = 'ACTIVE'; — query fixed at compile time.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Ref cursor</div>
+<p>TYPE ref_cur IS REF CURSOR; or SYS_REFCURSOR (weak); OPEN p_cur FOR SELECT * FROM accounts WHERE branch = p_branch;</p>
+<p>Passed as OUT parameter from procedure; Java JDBC receives it as a ResultSet via CallableStatement.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking use</div>
+<p>FLEXCUBE APIs: procedure takes parameters, opens ref cursor with dynamic query, Java layer fetches results.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Ref cursors enable dynamic queries and result set return from procedures — standard pattern in FLEXCUBE API layer.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Bulk collect and forall. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>BULK COLLECT</strong> fetches multiple rows into a collection in one context switch; <strong>FORALL</strong> sends multiple DML statements to SQL engine in one call — both drastically reduce context switch overhead.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Bulk collect</div>
+<p>SELECT ... BULK COLLECT INTO l_accounts LIMIT 1000 — fetches 1000 rows per iteration instead of one at a time.</p>
+<p>LIMIT clause is mandatory in loops to avoid OOM on large tables.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">FORALL</div>
+<p>FORALL i IN l_accounts.FIRST..l_accounts.LAST UPDATE accounts SET status='ACTIVE' WHERE id=l_accounts(i).id</p>
+<p>SAVE EXCEPTIONS clause catches errors per row without aborting the batch.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Performance</div>
+<p>Replacing row-by-row with BULK COLLECT+FORALL can reduce EOD batch time from hours to minutes on million-row tables.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always use BULK COLLECT with LIMIT and FORALL with SAVE EXCEPTIONS in banking EOD batch processing.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Trigger and mutating table error. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>mutating table error</strong> (ORA-04091) occurs when a row-level trigger tries to query or modify the same table the triggering DML is currently changing.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Cause</div>
+<p>Row-level trigger on accounts fires during UPDATE accounts; trigger tries to SELECT FROM accounts — Oracle raises ORA-04091.</p>
+<p>The table is 'mutating' — mid-DML state is inconsistent; Oracle prevents dirty reads within the same statement.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Solutions</div>
+<p>Compound trigger (Oracle 11g+): BEFORE STATEMENT collects data, AFTER EACH ROW accumulates, AFTER STATEMENT performs the query/DML safely.</p>
+<p>Autonomous transaction: mark trigger or called procedure as PRAGMA AUTONOMOUS_TRANSACTION — runs in separate transaction context.</p>
+<p>Move logic to application layer or call from AFTER STATEMENT trigger.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Compound triggers are the cleanest Oracle-native solution to mutating table errors in banking triggers.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Transaction isolation. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Transaction isolation</strong> defines how concurrent transactions see each other's uncommitted changes, balancing consistency against concurrency.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Levels</div>
+<p>READ UNCOMMITTED: dirty reads possible — not supported by Oracle.</p>
+<p>READ COMMITTED (Oracle default): sees only committed data at each statement; non-repeatable reads possible.</p>
+<p>REPEATABLE READ: same row reads return same data within transaction; phantom reads still possible.</p>
+<p>SERIALIZABLE: full isolation — transactions appear to run sequentially; uses MVCC in Oracle.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Oracle specifics</div>
+<p>Oracle default is READ COMMITTED using MVCC — readers don't block writers, no dirty reads.</p>
+<p>SET TRANSACTION ISOLATION LEVEL SERIALIZABLE for critical financial reads (audit snapshot, balance verification).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>In banking, READ COMMITTED covers most cases; use SERIALIZABLE for balance checks before high-value transfers.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Deadlock handling. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>deadlock</strong> occurs when two transactions each hold a lock the other needs; Oracle detects and rolls back one victim transaction automatically.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Detection and recovery</div>
+<p>Oracle auto-detects deadlock (ORA-00060) and rolls back the statement (not transaction) of one victim.</p>
+<p>Application must catch ORA-00060, rollback explicitly, and retry the transaction.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Prevention</div>
+<p>Always acquire locks in consistent order across all transactions — account A before account B in fund transfer.</p>
+<p>Use SELECT ... FOR UPDATE NOWAIT or SKIP LOCKED to avoid indefinite waiting.</p>
+<p>Keep transactions short; release locks quickly; avoid user interaction while holding DB locks.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking example</div>
+<p>Fund transfer: debit A, credit B — always lock the lower account_id first to prevent A→B and B→A deadlock.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Design deadlock prevention into the data access layer — detection and retry is a safety net, not a strategy.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Spring Boot basics. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Spring Boot</strong> provides auto-configuration, embedded server, and opinionated defaults that eliminate boilerplate, enabling production-ready Spring apps in minutes.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Key features</div>
+<p>Auto-configuration: spring-boot-autoconfigure detects classpath dependencies and configures beans automatically.</p>
+<p>Embedded server: Tomcat/Jetty/Undertow bundled — deploy as executable JAR, no external server needed.</p>
+<p>Actuator: production-ready endpoints for health, metrics, info — /actuator/health, /actuator/metrics.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking usage</div>
+<p>Build REST microservices for account inquiry, fund transfer, statement download — deployed as Docker containers.</p>
+<p>Spring Boot + Spring Data JPA + Oracle: auto-configures DataSource from application.properties spring.datasource.*.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Spring Boot reduces setup time but understanding what's auto-configured is essential for troubleshooting.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>`@Transactional`. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>@Transactional</strong> wraps a method in a database transaction — commits on success, rolls back on unchecked exception (by default).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Behaviour</div>
+<p>Spring creates a proxy around the bean; before method: begin tx; after normal return: commit; on RuntimeException: rollback.</p>
+<p>rollbackFor=Exception.class to also rollback on checked exceptions; noRollbackFor to exclude specific exceptions.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Propagation</div>
+<p>REQUIRED (default): join existing tx or create new. REQUIRES_NEW: always new tx, suspends outer.</p>
+<p>SUPPORTS: joins if exists, non-tx if none. MANDATORY: must have existing tx or throws.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking example</div>
+<p>fundTransfer(@Transactional): debit + credit in one tx; if credit fails, debit is rolled back automatically.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>@Transactional only works on Spring-managed beans invoked from outside the bean — self-invocation bypasses the proxy.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Microservices communication. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Microservices communicate via <strong>synchronous REST/gRPC</strong> for request-response or <strong>asynchronous messaging</strong> (JMS/Kafka) for event-driven decoupled flows.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Synchronous</div>
+<p>REST (HTTP): simple, widely supported; use with circuit breaker (Resilience4j) and timeout to handle failures.</p>
+<p>gRPC: binary Protobuf protocol; faster than REST for high-frequency inter-service calls.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Asynchronous</div>
+<p>JMS/MQ: guaranteed delivery, durable queues; used in banking for payment confirmations and EOD events.</p>
+<p>Kafka: high-throughput event streaming; used for transaction event log, audit trail, real-time analytics.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking choice</div>
+<p>Balance inquiry: synchronous REST (needs immediate response). Fund transfer completion notification: async JMS.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Choose sync for user-facing real-time flows; async for decoupled, resilient background processing.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Saga pattern. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">The <strong>Saga pattern</strong> manages distributed transactions across microservices as a sequence of local transactions with compensating transactions on failure.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Approaches</div>
+<p>Choreography: each service publishes events; next service listens and acts — no central coordinator, complex to debug.</p>
+<p>Orchestration: central saga orchestrator sends commands to services and handles failure by issuing compensating commands.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking example</div>
+<p>Fund transfer saga: DebitService debits A → publishes event → CreditService credits B → publishes success.</p>
+<p>On credit failure: compensating transaction issued to ReversalService to re-credit account A.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Challenges</div>
+<p>Sagas have eventual consistency — intermediate states are visible. Need idempotent steps and robust compensation logic.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Orchestration sagas are easier to monitor and debug in banking — use a dedicated orchestrator service with state machine.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Circuit breaker/retry/timeout. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Circuit breaker, retry, and timeout are resilience patterns that prevent cascading failures when a downstream service is slow or unavailable.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Circuit breaker (Resilience4j)</div>
+<p>CLOSED: requests pass through. OPEN: trips after failure threshold — rejects calls immediately. HALF-OPEN: probes recovery.</p>
+<p>Prevents thread pool exhaustion when a downstream payment gateway or external bank API is down.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Retry</div>
+<p>Retries transient failures (network blip, 503) with exponential backoff; must be idempotent — never retry non-idempotent payments without dedup.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Timeout</div>
+<p>Set connection timeout and read timeout on all external calls; without timeout a slow API blocks threads indefinitely.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always combine: timeout prevents indefinite wait, retry handles transient failures, circuit breaker handles sustained outages.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Docker basics. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Docker</strong> packages an application and its dependencies into a portable image that runs in an isolated container on any host.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Key concepts</div>
+<p>Image: read-only template (FROM openjdk:17, COPY app.jar, ENTRYPOINT); built with docker build.</p>
+<p>Container: running instance of an image; isolated filesystem, network, process namespace.</p>
+<p>Dockerfile: defines build steps; multi-stage builds keep production image small.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking usage</div>
+<p>Spring Boot microservices packaged as Docker images; pushed to private registry (Nexus/ECR); deployed to Kubernetes.</p>
+<p>docker run -e SPRING_DATASOURCE_URL=... -p 8080:8080 banking-service:1.0 for local testing.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Never bake secrets into Docker images — inject via environment variables or Kubernetes Secrets at runtime.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Kubernetes basics. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Kubernetes</strong> orchestrates containerized applications providing automated deployment, scaling, self-healing, and service discovery.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Core objects</div>
+<p>Pod: smallest deployable unit (one or more containers). Deployment: manages rolling updates and replicas.</p>
+<p>Service: stable DNS name and load balancing for pods. ConfigMap/Secret: externalize config and credentials.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking usage</div>
+<p>Banking microservices deployed as Deployments with 3 replicas; HPA scales pods based on CPU/TPS.</p>
+<p>Liveness and readiness probes ensure unhealthy pods are restarted and removed from service endpoints.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Kubernetes namespaces separate SIT, UAT, and production environments in the same cluster with RBAC isolation.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>WebLogic deployment. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Deploying to Oracle WebLogic involves preparing the EAR/WAR artifact, using Admin Console or WLST scripting, and targeting a managed server or cluster.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Methods</div>
+<p>Admin Console: Deployments → Install → upload/locate EAR → select target managed server → activate.</p>
+<p>WLST (Python-based): weblogic.deployer or wlst.sh deploy() for automated CI/CD pipeline deployments.</p>
+<p>weblogic.deployer command-line: java weblogic.deployer -deploy -source app.ear -targets cluster1.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Best practices</div>
+<p>Use deployment plans (plan.xml) for environment-specific overrides (JNDI names, data source URLs) without repackaging EAR.</p>
+<p>Deploy to one managed server first; verify health before deploying to full cluster.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Automate WebLogic deployments via WLST scripts in Jenkins pipeline to eliminate manual console steps.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Connection pool/JNDI. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>JNDI</strong> (Java Naming and Directory Interface) is the lookup mechanism used to retrieve resources like DataSources and JMS queues configured on the app server.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">How it works</div>
+<p>App server registers DataSource under a JNDI name (jdbc/oracleDS) in its naming tree at startup.</p>
+<p>Application does: Context ctx = new InitialContext(); DataSource ds = (DataSource) ctx.lookup('jdbc/oracleDS');</p>
+<p>Spring Boot: spring.datasource.jndi-name=jdbc/oracleDS in application.properties to use JNDI data source.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking usage</div>
+<p>FLEXCUBE looks up all its data sources and JMS connection factories via JNDI — centralized config on WebLogic.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>JNDI allows the same EAR to connect to different databases in SIT/UAT/Prod by changing server-level config.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>JMS queue vs topic. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>JMS Queue</strong> delivers each message to exactly one consumer (point-to-point); a <strong>Topic</strong> delivers each message to all active subscribers (publish-subscribe).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Queue (P2P)</div>
+<p>Message sits in queue until one consumer receives and acknowledges it; guaranteed single delivery.</p>
+<p>Used for: payment processing requests, account opening workflow tasks — each message processed once.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Topic (Pub-Sub)</div>
+<p>Multiple subscribers each receive a copy; durable subscription persists messages for offline subscribers.</p>
+<p>Used for: transaction notification events — audit service, SMS service, and ledger service all subscribe.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking choice</div>
+<p>Use queue for command/task messages (process this payment). Use topic for domain events (payment completed).</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Dead letter queue. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>Dead Letter Queue (DLQ)</strong> stores messages that have exceeded their redelivery limit and could not be processed successfully.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Purpose</div>
+<p>Prevents poison messages from blocking the main queue; isolates failed messages for investigation.</p>
+<p>Configured with a redelivery limit (e.g., 5 retries) and delay between retries on WebLogic/IBM MQ.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking handling</div>
+<p>Ops team monitors DLQ; analyzes failed message payload and exception; fixes root cause and replays message.</p>
+<p>All DLQ entries should trigger an alert — a payment in DLQ means a failed transaction requiring investigation.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Never ignore DLQ messages — in banking, they represent failed financial transactions that need resolution.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>OSB basics. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Oracle Service Bus (OSB)</strong> is a lightweight ESB that mediates, transforms, and routes messages between services — decoupling consumers from providers.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Core concepts</div>
+<p>Proxy service: the endpoint exposed to clients; handles inbound messages, applies transformation/routing.</p>
+<p>Business service: represents the downstream target service (SOAP endpoint, JMS queue, REST API).</p>
+<p>Pipeline: sequence of request/response/error handling stages with transformations (XQuery, XSLT).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking usage</div>
+<p>OSB sits between FLEXCUBE and external payment gateways; transforms proprietary formats to ISO 20022 XML.</p>
+<p>Handles SWIFT message routing, format conversion, and error handling without changing either endpoint.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>OSB provides centralized message transformation, routing, and monitoring — reduces point-to-point integration complexity.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>SSO/SAML/PKI. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>SSO</strong> enables single authentication for multiple applications; <strong>SAML</strong> is the XML-based protocol; <strong>PKI</strong> provides the certificate infrastructure for digital signing/encryption.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">SSO/SAML</div>
+<p>SAML 2.0: user authenticates once at Identity Provider (IdP); IdP issues signed XML assertion; Service Provider trusts it.</p>
+<p>Used in banking: staff logs into bank portal once; SSO provides access to FLEXCUBE, reporting, and admin tools.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">PKI</div>
+<p>Public/private key pair: private key signs, public key verifies. Certificate Authority (CA) signs public key certificates.</p>
+<p>Used in banking: HTTPS/TLS, digital signing of SWIFT messages, mTLS for API authentication.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>SAML is being superseded by OIDC/OAuth2 for modern SSO but remains prevalent in enterprise banking.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>JUnit/Mockito. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>JUnit 5</strong> is the Java testing framework; <strong>Mockito</strong> creates mock/spy objects to isolate the unit under test from its dependencies.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">JUnit 5</div>
+<p>@Test, @BeforeEach, @AfterEach, @ParameterizedTest for data-driven tests, @ExtendWith(MockitoExtension.class).</p>
+<p>Assertions: assertEquals, assertThrows, assertThat (AssertJ for fluent assertions).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Mockito</div>
+<p>Mockito.mock(AccountRepository.class) creates a mock; when(repo.findById(1L)).thenReturn(Optional.of(account)).</p>
+<p>@Spy wraps real object — real methods called unless stubbed; useful for partial mocking.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking test</div>
+<p>Test fundTransfer: mock debitAccount and creditAccount, verify both called once, assert no exception on valid transfer.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Aim for 70%+ line coverage on service/domain layer; mock all I/O (DB, HTTP, MQ) in unit tests.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>JMeter performance testing. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>JMeter</strong> simulates concurrent user load on APIs and services, measuring response time, throughput, error rate, and identifying performance bottlenecks.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Setup</div>
+<p>Thread Group: configure number of users (threads), ramp-up period, loop count.</p>
+<p>Samplers: HTTP Request sampler for REST APIs; JDBC Request sampler for DB queries.</p>
+<p>Listeners: Aggregate Report (avg, 95th pct, throughput), Response Time Graph, Error Rate.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking test</div>
+<p>Run 500 virtual users hitting the account balance API for 10 minutes; assert p95 &lt; 500ms, error rate &lt; 0.1%.</p>
+<p>Parameterize account numbers via CSV Data Set Config to simulate real distribution.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always run performance tests in a production-like environment with realistic data volume and connection pool sizing.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Git merge vs rebase. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>git merge</strong> creates a merge commit preserving history; <strong>git rebase</strong> replays commits on top of the target branch, producing a linear history.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Merge</div>
+<p>Creates a merge commit (two parents); preserves exact history including when feature branch was created.</p>
+<p>Safe for shared/public branches — does not rewrite history.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Rebase</div>
+<p>Replays feature branch commits on top of target; linear history is cleaner and easier to bisect.</p>
+<p>NEVER rebase shared branches — rewrites commit SHAs, breaks others' local branches.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">In practice</div>
+<p>Team convention: rebase feature branch onto main before raising PR; merge (--no-ff) into main to preserve branch point.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use rebase for local cleanup; use merge for integrating shared branches to preserve collaboration history.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Maven lifecycle. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Maven's <strong>default lifecycle</strong> has phases: validate → compile → test → package → verify → install → deploy, each executing bound plugin goals.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Key phases</div>
+<p>compile: javac; test: surefire runs JUnit; package: creates JAR/WAR; install: copies to local .m2 repo; deploy: pushes to Nexus.</p>
+<p>mvn clean package: cleans target/ and rebuilds; mvn clean install -DskipTests: install without running tests.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking CI</div>
+<p>Jenkins pipeline: mvn clean verify (compile + test + integration-test) then mvn deploy to push artifact to Nexus.</p>
+<p>Use Maven profiles: -Pproduction for prod build with obfuscation; -Pdev for development config.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Understanding lifecycle phases prevents accidentally skipping tests or deploying unverified artifacts.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Unix log debugging. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Unix log debugging for banking Java apps uses tail, grep, awk, and find to isolate errors from high-volume log files.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Key commands</div>
+<p>tail -f application.log | grep -i 'ERROR\|EXCEPTION' to watch live errors.</p>
+<p>grep -n 'ORA-' application.log | tail -20 to find recent Oracle errors with line numbers.</p>
+<p>awk '/2024-01-15 10:/{flag=1} flag' app.log to print log entries from a specific time.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking scenario</div>
+<p>After a transaction failure, grep for the transaction reference number across all log files to reconstruct the full trace.</p>
+<p>find /logs -name '*.log' -newer /tmp/marker -exec grep -l 'OutOfMemory' {} \; to find recent OOM logs.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Centralized logging (ELK/Splunk) is better than ad-hoc grep — search across all services with structured queries.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Core banking basics. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Core banking</strong> is the central system managing customer accounts, deposits, loans, payments, and general ledger — the backbone of bank operations.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Key modules</div>
+<p>CASA (Current Account Savings Account): account opening, maintenance, transaction posting, interest accrual.</p>
+<p>Loans: origination, disbursement, EMI scheduling, repayment, NPA classification.</p>
+<p>General Ledger: double-entry bookkeeping; every transaction posts debit and credit entries balancing to zero.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Technology</div>
+<p>Oracle FLEXCUBE, Temenos T24, Finacle are leading CBS platforms — built on Oracle DB with Java/PL/SQL.</p>
+<p>Interfaces: SWIFT for international payments, NEFT/RTGS/IMPS for domestic, ISO 20022 for modern messaging.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Understanding core banking domain is essential for implementing correct business logic in banking applications.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>CASA/KYC/AML/CIF. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>CASA</strong> are deposit accounts; <strong>KYC</strong> verifies customer identity; <strong>AML</strong> detects money laundering; <strong>CIF</strong> is the master customer record linking all relationships.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Definitions</div>
+<p>CASA: Current Account (no interest, unlimited tx) and Savings Account (interest-bearing, some limits) — core deposit products.</p>
+<p>KYC (Know Your Customer): collecting ID proof, address proof, risk category — regulatory requirement before account opening.</p>
+<p>AML (Anti-Money Laundering): transaction monitoring for suspicious patterns (structuring, large cash, high-risk geographies).</p>
+<p>CIF (Customer Information File): unique customer master record; one customer can have multiple accounts all linked to one CIF.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>KYC and AML are regulatory mandates — incomplete KYC blocks account operations; AML flags trigger reporting to regulators.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Transaction posting. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Transaction posting</strong> is recording a financial transaction in the accounting system — debiting one account and crediting another while maintaining double-entry balance.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Process</div>
+<p>Validate transaction: sufficient balance, account active, daily limit check, AML screening.</p>
+<p>Post debit entry to customer account; post credit entry to beneficiary or GL account; update account balance.</p>
+<p>Generate transaction reference, audit trail entry, and notification event.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking rules</div>
+<p>Every posting must be atomic — partial postings (debit without credit) break double-entry integrity.</p>
+<p>Hold/lien amount must be considered in available balance check before posting debit.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Transaction posting failure must roll back all entries — a partial posting is a reconciliation nightmare.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Ledger balance vs available balance. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Ledger balance</strong> is the book balance including all posted transactions; <strong>available balance</strong> is ledger balance minus holds/liens — what the customer can actually use.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Difference</div>
+<p>Ledger balance: sum of all posted debits and credits; does not deduct pending holds or lien amounts.</p>
+<p>Available balance: ledger balance - uncleared cheques - hold amounts - lien amounts; used for overdraft/withdrawal check.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking example</div>
+<p>Ledger: ₹50,000; Lien for FD: ₹20,000; Cheque hold: ₹5,000 → Available: ₹25,000.</p>
+<p>ATM withdrawal check uses available balance; statement shows ledger balance entries.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always validate against available balance for debit transactions — using ledger balance allows over-withdrawal.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Maker-checker process. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">The <strong>maker-checker</strong> (dual control) process requires one user to create/modify a transaction and a second authorized user to approve it before it takes effect.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Process</div>
+<p>Maker: enters transaction details (fund transfer, account modification) — saves in PENDING state.</p>
+<p>Checker: reviews details, verifies against supporting documents, approves or rejects.</p>
+<p>On approval: transaction is posted; on rejection: returned to maker with comments.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Regulatory importance</div>
+<p>Mandatory for high-value transactions (above threshold), account parameter changes, and user access management.</p>
+<p>Prevents fraud and errors — segregation of duties is a core banking control.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Implement maker-checker as a workflow with audit trail — who created, who approved, with timestamps.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Audit logging. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Audit logging</strong> records who did what, when, on which data — providing regulatory compliance evidence and forensic investigation capability.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">What to log</div>
+<p>All data changes: entity type, record ID, old value, new value, user ID, timestamp, IP address.</p>
+<p>All authentication events: login success/failure, password change, role assignment.</p>
+<p>All high-value transactions: above regulatory threshold, flagged by AML, or in sensitive accounts.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Implementation</div>
+<p>Spring AOP @Around advice on service methods captures user context and method args for audit.</p>
+<p>Oracle trigger-based audit: AFTER INSERT OR UPDATE OR DELETE on sensitive tables writing to audit_log table.</p>
+<p>Audit logs must be immutable — no UPDATE/DELETE allowed; append-only with hash chaining for tamper detection.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Audit logs are a regulatory requirement — regulators can demand 7+ years of transaction audit history.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>EOD/BOD batch. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>EOD (End of Day)</strong> batch runs post-business-hours to accrue interest, post charges, generate statements, and close the business date; <strong>BOD (Beginning of Day)</strong> prepares the system for the next day.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">EOD steps</div>
+<p>Close business date → interest accrual → charge posting → GL consolidation → statement generation → MIS reports.</p>
+<p>Each step is a job; failure at any step halts subsequent steps — ops team must resolve and re-run from failure point.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">BOD steps</div>
+<p>Open new business date, apply standing instructions (recurring transfers), release matured FDs, process scheduled payments.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking criticality</div>
+<p>EOD must complete before next business day opens — tight SLA (e.g., complete by 2 AM).</p>
+<p>All batch jobs are logged with start/end time, records processed, and any exceptions for audit trail.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>EOD batch is the most critical scheduled process in core banking — monitor with alerts and have a fallback procedure.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Production support scenario. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">In a production support scenario, I follow a systematic approach: triage severity, gather facts from logs, isolate root cause, apply fix or workaround, communicate status, and document RCA.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Triage</div>
+<p>Classify: Sev1 (system down, core banking unavailable), Sev2 (major feature broken), Sev3 (minor defect).</p>
+<p>Immediately notify stakeholders and start a bridge call for Sev1; no silent debugging.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Investigation</div>
+<p>Check application logs, DB alert logs, WebLogic console; grep for ERROR/Exception with timestamp of incident.</p>
+<p>Check if recent deployment coincides with issue — if yes, consider rollback as fastest path to recovery.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Speed of communication matters as much as speed of fix during a production banking incident.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>End-to-end implementation lifecycle. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">End-to-end banking implementation runs from requirement gathering through design, development, SIT, UAT, parallel run, go-live, and hypercare support.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Phases</div>
+<p>Requirements: BRD/FRS from business; gap analysis against core banking product capabilities.</p>
+<p>Design: solution design doc, data model, interface design; sign-off from business and IT.</p>
+<p>Development: customization coding, unit test, code review; artifact stored in version control.</p>
+<p>Testing: SIT (IT team), UAT (business users), performance testing, regression testing.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Go-live</div>
+<p>Parallel run: new system runs alongside legacy for a period; outputs compared for discrepancies.</p>
+<p>Cutover: data migration, system switch; hypercare support team on-site for first 2-4 weeks.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>A thorough parallel run and rollback plan are the difference between a successful go-live and a crisis.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Code review/design review process. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Code review ensures correctness, standards compliance, and knowledge sharing; design review validates architecture decisions before coding begins.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Code review checklist</div>
+<p>Correctness: does it handle edge cases, null inputs, concurrent access? Does it compile and pass tests?</p>
+<p>Performance: any N+1 queries, missing index, unbounded loops? Security: SQL injection, hardcoded credentials?</p>
+<p>Readability: meaningful names, no magic numbers, adequate test coverage.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Design review</div>
+<p>Review DB schema for normalization, indexing strategy, and partitioning for expected data volume.</p>
+<p>Review API contracts for backward compatibility; review integration for error handling and retry.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Reviews are most valuable before implementation — a design review prevents 10x the rework of a code review.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Java Core + Collections + Multithreading </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Core Java, Collections, and Multithreading form the technical foundation; expect questions on HashMap internals, thread safety, and ExecutorService in banking Java interviews.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Core Java</div>
+<p>OOP (encapsulation, polymorphism), exception handling, generics, Java 8 streams, Optional, lambdas.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Collections</div>
+<p>HashMap (hash table, O(1) avg), ArrayList (dynamic array), LinkedList (doubly-linked), TreeMap (sorted RB tree).</p>
+<p>Thread-safe: ConcurrentHashMap, CopyOnWriteArrayList, BlockingQueue implementations.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Multithreading</div>
+<p>synchronized, volatile, ReentrantLock; ExecutorService, Future, CompletableFuture; Deadlock prevention.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Oracle SQL + PL/SQL </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Oracle SQL and PL/SQL expertise covers query writing, analytical functions, PL/SQL procedural logic, bulk operations, and performance tuning.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">SQL</div>
+<p>Joins, subqueries, CTEs (WITH clause), analytic functions (ROW_NUMBER, RANK, LAG, LEAD), PIVOT/UNPIVOT.</p>
+<p>DDL (CREATE TABLE, ALTER TABLE), DML (INSERT, UPDATE, DELETE, MERGE), DCL (GRANT, REVOKE).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">PL/SQL</div>
+<p>Procedures, functions, packages, triggers; cursors, ref cursors; BULK COLLECT + FORALL for performance.</p>
+<p>Exception handling, autonomous transactions, dynamic SQL (EXECUTE IMMEDIATE), DBMS_SCHEDULER.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>JMS/MQ/OSB </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">JMS, IBM MQ, and OSB are the messaging stack in banking: JMS API, IBM MQ as the broker, and OSB as the integration bus mediating message flows.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Stack</div>
+<p>JMS: Java API for messaging — Queue (P2P) and Topic (Pub-Sub); vendor-independent programming model.</p>
+<p>IBM MQ: enterprise message broker implementing JMS; guaranteed delivery, clustering, DLQ support.</p>
+<p>OSB: routes and transforms JMS messages; proxies between different endpoints; applies business rules.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>IBM MQ + OSB is the standard messaging architecture in most large core banking implementations.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>WebLogic/Tomcat/JBoss </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">WebLogic, Tomcat, and JBoss are Java application servers with different feature sets: WebLogic (full Java EE), Tomcat (servlet only), JBoss/WildFly (full Java EE open-source).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Comparison</div>
+<p>Tomcat: lightweight servlet container; no EJB, no JMS, no JTA; ideal for Spring Boot microservices.</p>
+<p>JBoss/WildFly: full Jakarta EE, open-source; similar to WebLogic but free; used in mid-market banking.</p>
+<p>WebLogic: Oracle's enterprise app server; full Java EE, clustering, WLDF diagnostics; standard for FLEXCUBE.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Choose Tomcat for Spring Boot microservices; WebLogic for FLEXCUBE and EJB-based legacy banking applications.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Production support + implementation scenarios </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Production support combines incident response (fixing live issues) with implementation activities (deployments, patches, config changes) under change control.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Support scenarios</div>
+<p>Batch job failure: check logs, identify failed step, fix data issue or code bug, re-run from failure point.</p>
+<p>API timeout: check network, DB lock, external service health; apply workaround (increase timeout, disable feature) then fix.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Implementation</div>
+<p>Patch deployment: apply vendor patch in SIT, test, promote to UAT, production under change management.</p>
+<p>Config change: JNDI, pool size, timeout values changed on WebLogic via change request with test evidence.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Explain your current project architecture. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">The project uses a <strong>multi-tier architecture</strong>: Oracle WebLogic app server hosting FLEXCUBE, Oracle 19c DB, OSB for integrations, and Spring Boot microservices for digital channel APIs.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Architecture layers</div>
+<p>Presentation: FLEXCUBE JSF web UI + mobile banking app (React Native) consuming REST APIs.</p>
+<p>Integration: OSB mediates between FLEXCUBE and external payment systems (SWIFT, NEFT/RTGS gateway).</p>
+<p>Data: Oracle 19c RAC for HA; Oracle AQ for messaging; separate schema for OLTP and reporting.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Key patterns</div>
+<p>Synchronous REST for real-time queries; asynchronous JMS for payment confirmations and EOD events.</p>
+<p>Maker-checker workflow for all configuration changes; audit triggers on sensitive tables.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Architecture decisions were driven by FLEXCUBE constraints, regulatory audit requirements, and HA targets.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Explain one complex issue you solved in production. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">I resolved a <strong>transaction duplication issue</strong> during a payment gateway timeout where double debit was occurring on retry without idempotency checks.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Problem</div>
+<p>Payment service retried after 30s timeout, but the original request had succeeded — customer's account debited twice.</p>
+<p>No idempotency key was being checked on the server side before processing retry requests.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Solution</div>
+<p>Implemented idempotency key table: payment_request_id as unique key; duplicate request returns cached response.</p>
+<p>Added compensating transaction detection: before debit, check if same reference already posted in last 24 hours.</p>
+<p>Short-term: ops team identified and reversed duplicate debits from DLQ messages.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>This led to an idempotency standard for all payment APIs across the project.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is the difference between REST and SOAP? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>REST</strong> is a stateless architectural style over HTTP using JSON; <strong>SOAP</strong> is a protocol with XML envelope, WSDL contract, and built-in WS-Security and WS-AtomicTransaction support.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">REST</div>
+<p>Lightweight, easy to consume from any client; uses HTTP methods semantically; stateless; cacheable.</p>
+<p>No built-in transaction support across services; security via OAuth2/JWT/mTLS.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">SOAP</div>
+<p>Strict message format (Envelope/Header/Body); WSDL defines contract; XSD validates message structure.</p>
+<p>WS-Security for message-level encryption/signing; WS-AtomicTransaction for distributed transactions.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use REST for customer-facing digital APIs; SOAP for inter-bank and legacy system integration.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you handle transactions in Java/Spring? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Transactions in Spring are managed declaratively with <strong>@Transactional</strong> or programmatically with <strong>TransactionTemplate</strong>, wrapping business operations in ACID database transactions.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Declarative</div>
+<p>@Transactional on service method: Spring proxy begins transaction before call, commits on return, rolls back on RuntimeException.</p>
+<p>Configure propagation (REQUIRED, REQUIRES_NEW), isolation (READ_COMMITTED, SERIALIZABLE), and timeout.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Programmatic</div>
+<p>TransactionTemplate.execute(): fine-grained control; useful when transaction boundary depends on runtime logic.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>Fund transfer: @Transactional on transferFunds() ensures debit+credit are atomic — no partial transfer.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Never commit transactions manually when using @Transactional — Spring handles it; only manage savepoints if needed.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you secure REST APIs? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">REST API security requires TLS transport, OAuth2/JWT authentication, RBAC authorization, input validation, and rate limiting.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Transport and auth</div>
+<p>HTTPS (TLS 1.2+) for all traffic; no sensitive data in URL query params (use headers or body).</p>
+<p>OAuth2 Bearer token: validate JWT signature, expiry, issuer, audience on every request at gateway.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Authorization and validation</div>
+<p>Spring Security @PreAuthorize('hasRole(BRANCH_MANAGER)') for method-level RBAC.</p>
+<p>Validate all input: size, type, range; reject unexpected fields; parameterize all DB queries.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking specifics</div>
+<p>Mask PAN and account numbers in responses; encrypt sensitive fields in transit and at rest.</p>
+<p>Rate limiting per IP/token to prevent brute force on OTP/PIN endpoints.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Security is layered — no single control is sufficient; combine transport, auth, authz, validation, and audit.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you check security issues in code? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Security issues in code are identified through static analysis (SonarQube, Checkmarx), manual code review, and OWASP Top 10 checklist verification.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Static analysis</div>
+<p>SonarQube/Checkmarx: detects SQL injection, hardcoded credentials, XXE, insecure deserialization automatically.</p>
+<p>Run as part of CI pipeline — fail build on HIGH/CRITICAL security findings.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Manual review</div>
+<p>Check all dynamic SQL for concatenation of user input — must use PreparedStatement or bind variables.</p>
+<p>Verify no secrets in code (passwords, API keys) — should use Vault or environment variables.</p>
+<p>Check authentication on all endpoints — no missing @PreAuthorize or SecurityConfig exclusion.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>OWASP Top 10 is the checklist — injection, broken auth, sensitive data exposure are the most common banking issues.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Are you comfortable with documentation? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Yes — I write technical documentation as part of development: API specs (OpenAPI/Swagger), solution design docs, RCA reports, and operational runbooks.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Documentation types</div>
+<p>OpenAPI (Swagger): generated from Spring Boot annotations for REST API reference.</p>
+<p>Solution design doc: architecture, DB schema, interface design — reviewed before development starts.</p>
+<p>Runbooks: step-by-step procedures for EOD batch recovery, deployment, and common incident resolution.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Good documentation reduces onboarding time and prevents repeated production incidents.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What are your weaknesses? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">My weakness is occasionally spending too much time perfecting a solution technically when a pragmatic 80% solution would serve the business better within deadline constraints.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Self-awareness</div>
+<p>I tend to want to solve problems completely and elegantly, sometimes over-engineering when a simpler fix suffices.</p>
+<p>Mitigation: I now time-box technical exploration and explicitly ask 'does this need to be perfect or just correct enough for now?'</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Improvement</div>
+<p>Working in agile sprints has helped — delivery cadence creates natural time-boxes that prevent perfectionism.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Are you comfortable with client communication? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Yes — I regularly communicate with business stakeholders and client IT teams in requirement discussions, incident updates, and UAT support sessions.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Experience</div>
+<p>During SIT/UAT: explain technical issues in business terms to bank staff; translate business requirements to technical specs.</p>
+<p>During incidents: provide clear, non-jargon status updates to business on impact and estimated resolution time.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Clear client communication builds trust and prevents escalations during high-pressure banking implementations.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Explain your project architecture. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">My project follows a <strong>layered service architecture</strong> with Oracle WebLogic hosting FLEXCUBE, Oracle 19c RAC as the core database, OSB for integration, and Spring Boot microservices for APIs.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Layers</div>
+<p>Client layer: FLEXCUBE UI, mobile banking app, internet banking portal.</p>
+<p>Service layer: Spring Boot REST APIs, FLEXCUBE services, OSB proxy/business services.</p>
+<p>Data layer: Oracle 19c RAC (OLTP), Oracle AQ (messaging), separate read replica for reporting.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Architecture decisions are driven by reliability (RAC for HA), regulatory (audit), and performance (partitioning) requirements.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>ConcurrentHashMap internal working. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>ConcurrentHashMap</strong> (Java 8+) achieves thread safety using CAS (Compare-And-Swap) operations for individual buckets and synchronized only on individual bin heads during structural modifications.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Java 8 internals</div>
+<p>Same array-of-buckets structure as HashMap; bucket entries use CAS (Unsafe.compareAndSwap) for lock-free reads.</p>
+<p>On collision in a bucket: synchronized block on the bucket head only — not the entire map.</p>
+<p>Segments concept (Java 7) replaced with fine-grained bucket-level locking in Java 8 for better concurrency.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Key methods</div>
+<p>putIfAbsent(k,v): atomic check-and-insert; computeIfAbsent(k, fn): atomic compute-and-insert.</p>
+<p>size() is approximate — not synchronized; use mappingCount() for more accurate count under concurrency.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>ConcurrentHashMap is the go-to for shared caches (e.g., exchange rate cache, customer status cache) in multithreaded banking apps.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>REST + SOAP </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">REST and SOAP are the two dominant API styles: REST for lightweight HTTP APIs with JSON, SOAP for enterprise XML messaging with strict contract and WS-* security standards.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">When to use</div>
+<p>REST: mobile apps, web front-ends, microservice-to-microservice (internal), developer-facing APIs.</p>
+<p>SOAP: inter-bank (SWIFT), legacy core banking interfaces, when WS-Security message signing is required.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Banking systems typically use both: REST for digital channels, SOAP for back-office and inter-bank integration.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Banking domain basics </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Banking domain basics encompass deposit products (CASA), lending products (loans, OD), payment systems (NEFT/RTGS/SWIFT), and regulatory requirements (KYC/AML).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Core concepts</div>
+<p>Liabilities: deposits (CASA, FD) — bank owes money to customer. Assets: loans, investments — bank is owed money.</p>
+<p>GL (General Ledger): master accounting book; every transaction in core banking posts to GL entries.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Operations</div>
+<p>EOD batch: interest accrual, charge posting, GL balancing, statement generation — runs daily after close of business.</p>
+<p>Reconciliation: ensure bank's internal records match external systems (RBI, SWIFT, payment gateways).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Domain knowledge directly improves code quality — you write better validations when you understand the business rules.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Security: SSO/SAML/PKI </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Banking security uses SSO for staff access, SAML for federated identity, PKI for certificate-based trust, and mTLS for API-level mutual authentication.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">SSO and SAML</div>
+<p>Bank staff authenticate once at IdP (Active Directory/LDAP); SAML 2.0 assertion grants access to FLEXCUBE, OSB console, reporting tools.</p>
+<p>ADFS or Oracle Access Manager typically acts as IdP in large banking organizations.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">PKI</div>
+<p>Certificate Authority issues X.509 certs; private key stored in HSM (Hardware Security Module) for payment signing.</p>
+<p>mTLS: both client and server present certs — standard for bank API-to-API communication.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>PKI and mTLS are mandatory for SWIFT connectivity and RBI-regulated payment system integration.</p>
+</div>
+</div>
+</details>
+</div>
+</main>
+<script src="main.js"></script>
 </body>
 </html>

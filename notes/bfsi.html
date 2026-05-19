@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<title>Core Banking &amp; BFSI · Notes</title>
+<link href="../assets/img/logo.png" rel="icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
+</head>
+<body>
+<header class="topbar">
+<div class="topbar-inner">
+<a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+<div class="search-wrap">
+<i class="bi bi-search"></i>
+<input autocomplete="off" id="search" placeholder="Search within Core Banking &amp; BFSI..." spellcheck="false" type="search"/>
+<span class="search-shortcut">/</span>
+</div>
+<div class="topbar-actions">
+<button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+<button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+</div>
+</div>
+</header>
+<main class="topic-page">
+<div class="topic-page-header">
+<div class="topic-page-eyebrow">22 · Banking</div>
+<h1>Core Banking &amp; BFSI</h1>
+<p class="topic-page-desc">CASA, KYC, posting, EOD, maker-checker, FLEXCUBE.</p>
+<div class="topic-page-meta">
+<span><strong>52</strong> questions</span>
+<span>Press <span class="hint-kbd">/</span> to search</span>
+</div>
+</div>
+<div class="no-results" id="noResults">No matches.</div>
+<div class="qa-list">
+<details class="qa">
+<summary>What is core banking? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Core banking</strong> is the central system that runs a bank's main products — accounts, deposits, loans, payments, and general ledger.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to modules.</div>
+<p>CASA (savings/current accounts)</p>
+<p>Loans and EMI</p>
+<p>Payments (NEFT/RTGS/UPI)</p>
+<p>GL and reconciliation</p>
+<p>Customer (CIF) and KYC</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Examples: Oracle FLEXCUBE, Finacle, Temenos.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is FLEXCUBE? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Oracle FLEXCUBE</strong> is a core banking product suite used by many banks for accounts, loans, payments, and GL.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to implementation.</div>
+<p>Configuration vs customization; interfaces to channels and payment systems; UAT and data migration for go-live.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>I explain product modules and integration even if I worked on interfaces/customization.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is core banking system? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Core banking</strong> is the central system that runs a bank's main products — accounts, deposits, loans, payments, and general ledger.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to modules.</div>
+<p>CASA (savings/current accounts)</p>
+<p>Loans and EMI</p>
+<p>Payments (NEFT/RTGS/UPI)</p>
+<p>GL and reconciliation</p>
+<p>Customer (CIF) and KYC</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Examples: Oracle FLEXCUBE, Finacle, Temenos.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is CASA? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>CASA</strong> = <strong>Current Account Savings Account</strong> — the deposit products customers hold for daily banking.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to types.</div>
+<p>Savings — interest, limited transactions. Current — business, overdraft possible.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Savings account vs current account. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>savings account</strong> earns interest and has transaction limits; a <strong>current account</strong> is non-interest-bearing with unlimited transactions, suited for businesses.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Savings account</div>
+<p>Interest-bearing (e.g., 3-4% p.a.); RBI limits free transactions per month; minimum balance required.</p>
+<p>Target: individual retail customers; KYC mandatory; overdraft typically not available.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Current account</div>
+<p>No interest; unlimited transactions; overdraft facility available; higher minimum balance.</p>
+<p>Target: businesses, traders, firms; multiple signatories; cheque book mandatory.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>In core banking, both are CASA products but parameterized differently — product code drives the interest and limit rules.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is customer onboarding? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Customer onboarding</strong> is the end-to-end process of registering a new customer: collecting personal details, completing KYC, risk assessment, and opening the first product account.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Steps</div>
+<p>Collect personal details: name, DOB, address, PAN, Aadhaar — create CIF (Customer Information File).</p>
+<p>KYC verification: document collection, identity verification (in-person or eKYC via Aadhaar OTP), risk category assignment.</p>
+<p>Account opening: select product, set account parameters, generate account number, issue debit card/kit.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Digital onboarding</div>
+<p>Video KYC (V-KYC): RBI-approved remote KYC via live video — used in digital banking onboarding.</p>
+<p>Integration points: CKYC registry, CIBIL check, PAN validation, NSDL Aadhaar verification.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Incomplete KYC blocks account operations — regulatory requirement under PMLA and RBI KYC directions.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is KYC? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>KYC (Know Your Customer)</strong> is regulatory identity verification before onboarding a customer.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to documents.</div>
+<p>ID proof, address proof, PAN; verified before account activation.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Required for AML compliance.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is AML? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>AML (Anti-Money Laundering)</strong> is a set of regulatory controls and monitoring processes to detect, prevent, and report suspicious financial transactions that may indicate money laundering.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Controls</div>
+<p>Transaction monitoring: rule-based and ML-based alerts on unusual patterns (large cash deposits, structuring, high-risk geography transfers).</p>
+<p>Customer due diligence (CDD): ongoing risk assessment based on customer profile, transaction behavior.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Reporting</div>
+<p>Suspicious Transaction Report (STR) filed with FIU-IND within 7 days of suspicion.</p>
+<p>Cash Transaction Report (CTR): mandatory for cash transactions above ₹10 lakh.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Technical</div>
+<p>AML engines (Actimize, Mantas) integrate with core banking via real-time or near-real-time feeds.</p>
+<p>Every flagged transaction is investigated; analyst clears or escalates; audit trail maintained.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>AML compliance failures attract massive regulatory fines — coding AML integration correctly is non-negotiable.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is CIF/customer ID? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>CIF (Customer Information File)</strong> is the master customer record in core banking — a unique ID linking all accounts, relationships, and interactions for one customer.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Structure</div>
+<p>CIF holds: name, DOB, address, contact, PAN, Aadhaar, KYC status, risk category, relationship manager.</p>
+<p>One CIF → multiple accounts (savings, current, FD, loan) — all linked by customer ID.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking importance</div>
+<p>Single customer view: relationship manager sees all products held by a customer across CIF.</p>
+<p>KYC status at CIF level controls account operations — if CIF KYC expires, all accounts restricted.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>CIF deduplication is critical — multiple CIFs for same customer cause compliance and service quality issues.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is account opening process? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Account opening</strong> in core banking involves CIF creation or linking, product selection, parameter setup, account number generation, and regulatory checks.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Steps</div>
+<p>Create or find existing CIF; select account product (savings, current, OD); enter account-specific parameters.</p>
+<p>Run deduplication check (avoid duplicate accounts for same customer); check negative list / blacklist.</p>
+<p>Maker-checker approval; generate account number; link debit card, cheque book; send welcome kit.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Regulatory</div>
+<p>PAN linkage mandatory; Aadhaar seeding required; nominee registration; FATCA/CRS declaration for applicable customers.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Account opening triggers a CIF snapshot for audit — all data at opening time is preserved for regulatory review.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is transaction posting? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Transaction posting</strong> records a financial event in core banking: validating the transaction, debiting/crediting accounts, updating balances, and creating the audit trail.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Process</div>
+<p>Validate: account active, sufficient available balance, daily/transaction limit, AML screening.</p>
+<p>Post debit and credit entries maintaining double-entry balance; update account balance atomically.</p>
+<p>Generate reference number, audit log entry, advices/receipts, and notification events.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Atomicity</div>
+<p>Posting is atomic — either both debit and credit post, or neither does. Partial postings cause reconciliation failures.</p>
+<p>Oracle ACID transactions ensure posting integrity; compensating transactions reverse erroneous postings.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Every posted transaction must balance: sum of all debits = sum of all credits in the GL.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is debit and credit in banking? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">In double-entry banking accounting, <strong>debit</strong> increases asset/expense accounts and decreases liability/equity accounts; <strong>credit</strong> is the opposite.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Accounting perspective</div>
+<p>Customer savings account is a liability for the bank (bank owes customer) — credit increases it, debit decreases it.</p>
+<p>Loan account is an asset for the bank — debit increases it (disbursement), credit decreases it (repayment).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Customer perspective</div>
+<p>Customer sees debit as money out of account (withdrawal, payment); credit as money in (deposit, receipt).</p>
+<p>Every transaction has equal debit and credit — Golden Rule of Double Entry maintained in GL.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Understanding accounting polarity is essential for writing correct posting logic in core banking systems.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is ledger balance vs available balance? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Ledger balance</strong> = official book balance. <strong>Available balance</strong> = what customer can spend now (ledger minus holds/liens).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to example.</div>
+<p>Cheque deposited but not cleared — ledger may credit, available may wait.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is hold amount/lien amount? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>hold amount</strong> temporarily blocks funds in an account (e.g., for a cheque clearing); a <strong>lien</strong> is a legal claim on funds (e.g., for a loan collateral or court order).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Hold</div>
+<p>Placed for: clearing cheques, pending debit authorizations, disputed transactions — released automatically on clearance or expiry.</p>
+<p>Available balance = Ledger balance - Hold amount; customer cannot withdraw held funds.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Lien</div>
+<p>Placed for: collateral against loan, court attachment, tax demand — requires formal release by authority.</p>
+<p>Lien is more permanent than a hold; blocks both withdrawal and any further operations on liened amount.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always check available balance (after holds and liens) before authorizing debit transactions.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is interest calculation? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Interest calculation</strong> in banking applies a rate to a principal amount over a period: simple interest (I = P*R*T) or compound interest, accrued daily and credited periodically.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Savings account</div>
+<p>Daily accrual method: interest accrued on daily closing balance; credited monthly or quarterly to account.</p>
+<p>Accrual PL/SQL runs in EOD batch: for each account, calculate (balance * rate / 365) and accumulate in interest_accrual table.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Loans</div>
+<p>EMI uses reducing balance method: each month interest on outstanding principal; balance reduces with each EMI.</p>
+<p>NPA classification: if account overdue &gt; 90 days, stop accruing interest; reverse already-accrued income.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Interest calculations must use NUMBER precision types — never FLOAT — to avoid rounding errors in financial amounts.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is GL account? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>GL (General Ledger) account</strong> is the master accounting book entry that records all financial transactions of a bank — organized by chart of accounts.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Structure</div>
+<p>GL accounts are classified: Assets (loans, cash, investments), Liabilities (deposits, borrowings), Income (interest, fees), Expense (interest paid, opex).</p>
+<p>Every customer transaction posts to GL: customer account debit → corresponding GL credit, or vice versa.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking operations</div>
+<p>EOD GL balancing: sum of all debit GL entries = sum of all credit GL entries across the bank — any mismatch triggers exception.</p>
+<p>MIS reports aggregate GL data; regulatory reports (balance sheet, P&amp;L) generated from GL.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>GL integrity is the financial backbone — any posting error must be reversed with proper authorization and audit trail.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is reconciliation? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Reconciliation</strong> is comparing two independent records of the same financial data to detect and resolve discrepancies — e.g., bank's internal records vs. RBI/SWIFT statements.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Types</div>
+<p>Nostro reconciliation: bank's internal records of foreign currency account vs. correspondent bank's statement.</p>
+<p>Payment reconciliation: transactions sent to NEFT/RTGS vs. confirmed settlements received from RBI.</p>
+<p>GL-to-subledger reconciliation: GL account balances match sum of individual customer account balances.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Technical approach</div>
+<p>Load external statement to staging table; join with internal transaction table on reference number; identify unmatched rows.</p>
+<p>Categories: matched, unmatched in internal, unmatched in external — each needs investigation and resolution.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Automated reconciliation with Oracle MERGE statements identifies breaks in seconds across millions of records.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is EOD/BOD process? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>EOD (End of Day)</strong> closes the business day with interest accrual, GL consolidation, and reporting; <strong>BOD (Beginning of Day)</strong> opens the next day and executes standing instructions.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">EOD steps</div>
+<p>Date change validation → interest accrual → charge posting → GL netting → MIS report generation → statement trigger.</p>
+<p>Each step logged; failure halts subsequent steps; ops team resolves and re-runs from failure point.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">BOD steps</div>
+<p>Open new business date; process standing instructions (auto-debit, recurring transfers); mature FDs; release expired holds.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">SLA</div>
+<p>EOD must complete by a defined time (e.g., 2 AM) to allow BOD and branch opening next morning.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>EOD is the highest-risk scheduled process — monitor with real-time alerts and have a documented recovery procedure.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is batch processing in banking? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Batch processing</strong> executes high-volume, time-deferred banking operations (interest accrual, EMI collection, statement generation) in scheduled jobs without real-time user interaction.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Characteristics</div>
+<p>Processes millions of records efficiently using PL/SQL BULK COLLECT + FORALL or Java parallel streams.</p>
+<p>Scheduled via DBMS_SCHEDULER (Oracle) or Quartz/Spring Batch (Java); runs during off-peak hours.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking batch types</div>
+<p>Daily: EOD/BOD interest accrual, charge posting, payment settlement confirmation.</p>
+<p>Monthly: statement generation, EMI due calculation, fee collection, MIS reports.</p>
+<p>Periodic: regulatory reports (RBI returns), NPA classification, provisioning.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Batch failures must be resumable from the point of failure — never re-run the entire batch from scratch on a large table.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is NEFT/RTGS/IMPS/UPI? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>NEFT</strong> — batch settlement, no min amount. <strong>RTGS</strong> — real-time high value (typically ≥ ₹2 lakh). <strong>IMPS</strong> — instant 24x7 including mobile.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to integration.</div>
+<p>Core banking debits account, payment switch routes to NPCI/beneficiary bank.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is SWIFT? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>SWIFT (Society for Worldwide Interbank Financial Telecommunication)</strong> is the global messaging network for interbank financial transactions using standardized message formats (MT/MX).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">How it works</div>
+<p>Banks send SWIFT messages (MT103 for credit transfer, MT202 for bank-to-bank, MT940 for account statement) via secure SWIFT network.</p>
+<p>Messages identified by BIC (Bank Identifier Code); routed through SWIFT FIN or SWIFT gpi network.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Message types</div>
+<p>MT103: customer credit transfer (international wire). MT202: financial institution transfer. MT950: statement message.</p>
+<p>MX (ISO 20022): XML-based next-gen format; SWIFT migrating all traffic to MX by 2025.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Integration</div>
+<p>Banks connect via SWIFT Alliance or third-party SWIFT service bureau; messages ingested by OSB and processed by core banking.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>SWIFT MT → MX migration is a major ongoing project in banking IT — understanding both formats is valuable.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is loan lifecycle? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">The <strong>loan lifecycle</strong> covers origination, credit appraisal, disbursement, repayment scheduling, EMI collection, and closure (or NPA classification if defaulted).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Stages</div>
+<p>Origination: application, document collection, credit score check, approval workflow (maker-checker).</p>
+<p>Disbursement: loan account created, limit set, amount credited to customer CASA account.</p>
+<p>Repayment: EMI auto-debit on due date; prepayment, part-payment handling; penal interest on delay.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">End states</div>
+<p>Closure: full repayment, account closed, lien released, NOC issued.</p>
+<p>NPA: 90+ days overdue triggers NPA classification; interest accrual stopped; provisioning created.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Loan lifecycle involves complex state machine logic — correctly implementing state transitions is critical for NPA and regulatory compliance.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is EMI? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>EMI (Equated Monthly Installment)</strong> is a fixed payment per month comprising principal and interest calculated using the reducing balance method.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Calculation</div>
+<p>EMI = P * r * (1+r)^n / ((1+r)^n - 1) where P = principal, r = monthly interest rate, n = tenure in months.</p>
+<p>Each EMI: interest portion = outstanding_principal * monthly_rate; principal portion = EMI - interest.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Core banking</div>
+<p>EMI schedule generated at disbursement and stored in installment_schedule table.</p>
+<p>Auto-debit on due date from CASA account; if insufficient balance, mark installment as overdue and apply penal interest.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>EMI calculations must use precise NUMBER types and be verified against regulatory loan disclosure requirements.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is NPA? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>NPA (Non-Performing Asset)</strong> is a loan where the borrower has not made interest or principal payments for 90 days or more — classified under RBI guidelines.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Classification</div>
+<p>Sub-standard: NPA for up to 12 months. Doubtful: NPA for 12-36 months. Loss: irrecoverable — write-off recommended.</p>
+<p>NPA classification triggers: stop interest accrual, reverse income already booked, create provisioning.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Technical</div>
+<p>Automated NPA classification runs in EOD batch: identifies accounts with overdue days &gt; 90 and updates NPA flag.</p>
+<p>Provision calculation: regulatory percentages (15% sub-standard, 100% loss) applied to outstanding balance.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>NPA management is heavily scrutinized by RBI — automated, accurate classification is a compliance requirement.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is overdraft? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">An <strong>overdraft</strong> allows a customer to withdraw more than their account balance up to a sanctioned overdraft limit, essentially a revolving credit against an asset.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Types</div>
+<p>OD against FD: bank allows overdraft up to 80-90% of FD value at FD rate + 1-2%; FD is lien-marked as collateral.</p>
+<p>OD against salary: pre-approved based on salary credits; popular in retail banking.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Core banking</div>
+<p>Account balance can go negative up to -OD_LIMIT; interest charged on utilized OD amount daily.</p>
+<p>OD limit stored as account parameter; available balance = OD_LIMIT - |negative balance|.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Overdraft interest calculation logic must correctly handle the negative balance scenario in the accrual procedure.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is standing instruction? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>standing instruction (SI)</strong> is a pre-authorized recurring payment instruction from a customer — executed automatically by the system on specified dates without manual intervention.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Types</div>
+<p>Intra-bank transfer: periodic transfer between own accounts (savings to RD, loan EMI auto-debit).</p>
+<p>Inter-bank transfer: NEFT/RTGS to another bank account on fixed date (utility bills, SIP).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Processing</div>
+<p>BOD batch processes all SIs due for the day: checks sufficient balance, executes transfer, logs result.</p>
+<p>On failure (insufficient balance): SI marked failed, notification sent to customer, retry may be configured.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Failed standing instructions should generate alerts and follow-up actions — critical for loan EMI SIs.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is cheque clearing? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Cheque clearing</strong> is the process by which a cheque deposited in one bank is presented to the drawer's bank for payment via the clearing house (NPCI CTS in India).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Process</div>
+<p>Payee deposits cheque at their bank (collecting bank); cheque image captured and sent to CTS (Cheque Truncation System).</p>
+<p>Drawee bank verifies signature, balance, stop payment; if OK, authorizes payment; funds transferred via settlement.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Hold impact</div>
+<p>Collecting bank places hold on the cheque amount until clearing confirmation — typically 1-2 business days.</p>
+<p>On clearance: hold released, funds available; on dishonor: hold removed, debit reversed, dishonor charges applied.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>CTS (NPCI) handles ~70 lakh cheques/day in India — understanding the lifecycle is important for exception handling in banking IT.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is payment gateway? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>payment gateway</strong> securely captures and routes payment information from customer to acquiring bank and payment network, returning authorization responses in real time.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Flow</div>
+<p>Customer submits payment → gateway encrypts card/UPI data → routes to acquiring bank → card network (Visa/RuPay) → issuing bank → authorization.</p>
+<p>Response (approved/declined) returned to merchant within seconds; settlement occurs separately.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking integration</div>
+<p>Banks integrate payment gateways via APIs (REST/SOAP); transaction data logged for reconciliation.</p>
+<p>Chargeback process: disputed transaction reversed through card network; bank must maintain records for dispute resolution.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Payment gateway integration must handle timeout, partial auth, and retry idempotently — failed auth must never double-debit.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is maker-checker process? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Maker-checker</strong>: one user creates/submits; another approves before it takes effect. Prevents fraud and errors.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to banking.</div>
+<p>High-value transfer, rate change, GL posting — maker cannot approve own entry.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Four-eye = same principle with two approvers for critical actions.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is four-eye principle? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Maker-checker</strong>: one user creates/submits; another approves before it takes effect. Prevents fraud and errors.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to banking.</div>
+<p>High-value transfer, rate change, GL posting — maker cannot approve own entry.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Four-eye = same principle with two approvers for critical actions.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Why audit trail is important in banking? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Audit trails are legally mandated in banking to detect fraud, support regulatory investigation, ensure accountability, and enable transaction reversal with full history.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Regulatory</div>
+<p>RBI, SEBI, and PMLA regulations require banks to maintain transaction records for 5-10 years.</p>
+<p>Regulators can demand audit logs during inspection — incomplete trails attract penalties.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Operational</div>
+<p>Fraud investigation: trace every action on a customer account — who accessed, what was changed, when.</p>
+<p>Dispute resolution: customer disputes a debit — audit trail provides exact timestamp, channel, and approver.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Technical</div>
+<p>Append-only audit table with hash chaining detects tampering; triggered by Oracle AFTER DML triggers.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Audit trails must be immutable — no UPDATE or DELETE should ever touch audit log tables.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What are typical integrations in core banking? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Core banking</strong> is the central system that runs a bank's main products — accounts, deposits, loans, payments, and general ledger.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to modules.</div>
+<p>CASA (savings/current accounts)</p>
+<p>Loans and EMI</p>
+<p>Payments (NEFT/RTGS/UPI)</p>
+<p>GL and reconciliation</p>
+<p>Customer (CIF) and KYC</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Examples: Oracle FLEXCUBE, Finacle, Temenos.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What do you know about Oracle FLEXCUBE? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Oracle FLEXCUBE</strong> is a core banking product suite used by many banks for accounts, loans, payments, and GL.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to implementation.</div>
+<p>Configuration vs customization; interfaces to channels and payment systems; UAT and data migration for go-live.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>I explain product modules and integration even if I worked on interfaces/customization.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What modules are usually present in core banking? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Core banking</strong> is the central system that runs a bank's main products — accounts, deposits, loans, payments, and general ledger.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to modules.</div>
+<p>CASA (savings/current accounts)</p>
+<p>Loans and EMI</p>
+<p>Payments (NEFT/RTGS/UPI)</p>
+<p>GL and reconciliation</p>
+<p>Customer (CIF) and KYC</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Examples: Oracle FLEXCUBE, Finacle, Temenos.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How does a core banking product integrate with external systems? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Core banking</strong> is the central system that runs a bank's main products — accounts, deposits, loans, payments, and general ledger.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to modules.</div>
+<p>CASA (savings/current accounts)</p>
+<p>Loans and EMI</p>
+<p>Payments (NEFT/RTGS/UPI)</p>
+<p>GL and reconciliation</p>
+<p>Customer (CIF) and KYC</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Examples: Oracle FLEXCUBE, Finacle, Temenos.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is product customization? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Product customization</strong> in core banking is code-level modification of the vendor product (FLEXCUBE) to implement bank-specific business logic not available through configuration.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Types</div>
+<p>Hook-based: FLEXCUBE provides hook points (pre/post processing hooks) where custom PL/SQL procedures are plugged in.</p>
+<p>Gateway customization: custom validation, enrichment, or format transformation at interface gateway layer.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Risks</div>
+<p>Customizations increase upgrade complexity — every vendor patch must be tested against custom code.</p>
+<p>Minimize customization: use configuration first; customize only when product cannot meet the requirement.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Each customization must be documented with business justification — helps during vendor-upgrade impact analysis.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is product configuration? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Product configuration</strong> is setting up banking product behavior through parameters and rules within the product's admin screens — without changing any code.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Examples</div>
+<p>Configuring a savings account product: interest rate, minimum balance, free transaction limit, charge schedule.</p>
+<p>Configuring a loan product: interest rate type (fixed/floating), repayment method, penal interest rate, prepayment charges.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Advantages</div>
+<p>No code change means no regression risk and no impact on vendor support.</p>
+<p>Business team can configure new products/variants without IT involvement — faster time-to-market.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Configuration is always preferred over customization — products like FLEXCUBE are 80% configurable.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Configuration vs customization. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Configuration</strong> uses product parameters and admin screens (no code change); <strong>customization</strong> modifies or extends product code for requirements not met by configuration.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Configuration</div>
+<p>Setting product parameters, charges, interest rates, workflow rules via product admin screens.</p>
+<p>Safe for vendor upgrades; supported by vendor; business teams can often do it themselves.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Customization</div>
+<p>Writing hook procedures, custom validations, new screens, or modifying existing reports.</p>
+<p>Risky for upgrades; must be re-tested with every patch; increases maintenance cost.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Rule: exhaust configuration options first; only customize when business requirement cannot be met any other way.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is parameterization in banking product? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Parameterization</strong> is defining the system-level settings (holidays, currencies, business date, charge codes) that control the product's behavior across all modules.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Examples</div>
+<p>Business date parameter: controls current working date for all transactions and batch processing.</p>
+<p>Holiday calendar: defines non-working days; affects value dating, interest calculation, and SI execution.</p>
+<p>Charge codes: defines fee types (cheque return charge, SMS alert fee) with amount and posting GL account.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Incorrect parameterization (wrong business date, missing holiday) causes widespread incorrect processing — validate carefully in SIT.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is interface development? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Interface development</strong> builds the integration layer between core banking and external systems — using APIs, messaging, or file-based exchange to transfer data reliably.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Types</div>
+<p>Real-time: REST/SOAP API calls between systems for immediate response (balance inquiry, fund transfer).</p>
+<p>Batch/file: fixed-format or XML files exchanged periodically (RBI return files, SWIFT statements).</p>
+<p>Event-driven: JMS/Kafka events published by core banking consumed by downstream systems.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking examples</div>
+<p>NEFT/RTGS interface: constructs ISO 20022 XML from transaction data; sends to RBI payment system; processes settlement confirmation.</p>
+<p>CBS-to-CRM interface: publishes customer and account events via JMS; CRM consumes to keep data in sync.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Every interface must handle error scenarios: retry logic, DLQ monitoring, and reconciliation to detect missed messages.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What are inbound and outbound interfaces? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Inbound interfaces</strong> receive data into core banking from external systems; <strong>outbound interfaces</strong> send data from core banking to external systems.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Inbound</div>
+<p>Payment confirmations from RBI NEFT/RTGS: core banking receives settlement status and updates account.</p>
+<p>KYC data from CKYC registry: customer verification data pulled or received by core banking.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Outbound</div>
+<p>Transaction advices to SMS/email gateway: notifications sent after account transactions.</p>
+<p>RBI regulatory returns: formatted files sent to RBI (SLR, CRR, NPA data) on regulatory schedule.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Both directions need error handling, logging, and reconciliation — undelivered outbound messages are as dangerous as missing inbound.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is report customization? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Report customization</strong> is modifying standard product reports or creating new reports to meet bank-specific data requirements, formats, or regulatory specifications.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Types</div>
+<p>Modification: add columns, change layout, filter criteria on existing standard FLEXCUBE/Jasper report.</p>
+<p>New report: build from scratch using Oracle BI Publisher, JasperReports, or PLSQL data extraction + Excel template.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Process</div>
+<p>Define data requirements with business; write optimized query (avoid full scans on large transaction tables).</p>
+<p>Test with realistic data volume — a report that runs in 10 seconds on 1M rows may timeout on 100M rows.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always index the report query's WHERE clause columns — untuned reports are the #1 cause of database performance degradation.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you handle bank-specific business rules? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Bank-specific business rules are implemented in PL/SQL hook procedures, Java service layer validations, or OSB routing rules — with configuration used wherever possible.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Implementation layers</div>
+<p>Simple rules (min balance, charge amount): configure in product parameter screens — no code needed.</p>
+<p>Complex rules (tiered interest, conditional charges): PL/SQL procedure in product hook called by core banking.</p>
+<p>Integration rules (message transformation, routing): OSB pipeline stage with XQuery/XSLT transformation.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Documentation</div>
+<p>Each business rule documented in BRD (Business Requirement Document) and mapped to implementation artifact.</p>
+<p>Business rule changes go through change request process — not ad-hoc code changes.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Business rules must be version-controlled with effective date support — rates and thresholds change with regulatory revisions.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you test core banking customization? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Core banking</strong> is the central system that runs a bank's main products — accounts, deposits, loans, payments, and general ledger.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to modules.</div>
+<p>CASA (savings/current accounts)</p>
+<p>Loans and EMI</p>
+<p>Payments (NEFT/RTGS/UPI)</p>
+<p>GL and reconciliation</p>
+<p>Customer (CIF) and KYC</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Examples: Oracle FLEXCUBE, Finacle, Temenos.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is UAT in banking implementation? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>UAT (User Acceptance Testing)</strong> is the phase where bank's business users test the configured/customized system against real-world scenarios to confirm it meets requirements.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Process</div>
+<p>Business users execute pre-defined test cases from the test plan; results recorded in test management tool (JIRA, ALM).</p>
+<p>Defects raised against specific test case; developer fixes in dev, deploys to UAT, business re-tests.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking specifics</div>
+<p>End-to-end scenario testing: open account, deposit, withdraw, transfer, close — complete business cycle.</p>
+<p>Regulatory scenario: test KYC blocking, AML alert, maker-checker approval workflow under edge cases.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>UAT sign-off from business is mandatory before go-live — undiscovered UAT defects become production incidents.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is data migration in core banking? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Core banking</strong> is the central system that runs a bank's main products — accounts, deposits, loans, payments, and general ledger.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to modules.</div>
+<p>CASA (savings/current accounts)</p>
+<p>Loans and EMI</p>
+<p>Payments (NEFT/RTGS/UPI)</p>
+<p>GL and reconciliation</p>
+<p>Customer (CIF) and KYC</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Examples: Oracle FLEXCUBE, Finacle, Temenos.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you handle go-live support? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Go-live support involves war room presence, real-time monitoring, rapid incident response, and direct support to end-users during the critical first days of a new banking system going live.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Pre-go-live</div>
+<p>Cutover checklist: data migration validation, environment health check, rollback plan confirmation, support team briefing.</p>
+<p>Dry run: simulate full cutover in staging environment to discover issues before production.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Post-go-live</div>
+<p>Hypercare: dedicated support team on-site or on-call 24/7 for first 2-4 weeks.</p>
+<p>Monitor: application logs, DB performance, batch completion times, error rates — act on any anomaly immediately.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Go-live day is not the end — hypercare period determines whether the project is truly successful.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you handle production defects after go-live? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Post-go-live production defects are triaged by severity, communicated to business, fixed with root cause analysis, and deployed via emergency change management process.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Triage</div>
+<p>Sev1 (core banking down): immediate hotfix, all hands on deck; communicate ETA every 30 minutes.</p>
+<p>Sev2/3 (data or functional issue): workaround if possible; fix in next patch cycle within agreed SLA.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Fix process</div>
+<p>Root cause analysis → fix developed in DEV → tested in SIT/UAT → emergency change request raised → production deployment.</p>
+<p>All hotfixes must go through a fast-track but not zero-test process — banking cannot afford blind deployments.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Document every post-go-live defect with RCA — patterns reveal gaps in testing that should inform future projects.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is product patching? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Product patching</strong> is applying a vendor-provided fix or enhancement (patch) to the core banking product (e.g., FLEXCUBE) on top of the installed version.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Process</div>
+<p>Oracle releases patches for FLEXCUBE: security patches, bug fixes, regulatory updates.</p>
+<p>Apply in DEV → run regression test suite → apply in SIT → UAT sign-off → production deployment with change request.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Challenges</div>
+<p>Customizations may conflict with patch changes — must re-test all hook procedures and custom reports.</p>
+<p>Patch notes must be reviewed for schema changes — new tables or columns may require migration scripts.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Maintain a customization register so impact of each patch can be assessed quickly against known custom code.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is regression testing in product implementation? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Regression testing</strong> verifies that new patches, customizations, or configuration changes have not broken existing working functionality.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Approach</div>
+<p>Maintain a regression test suite covering all core business flows: account opening, transaction posting, interest accrual, EOD batch.</p>
+<p>Automate where possible: Selenium for UI, REST Assured for APIs, DBUnit for data layer — run on every deployment.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking specifics</div>
+<p>After every patch: run full regression suite on SIT; focus on areas listed in patch notes as changed.</p>
+<p>Financial calculations regression: compare pre/post patch interest accrual results on same dataset.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Regression test suite is an investment — the more comprehensive it is, the safer each deployment becomes.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is environment setup in banking project? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Environment setup</strong> provisions all servers, databases, middleware, and application software for a specific testing or production tier with environment-specific configuration.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Environments</div>
+<p>DEV: developer workstations or shared dev server; frequent deployments, minimal data.</p>
+<p>SIT: full integration environment, IT team testing; production-like infra but smaller data volume.</p>
+<p>UAT: business user testing; production-like data (anonymized); strict change control.</p>
+<p>PROD: live banking environment; highest security, monitoring, HA configuration.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Setup steps</div>
+<p>Install OS, WebLogic, Oracle DB; apply patches; configure JNDI, connection pools, JMS; deploy application EAR.</p>
+<p>Load reference data (product parameters, GL codes, holiday calendar); create test users with roles.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Environment parity is critical — differences between UAT and PROD configuration cause 'works in UAT but fails in PROD' issues.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is SIT/UAT/Production environment? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>SIT</strong> validates integrated components; <strong>UAT</strong> validates business scenarios with bank users; <strong>Production</strong> serves live customers under strict change control.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Environments</div>
+<p>SIT: IT-driven integration testing; frequent deploys; synthetic or subset data; external systems may be stubbed.</p>
+<p>UAT: business users execute real scenarios; anonymized production-like data; sign-off gate before go-live.</p>
+<p>Production: HA/DR, 24x7 monitoring, real money and audit obligations — no direct testing here.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking promotion</div>
+<p>Artifacts promote DEV → SIT → UAT → PROD with evidence at each gate.</p>
+<p>Never skip UAT for financial logic — reconciliation and maker-checker flows must be proven with business.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Production fixes always flow back through SIT/UAT — hotfixes still need a fast-track but verified path.</p>
+</div>
+</div>
+</details>
+</div>
+</main>
+<script src="main.js"></script>
+</body>
+</html>

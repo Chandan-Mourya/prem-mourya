@@ -1,231 +1,214 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex,nofollow,noarchive">
-  <title>Messaging · Notes</title>
-  <link rel="icon" href="../assets/img/logo.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<title>Messaging · Notes</title>
+<link href="../assets/img/logo.png" rel="icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
-
-  <header class="topbar">
-    <div class="topbar-inner">
-      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
-      <div class="search-wrap">
-        <i class="bi bi-search"></i>
-        <input id="search" type="search" placeholder="Search within Messaging..." autocomplete="off" spellcheck="false">
-        <span class="search-shortcut">/</span>
-      </div>
-      <div class="topbar-actions">
-        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
-        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
-      </div>
-    </div>
-  </header>
-
-  <main class="topic-page">
-
-    <div class="topic-page-header">
-      <div class="topic-page-eyebrow">11 · Messaging</div>
-      <h1>Messaging — Kafka, queues, events</h1>
-      <p class="topic-page-desc">The backbone of async microservices. Talk about Kafka producers/consumers, delivery guarantees, DLQs — bring OneXtel SMS-platform stories.</p>
-      <div class="topic-page-meta">
-        <span><strong>10</strong> questions</span>
-        <span>Press <span class="hint-kbd">/</span> to search</span>
-      </div>
-    </div>
-
-    <div class="no-results" id="noResults">No matches.</div>
-
-    <div class="qa-list">
-
-      <details class="qa">
-        <summary>Kafka vs RabbitMQ <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">Both move messages between services, but they were designed for very different problems — a <strong>distributed log</strong> versus a <strong>smart broker</strong>. Picking the right one shapes your architecture.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">RabbitMQ</span>
-              <span class="core-diff-val"><strong>Message broker</strong> — smart routing, push-based, message deleted after ack.</span>
-            </div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">Kafka</span>
-              <span class="core-diff-val"><strong>Distributed log</strong> — durable, append-only, pull-based, replayable.</span>
-            </div>
+<header class="topbar">
+<div class="topbar-inner">
+<a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+<div class="search-wrap">
+<i class="bi bi-search"></i>
+<input autocomplete="off" id="search" placeholder="Search within Messaging..." spellcheck="false" type="search"/>
+<span class="search-shortcut">/</span>
+</div>
+<div class="topbar-actions">
+<button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+<button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+</div>
+</div>
+</header>
+<main class="topic-page">
+<div class="topic-page-header">
+<div class="topic-page-eyebrow">11 · Messaging</div>
+<h1>Messaging — Kafka, queues, events</h1>
+<p class="topic-page-desc">The backbone of async microservices. Talk about Kafka producers/consumers, delivery guarantees, DLQs — bring OneXtel SMS-platform stories.</p>
+<div class="topic-page-meta">
+<span><strong>28</strong> questions</span>
+<span>Press <span class="hint-kbd">/</span> to search</span>
+</div>
+</div>
+<div class="no-results" id="noResults">No matches.</div>
+<div class="qa-list">
+<details class="qa">
+<summary>Kafka vs RabbitMQ <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro">Both move messages between services, but they were designed for very different problems — a <strong>distributed log</strong> versus a <strong>smart broker</strong>. Picking the right one shapes your architecture.</p>
+<div class="core-diff">
+<div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+<div class="core-diff-row">
+<span class="core-diff-key">RabbitMQ</span>
+<span class="core-diff-val"><strong>Message broker</strong> — smart routing, push-based, message deleted after ack.</span>
+</div>
+<div class="core-diff-row">
+<span class="core-diff-key">Kafka</span>
+<span class="core-diff-val"><strong>Distributed log</strong> — durable, append-only, pull-based, replayable.</span>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> Data Model</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> RabbitMQ</div>
+<ul>
+<li><strong>Exchanges → Queues</strong>. Smart routing (direct, topic, fanout, headers).</li>
+<li>Once consumed and acked, the message is gone.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> Kafka</div>
+<ul>
+<li><strong>Topics → Partitions</strong>. Each partition is an ordered append-only log.</li>
+<li>Messages stay for a retention period (days/weeks) — replayable.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> Delivery Model</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> RabbitMQ</div>
+<ul>
+<li><strong>Push</strong> — broker pushes to consumers.</li>
+<li>Per-message ack; redelivers on failure.</li>
+<li>Supports priorities, per-message TTL, dead-letter exchanges.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> Kafka</div>
+<ul>
+<li><strong>Pull</strong> — consumer polls at its own pace.</li>
+<li>Tracks position via <strong>offsets</strong>; consumer controls progress.</li>
+<li>Many consumer groups can read the same topic independently.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">3</span> Throughput &amp; Scale</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> RabbitMQ</div>
+<ul>
+<li>Tens of thousands msg/s per node.</li>
+<li>Scales vertically; cluster mode exists but is complex.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> Kafka</div>
+<ul>
+<li><strong>Millions msg/s</strong> on a small cluster.</li>
+<li>Horizontally scaled by adding partitions and brokers.</li>
+<li>Built for throughput from day one.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">4</span> Ordering &amp; Replay</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> RabbitMQ</div>
+<ul>
+<li>Per-queue ordering only with a single consumer.</li>
+<li>No native replay — once acked, it's gone.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> Kafka</div>
+<ul>
+<li><strong>Ordering per partition</strong> guaranteed.</li>
+<li><strong>Replay by offset</strong> — perfect for event sourcing, debugging, new consumers backfilling history.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">5</span> Use Case</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> RabbitMQ</div>
+<ul>
+<li><strong>Work queues</strong> — emails, image processing, retry jobs.</li>
+<li>Request/response, RPC, fan-out to specific routing keys.</li>
+<li>Priorities, delays, complex routing rules.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> Kafka</div>
+<ul>
+<li><strong>Event streams</strong> — every domain event published once, consumed by many.</li>
+<li>Log aggregation, CDC (Change Data Capture), metrics pipelines.</li>
+<li>Event sourcing, stream processing (Kafka Streams, Flink).</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="takeaway">
+<b>Rule of thumb:</b> use <strong>RabbitMQ for work queues</strong> (jobs to be done) and <strong>Kafka for event streams</strong> (facts to be published once and read by many). At OneXtel I used Kafka for SMS event streams (millions/day, replayable) and RabbitMQ for per-customer notification jobs (priority + per-message TTL).
           </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> Data Model</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> RabbitMQ</div>
-                <ul>
-                  <li><strong>Exchanges → Queues</strong>. Smart routing (direct, topic, fanout, headers).</li>
-                  <li>Once consumed and acked, the message is gone.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> Kafka</div>
-                <ul>
-                  <li><strong>Topics → Partitions</strong>. Each partition is an ordered append-only log.</li>
-                  <li>Messages stay for a retention period (days/weeks) — replayable.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> Delivery Model</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> RabbitMQ</div>
-                <ul>
-                  <li><strong>Push</strong> — broker pushes to consumers.</li>
-                  <li>Per-message ack; redelivers on failure.</li>
-                  <li>Supports priorities, per-message TTL, dead-letter exchanges.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> Kafka</div>
-                <ul>
-                  <li><strong>Pull</strong> — consumer polls at its own pace.</li>
-                  <li>Tracks position via <strong>offsets</strong>; consumer controls progress.</li>
-                  <li>Many consumer groups can read the same topic independently.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> Throughput &amp; Scale</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> RabbitMQ</div>
-                <ul>
-                  <li>Tens of thousands msg/s per node.</li>
-                  <li>Scales vertically; cluster mode exists but is complex.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> Kafka</div>
-                <ul>
-                  <li><strong>Millions msg/s</strong> on a small cluster.</li>
-                  <li>Horizontally scaled by adding partitions and brokers.</li>
-                  <li>Built for throughput from day one.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">4</span> Ordering &amp; Replay</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> RabbitMQ</div>
-                <ul>
-                  <li>Per-queue ordering only with a single consumer.</li>
-                  <li>No native replay — once acked, it's gone.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> Kafka</div>
-                <ul>
-                  <li><strong>Ordering per partition</strong> guaranteed.</li>
-                  <li><strong>Replay by offset</strong> — perfect for event sourcing, debugging, new consumers backfilling history.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">5</span> Use Case</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> RabbitMQ</div>
-                <ul>
-                  <li><strong>Work queues</strong> — emails, image processing, retry jobs.</li>
-                  <li>Request/response, RPC, fan-out to specific routing keys.</li>
-                  <li>Priorities, delays, complex routing rules.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> Kafka</div>
-                <ul>
-                  <li><strong>Event streams</strong> — every domain event published once, consumed by many.</li>
-                  <li>Log aggregation, CDC (Change Data Capture), metrics pipelines.</li>
-                  <li>Event sourcing, stream processing (Kafka Streams, Flink).</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="takeaway">
-            <b>Rule of thumb:</b> use <strong>RabbitMQ for work queues</strong> (jobs to be done) and <strong>Kafka for event streams</strong> (facts to be published once and read by many). At OneXtel I used Kafka for SMS event streams (millions/day, replayable) and RabbitMQ for per-customer notification jobs (priority + per-message TTL).
-          </div>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>How does Kafka work under the hood?</summary>
-        <div class="qa-body">
-          <p>A Kafka cluster has <strong>brokers</strong>. Data is organized into <strong>topics</strong>, each split into <strong>partitions</strong> (the unit of parallelism). Each partition is an ordered, immutable log appended to disk.</p>
-          <p>Producers send messages with a key — Kafka hashes the key to pick a partition, so messages with the same key always land on the same partition (preserving order per key). Each message gets an <strong>offset</strong>.</p>
-          <p>Consumers belong to a <strong>consumer group</strong>. Kafka assigns each partition to exactly one consumer in the group — so n partitions support up to n parallel consumers per group. Consumers commit offsets back to Kafka.</p>
-          <p>Each partition has a <strong>leader replica</strong> + follower replicas across brokers for fault tolerance. Producers write to the leader; ISR (in-sync replicas) replicate. If a leader dies, a follower is promoted. Modern Kafka uses <strong>KRaft</strong> (no Zookeeper) for cluster metadata.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Delivery guarantees — at-most-once, at-least-once, exactly-once <span class="qa-tag hot">hot</span> <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">Every messaging system makes a tradeoff between <strong>losing messages</strong> and <strong>delivering them more than once</strong>. Kafka exposes this choice through producer/consumer configuration. Knowing which guarantee your pipeline actually delivers is the difference between a correct system and a silent data-corruption bug.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-row">
-              <span class="core-diff-key">CORE IDEA</span>
-              <span class="core-diff-val">Three guarantees: <strong>at-most-once</strong> (may lose), <strong>at-least-once</strong> (may duplicate, default), <strong>exactly-once</strong> (Kafka-internal only). End-to-end exactly-once across DB+Kafka+consumer = <em>at-least-once + idempotent consumers</em>.</span>
-            </div>
-          </div>
-
-          <div class="note-table-wrap">
-            <table class="note-table">
-              <thead>
-                <tr><th>Guarantee</th><th>What it means</th><th>How to get it</th><th>When to use</th></tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>At-most-once</strong></td>
-                  <td>Message may be lost but never duplicated.</td>
-                  <td>Producer: <code>acks=0</code>. Consumer: commit offset <em>before</em> processing.</td>
-                  <td>Metrics, click-stream telemetry — loss is acceptable, duplication is not.</td>
-                </tr>
-                <tr>
-                  <td><strong>At-least-once</strong></td>
-                  <td>Every message delivered ≥ 1 time. Duplicates possible on retry/rebalance.</td>
-                  <td>Producer: <code>acks=all</code> + retries. Consumer: commit offset <em>after</em> processing.</td>
-                  <td>Default for production pipelines — orders, payments, audits — paired with <strong>idempotent consumers</strong>.</td>
-                </tr>
-                <tr>
-                  <td><strong>Exactly-once (EOS)</strong></td>
-                  <td>Each message processed once, no loss, no duplicate.</td>
-                  <td>Producer: <code>enable.idempotence=true</code> + transactional producer. Consumer: <code>isolation.level=read_committed</code>.</td>
-                  <td>Kafka-to-Kafka stream processing (Kafka Streams). End-to-end across DB+Kafka still needs idempotency.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> Producer-side configuration that drives the guarantee</div>
-            <pre><code># at-least-once producer (default for production)
+</div>
+</details>
+<details class="qa">
+<summary>How does Kafka work under the hood?</summary>
+<div class="qa-body">
+<p>A Kafka cluster has <strong>brokers</strong>. Data is organized into <strong>topics</strong>, each split into <strong>partitions</strong> (the unit of parallelism). Each partition is an ordered, immutable log appended to disk.</p>
+<p>Producers send messages with a key — Kafka hashes the key to pick a partition, so messages with the same key always land on the same partition (preserving order per key). Each message gets an <strong>offset</strong>.</p>
+<p>Consumers belong to a <strong>consumer group</strong>. Kafka assigns each partition to exactly one consumer in the group — so n partitions support up to n parallel consumers per group. Consumers commit offsets back to Kafka.</p>
+<p>Each partition has a <strong>leader replica</strong> + follower replicas across brokers for fault tolerance. Producers write to the leader; ISR (in-sync replicas) replicate. If a leader dies, a follower is promoted. Modern Kafka uses <strong>KRaft</strong> (no Zookeeper) for cluster metadata.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Delivery guarantees — at-most-once, at-least-once, exactly-once <span class="qa-tag hot">hot</span> <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro">Every messaging system makes a tradeoff between <strong>losing messages</strong> and <strong>delivering them more than once</strong>. Kafka exposes this choice through producer/consumer configuration. Knowing which guarantee your pipeline actually delivers is the difference between a correct system and a silent data-corruption bug.</p>
+<div class="core-diff">
+<div class="core-diff-row">
+<span class="core-diff-key">CORE IDEA</span>
+<span class="core-diff-val">Three guarantees: <strong>at-most-once</strong> (may lose), <strong>at-least-once</strong> (may duplicate, default), <strong>exactly-once</strong> (Kafka-internal only). End-to-end exactly-once across DB+Kafka+consumer = <em>at-least-once + idempotent consumers</em>.</span>
+</div>
+</div>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead>
+<tr><th>Guarantee</th><th>What it means</th><th>How to get it</th><th>When to use</th></tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>At-most-once</strong></td>
+<td>Message may be lost but never duplicated.</td>
+<td>Producer: <code>acks=0</code>. Consumer: commit offset <em>before</em> processing.</td>
+<td>Metrics, click-stream telemetry — loss is acceptable, duplication is not.</td>
+</tr>
+<tr>
+<td><strong>At-least-once</strong></td>
+<td>Every message delivered ≥ 1 time. Duplicates possible on retry/rebalance.</td>
+<td>Producer: <code>acks=all</code> + retries. Consumer: commit offset <em>after</em> processing.</td>
+<td>Default for production pipelines — orders, payments, audits — paired with <strong>idempotent consumers</strong>.</td>
+</tr>
+<tr>
+<td><strong>Exactly-once (EOS)</strong></td>
+<td>Each message processed once, no loss, no duplicate.</td>
+<td>Producer: <code>enable.idempotence=true</code> + transactional producer. Consumer: <code>isolation.level=read_committed</code>.</td>
+<td>Kafka-to-Kafka stream processing (Kafka Streams). End-to-end across DB+Kafka still needs idempotency.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> Producer-side configuration that drives the guarantee</div>
+<pre><code># at-least-once producer (default for production)
 acks=all                          # leader + all in-sync replicas must ack
 enable.idempotence=true           # producer dedupes its own retries via PID + sequence
 retries=Integer.MAX_VALUE
@@ -240,27 +223,25 @@ producer.beginTransaction();
 producer.send(record1);
 producer.send(record2);
 producer.commitTransaction();     // either both visible or neither</code></pre>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> Consumer-side — where duplicates actually come from</div>
-            <div class="flow">
-              <div class="flow-step">Consumer polls a batch</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">Processes message (writes to DB / calls API)</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step accent">Crashes <strong>before</strong> commit</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">Rebalance → new consumer reads from <em>last committed</em> offset</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">The same message is processed again → <strong>duplicate</strong></div>
-            </div>
-            <p class="solution-desc">There is no way to make "process + commit offset" atomic across two systems (DB + Kafka). Therefore at-least-once is the practical ceiling — the consumer must be designed to absorb duplicates safely.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> Idempotent consumer pattern (the real exactly-once)</div>
-            <pre><code>@KafkaListener(topics = "order.events", groupId = "billing")
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> Consumer-side — where duplicates actually come from</div>
+<div class="flow">
+<div class="flow-step">Consumer polls a batch</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Processes message (writes to DB / calls API)</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step accent">Crashes <strong>before</strong> commit</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Rebalance → new consumer reads from <em>last committed</em> offset</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">The same message is processed again → <strong>duplicate</strong></div>
+</div>
+<p class="solution-desc">There is no way to make "process + commit offset" atomic across two systems (DB + Kafka). Therefore at-least-once is the practical ceiling — the consumer must be designed to absorb duplicates safely.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">3</span> Idempotent consumer pattern (the real exactly-once)</div>
+<pre><code>@KafkaListener(topics = "order.events", groupId = "billing")
 @Transactional
 public void onOrderCreated(OrderEvent evt, Acknowledgment ack) {
     if (processedRepo.existsByEventId(evt.getEventId())) {
@@ -271,96 +252,88 @@ public void onOrderCreated(OrderEvent evt, Acknowledgment ack) {
     billingService.charge(evt);                                 // business work
     ack.acknowledge();               // commit offset only after success
 }</code></pre>
-            <p class="solution-desc">The DB transaction wraps the dedup-table write and the business write — they commit together. Even if the offset commit is later replayed, the dedup row blocks duplicate processing.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">4</span> What <code>enable.idempotence=true</code> actually does</div>
-            <ul>
-              <li>Producer assigns each message a <strong>(Producer ID, sequence number)</strong>. The broker dedupes any retry from the <em>same producer session</em>.</li>
-              <li>It does <strong>not</strong> protect against: a fresh JVM resending the same business event, the outbox publisher republishing a row, a different producer sending the same event, or consumer-side reprocessing.</li>
-              <li>Therefore: <em>idempotent producer ≠ end-to-end exactly-once</em>. You still need an <code>event_id</code> on every message and dedup logic in the consumer.</li>
-            </ul>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">5</span> Common interview gotchas</div>
-            <ul>
-              <li>"Exactly-once" in Kafka is a <strong>Kafka-internal</strong> guarantee (Kafka → Kafka via transactions). It does not extend to your DB or external API calls.</li>
-              <li><code>acks=1</code> (leader only) can lose data on leader crash before replication — use <code>acks=all</code> in production.</li>
-              <li>Auto-commit (<code>enable.auto.commit=true</code>) commits on a timer, <em>not</em> after processing — a crash between processing and the next auto-commit causes message loss or duplication depending on order.</li>
-              <li>Setting <code>max.in.flight.requests.per.connection &gt; 1</code> without <code>enable.idempotence=true</code> can reorder messages within a partition on retry.</li>
-              <li>Transactional producers require a unique <code>transactional.id</code> per producer instance — share it across pods and they fence each other off.</li>
-              <li>End-to-end exactly-once for "consume → process → produce" pipelines requires Kafka transactions + <code>read_committed</code> on the next consumer.</li>
-              <li>Outbox pattern (DB write + outbox row in one tx) gives you <em>exactly-once on the producer side</em> for free; consumers still need idempotency.</li>
-            </ul>
-          </div>
-
-          <p class="takeaway"><b>Interview one-liner:</b> Kafka offers three delivery guarantees: <strong>at-most-once</strong> (commit before processing — may lose), <strong>at-least-once</strong> (commit after processing — may duplicate, the production default), and <strong>exactly-once semantics (EOS)</strong> via <code>enable.idempotence=true</code> + transactional producer + <code>read_committed</code> consumer — but only Kafka-to-Kafka. End-to-end across DB and Kafka, the practical pattern is <strong>at-least-once + idempotent consumers</strong>: every event carries an <code>event_id</code>, and consumers dedupe via a <code>processed_events</code> table inside the same transaction as the business write. That gives you effective exactly-once with simple, robust mechanics.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Transactional Outbox Pattern with Kafka — guaranteeing DB + event consistency <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">The classic <strong>dual-write problem</strong>: a service has to update its database <em>and</em> publish a Kafka event about that change. Doing both directly is not atomic — there's always a window where one succeeds and the other fails, leaving the system inconsistent. The <strong>Transactional Outbox</strong> pattern solves this by turning two unreliable writes into one atomic DB write plus a reliable replay.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Idea</div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">Outbox</span>
-              <span class="core-diff-val">Write the business data <strong>and</strong> the event in the <strong>same DB transaction</strong> (an <code>outbox</code> table). A separate publisher relays the outbox to Kafka. The DB transaction is the <em>only</em> thing that needs to be atomic — the publisher just guarantees at-least-once delivery from the outbox.</span>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> The dual-write problem — what we're solving</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> Naive dual write</div>
-                <ul>
-                  <li>Save <code>Order</code> to DB → publish to Kafka. Two separate systems, no shared transaction.</li>
-                  <li><strong>Failure A:</strong> DB commits, Kafka publish fails → other services never hear about the order.</li>
-                  <li><strong>Failure B:</strong> Kafka publish succeeds, DB commit fails → other services think an order exists that doesn't.</li>
-                  <li><strong>Failure C:</strong> Neither is atomic with the other — there's no shared transaction across DB + broker.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> Transactional Outbox</div>
-                <ul>
-                  <li>Save <code>Order</code> + save <code>outbox</code> event in <strong>one DB transaction</strong>.</li>
-                  <li>Both succeed or both rollback — the DB enforces atomicity.</li>
-                  <li>A separate relay reads the outbox and publishes to Kafka.</li>
-                  <li>Kafka only ever sees events for <em>committed</em> business state.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> Flow</div>
-            <div class="flow">
-              <div class="flow-step">API request arrives</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">Begin DB transaction</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">INSERT into <code>order</code> table</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">INSERT into <code>outbox</code> table <span class="badge">event payload + metadata</span></div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step accent">Commit transaction <span class="badge">atomicity guaranteed by the DB</span></div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">Background publisher polls <code>outbox</code> for <code>status = 'PENDING'</code> <em>(or Debezium streams the WAL)</em></div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">Publish to Kafka</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step accent">Mark outbox row as <code>SENT</code> (or delete / archive it)</div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> Outbox table schema</div>
-            <pre><code>CREATE TABLE outbox (
+<p class="solution-desc">The DB transaction wraps the dedup-table write and the business write — they commit together. Even if the offset commit is later replayed, the dedup row blocks duplicate processing.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">4</span> What <code>enable.idempotence=true</code> actually does</div>
+<ul>
+<li>Producer assigns each message a <strong>(Producer ID, sequence number)</strong>. The broker dedupes any retry from the <em>same producer session</em>.</li>
+<li>It does <strong>not</strong> protect against: a fresh JVM resending the same business event, the outbox publisher republishing a row, a different producer sending the same event, or consumer-side reprocessing.</li>
+<li>Therefore: <em>idempotent producer ≠ end-to-end exactly-once</em>. You still need an <code>event_id</code> on every message and dedup logic in the consumer.</li>
+</ul>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">5</span> Common interview gotchas</div>
+<ul>
+<li>"Exactly-once" in Kafka is a <strong>Kafka-internal</strong> guarantee (Kafka → Kafka via transactions). It does not extend to your DB or external API calls.</li>
+<li><code>acks=1</code> (leader only) can lose data on leader crash before replication — use <code>acks=all</code> in production.</li>
+<li>Auto-commit (<code>enable.auto.commit=true</code>) commits on a timer, <em>not</em> after processing — a crash between processing and the next auto-commit causes message loss or duplication depending on order.</li>
+<li>Setting <code>max.in.flight.requests.per.connection &gt; 1</code> without <code>enable.idempotence=true</code> can reorder messages within a partition on retry.</li>
+<li>Transactional producers require a unique <code>transactional.id</code> per producer instance — share it across pods and they fence each other off.</li>
+<li>End-to-end exactly-once for "consume → process → produce" pipelines requires Kafka transactions + <code>read_committed</code> on the next consumer.</li>
+<li>Outbox pattern (DB write + outbox row in one tx) gives you <em>exactly-once on the producer side</em> for free; consumers still need idempotency.</li>
+</ul>
+</div>
+<p class="takeaway"><b>Interview one-liner:</b> Kafka offers three delivery guarantees: <strong>at-most-once</strong> (commit before processing — may lose), <strong>at-least-once</strong> (commit after processing — may duplicate, the production default), and <strong>exactly-once semantics (EOS)</strong> via <code>enable.idempotence=true</code> + transactional producer + <code>read_committed</code> consumer — but only Kafka-to-Kafka. End-to-end across DB and Kafka, the practical pattern is <strong>at-least-once + idempotent consumers</strong>: every event carries an <code>event_id</code>, and consumers dedupe via a <code>processed_events</code> table inside the same transaction as the business write. That gives you effective exactly-once with simple, robust mechanics.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Transactional Outbox Pattern with Kafka — guaranteeing DB + event consistency <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro">The classic <strong>dual-write problem</strong>: a service has to update its database <em>and</em> publish a Kafka event about that change. Doing both directly is not atomic — there's always a window where one succeeds and the other fails, leaving the system inconsistent. The <strong>Transactional Outbox</strong> pattern solves this by turning two unreliable writes into one atomic DB write plus a reliable replay.</p>
+<div class="core-diff">
+<div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Idea</div>
+<div class="core-diff-row">
+<span class="core-diff-key">Outbox</span>
+<span class="core-diff-val">Write the business data <strong>and</strong> the event in the <strong>same DB transaction</strong> (an <code>outbox</code> table). A separate publisher relays the outbox to Kafka. The DB transaction is the <em>only</em> thing that needs to be atomic — the publisher just guarantees at-least-once delivery from the outbox.</span>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> The dual-write problem — what we're solving</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> Naive dual write</div>
+<ul>
+<li>Save <code>Order</code> to DB → publish to Kafka. Two separate systems, no shared transaction.</li>
+<li><strong>Failure A:</strong> DB commits, Kafka publish fails → other services never hear about the order.</li>
+<li><strong>Failure B:</strong> Kafka publish succeeds, DB commit fails → other services think an order exists that doesn't.</li>
+<li><strong>Failure C:</strong> Neither is atomic with the other — there's no shared transaction across DB + broker.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> Transactional Outbox</div>
+<ul>
+<li>Save <code>Order</code> + save <code>outbox</code> event in <strong>one DB transaction</strong>.</li>
+<li>Both succeed or both rollback — the DB enforces atomicity.</li>
+<li>A separate relay reads the outbox and publishes to Kafka.</li>
+<li>Kafka only ever sees events for <em>committed</em> business state.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> Flow</div>
+<div class="flow">
+<div class="flow-step">API request arrives</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Begin DB transaction</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">INSERT into <code>order</code> table</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">INSERT into <code>outbox</code> table <span class="badge">event payload + metadata</span></div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step accent">Commit transaction <span class="badge">atomicity guaranteed by the DB</span></div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Background publisher polls <code>outbox</code> for <code>status = 'PENDING'</code> <em>(or Debezium streams the WAL)</em></div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Publish to Kafka</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step accent">Mark outbox row as <code>SENT</code> (or delete / archive it)</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">3</span> Outbox table schema</div>
+<pre><code>CREATE TABLE outbox (
     id              BIGSERIAL PRIMARY KEY,
     aggregate_id    VARCHAR(64) NOT NULL,     -- e.g. order_id (used as Kafka partition key)
     aggregate_type  VARCHAR(64) NOT NULL,     -- e.g. 'Order'
@@ -372,11 +345,10 @@ public void onOrderCreated(OrderEvent evt, Acknowledgment ack) {
     published_at    TIMESTAMPTZ,
     INDEX idx_status_created (status, created_at)
 );</code></pre>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">4</span> Spring Boot — write business row + outbox row in one transaction</div>
-            <pre><code>@Service
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">4</span> Spring Boot — write business row + outbox row in one transaction</div>
+<pre><code>@Service
 @RequiredArgsConstructor
 public class OrderService {
     private final OrderRepository  orders;
@@ -399,37 +371,35 @@ public class OrderService {
         return saved;
     }
 }</code></pre>
-            <p class="solution-desc">Both <code>orders.save(...)</code> and <code>outbox.save(...)</code> run inside the same <code>@Transactional</code> boundary. Commit succeeds → both rows exist. Commit rolls back → neither exists. There is <em>never</em> an inconsistent state.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">5</span> Two ways to relay outbox → Kafka</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> Polling publisher (simple)</div>
-                <ul>
-                  <li><code>@Scheduled</code> job every 1–5s.</li>
-                  <li><code>SELECT … WHERE status='PENDING' ORDER BY id FOR UPDATE SKIP LOCKED LIMIT 100;</code></li>
-                  <li>Publish each row to Kafka → <code>UPDATE outbox SET status='SENT', published_at=now() WHERE id=?</code>.</li>
-                  <li><b>Pros:</b> easy, no extra infra, works on any DB.</li>
-                  <li><b>Cons:</b> polling latency, constant DB load.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> Debezium CDC (production)</div>
-                <ul>
-                  <li><code>Debezium</code> reads the DB's WAL / binlog and streams every outbox <code>INSERT</code> to Kafka via Kafka Connect.</li>
-                  <li>No application-side publisher at all.</li>
-                  <li><b>Pros:</b> near-real-time, no polling, no DB hot spot on the outbox table.</li>
-                  <li><b>Cons:</b> extra infra (Kafka Connect + Debezium), schema-evolution care, requires CDC-enabled DB (Postgres WAL / MySQL binlog).</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">6</span> Polling publisher snippet</div>
-            <pre><code>@Component
+<p class="solution-desc">Both <code>orders.save(...)</code> and <code>outbox.save(...)</code> run inside the same <code>@Transactional</code> boundary. Commit succeeds → both rows exist. Commit rolls back → neither exists. There is <em>never</em> an inconsistent state.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">5</span> Two ways to relay outbox → Kafka</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> Polling publisher (simple)</div>
+<ul>
+<li><code>@Scheduled</code> job every 1–5s.</li>
+<li><code>SELECT … WHERE status='PENDING' ORDER BY id FOR UPDATE SKIP LOCKED LIMIT 100;</code></li>
+<li>Publish each row to Kafka → <code>UPDATE outbox SET status='SENT', published_at=now() WHERE id=?</code>.</li>
+<li><b>Pros:</b> easy, no extra infra, works on any DB.</li>
+<li><b>Cons:</b> polling latency, constant DB load.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> Debezium CDC (production)</div>
+<ul>
+<li><code>Debezium</code> reads the DB's WAL / binlog and streams every outbox <code>INSERT</code> to Kafka via Kafka Connect.</li>
+<li>No application-side publisher at all.</li>
+<li><b>Pros:</b> near-real-time, no polling, no DB hot spot on the outbox table.</li>
+<li><b>Cons:</b> extra infra (Kafka Connect + Debezium), schema-evolution care, requires CDC-enabled DB (Postgres WAL / MySQL binlog).</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">6</span> Polling publisher snippet</div>
+<pre><code>@Component
 @RequiredArgsConstructor
 public class OutboxPublisher {
     private final OutboxRepository outbox;
@@ -465,34 +435,31 @@ public class OutboxPublisher {
     LIMIT :n
     """, nativeQuery = true)
 List&lt;OutboxEvent&gt; lockPendingBatch(@Param("n") int n);</code></pre>
-            <p class="solution-desc"><code>FOR UPDATE SKIP LOCKED</code> is the key to running multiple publisher instances safely: each pod locks a disjoint set of rows and skips the ones a peer is already processing. If a publisher crashes mid-batch, its lock is released and another pod picks up those rows → the row stays <code>PENDING</code> until it's actually delivered.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">7</span> Why this works</div>
-            <p>The DB guarantees <strong>atomicity of the business write + outbox write</strong> via an ordinary local ACID transaction. Kafka is decoupled — the publisher only has to guarantee <strong>at-least-once delivery from the outbox</strong>, which is trivial (retry until <code>SENT</code>). There is <em>no distributed transaction</em> across DB + Kafka, and no 2PC anywhere. The pattern transforms a hard problem (distributed atomicity across two heterogeneous systems) into a simple one (atomic write to one DB + reliable replay).</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">8</span> Delivery semantics — what you actually get</div>
-            <div class="note-table-wrap">
-              <table class="note-table">
-                <thead>
-                  <tr><th>Stage</th><th>Guarantee</th><th>Why</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td>DB write (order + outbox)</td><td><strong>Exactly-once</strong></td><td>One ACID transaction — atomic by construction.</td></tr>
-                  <tr><td>Kafka publishing</td>          <td><strong>At-least-once</strong></td><td>Publisher may crash mid-publish; row stays <code>PENDING</code> → it'll be republished.</td></tr>
-                  <tr><td>End-to-end (producer → consumer)</td><td><strong>At-least-once</strong></td><td>Therefore: <strong>consumers MUST be idempotent</strong>.</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">9</span> Idempotency on the consumer side</div>
-            <p>Since the end-to-end guarantee is <em>at-least-once</em>, consumers will occasionally see the same event twice (e.g. publisher acked the row but crashed before marking it <code>SENT</code>). The standard fix: dedupe via an <code>event_id</code> stamped on each event, backed by a small <code>processed_events</code> table.</p>
-            <pre><code>@KafkaListener(topics = "order.events", groupId = "billing")
+<p class="solution-desc"><code>FOR UPDATE SKIP LOCKED</code> is the key to running multiple publisher instances safely: each pod locks a disjoint set of rows and skips the ones a peer is already processing. If a publisher crashes mid-batch, its lock is released and another pod picks up those rows → the row stays <code>PENDING</code> until it's actually delivered.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">7</span> Why this works</div>
+<p>The DB guarantees <strong>atomicity of the business write + outbox write</strong> via an ordinary local ACID transaction. Kafka is decoupled — the publisher only has to guarantee <strong>at-least-once delivery from the outbox</strong>, which is trivial (retry until <code>SENT</code>). There is <em>no distributed transaction</em> across DB + Kafka, and no 2PC anywhere. The pattern transforms a hard problem (distributed atomicity across two heterogeneous systems) into a simple one (atomic write to one DB + reliable replay).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">8</span> Delivery semantics — what you actually get</div>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead>
+<tr><th>Stage</th><th>Guarantee</th><th>Why</th></tr>
+</thead>
+<tbody>
+<tr><td>DB write (order + outbox)</td><td><strong>Exactly-once</strong></td><td>One ACID transaction — atomic by construction.</td></tr>
+<tr><td>Kafka publishing</td> <td><strong>At-least-once</strong></td><td>Publisher may crash mid-publish; row stays <code>PENDING</code> → it'll be republished.</td></tr>
+<tr><td>End-to-end (producer → consumer)</td><td><strong>At-least-once</strong></td><td>Therefore: <strong>consumers MUST be idempotent</strong>.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">9</span> Idempotency on the consumer side</div>
+<p>Since the end-to-end guarantee is <em>at-least-once</em>, consumers will occasionally see the same event twice (e.g. publisher acked the row but crashed before marking it <code>SENT</code>). The standard fix: dedupe via an <code>event_id</code> stamped on each event, backed by a small <code>processed_events</code> table.</p>
+<pre><code>@KafkaListener(topics = "order.events", groupId = "billing")
 @Transactional
 public void onOrderCreated(OrderCreated evt) {
     if (processedEvents.existsByEventId(evt.getEventId())) {
@@ -501,164 +468,153 @@ public void onOrderCreated(OrderCreated evt) {
     processedEvents.save(new ProcessedEvent(evt.getEventId(), Instant.now()));
     billing.charge(evt);                          // business logic
 }</code></pre>
-            <p class="solution-desc">Note: Kafka's <code>enable.idempotence=true</code> only dedupes <em>producer-side in-flight retries</em> (same producer, same session). It does <strong>not</strong> protect consumers from duplicates caused by republishes from the outbox — you still need a consumer-side dedup key.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">10</span> Production concerns</div>
-            <div class="note-table-wrap">
-              <table class="note-table">
-                <thead>
-                  <tr><th>Concern</th><th>Best practice</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td>Duplicate events</td>            <td>Consumer must be idempotent — <code>event_id</code> dedup table or natural-key checks.</td></tr>
-                  <tr><td>Ordering</td>                    <td>Use <code>aggregate_id</code> as the Kafka partition key so all events for one order land on the same partition.</td></tr>
-                  <tr><td>Retry / backoff</td>             <td><code>retry_count</code> + capped retries; route exhausted rows to <code>FAILED</code> / a dead-letter table for ops.</td></tr>
-                  <tr><td>Outbox table bloat</td>          <td>Archive <code>SENT</code> rows after N days; partition the table by <code>created_at</code>.</td></tr>
-                  <tr><td>Multiple publisher instances</td><td><code>FOR UPDATE SKIP LOCKED</code> or unique row leases so two pods never claim the same row.</td></tr>
-                  <tr><td>Schema evolution</td>            <td>Version the <code>event_type</code> (<code>OrderCreated.v2</code>) or use Avro/Protobuf with a Schema Registry.</td></tr>
-                  <tr><td>Observability</td>               <td>Metrics on outbox lag (<code>now() - max(created_at)</code> for <code>PENDING</code> rows), publisher throughput, retry counts, DLQ size.</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">11</span> When to use it</div>
-            <div class="use-cases">
-              <div class="use-case">
-                <h4><i class="bi bi-bag-check-fill"></i> Order created</h4>
-                <p>Persist order + publish <code>OrderCreated</code> for fulfilment, billing, analytics.</p>
-              </div>
-              <div class="use-case green">
-                <h4><i class="bi bi-credit-card-2-back-fill"></i> Payment completed</h4>
-                <p>Mark payment <code>CAPTURED</code> in DB + emit <code>PaymentCompleted</code> for downstream ledgers.</p>
-              </div>
-              <div class="use-case pink">
-                <h4><i class="bi bi-box-seam-fill"></i> Inventory reserved</h4>
-                <p>Decrement stock + emit <code>StockReserved</code> for the warehouse and pricing engines.</p>
-              </div>
-              <div class="use-case orange">
-                <h4><i class="bi bi-person-plus-fill"></i> User registered</h4>
-                <p>Save the user + emit <code>UserRegistered</code> for welcome email, CRM sync, analytics.</p>
-              </div>
-              <div class="use-case">
-                <h4><i class="bi bi-broadcast"></i> Any DB change that fans out</h4>
-                <p>Anywhere a DB state change must trigger a Kafka event without dual-write risk.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">12</span> Alternatives — quick comparison</div>
-            <div class="note-table-wrap">
-              <table class="note-table">
-                <thead>
-                  <tr><th>Approach</th><th>When to use</th><th>Notes</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td>Two-phase commit (XA)</td>                  <td>Almost never</td>                                   <td>Distributed tx across DB + Kafka. Theoretically correct but slow, brittle, and Kafka doesn't do XA. Avoid.</td></tr>
-                  <tr><td>Transactional Outbox + polling</td>         <td>Default for most teams</td>                         <td>Simple, works on any DB, no extra infra.</td></tr>
-                  <tr><td>Transactional Outbox + <code>Debezium</code> CDC</td><td>High-throughput production</td>            <td>Near-real-time, no polling load on the app DB.</td></tr>
-                  <tr><td>Event sourcing</td>                          <td>Domains where audit / replay is the product</td>    <td>The event log <em>is</em> the source of truth — no separate business table. Bigger architectural commitment.</td></tr>
-                  <tr><td>Listen-to-yourself (CDC only, no outbox)</td><td>Quick wins on legacy schemas</td>                   <td>Debezium streams the business table directly. Works, but events are tightly coupled to your table schema.</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">13</span> Common interview gotchas</div>
-            <ul style="margin: 0 0 10px;">
-              <li><strong>You don't need 2PC</strong> — that's the whole point of the pattern.</li>
-              <li>The publisher is <strong>at-least-once</strong> + consumers must be <strong>idempotent</strong> — "exactly-once end-to-end" is a myth in real distributed systems.</li>
-              <li>Use <code>FOR UPDATE SKIP LOCKED</code> so multiple publisher pods don't pick the same row.</li>
-              <li>Always partition Kafka by <code>aggregate_id</code> so per-entity ordering is preserved.</li>
-              <li>Index <code>(status, created_at)</code> on the outbox so the polling query stays fast as the table grows.</li>
-              <li>Clean up <code>SENT</code> rows (archive / partition by date) or the table becomes huge.</li>
-              <li>Spring Modulith (<code>spring-modulith-events</code>) ships a built-in <code>EventPublication</code> outbox you can use without writing your own table.</li>
-            </ul>
-          </div>
-
-          <p class="takeaway">
-            <b>Interview one-liner:</b> The <strong>Transactional Outbox</strong> pattern solves the dual-write problem: write the business row and the event to the <em>same DB</em> in <em>one transaction</em>, then relay the <code>outbox</code> table to Kafka — either with a polling publisher (<code>FOR UPDATE SKIP LOCKED</code>) or with <code>Debezium</code> CDC. The DB transaction gives you exactly-once for the business write; the relay gives you at-least-once for Kafka. End-to-end is at-least-once → <strong>consumers must be idempotent</strong> (<code>event_id</code> dedup table). Partition Kafka by <code>aggregate_id</code> to preserve per-entity ordering. Production essentials: idempotent consumers, <code>SKIP LOCKED</code> for parallel publishers, archiving of <code>SENT</code> rows, and observability on outbox lag.
+<p class="solution-desc">Note: Kafka's <code>enable.idempotence=true</code> only dedupes <em>producer-side in-flight retries</em> (same producer, same session). It does <strong>not</strong> protect consumers from duplicates caused by republishes from the outbox — you still need a consumer-side dedup key.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">10</span> Production concerns</div>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead>
+<tr><th>Concern</th><th>Best practice</th></tr>
+</thead>
+<tbody>
+<tr><td>Duplicate events</td> <td>Consumer must be idempotent — <code>event_id</code> dedup table or natural-key checks.</td></tr>
+<tr><td>Ordering</td> <td>Use <code>aggregate_id</code> as the Kafka partition key so all events for one order land on the same partition.</td></tr>
+<tr><td>Retry / backoff</td> <td><code>retry_count</code> + capped retries; route exhausted rows to <code>FAILED</code> / a dead-letter table for ops.</td></tr>
+<tr><td>Outbox table bloat</td> <td>Archive <code>SENT</code> rows after N days; partition the table by <code>created_at</code>.</td></tr>
+<tr><td>Multiple publisher instances</td><td><code>FOR UPDATE SKIP LOCKED</code> or unique row leases so two pods never claim the same row.</td></tr>
+<tr><td>Schema evolution</td> <td>Version the <code>event_type</code> (<code>OrderCreated.v2</code>) or use Avro/Protobuf with a Schema Registry.</td></tr>
+<tr><td>Observability</td> <td>Metrics on outbox lag (<code>now() - max(created_at)</code> for <code>PENDING</code> rows), publisher throughput, retry counts, DLQ size.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">11</span> When to use it</div>
+<div class="use-cases">
+<div class="use-case">
+<h4><i class="bi bi-bag-check-fill"></i> Order created</h4>
+<p>Persist order + publish <code>OrderCreated</code> for fulfilment, billing, analytics.</p>
+</div>
+<div class="use-case green">
+<h4><i class="bi bi-credit-card-2-back-fill"></i> Payment completed</h4>
+<p>Mark payment <code>CAPTURED</code> in DB + emit <code>PaymentCompleted</code> for downstream ledgers.</p>
+</div>
+<div class="use-case pink">
+<h4><i class="bi bi-box-seam-fill"></i> Inventory reserved</h4>
+<p>Decrement stock + emit <code>StockReserved</code> for the warehouse and pricing engines.</p>
+</div>
+<div class="use-case orange">
+<h4><i class="bi bi-person-plus-fill"></i> User registered</h4>
+<p>Save the user + emit <code>UserRegistered</code> for welcome email, CRM sync, analytics.</p>
+</div>
+<div class="use-case">
+<h4><i class="bi bi-broadcast"></i> Any DB change that fans out</h4>
+<p>Anywhere a DB state change must trigger a Kafka event without dual-write risk.</p>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">12</span> Alternatives — quick comparison</div>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead>
+<tr><th>Approach</th><th>When to use</th><th>Notes</th></tr>
+</thead>
+<tbody>
+<tr><td>Two-phase commit (XA)</td> <td>Almost never</td> <td>Distributed tx across DB + Kafka. Theoretically correct but slow, brittle, and Kafka doesn't do XA. Avoid.</td></tr>
+<tr><td>Transactional Outbox + polling</td> <td>Default for most teams</td> <td>Simple, works on any DB, no extra infra.</td></tr>
+<tr><td>Transactional Outbox + <code>Debezium</code> CDC</td><td>High-throughput production</td> <td>Near-real-time, no polling load on the app DB.</td></tr>
+<tr><td>Event sourcing</td> <td>Domains where audit / replay is the product</td> <td>The event log <em>is</em> the source of truth — no separate business table. Bigger architectural commitment.</td></tr>
+<tr><td>Listen-to-yourself (CDC only, no outbox)</td><td>Quick wins on legacy schemas</td> <td>Debezium streams the business table directly. Works, but events are tightly coupled to your table schema.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">13</span> Common interview gotchas</div>
+<ul style="margin: 0 0 10px;">
+<li><strong>You don't need 2PC</strong> — that's the whole point of the pattern.</li>
+<li>The publisher is <strong>at-least-once</strong> + consumers must be <strong>idempotent</strong> — "exactly-once end-to-end" is a myth in real distributed systems.</li>
+<li>Use <code>FOR UPDATE SKIP LOCKED</code> so multiple publisher pods don't pick the same row.</li>
+<li>Always partition Kafka by <code>aggregate_id</code> so per-entity ordering is preserved.</li>
+<li>Index <code>(status, created_at)</code> on the outbox so the polling query stays fast as the table grows.</li>
+<li>Clean up <code>SENT</code> rows (archive / partition by date) or the table becomes huge.</li>
+<li>Spring Modulith (<code>spring-modulith-events</code>) ships a built-in <code>EventPublication</code> outbox you can use without writing your own table.</li>
+</ul>
+</div>
+<p class="takeaway">
+<b>Interview one-liner:</b> The <strong>Transactional Outbox</strong> pattern solves the dual-write problem: write the business row and the event to the <em>same DB</em> in <em>one transaction</em>, then relay the <code>outbox</code> table to Kafka — either with a polling publisher (<code>FOR UPDATE SKIP LOCKED</code>) or with <code>Debezium</code> CDC. The DB transaction gives you exactly-once for the business write; the relay gives you at-least-once for Kafka. End-to-end is at-least-once → <strong>consumers must be idempotent</strong> (<code>event_id</code> dedup table). Partition Kafka by <code>aggregate_id</code> to preserve per-entity ordering. Production essentials: idempotent consumers, <code>SKIP LOCKED</code> for parallel publishers, archiving of <code>SENT</code> rows, and observability on outbox lag.
           </p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Kafka consumer offsets and rebalancing</summary>
-        <div class="qa-body">
-          <p>Each consumer in a group tracks its current <strong>offset</strong> per partition — the next message to read. Offsets are committed back to Kafka periodically (auto-commit) or manually (more reliable).</p>
-          <p>When a consumer joins or leaves the group, Kafka triggers a <strong>rebalance</strong> — partitions are redistributed. The classic gotcha: if processing is slow and the consumer doesn't poll within <code>max.poll.interval.ms</code>, Kafka assumes it's dead and reassigns its partitions → duplicate processing.</p>
-          <p>Practices to follow:</p>
-          <ul>
-            <li><strong>Manual commit</strong> after successful processing — auto-commit can lose messages on crash.</li>
-            <li>Tune <code>max.poll.records</code> and <code>max.poll.interval.ms</code> so a batch finishes well before the timeout.</li>
-            <li>Use Kafka's <strong>cooperative rebalancing</strong> (incremental) instead of eager stop-the-world.</li>
-            <li>Idempotent processing so reprocessing on rebalance is safe.</li>
-          </ul>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>What happens if a Kafka consumer crashes after processing but before committing the offset? <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">This is the canonical "at-least-once vs exactly-once" interview probe. Understanding the exact failure window — and the only correct mitigation — separates engineers who have run Kafka in production from those who have only read about it.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-row">
-              <span class="core-diff-key">CORE IDEA</span>
-              <span class="core-diff-val">The next consumer that picks up the partition starts from the <strong>last committed offset</strong>, so the message gets processed <strong>again</strong>. The only correct fix is to make consumer logic <strong>idempotent</strong> — the offset cannot be committed atomically with an external side effect.</span>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> The exact sequence of events</div>
-            <div class="flow">
-              <div class="flow-step">Consumer polls offset N from broker</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">Processes message — writes to DB / calls API / sends downstream event</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step accent">Pod crashes / OOM kill / network partition <span class="badge">offset N never committed</span></div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">Heartbeat times out — Kafka triggers a rebalance</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">Partition reassigned to another consumer in the group</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">New consumer reads from <strong>last committed offset</strong> (still N)</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step accent">Same message is processed <strong>a second time</strong></div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> Why you can't make it exactly-once</div>
-            <p>The consumer's offset commit goes to Kafka, but the side effect (DB write, external HTTP call) goes somewhere else. There is no shared transaction across two systems. The two writes can never be atomic — at any failure point, one will be applied and the other won't.</p>
-            <div class="note-table-wrap">
-              <table class="note-table">
-                <thead>
-                  <tr><th>Commit order</th><th>Crash window outcome</th><th>Risk</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td>Commit offset <em>before</em> processing</td><td>Crash after commit, before DB write → message lost</td><td><strong>Data loss</strong> — almost never acceptable</td></tr>
-                  <tr><td>Commit offset <em>after</em> processing</td><td>Crash after DB write, before commit → message reprocessed</td><td><strong>Duplicates</strong> — solvable with idempotency</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <p>Therefore the right design is "process → commit", and rely on idempotent processing.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> The correct consumer skeleton</div>
-            <pre><code># Spring Kafka — disable auto-commit, use manual ack
+</div>
+</details>
+<details class="qa">
+<summary>Kafka consumer offsets and rebalancing</summary>
+<div class="qa-body">
+<p>Each consumer in a group tracks its current <strong>offset</strong> per partition — the next message to read. Offsets are committed back to Kafka periodically (auto-commit) or manually (more reliable).</p>
+<p>When a consumer joins or leaves the group, Kafka triggers a <strong>rebalance</strong> — partitions are redistributed. The classic gotcha: if processing is slow and the consumer doesn't poll within <code>max.poll.interval.ms</code>, Kafka assumes it's dead and reassigns its partitions → duplicate processing.</p>
+<p>Practices to follow:</p>
+<ul>
+<li><strong>Manual commit</strong> after successful processing — auto-commit can lose messages on crash.</li>
+<li>Tune <code>max.poll.records</code> and <code>max.poll.interval.ms</code> so a batch finishes well before the timeout.</li>
+<li>Use Kafka's <strong>cooperative rebalancing</strong> (incremental) instead of eager stop-the-world.</li>
+<li>Idempotent processing so reprocessing on rebalance is safe.</li>
+</ul>
+</div>
+</details>
+<details class="qa">
+<summary>What happens if a Kafka consumer crashes after processing but before committing the offset? <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro">This is the canonical "at-least-once vs exactly-once" interview probe. Understanding the exact failure window — and the only correct mitigation — separates engineers who have run Kafka in production from those who have only read about it.</p>
+<div class="core-diff">
+<div class="core-diff-row">
+<span class="core-diff-key">CORE IDEA</span>
+<span class="core-diff-val">The next consumer that picks up the partition starts from the <strong>last committed offset</strong>, so the message gets processed <strong>again</strong>. The only correct fix is to make consumer logic <strong>idempotent</strong> — the offset cannot be committed atomically with an external side effect.</span>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> The exact sequence of events</div>
+<div class="flow">
+<div class="flow-step">Consumer polls offset N from broker</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Processes message — writes to DB / calls API / sends downstream event</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step accent">Pod crashes / OOM kill / network partition <span class="badge">offset N never committed</span></div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Heartbeat times out — Kafka triggers a rebalance</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Partition reassigned to another consumer in the group</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">New consumer reads from <strong>last committed offset</strong> (still N)</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step accent">Same message is processed <strong>a second time</strong></div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> Why you can't make it exactly-once</div>
+<p>The consumer's offset commit goes to Kafka, but the side effect (DB write, external HTTP call) goes somewhere else. There is no shared transaction across two systems. The two writes can never be atomic — at any failure point, one will be applied and the other won't.</p>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead>
+<tr><th>Commit order</th><th>Crash window outcome</th><th>Risk</th></tr>
+</thead>
+<tbody>
+<tr><td>Commit offset <em>before</em> processing</td><td>Crash after commit, before DB write → message lost</td><td><strong>Data loss</strong> — almost never acceptable</td></tr>
+<tr><td>Commit offset <em>after</em> processing</td><td>Crash after DB write, before commit → message reprocessed</td><td><strong>Duplicates</strong> — solvable with idempotency</td></tr>
+</tbody>
+</table>
+</div>
+<p>Therefore the right design is "process → commit", and rely on idempotent processing.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">3</span> The correct consumer skeleton</div>
+<pre><code># Spring Kafka — disable auto-commit, use manual ack
 spring.kafka.consumer.enable-auto-commit=false
 spring.kafka.listener.ack-mode=manual_immediate
 spring.kafka.consumer.isolation-level=read_committed
 spring.kafka.consumer.max-poll-records=50
 spring.kafka.consumer.properties.max.poll.interval.ms=300000</code></pre>
-            <pre><code>@KafkaListener(topics = "payments", groupId = "ledger")
+<pre><code>@KafkaListener(topics = "payments", groupId = "ledger")
 @Transactional
 public void onPayment(ConsumerRecord&lt;String, PaymentEvent&gt; rec, Acknowledgment ack) {
     String eventId = rec.value().getEventId();
@@ -672,96 +628,88 @@ public void onPayment(ConsumerRecord&lt;String, PaymentEvent&gt; rec, Acknowledg
 
     ack.acknowledge();                                // commit offset only AFTER tx commits
 }</code></pre>
-            <p class="solution-desc">The DB transaction makes "dedup row + business write" atomic. The offset commit happens after — if it fails, redelivery hits the dedup check and skips.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">4</span> Why Kafka's transactional producer doesn't fully solve this</div>
-            <p>Kafka transactions guarantee atomicity for <em>Kafka-only</em> "consume → process → produce" pipelines (used in Kafka Streams). They do <strong>not</strong> wrap external side effects like DB writes or REST calls. As soon as your processing touches a non-Kafka system, the only durable answer is consumer-side idempotency.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">5</span> Common interview gotchas</div>
-            <ul>
-              <li>The window is "between processing and offset commit" — not "between poll and processing".</li>
-              <li>Auto-commit (<code>enable.auto.commit=true</code>) commits on a timer regardless of processing — risk of <em>both</em> loss and duplication depending on timing.</li>
-              <li>Long processing + missed <code>poll()</code> within <code>max.poll.interval.ms</code> triggers a rebalance — same outcome as a crash.</li>
-              <li>Dedup table must be in the <em>same DB</em> as the business write so they share a transaction; a remote dedup store reintroduces the dual-write problem.</li>
-              <li>Use <code>read_committed</code> isolation when consuming from a topic produced by a transactional producer, otherwise you'll see uncommitted records.</li>
-              <li>Cooperative rebalancing (<code>partition.assignment.strategy=CooperativeStickyAssignor</code>) reduces stop-the-world rebalance pauses but doesn't change the duplicate-processing semantics.</li>
-              <li>Pod graceful shutdown should call <code>consumer.close()</code> so in-flight processing finishes and offsets are committed before exit.</li>
-            </ul>
-          </div>
-
-          <p class="takeaway"><b>Interview one-liner:</b> If a Kafka consumer crashes between processing and committing its offset, the next consumer that owns the partition restarts from the <strong>last committed offset</strong> — so that message is processed <strong>again</strong>. There is no way to make external side effects (DB write, HTTP call) atomic with the offset commit, so the only durable answer is <strong>at-least-once delivery + idempotent consumers</strong>: an <code>event_id</code> on every message and a dedup table inside the same DB transaction as the business write. Manual offset commits, <code>enable.auto.commit=false</code>, and <code>ack-mode=manual_immediate</code> in Spring Kafka are the production defaults.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>How do you handle duplicate events in Kafka? <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">In Kafka the realistic delivery contract is <strong>at-least-once</strong>, so consumers <em>will</em> see the same event twice — on retries, rebalances, redeploys, or republishes from an outbox. The fix is to design every consumer as a <strong>pure function of the event</strong>, even when invoked twice.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-row">
-              <span class="core-diff-key">CORE IDEA</span>
-              <span class="core-diff-val">Every event carries an <code>event_id</code>. Every consumer dedupes by writing the <code>event_id</code> to a <strong>dedup table in the same DB transaction</strong> as the business write — a duplicate hits a unique-key violation and is skipped.</span>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> Where duplicates come from</div>
-            <div class="note-table-wrap">
-              <table class="note-table">
-                <thead>
-                  <tr><th>Source</th><th>Trigger</th><th>How to defend</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td>Producer retry</td><td>Network blip, broker timeout</td><td><code>enable.idempotence=true</code> dedupes the same producer's retries</td></tr>
-                  <tr><td>Outbox republish</td><td>Publisher crash after Kafka send, before marking row <code>SENT</code></td><td>Stable <code>event_id</code> on the outbox row → consumer dedupes</td></tr>
-                  <tr><td>Consumer crash before commit</td><td>Pod OOM / restart between processing and offset commit</td><td>Idempotent consumer with dedup table</td></tr>
-                  <tr><td>Rebalance</td><td>New pod added / scaled down / heartbeat lost</td><td>Same — idempotent consumer</td></tr>
-                  <tr><td>Manual replay</td><td>Operator resets offsets to recover from a bad deploy</td><td>Same — idempotent consumer</td></tr>
-                  <tr><td>Multi-region producer</td><td>Same business event emitted by two regions during failover</td><td>Deterministic <code>event_id</code> from business key + version</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> Three dedup strategies</div>
-            <div class="cmp-grid">
-              <div class="cmp-card">
-                <div class="cmp-card-title">Dedup table (most common)</div>
-                <ul>
-                  <li>Table <code>processed_events(event_id PRIMARY KEY, processed_at)</code>.</li>
-                  <li>Insert row + business write in <strong>one transaction</strong>.</li>
-                  <li>Duplicate → unique-key violation → skip.</li>
-                  <li>Prune rows older than retention window (e.g., 30 days).</li>
-                </ul>
-              </div>
-              <div class="cmp-card">
-                <div class="cmp-card-title">Natural-key idempotency</div>
-                <ul>
-                  <li>The business write is itself idempotent: <code>UPSERT</code> by natural key with version check.</li>
-                  <li>Example: <code>INSERT … ON CONFLICT (order_id) DO UPDATE WHERE excluded.version &gt; orders.version</code>.</li>
-                  <li>No separate dedup table needed.</li>
-                </ul>
-              </div>
-              <div class="cmp-card">
-                <div class="cmp-card-title">Idempotent downstream call</div>
-                <ul>
-                  <li>External API supports <code>Idempotency-Key</code> header (Stripe, PayPal pattern).</li>
-                  <li>Pass <code>event_id</code> as the key — provider dedupes.</li>
-                  <li>Use when the side effect is at a third party you can't transact with.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> Idempotent consumer in Spring Kafka</div>
-            <pre><code>@KafkaListener(topics = "order.events", groupId = "shipping",
+<p class="solution-desc">The DB transaction makes "dedup row + business write" atomic. The offset commit happens after — if it fails, redelivery hits the dedup check and skips.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">4</span> Why Kafka's transactional producer doesn't fully solve this</div>
+<p>Kafka transactions guarantee atomicity for <em>Kafka-only</em> "consume → process → produce" pipelines (used in Kafka Streams). They do <strong>not</strong> wrap external side effects like DB writes or REST calls. As soon as your processing touches a non-Kafka system, the only durable answer is consumer-side idempotency.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">5</span> Common interview gotchas</div>
+<ul>
+<li>The window is "between processing and offset commit" — not "between poll and processing".</li>
+<li>Auto-commit (<code>enable.auto.commit=true</code>) commits on a timer regardless of processing — risk of <em>both</em> loss and duplication depending on timing.</li>
+<li>Long processing + missed <code>poll()</code> within <code>max.poll.interval.ms</code> triggers a rebalance — same outcome as a crash.</li>
+<li>Dedup table must be in the <em>same DB</em> as the business write so they share a transaction; a remote dedup store reintroduces the dual-write problem.</li>
+<li>Use <code>read_committed</code> isolation when consuming from a topic produced by a transactional producer, otherwise you'll see uncommitted records.</li>
+<li>Cooperative rebalancing (<code>partition.assignment.strategy=CooperativeStickyAssignor</code>) reduces stop-the-world rebalance pauses but doesn't change the duplicate-processing semantics.</li>
+<li>Pod graceful shutdown should call <code>consumer.close()</code> so in-flight processing finishes and offsets are committed before exit.</li>
+</ul>
+</div>
+<p class="takeaway"><b>Interview one-liner:</b> If a Kafka consumer crashes between processing and committing its offset, the next consumer that owns the partition restarts from the <strong>last committed offset</strong> — so that message is processed <strong>again</strong>. There is no way to make external side effects (DB write, HTTP call) atomic with the offset commit, so the only durable answer is <strong>at-least-once delivery + idempotent consumers</strong>: an <code>event_id</code> on every message and a dedup table inside the same DB transaction as the business write. Manual offset commits, <code>enable.auto.commit=false</code>, and <code>ack-mode=manual_immediate</code> in Spring Kafka are the production defaults.</p>
+</div>
+</details>
+<details class="qa">
+<summary>How do you handle duplicate events in Kafka? <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro">In Kafka the realistic delivery contract is <strong>at-least-once</strong>, so consumers <em>will</em> see the same event twice — on retries, rebalances, redeploys, or republishes from an outbox. The fix is to design every consumer as a <strong>pure function of the event</strong>, even when invoked twice.</p>
+<div class="core-diff">
+<div class="core-diff-row">
+<span class="core-diff-key">CORE IDEA</span>
+<span class="core-diff-val">Every event carries an <code>event_id</code>. Every consumer dedupes by writing the <code>event_id</code> to a <strong>dedup table in the same DB transaction</strong> as the business write — a duplicate hits a unique-key violation and is skipped.</span>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> Where duplicates come from</div>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead>
+<tr><th>Source</th><th>Trigger</th><th>How to defend</th></tr>
+</thead>
+<tbody>
+<tr><td>Producer retry</td><td>Network blip, broker timeout</td><td><code>enable.idempotence=true</code> dedupes the same producer's retries</td></tr>
+<tr><td>Outbox republish</td><td>Publisher crash after Kafka send, before marking row <code>SENT</code></td><td>Stable <code>event_id</code> on the outbox row → consumer dedupes</td></tr>
+<tr><td>Consumer crash before commit</td><td>Pod OOM / restart between processing and offset commit</td><td>Idempotent consumer with dedup table</td></tr>
+<tr><td>Rebalance</td><td>New pod added / scaled down / heartbeat lost</td><td>Same — idempotent consumer</td></tr>
+<tr><td>Manual replay</td><td>Operator resets offsets to recover from a bad deploy</td><td>Same — idempotent consumer</td></tr>
+<tr><td>Multi-region producer</td><td>Same business event emitted by two regions during failover</td><td>Deterministic <code>event_id</code> from business key + version</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> Three dedup strategies</div>
+<div class="cmp-grid">
+<div class="cmp-card">
+<div class="cmp-card-title">Dedup table (most common)</div>
+<ul>
+<li>Table <code>processed_events(event_id PRIMARY KEY, processed_at)</code>.</li>
+<li>Insert row + business write in <strong>one transaction</strong>.</li>
+<li>Duplicate → unique-key violation → skip.</li>
+<li>Prune rows older than retention window (e.g., 30 days).</li>
+</ul>
+</div>
+<div class="cmp-card">
+<div class="cmp-card-title">Natural-key idempotency</div>
+<ul>
+<li>The business write is itself idempotent: <code>UPSERT</code> by natural key with version check.</li>
+<li>Example: <code>INSERT … ON CONFLICT (order_id) DO UPDATE WHERE excluded.version &gt; orders.version</code>.</li>
+<li>No separate dedup table needed.</li>
+</ul>
+</div>
+<div class="cmp-card">
+<div class="cmp-card-title">Idempotent downstream call</div>
+<ul>
+<li>External API supports <code>Idempotency-Key</code> header (Stripe, PayPal pattern).</li>
+<li>Pass <code>event_id</code> as the key — provider dedupes.</li>
+<li>Use when the side effect is at a third party you can't transact with.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">3</span> Idempotent consumer in Spring Kafka</div>
+<pre><code>@KafkaListener(topics = "order.events", groupId = "shipping",
                containerFactory = "kafkaListenerContainerFactory")
 @Transactional
 public void onOrderCreated(OrderCreated evt, Acknowledgment ack) {
@@ -774,73 +722,65 @@ public void onOrderCreated(OrderCreated evt, Acknowledgment ack) {
     shipmentService.create(evt);                    // business work
     ack.acknowledge();                              // commit offset after tx commits
 }</code></pre>
-            <p class="solution-desc">The <code>event_id</code> is the primary key of the dedup table — a duplicate insert raises a constraint violation, which we catch and acknowledge. The business write only runs for first-time events.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">4</span> What about Redis or an in-memory cache?</div>
-            <p>Tempting but dangerous. A Redis-backed dedup is fast but reintroduces the dual-write problem — Redis insert and DB write are two systems again. Use it only as an <em>optimization layer</em> in front of a DB-backed dedup, never as the sole source of truth.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">5</span> Common interview gotchas</div>
-            <ul>
-              <li><code>enable.idempotence=true</code> on the producer only dedupes <em>same-session retries</em>, not republishes from a fresh JVM or an outbox relay.</li>
-              <li>The dedup row and the business write must be in the <strong>same DB</strong> and <strong>same transaction</strong>, otherwise you have a dual-write race.</li>
-              <li><code>event_id</code> must be deterministic — UUIDv4 generated at consume time defeats dedup. Generate it at the producer (or use an outbox surrogate id).</li>
-              <li>The dedup table grows forever — partition by date or run a TTL job to drop old rows.</li>
-              <li>Per-event dedup, not per-batch — a partial-batch crash can leave half processed.</li>
-              <li>Replays from a specific offset will hit the dedup table and skip everything — that's correct behavior, not a bug.</li>
-              <li>For pipelines that produce to another Kafka topic, prefer Kafka transactions + <code>read_committed</code> consumer for native exactly-once between topics.</li>
-            </ul>
-          </div>
-
-          <p class="takeaway"><b>Interview one-liner:</b> Kafka delivery is <strong>at-least-once</strong> in practice, so duplicates are inevitable on retries, rebalances, and outbox republishes. The fix is to make every consumer <strong>idempotent</strong>: stamp every event with a stable <code>event_id</code> at production time, and on the consumer side write that id to a <code>processed_events</code> dedup table inside the <em>same DB transaction</em> as the business write. A duplicate hits a unique-key violation and is skipped. For pipelines that write only to Kafka, use transactional producers + <code>read_committed</code> consumers; for anything that touches a DB or external API, idempotency is the only durable answer.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Retry and Dead Letter Queue (DLQ) in Kafka — full pattern <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">In a Kafka consumer, errors are inevitable: transient (timeout, 503), recoverable (data not ready yet), or terminal (poison message — bad schema, broken business invariant). Without a strategy, one bad message blocks the partition and the consumer group falls infinitely behind. The standard production fix is <strong>bounded retries with backoff</strong> followed by a <strong>Dead Letter Queue</strong>.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-row">
-              <span class="core-diff-key">CORE IDEA</span>
-              <span class="core-diff-val">Retry transient errors a few times with backoff; if still failing, publish the message to a DLQ topic with full metadata (original topic, partition, offset, exception, attempt count) and <strong>commit the offset</strong> so the consumer keeps moving. Operators inspect the DLQ, fix the cause, and replay.</span>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> Why a "retry forever" loop is a production bug</div>
-            <ul>
-              <li>One poison message blocks its partition — every later message in that partition is held up behind it.</li>
-              <li>Consumer lag grows monotonically; SLOs miss; downstream systems starve.</li>
-              <li>The bad message is usually data-related (missing field, wrong format) — retrying changes nothing.</li>
-              <li>Without alerting on DLQ count, the failure stays invisible until customer impact.</li>
-            </ul>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> The retry + DLQ flow</div>
-            <div class="flow">
-              <div class="flow-step">Consumer receives message at offset N</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">Process → exception thrown</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">Retry locally with exponential backoff (e.g. 1s, 2s, 4s)</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step accent">After N attempts → publish to <code>order.events.DLT</code> with headers</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">Commit offset N → consumer continues to N+1</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">Operator inspects DLQ, fixes data / config, replays</div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> Spring Kafka — declarative DLQ</div>
-            <pre><code>@Bean
+<p class="solution-desc">The <code>event_id</code> is the primary key of the dedup table — a duplicate insert raises a constraint violation, which we catch and acknowledge. The business write only runs for first-time events.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">4</span> What about Redis or an in-memory cache?</div>
+<p>Tempting but dangerous. A Redis-backed dedup is fast but reintroduces the dual-write problem — Redis insert and DB write are two systems again. Use it only as an <em>optimization layer</em> in front of a DB-backed dedup, never as the sole source of truth.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">5</span> Common interview gotchas</div>
+<ul>
+<li><code>enable.idempotence=true</code> on the producer only dedupes <em>same-session retries</em>, not republishes from a fresh JVM or an outbox relay.</li>
+<li>The dedup row and the business write must be in the <strong>same DB</strong> and <strong>same transaction</strong>, otherwise you have a dual-write race.</li>
+<li><code>event_id</code> must be deterministic — UUIDv4 generated at consume time defeats dedup. Generate it at the producer (or use an outbox surrogate id).</li>
+<li>The dedup table grows forever — partition by date or run a TTL job to drop old rows.</li>
+<li>Per-event dedup, not per-batch — a partial-batch crash can leave half processed.</li>
+<li>Replays from a specific offset will hit the dedup table and skip everything — that's correct behavior, not a bug.</li>
+<li>For pipelines that produce to another Kafka topic, prefer Kafka transactions + <code>read_committed</code> consumer for native exactly-once between topics.</li>
+</ul>
+</div>
+<p class="takeaway"><b>Interview one-liner:</b> Kafka delivery is <strong>at-least-once</strong> in practice, so duplicates are inevitable on retries, rebalances, and outbox republishes. The fix is to make every consumer <strong>idempotent</strong>: stamp every event with a stable <code>event_id</code> at production time, and on the consumer side write that id to a <code>processed_events</code> dedup table inside the <em>same DB transaction</em> as the business write. A duplicate hits a unique-key violation and is skipped. For pipelines that write only to Kafka, use transactional producers + <code>read_committed</code> consumers; for anything that touches a DB or external API, idempotency is the only durable answer.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Retry and Dead Letter Queue (DLQ) in Kafka — full pattern <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro">In a Kafka consumer, errors are inevitable: transient (timeout, 503), recoverable (data not ready yet), or terminal (poison message — bad schema, broken business invariant). Without a strategy, one bad message blocks the partition and the consumer group falls infinitely behind. The standard production fix is <strong>bounded retries with backoff</strong> followed by a <strong>Dead Letter Queue</strong>.</p>
+<div class="core-diff">
+<div class="core-diff-row">
+<span class="core-diff-key">CORE IDEA</span>
+<span class="core-diff-val">Retry transient errors a few times with backoff; if still failing, publish the message to a DLQ topic with full metadata (original topic, partition, offset, exception, attempt count) and <strong>commit the offset</strong> so the consumer keeps moving. Operators inspect the DLQ, fix the cause, and replay.</span>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> Why a "retry forever" loop is a production bug</div>
+<ul>
+<li>One poison message blocks its partition — every later message in that partition is held up behind it.</li>
+<li>Consumer lag grows monotonically; SLOs miss; downstream systems starve.</li>
+<li>The bad message is usually data-related (missing field, wrong format) — retrying changes nothing.</li>
+<li>Without alerting on DLQ count, the failure stays invisible until customer impact.</li>
+</ul>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> The retry + DLQ flow</div>
+<div class="flow">
+<div class="flow-step">Consumer receives message at offset N</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Process → exception thrown</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Retry locally with exponential backoff (e.g. 1s, 2s, 4s)</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step accent">After N attempts → publish to <code>order.events.DLT</code> with headers</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Commit offset N → consumer continues to N+1</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Operator inspects DLQ, fixes data / config, replays</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">3</span> Spring Kafka — declarative DLQ</div>
+<pre><code>@Bean
 public DefaultErrorHandler errorHandler(KafkaTemplate&lt;String, String&gt; template) {
     // Publish to <topic>.DLT with original headers preserved
     DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
@@ -861,55 +801,52 @@ public DefaultErrorHandler errorHandler(KafkaTemplate&lt;String, String&gt; temp
         ValidationException.class
     );
     return handler;
-}</code></pre>
-            <p class="solution-desc">Spring Kafka's <code>DefaultErrorHandler</code> + <code>DeadLetterPublishingRecoverer</code> handles the full retry-then-DLQ flow. The DLQ topic is conventionally named <code>&lt;original-topic&gt;.DLT</code>.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">4</span> What ends up in the DLQ message</div>
-            <p>The recoverer attaches Kafka headers so operators can debug without external lookups:</p>
-            <div class="note-table-wrap">
-              <table class="note-table">
-                <thead><tr><th>Header</th><th>Meaning</th></tr></thead>
-                <tbody>
-                  <tr><td><code>kafka_dlt-original-topic</code></td><td>Source topic name</td></tr>
-                  <tr><td><code>kafka_dlt-original-partition</code></td><td>Source partition</td></tr>
-                  <tr><td><code>kafka_dlt-original-offset</code></td><td>Source offset</td></tr>
-                  <tr><td><code>kafka_dlt-original-timestamp</code></td><td>Producer timestamp</td></tr>
-                  <tr><td><code>kafka_dlt-exception-fqcn</code></td><td>Exception class name</td></tr>
-                  <tr><td><code>kafka_dlt-exception-message</code></td><td>Exception message</td></tr>
-                  <tr><td><code>kafka_dlt-exception-stacktrace</code></td><td>Full stack trace</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">5</span> Two retry styles — local vs blocking-retry-topic</div>
-            <div class="cmp-grid">
-              <div class="cmp-card">
-                <div class="cmp-card-title">In-process retry (default)</div>
-                <ul>
-                  <li>Backoff between attempts happens in the consumer thread.</li>
-                  <li>Simple — one consumer, one DLQ.</li>
-                  <li>Risk: long backoffs eat <code>max.poll.interval.ms</code> and cause rebalance.</li>
-                </ul>
-              </div>
-              <div class="cmp-card">
-                <div class="cmp-card-title">Non-blocking retry topics</div>
-                <ul>
-                  <li><code>@RetryableTopic</code> annotation publishes failed messages to <code>topic.RETRY-1</code>, <code>RETRY-2</code>, etc.</li>
-                  <li>Each retry topic has its own delayed consumer.</li>
-                  <li>Original consumer is never blocked — retries happen on parallel topics.</li>
-                  <li>Use for long backoffs (minutes/hours) or hot partitions.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">6</span> @RetryableTopic example (non-blocking)</div>
-            <pre><code>@RetryableTopic(
+}</topic></code></pre>
+<p class="solution-desc">Spring Kafka's <code>DefaultErrorHandler</code> + <code>DeadLetterPublishingRecoverer</code> handles the full retry-then-DLQ flow. The DLQ topic is conventionally named <code>&lt;original-topic&gt;.DLT</code>.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">4</span> What ends up in the DLQ message</div>
+<p>The recoverer attaches Kafka headers so operators can debug without external lookups:</p>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead><tr><th>Header</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>kafka_dlt-original-topic</code></td><td>Source topic name</td></tr>
+<tr><td><code>kafka_dlt-original-partition</code></td><td>Source partition</td></tr>
+<tr><td><code>kafka_dlt-original-offset</code></td><td>Source offset</td></tr>
+<tr><td><code>kafka_dlt-original-timestamp</code></td><td>Producer timestamp</td></tr>
+<tr><td><code>kafka_dlt-exception-fqcn</code></td><td>Exception class name</td></tr>
+<tr><td><code>kafka_dlt-exception-message</code></td><td>Exception message</td></tr>
+<tr><td><code>kafka_dlt-exception-stacktrace</code></td><td>Full stack trace</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">5</span> Two retry styles — local vs blocking-retry-topic</div>
+<div class="cmp-grid">
+<div class="cmp-card">
+<div class="cmp-card-title">In-process retry (default)</div>
+<ul>
+<li>Backoff between attempts happens in the consumer thread.</li>
+<li>Simple — one consumer, one DLQ.</li>
+<li>Risk: long backoffs eat <code>max.poll.interval.ms</code> and cause rebalance.</li>
+</ul>
+</div>
+<div class="cmp-card">
+<div class="cmp-card-title">Non-blocking retry topics</div>
+<ul>
+<li><code>@RetryableTopic</code> annotation publishes failed messages to <code>topic.RETRY-1</code>, <code>RETRY-2</code>, etc.</li>
+<li>Each retry topic has its own delayed consumer.</li>
+<li>Original consumer is never blocked — retries happen on parallel topics.</li>
+<li>Use for long backoffs (minutes/hours) or hot partitions.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">6</span> @RetryableTopic example (non-blocking)</div>
+<pre><code>@RetryableTopic(
     attempts = "4",
     backoff = @Backoff(delay = 1000, multiplier = 2.0, maxDelay = 60_000),
     autoCreateTopics = "true",
@@ -928,193 +865,176 @@ public void onDeadLetter(PaymentEvent evt,
     alertingService.notify("Payment in DLT: " + evt.getId() + " — " + exMsg);
     auditRepo.save(new DltRecord(evt, exClass, exMsg));
 }</code></pre>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">7</span> Replay from DLQ</div>
-            <p>Two patterns for replaying:</p>
-            <ul>
-              <li><strong>Operator UI</strong> — list DLQ messages, allow manual edit + republish to original topic with a fresh <code>event_id</code>.</li>
-              <li><strong>Bulk replay tool</strong> — small CLI / Spring Boot job that reads the DLQ and republishes once the upstream issue is fixed.</li>
-            </ul>
-            <p>Always change the <code>event_id</code> or include a <code>replay_attempt</code> header on replay so consumer-side dedup logic doesn't reject it (assuming you want it reprocessed).</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">8</span> Common interview gotchas</div>
-            <ul>
-              <li>Don't retry on <em>terminal</em> errors (deserialization, validation, business invariants) — they'll never succeed and you waste capacity.</li>
-              <li>Cap total retry budget so it fits inside <code>max.poll.interval.ms</code>; otherwise rebalance triggers and the same message is reprocessed.</li>
-              <li>Use exponential backoff with jitter to avoid thundering-herd on a downstream that just came back.</li>
-              <li>Always alert on DLQ message count — a silent DLQ is worse than no DLQ.</li>
-              <li>Preserve original message bytes in the DLQ — don't lose context when wrapping.</li>
-              <li>Keep the DLQ schema-compatible with the source topic so replay tools can deserialize.</li>
-              <li>For high-volume topics, partition the DLQ the same way as the source so replay preserves per-key ordering.</li>
-              <li>Don't auto-replay — most poison messages need a human decision.</li>
-            </ul>
-          </div>
-
-          <p class="takeaway"><b>Interview one-liner:</b> Production Kafka consumers use a <strong>bounded-retry + DLQ</strong> pattern: retry transient errors a few times with exponential backoff, then publish failed messages to a <code>&lt;topic&gt;.DLT</code> topic with full metadata (original offset, exception, stack trace) and commit the offset so the consumer keeps moving. In Spring Kafka, <code>DefaultErrorHandler</code> + <code>DeadLetterPublishingRecoverer</code> implements blocking retries, while <code>@RetryableTopic</code> implements non-blocking retries via dedicated retry topics. Critical disciplines: skip terminal errors, cap retries inside <code>max.poll.interval.ms</code>, alert on DLQ size, and never auto-replay without a human in the loop.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>How does Kafka ensure message ordering? <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">Kafka's ordering guarantee is precise but narrow: messages are ordered <strong>within a single partition</strong>, never across partitions. Production systems achieve "ordered processing per entity" by routing all events for that entity to the same partition via a partition key.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-row">
-              <span class="core-diff-key">CORE IDEA</span>
-              <span class="core-diff-val">Order is a property of a <strong>partition</strong>, not a topic. Send all events for the same entity (same <code>orderId</code>, <code>userId</code>) with the same <strong>key</strong> — Kafka hashes the key to pick a partition, so they stay in order on the same log.</span>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> How partitioning works</div>
-            <pre><code>// All events for the same orderId land on the same partition
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">7</span> Replay from DLQ</div>
+<p>Two patterns for replaying:</p>
+<ul>
+<li><strong>Operator UI</strong> — list DLQ messages, allow manual edit + republish to original topic with a fresh <code>event_id</code>.</li>
+<li><strong>Bulk replay tool</strong> — small CLI / Spring Boot job that reads the DLQ and republishes once the upstream issue is fixed.</li>
+</ul>
+<p>Always change the <code>event_id</code> or include a <code>replay_attempt</code> header on replay so consumer-side dedup logic doesn't reject it (assuming you want it reprocessed).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">8</span> Common interview gotchas</div>
+<ul>
+<li>Don't retry on <em>terminal</em> errors (deserialization, validation, business invariants) — they'll never succeed and you waste capacity.</li>
+<li>Cap total retry budget so it fits inside <code>max.poll.interval.ms</code>; otherwise rebalance triggers and the same message is reprocessed.</li>
+<li>Use exponential backoff with jitter to avoid thundering-herd on a downstream that just came back.</li>
+<li>Always alert on DLQ message count — a silent DLQ is worse than no DLQ.</li>
+<li>Preserve original message bytes in the DLQ — don't lose context when wrapping.</li>
+<li>Keep the DLQ schema-compatible with the source topic so replay tools can deserialize.</li>
+<li>For high-volume topics, partition the DLQ the same way as the source so replay preserves per-key ordering.</li>
+<li>Don't auto-replay — most poison messages need a human decision.</li>
+</ul>
+</div>
+<p class="takeaway"><b>Interview one-liner:</b> Production Kafka consumers use a <strong>bounded-retry + DLQ</strong> pattern: retry transient errors a few times with exponential backoff, then publish failed messages to a <code>&lt;topic&gt;.DLT</code> topic with full metadata (original offset, exception, stack trace) and commit the offset so the consumer keeps moving. In Spring Kafka, <code>DefaultErrorHandler</code> + <code>DeadLetterPublishingRecoverer</code> implements blocking retries, while <code>@RetryableTopic</code> implements non-blocking retries via dedicated retry topics. Critical disciplines: skip terminal errors, cap retries inside <code>max.poll.interval.ms</code>, alert on DLQ size, and never auto-replay without a human in the loop.</p>
+</div>
+</details>
+<details class="qa">
+<summary>How does Kafka ensure message ordering? <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro">Kafka's ordering guarantee is precise but narrow: messages are ordered <strong>within a single partition</strong>, never across partitions. Production systems achieve "ordered processing per entity" by routing all events for that entity to the same partition via a partition key.</p>
+<div class="core-diff">
+<div class="core-diff-row">
+<span class="core-diff-key">CORE IDEA</span>
+<span class="core-diff-val">Order is a property of a <strong>partition</strong>, not a topic. Send all events for the same entity (same <code>orderId</code>, <code>userId</code>) with the same <strong>key</strong> — Kafka hashes the key to pick a partition, so they stay in order on the same log.</span>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> How partitioning works</div>
+<pre><code>// All events for the same orderId land on the same partition
 producer.send(new ProducerRecord&lt;&gt;("orders", orderId, eventJson));
 
 // Internally:
 // partition = murmur2(orderId) % numPartitions</code></pre>
-            <p>Consumers in a group own disjoint partitions; one partition is read by exactly one consumer at a time. Per-partition reads are sequential, so all events for one <code>orderId</code> are processed in producer order on a single thread.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> What can break the ordering guarantee</div>
-            <div class="note-table-wrap">
-              <table class="note-table">
-                <thead>
-                  <tr><th>Cause</th><th>Why it breaks order</th><th>Fix</th></tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Producer retries with <code>max.in.flight.requests.per.connection &gt; 1</code></td>
-                    <td>Message N+1 may land before retried N</td>
-                    <td>Set <code>enable.idempotence=true</code> (Kafka enforces ordering on retries)</td>
-                  </tr>
-                  <tr>
-                    <td>Repartitioning (changing partition count)</td>
-                    <td>New partition for the same key</td>
-                    <td>Partition count is forever — never decrease, increase only with care</td>
-                  </tr>
-                  <tr>
-                    <td>Consumer parallelism inside one partition</td>
-                    <td>Multi-thread processing of the same partition</td>
-                    <td>Use Spring Kafka's <code>concurrency=1</code> per partition or a single executor</td>
-                  </tr>
-                  <tr>
-                    <td>Retry-then-skip on a poison message</td>
-                    <td>Later messages processed before the failed one is recovered</td>
-                    <td>DLQ + accept that within an entity, the failed event is "lost" until replayed</td>
-                  </tr>
-                  <tr>
-                    <td>Hot key</td>
-                    <td>Order is preserved but throughput is bottlenecked on one consumer</td>
-                    <td>Sub-key the entity (<code>userId#shard</code>) if business logic allows</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> Producer config to keep order safe</div>
-            <pre><code>enable.idempotence=true            # required for safe retries with ordering
+<p>Consumers in a group own disjoint partitions; one partition is read by exactly one consumer at a time. Per-partition reads are sequential, so all events for one <code>orderId</code> are processed in producer order on a single thread.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> What can break the ordering guarantee</div>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead>
+<tr><th>Cause</th><th>Why it breaks order</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr>
+<td>Producer retries with <code>max.in.flight.requests.per.connection &gt; 1</code></td>
+<td>Message N+1 may land before retried N</td>
+<td>Set <code>enable.idempotence=true</code> (Kafka enforces ordering on retries)</td>
+</tr>
+<tr>
+<td>Repartitioning (changing partition count)</td>
+<td>New partition for the same key</td>
+<td>Partition count is forever — never decrease, increase only with care</td>
+</tr>
+<tr>
+<td>Consumer parallelism inside one partition</td>
+<td>Multi-thread processing of the same partition</td>
+<td>Use Spring Kafka's <code>concurrency=1</code> per partition or a single executor</td>
+</tr>
+<tr>
+<td>Retry-then-skip on a poison message</td>
+<td>Later messages processed before the failed one is recovered</td>
+<td>DLQ + accept that within an entity, the failed event is "lost" until replayed</td>
+</tr>
+<tr>
+<td>Hot key</td>
+<td>Order is preserved but throughput is bottlenecked on one consumer</td>
+<td>Sub-key the entity (<code>userId#shard</code>) if business logic allows</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">3</span> Producer config to keep order safe</div>
+<pre><code>enable.idempotence=true            # required for safe retries with ordering
 acks=all                            # leader + ISR replication
 max.in.flight.requests.per.connection=5   # safe with idempotence
 retries=Integer.MAX_VALUE
 delivery.timeout.ms=120000</code></pre>
-            <p>With <code>enable.idempotence=true</code>, Kafka's broker keeps a per-producer sequence number per partition and only accepts records in order — retries that arrive out of sequence are buffered and reordered.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">4</span> Cross-partition ordering — when you actually need it</div>
-            <p>Some systems need a <em>global</em> sequence (e.g., a strict ledger). Two options:</p>
-            <ul>
-              <li><strong>Single partition</strong> — easiest, but caps throughput at one consumer's speed.</li>
-              <li><strong>Application-level reordering</strong> — every event carries a monotonic <code>sequence_number</code> per producer; consumer buffers out-of-order events and applies them in sequence. Complex but works at scale.</li>
-            </ul>
-            <p>For 95% of systems, "per-entity ordering on the same partition key" is enough — global ordering is a smell that often points to over-modeling.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">5</span> Common interview gotchas</div>
-            <ul>
-              <li>Order is a partition property, not a topic property — saying "Kafka guarantees ordering" is wrong without "per partition".</li>
-              <li><code>enable.idempotence=true</code> is required if you have <code>max.in.flight &gt; 1</code> and want ordering on retries.</li>
-              <li>Increasing partition count rebalances keys to new partitions and can split a single entity's stream — pre-size partitions generously.</li>
-              <li>Consumer concurrency &gt; 1 per partition breaks order — Spring Kafka's <code>concurrency</code> is a per-listener thread count, but each partition is still single-threaded within the container.</li>
-              <li>If a poison message is sent to DLQ, later events for the same key are processed — the DLQ replay must merge back carefully or accept out-of-order recovery.</li>
-              <li>Choose the partition key carefully — too coarse (e.g., <code>region</code>) creates hot partitions; too fine (e.g., random) eliminates ordering.</li>
-              <li>For multi-event business flows that need order across keys (rare), use orchestration (Saga) or a single key per workflow id.</li>
-            </ul>
-          </div>
-
-          <p class="takeaway"><b>Interview one-liner:</b> Kafka guarantees ordering <strong>within a single partition</strong> — to preserve ordering for one entity, send all its events with the same partition key (e.g., <code>orderId</code>) so they hash to the same partition. Set <code>enable.idempotence=true</code> on the producer so retries with <code>max.in.flight &gt; 1</code> don't reorder. Per-partition processing is single-threaded by design, so beware hot keys; cross-partition ordering needs application-level sequencing or a single partition (which caps throughput). For 95% of systems, "per-entity ordering on a partition key" is the right design.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>How do you design event-driven architecture for high-scale systems? <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">Event-Driven Architecture (EDA) is the dominant pattern for systems that must scale independently per service, absorb traffic spikes, and keep producers decoupled from consumers. Done well it gives you horizontal scale and resilience for free; done poorly it produces a distributed monolith with worse debugging and the same coupling, just hidden behind a queue.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-row">
-              <span class="core-diff-key">CORE IDEA</span>
-              <span class="core-diff-val">Services publish <strong>domain events</strong> ("OrderPlaced", "PaymentCaptured") to a durable log (Kafka). Other services subscribe at their own pace. No producer knows who consumes — coupling collapses to the event schema.</span>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> Why EDA for high-scale</div>
-            <ul>
-              <li><strong>Loose coupling</strong> — adding a new consumer (analytics, ML pipeline, notification) needs zero changes to producers.</li>
-              <li><strong>Asymmetric scaling</strong> — fast producer, slow consumer? Kafka buffers and the consumer scales out independently.</li>
-              <li><strong>Resilience</strong> — consumer outage doesn't fail producers; messages backlog and process when the consumer recovers.</li>
-              <li><strong>Replayability</strong> — Kafka's retention lets a new consumer replay history to bootstrap state.</li>
-              <li><strong>Multiple read models</strong> — one event drives DB updates, search-index sync, analytics, audit, notifications.</li>
-            </ul>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> Reference architecture for a high-scale event-driven platform</div>
-            <div class="flow">
-              <div class="flow-step">Producer service writes business state to its DB <strong>+</strong> outbox row in one tx</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">Outbox publisher (or Debezium CDC) → Kafka topic, partitioned by aggregate id</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">Schema Registry validates Avro/Protobuf schema at produce time</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">Consumer groups (per service) read independently — billing, shipping, search-indexer, analytics</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step accent">Each consumer dedupes on <code>event_id</code> + writes its own read model</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">Failures → retry topics + DLT; observability stack tracks lag and DLQ depth</div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> Event design rules</div>
-            <div class="note-table-wrap">
-              <table class="note-table">
-                <thead><tr><th>Rule</th><th>Why</th></tr></thead>
-                <tbody>
-                  <tr><td>Events are <strong>facts in past tense</strong> (<code>OrderPlaced</code>), not commands (<code>PlaceOrder</code>)</td><td>Removes coupling — producer reports what happened, not what should happen</td></tr>
-                  <tr><td>Include enough payload for the consumer to act <em>without callbacks</em></td><td>Avoids consumer → producer "lookup" calls (a coupling smell)</td></tr>
-                  <tr><td>Use <strong>Schema Registry</strong> (Avro/Protobuf) with backward + forward compatibility</td><td>Producers and consumers evolve independently</td></tr>
-                  <tr><td>Stable <code>event_id</code> + <code>aggregate_id</code> + <code>occurred_at</code> on every event</td><td>Idempotency, ordering, audit, replay</td></tr>
-                  <tr><td>One topic per <strong>aggregate type</strong>, not per consumer</td><td>Many consumers reuse one topic — adding a consumer is a no-op for producers</td></tr>
-                  <tr><td>Partition by <code>aggregate_id</code></td><td>Per-entity ordering preserved; consumer parallelism = partition count</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">4</span> Event envelope (Avro)</div>
-            <pre><code>{
+<p>With <code>enable.idempotence=true</code>, Kafka's broker keeps a per-producer sequence number per partition and only accepts records in order — retries that arrive out of sequence are buffered and reordered.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">4</span> Cross-partition ordering — when you actually need it</div>
+<p>Some systems need a <em>global</em> sequence (e.g., a strict ledger). Two options:</p>
+<ul>
+<li><strong>Single partition</strong> — easiest, but caps throughput at one consumer's speed.</li>
+<li><strong>Application-level reordering</strong> — every event carries a monotonic <code>sequence_number</code> per producer; consumer buffers out-of-order events and applies them in sequence. Complex but works at scale.</li>
+</ul>
+<p>For 95% of systems, "per-entity ordering on the same partition key" is enough — global ordering is a smell that often points to over-modeling.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">5</span> Common interview gotchas</div>
+<ul>
+<li>Order is a partition property, not a topic property — saying "Kafka guarantees ordering" is wrong without "per partition".</li>
+<li><code>enable.idempotence=true</code> is required if you have <code>max.in.flight &gt; 1</code> and want ordering on retries.</li>
+<li>Increasing partition count rebalances keys to new partitions and can split a single entity's stream — pre-size partitions generously.</li>
+<li>Consumer concurrency &gt; 1 per partition breaks order — Spring Kafka's <code>concurrency</code> is a per-listener thread count, but each partition is still single-threaded within the container.</li>
+<li>If a poison message is sent to DLQ, later events for the same key are processed — the DLQ replay must merge back carefully or accept out-of-order recovery.</li>
+<li>Choose the partition key carefully — too coarse (e.g., <code>region</code>) creates hot partitions; too fine (e.g., random) eliminates ordering.</li>
+<li>For multi-event business flows that need order across keys (rare), use orchestration (Saga) or a single key per workflow id.</li>
+</ul>
+</div>
+<p class="takeaway"><b>Interview one-liner:</b> Kafka guarantees ordering <strong>within a single partition</strong> — to preserve ordering for one entity, send all its events with the same partition key (e.g., <code>orderId</code>) so they hash to the same partition. Set <code>enable.idempotence=true</code> on the producer so retries with <code>max.in.flight &gt; 1</code> don't reorder. Per-partition processing is single-threaded by design, so beware hot keys; cross-partition ordering needs application-level sequencing or a single partition (which caps throughput). For 95% of systems, "per-entity ordering on a partition key" is the right design.</p>
+</div>
+</details>
+<details class="qa">
+<summary>How do you design event-driven architecture for high-scale systems? <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro">Event-Driven Architecture (EDA) is the dominant pattern for systems that must scale independently per service, absorb traffic spikes, and keep producers decoupled from consumers. Done well it gives you horizontal scale and resilience for free; done poorly it produces a distributed monolith with worse debugging and the same coupling, just hidden behind a queue.</p>
+<div class="core-diff">
+<div class="core-diff-row">
+<span class="core-diff-key">CORE IDEA</span>
+<span class="core-diff-val">Services publish <strong>domain events</strong> ("OrderPlaced", "PaymentCaptured") to a durable log (Kafka). Other services subscribe at their own pace. No producer knows who consumes — coupling collapses to the event schema.</span>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> Why EDA for high-scale</div>
+<ul>
+<li><strong>Loose coupling</strong> — adding a new consumer (analytics, ML pipeline, notification) needs zero changes to producers.</li>
+<li><strong>Asymmetric scaling</strong> — fast producer, slow consumer? Kafka buffers and the consumer scales out independently.</li>
+<li><strong>Resilience</strong> — consumer outage doesn't fail producers; messages backlog and process when the consumer recovers.</li>
+<li><strong>Replayability</strong> — Kafka's retention lets a new consumer replay history to bootstrap state.</li>
+<li><strong>Multiple read models</strong> — one event drives DB updates, search-index sync, analytics, audit, notifications.</li>
+</ul>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> Reference architecture for a high-scale event-driven platform</div>
+<div class="flow">
+<div class="flow-step">Producer service writes business state to its DB <strong>+</strong> outbox row in one tx</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Outbox publisher (or Debezium CDC) → Kafka topic, partitioned by aggregate id</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Schema Registry validates Avro/Protobuf schema at produce time</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Consumer groups (per service) read independently — billing, shipping, search-indexer, analytics</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step accent">Each consumer dedupes on <code>event_id</code> + writes its own read model</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Failures → retry topics + DLT; observability stack tracks lag and DLQ depth</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">3</span> Event design rules</div>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead><tr><th>Rule</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>Events are <strong>facts in past tense</strong> (<code>OrderPlaced</code>), not commands (<code>PlaceOrder</code>)</td><td>Removes coupling — producer reports what happened, not what should happen</td></tr>
+<tr><td>Include enough payload for the consumer to act <em>without callbacks</em></td><td>Avoids consumer → producer "lookup" calls (a coupling smell)</td></tr>
+<tr><td>Use <strong>Schema Registry</strong> (Avro/Protobuf) with backward + forward compatibility</td><td>Producers and consumers evolve independently</td></tr>
+<tr><td>Stable <code>event_id</code> + <code>aggregate_id</code> + <code>occurred_at</code> on every event</td><td>Idempotency, ordering, audit, replay</td></tr>
+<tr><td>One topic per <strong>aggregate type</strong>, not per consumer</td><td>Many consumers reuse one topic — adding a consumer is a no-op for producers</td></tr>
+<tr><td>Partition by <code>aggregate_id</code></td><td>Per-entity ordering preserved; consumer parallelism = partition count</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">4</span> Event envelope (Avro)</div>
+<pre><code>{
   "type": "record",
   "name": "OrderPlaced",
   "namespace": "com.shop.events",
@@ -1129,73 +1049,416 @@ delivery.timeout.ms=120000</code></pre>
     { "name": "currency",     "type": "string" }
   ]
 }</code></pre>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">5</span> Throughput levers at scale</div>
+<ul>
+<li><strong>Pre-size partitions generously</strong> — partition count caps consumer parallelism per group; you cannot easily reduce.</li>
+<li><strong>Compression</strong> (<code>compression.type=lz4</code> or <code>zstd</code>) — 2–5× higher effective throughput, modest CPU cost.</li>
+<li><strong>Batching</strong> — <code>linger.ms=10</code>, <code>batch.size=64KB</code> — far higher throughput per producer.</li>
+<li><strong>Tiered storage</strong> for long retention — Kafka 3.6+ supports remote storage; cheap S3 for cold data.</li>
+<li><strong>Async processing within consumer</strong> — fan out to a worker pool when downstream is slow, but preserve per-key order using a key→executor mapping.</li>
+<li><strong>Multi-DC / cross-region</strong> — MirrorMaker 2 or Confluent Replicator with active-passive or aggregate cluster patterns.</li>
+</ul>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">6</span> Reliability disciplines</div>
+<ul>
+<li><strong>Outbox pattern</strong> for the dual-write problem (DB + Kafka).</li>
+<li><strong>Idempotent consumers</strong> with <code>event_id</code> dedup table.</li>
+<li><strong>Retry topics + DLT</strong> for poison messages.</li>
+<li><strong>Schema compatibility</strong> enforced at produce time by Schema Registry.</li>
+<li><strong>Observability</strong> — consumer lag per group, DLT depth, throughput per topic, end-to-end latency from <code>occurred_at</code> to consumer-write.</li>
+<li><strong>Backpressure</strong> — circuit breakers when consumer's downstream (DB / API) is unhealthy.</li>
+</ul>
+</div>
+<div class="use-cases">
+<div class="use-case">
+<h4>E-commerce checkout</h4>
+<p><code>OrderPlaced</code> drives billing, fulfillment, search-index, recommendations, analytics — all decoupled.</p>
+</div>
+<div class="use-case green">
+<h4>Payment capture</h4>
+<p><code>PaymentCaptured</code> updates the ledger, triggers receipt email, releases inventory hold, updates fraud score.</p>
+</div>
+<div class="use-case pink">
+<h4>Real-time analytics</h4>
+<p>All domain events streamed to Kafka → ksqlDB / Flink → real-time dashboards + ML feature store.</p>
+</div>
+<div class="use-case orange">
+<h4>Search index sync</h4>
+<p>CDC events from primary DB → Kafka → Elasticsearch indexer; near-real-time search without dual writes.</p>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">7</span> Common interview gotchas</div>
+<ul>
+<li>Synchronous request/response over a queue is anti-pattern — if you need a reply, use HTTP/gRPC. Use events for facts that fan out.</li>
+<li>Don't put commands in event topics — commands are point-to-point and create coupling. Use a separate command bus or direct call.</li>
+<li>Ignoring schema evolution → consumers break the moment a producer adds a field.</li>
+<li>Eventual consistency must be designed for — UIs need "processing…" states, idempotent retries, read-after-write strategies.</li>
+<li>Skipping the outbox pattern → silent dual-write inconsistency you'll discover during a postmortem.</li>
+<li>Using events for everything → debugging becomes archaeology across N consumer groups; keep synchronous orchestration for tight workflows.</li>
+<li>Partition count over-allocation costs ZK/KRaft metadata RAM; under-allocation caps consumer scale-out forever.</li>
+<li>Consumer lag is the most important metric — alert on it before customers feel it.</li>
+</ul>
+</div>
+<p class="takeaway"><b>Interview one-liner:</b> A high-scale event-driven architecture publishes <strong>past-tense domain events</strong> to Kafka topics partitioned by aggregate id, with a Schema Registry (Avro/Protobuf) enforcing forward/backward compatibility. Producers use the <strong>Transactional Outbox</strong> pattern to avoid dual-writes; consumers are <strong>idempotent</strong> via an <code>event_id</code> dedup table; failures route through retry topics and a DLT with operational replay. Throughput levers — partition pre-sizing, compression, batching, tiered storage; reliability comes from outbox + idempotency + observability on consumer lag. Done well, EDA gives loose coupling, asymmetric scaling, replayable history, and effortless addition of new consumers without touching producers.</p>
+</div>
+</details>
+<details class="qa">
+<summary>What is JMS? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>JMS (Java Message Service)</strong> is a Java API for sending and receiving messages between applications — not a broker itself, but a standard API implemented by brokers (ActiveMQ, IBM MQ, etc.).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to core pieces.</div>
+<strong>Producer</strong> sends messages.
+          <strong>Consumer</strong> receives messages.
+          <strong>Destination</strong> — Queue (point-to-point) or Topic (publish-subscribe).
           </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">5</span> Throughput levers at scale</div>
-            <ul>
-              <li><strong>Pre-size partitions generously</strong> — partition count caps consumer parallelism per group; you cannot easily reduce.</li>
-              <li><strong>Compression</strong> (<code>compression.type=lz4</code> or <code>zstd</code>) — 2–5× higher effective throughput, modest CPU cost.</li>
-              <li><strong>Batching</strong> — <code>linger.ms=10</code>, <code>batch.size=64KB</code> — far higher throughput per producer.</li>
-              <li><strong>Tiered storage</strong> for long retention — Kafka 3.6+ supports remote storage; cheap S3 for cold data.</li>
-              <li><strong>Async processing within consumer</strong> — fan out to a worker pool when downstream is slow, but preserve per-key order using a key→executor mapping.</li>
-              <li><strong>Multi-DC / cross-region</strong> — MirrorMaker 2 or Confluent Replicator with active-passive or aggregate cluster patterns.</li>
-            </ul>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">6</span> Reliability disciplines</div>
-            <ul>
-              <li><strong>Outbox pattern</strong> for the dual-write problem (DB + Kafka).</li>
-              <li><strong>Idempotent consumers</strong> with <code>event_id</code> dedup table.</li>
-              <li><strong>Retry topics + DLT</strong> for poison messages.</li>
-              <li><strong>Schema compatibility</strong> enforced at produce time by Schema Registry.</li>
-              <li><strong>Observability</strong> — consumer lag per group, DLT depth, throughput per topic, end-to-end latency from <code>occurred_at</code> to consumer-write.</li>
-              <li><strong>Backpressure</strong> — circuit breakers when consumer's downstream (DB / API) is unhealthy.</li>
-            </ul>
-          </div>
-
-          <div class="use-cases">
-            <div class="use-case">
-              <h4>E-commerce checkout</h4>
-              <p><code>OrderPlaced</code> drives billing, fulfillment, search-index, recommendations, analytics — all decoupled.</p>
-            </div>
-            <div class="use-case green">
-              <h4>Payment capture</h4>
-              <p><code>PaymentCaptured</code> updates the ledger, triggers receipt email, releases inventory hold, updates fraud score.</p>
-            </div>
-            <div class="use-case pink">
-              <h4>Real-time analytics</h4>
-              <p>All domain events streamed to Kafka → ksqlDB / Flink → real-time dashboards + ML feature store.</p>
-            </div>
-            <div class="use-case orange">
-              <h4>Search index sync</h4>
-              <p>CDC events from primary DB → Kafka → Elasticsearch indexer; near-real-time search without dual writes.</p>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">7</span> Common interview gotchas</div>
-            <ul>
-              <li>Synchronous request/response over a queue is anti-pattern — if you need a reply, use HTTP/gRPC. Use events for facts that fan out.</li>
-              <li>Don't put commands in event topics — commands are point-to-point and create coupling. Use a separate command bus or direct call.</li>
-              <li>Ignoring schema evolution → consumers break the moment a producer adds a field.</li>
-              <li>Eventual consistency must be designed for — UIs need "processing…" states, idempotent retries, read-after-write strategies.</li>
-              <li>Skipping the outbox pattern → silent dual-write inconsistency you'll discover during a postmortem.</li>
-              <li>Using events for everything → debugging becomes archaeology across N consumer groups; keep synchronous orchestration for tight workflows.</li>
-              <li>Partition count over-allocation costs ZK/KRaft metadata RAM; under-allocation caps consumer scale-out forever.</li>
-              <li>Consumer lag is the most important metric — alert on it before customers feel it.</li>
-            </ul>
-          </div>
-
-          <p class="takeaway"><b>Interview one-liner:</b> A high-scale event-driven architecture publishes <strong>past-tense domain events</strong> to Kafka topics partitioned by aggregate id, with a Schema Registry (Avro/Protobuf) enforcing forward/backward compatibility. Producers use the <strong>Transactional Outbox</strong> pattern to avoid dual-writes; consumers are <strong>idempotent</strong> via an <code>event_id</code> dedup table; failures route through retry topics and a DLT with operational replay. Throughput levers — partition pre-sizing, compression, batching, tiered storage; reliability comes from outbox + idempotency + observability on consumer lag. Done well, EDA gives loose coupling, asymmetric scaling, replayable history, and effortless addition of new consumers without touching producers.</p>
-        </div>
-      </details>
-
-    </div>
-
-  </main>
-
-  <script src="main.js"></script>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to banking use.</div>
+<p>Payment posting, notification, reconciliation events between core banking and channels.</p>
+<p>Decouples systems — sender does not wait for receiver.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>JMS = API; IBM MQ/ActiveMQ = broker implementing JMS.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is the difference between queue and topic? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Queue</strong> = one consumer per message (point-to-point). <strong>Topic</strong> = many subscribers can receive the same message (pub-sub).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to queue.</div>
+<p>Work distribution — only one worker processes each payment message.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to topic.</div>
+<p>Broadcast — fraud alert sent to audit, notification, and analytics services.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Banking payments often use queues; events/notifications may use topics.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Point-to-point vs publish-subscribe. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Point-to-point (P2P)</strong> delivers each message to exactly one consumer via a Queue; <strong>publish-subscribe</strong> delivers each message to all active subscribers via a Topic.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">P2P / Queue</div>
+<p>Message remains in queue until exactly one consumer receives and acknowledges it.</p>
+<p>Use for: task delegation (process this payment), work distribution across competing consumers.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Pub-Sub / Topic</div>
+<p>Every active subscriber receives a copy; durable subscriber retains messages while offline.</p>
+<p>Use for: event broadcasting (transaction posted → audit, SMS, and ledger services all receive the event).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking choice</div>
+<p>Queue: payment processing tasks — each payment processed by one worker. Topic: transaction events — multiple downstream systems notified.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is message producer and consumer? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>message producer</strong> creates and sends messages to a queue/topic; a <strong>consumer</strong> receives and processes messages — decoupled via the message broker.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">JMS API</div>
+<p>Producer: Session.createProducer(destination); producer.send(message); — fire and forget.</p>
+<p>Consumer: Session.createConsumer(destination); consumer.receive() (blocking) or MessageListener.onMessage(msg) (async).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>Payment service (producer) sends payment request to PAYMENT.QUEUE; payment processor service (consumer) dequeues and executes fund transfer.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Decouple producers and consumers — they can scale independently and the broker handles delivery guarantees.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is durable subscriber? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>durable subscriber</strong> on a JMS Topic retains messages while the subscriber is offline — messages are delivered when it reconnects, unlike non-durable which loses messages during disconnection.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Setup</div>
+<p>session.createDurableSubscriber(topic, 'subscriptionName') — registered with broker by unique subscription name.</p>
+<p>Messages accumulate on the broker while subscriber is down; delivered in order when subscriber reconnects.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking use</div>
+<p>Audit logging service as durable subscriber on TRANSACTION.TOPIC — never loses transaction events even during maintenance windows.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use durable subscribers for critical downstream systems that must receive every event — audit, GL, reporting.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is message acknowledgement? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Message acknowledgement</strong> confirms to the broker that the consumer successfully processed a message — the broker then removes it from the queue.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Modes</div>
+<p>AUTO_ACKNOWLEDGE: broker removes message immediately after consumer receives it — risk of lost message on consumer crash.</p>
+<p>CLIENT_ACKNOWLEDGE: consumer calls message.acknowledge() after processing — broker keeps message until ack received.</p>
+<p>DUPS_OK_ACKNOWLEDGE: lazy ack; may redeliver — use only for idempotent consumers.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>Use CLIENT_ACKNOWLEDGE for payment processing: ack only after transaction is successfully posted and committed to DB.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>CLIENT_ACKNOWLEDGE is the safe choice for financial messaging — ensures no message is lost due to consumer failure.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Auto acknowledge vs client acknowledge. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>AUTO_ACKNOWLEDGE</strong> automatically acks after message receipt; <strong>CLIENT_ACKNOWLEDGE</strong> requires the consumer to explicitly call acknowledge() after successful processing.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">AUTO_ACKNOWLEDGE</div>
+<p>Simpler; message removed from queue as soon as consumer receives it.</p>
+<p>Risk: consumer receives message, crashes before processing — message is lost (not redelivered).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">CLIENT_ACKNOWLEDGE</div>
+<p>Consumer processes message, commits DB transaction, then calls msg.acknowledge().</p>
+<p>If consumer crashes before ack: broker redelivers — message not lost. Requires idempotent consumer.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Banking payment consumers must use CLIENT_ACKNOWLEDGE — losing a payment message is unacceptable.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is message redelivery? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Message redelivery</strong> occurs when a message is not acknowledged within the timeout — the broker redelivers it to the same or another consumer, up to the configured redelivery limit.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Mechanism</div>
+<p>Consumer fails to ack (crash, session close, timeout) → broker marks message as unacknowledged → redelivers.</p>
+<p>Redelivery count tracked via JMSXDeliveryCount header; after max retries, moved to DLQ.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Consumer requirements</div>
+<p>Consumer must be idempotent: processing the same payment message twice must not double-debit.</p>
+<p>Idempotency: check if message reference already processed in DB before processing — return success if already done.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Assume any message may be redelivered — design all financial message consumers to be idempotent.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is IBM MQ? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>IBM MQ</strong> is an enterprise message broker providing reliable, guaranteed message delivery with support for queues, topics, clustering, and DLQ — widely used in banking.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Key features</div>
+<p>Guaranteed delivery: messages persisted to disk — survive broker restart without data loss.</p>
+<p>Clustering: Queue Manager cluster for HA; channel definitions control connectivity between QMs.</p>
+<p>Transaction support: IBM MQ supports XA transactions — JMS operations can participate in distributed transactions.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking deployment</div>
+<p>FLEXCUBE uses IBM MQ for integration with payment systems, SWIFT, and notification services.</p>
+<p>Queue Manager on dedicated server; queues defined per integration point; monitoring via MQ Explorer.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>IBM MQ is the gold standard for financial messaging — its reliability and transactional support justify its cost in banking.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>JMS vs Kafka. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>JMS</strong> (with IBM MQ/ActiveMQ) provides guaranteed delivery, transactional messaging, and point-to-point queues; <strong>Kafka</strong> is a high-throughput distributed event log with durable replay.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">JMS/IBM MQ</div>
+<p>Message deleted after consumption; no replay; supports XA distributed transactions.</p>
+<p>Low-to-medium throughput; ideal for task queues, guaranteed single-delivery scenarios.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Kafka</div>
+<p>Immutable event log with configurable retention; consumers can replay from any offset.</p>
+<p>Very high throughput (millions/sec); horizontal scaling via partitions; no XA transaction support.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking choice</div>
+<p>IBM MQ: payment processing, SWIFT integration — guaranteed single delivery with transactions.</p>
+<p>Kafka: transaction event sourcing, real-time fraud analytics, audit event streaming.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use JMS/MQ for transactional command messaging; Kafka for event streaming and high-throughput analytics feeds.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is OSB? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Oracle Service Bus (OSB)</strong> is a lightweight ESB/integration platform for mediating, transforming, and routing messages between disparate systems.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Architecture</div>
+<p>Proxy Service: inbound endpoint (SOAP, REST, JMS, File) that receives requests from clients.</p>
+<p>Business Service: outbound endpoint representing the actual backend service being called.</p>
+<p>Pipeline: processing stages between proxy and business service for transformation, routing, validation, error handling.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>OSB mediates between FLEXCUBE and external payment systems — receives SOAP from FLEXCUBE, transforms to ISO 20022 XML, routes to payment gateway.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>OSB centralizes integration complexity — service consumers only know the proxy endpoint, not the actual backend.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Why use Oracle Service Bus? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Oracle Service Bus is used to <strong>decouple</strong> service consumers from providers, enabling format transformation, protocol mediation, routing, and centralized error handling without changing either endpoint.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Benefits</div>
+<p>Protocol mediation: HTTP → JMS, SOAP → REST — consumers and providers use their native protocol.</p>
+<p>Format transformation: XQuery/XSLT to convert proprietary bank format to ISO 20022 standard.</p>
+<p>Routing: route to different backends based on message content (transaction type, amount, destination bank).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Operational</div>
+<p>Centralized monitoring: OSB console shows message throughput, error rates, and SLA violations per service.</p>
+<p>Change management: update backend service URL in OSB business service only — all consumers unaffected.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>OSB reduces point-to-point integration web — 10 systems with 90 P2P connections become 10 + OSB with 20 connections.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Proxy service vs business service in OSB. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>proxy service</strong> is the inbound endpoint clients call; a <strong>business service</strong> is the outbound endpoint OSB calls to reach the actual backend.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Proxy service</div>
+<p>Exposes a URL (SOAP/REST/JMS); receives incoming requests; routes through pipeline for processing.</p>
+<p>Applies: security validation, schema validation, logging, transformation before routing to business service.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Business service</div>
+<p>Represents the backend (FLEXCUBE service, payment gateway, core banking API); called by OSB after pipeline.</p>
+<p>Configured with endpoint URL, transport, security; handles connection timeout and retry.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Clients only know the proxy service URL — swapping the business service backend requires no client change.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How does OSB transform messages? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">OSB transforms messages using <strong>XQuery</strong> for XML-to-XML transformation and <strong>XSLT</strong> stylesheets, applied in Assign or Replace activities in the pipeline.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">XQuery</div>
+<p>Powerful XML query and transformation language; supported natively in OSB pipeline.</p>
+<p>Example: extract account number and amount from FLEXCUBE XML request, build ISO 20022 pacs.008 XML.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">XSLT</div>
+<p>XSLT 1.0 supported via XSL Transform action in pipeline; familiar to teams with XML integration experience.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">JSON</div>
+<p>OSB 12c+: native JSON support; JSON-to-XML and XML-to-JSON transformation for REST integration.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>XQuery is preferred over XSLT in OSB for complex transformations — more expressive and easier to debug.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is routing in OSB? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Routing</strong> in OSB directs a message to a specific business service based on message content, headers, or context variables using Route Node or Dynamic Routing.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Static routing</div>
+<p>Route Node with one or more Route conditions: if $body/TransactionType = 'NEFT' → route to NEFT_BusinessService.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Dynamic routing</div>
+<p>Dynamic Route action: business service endpoint resolved at runtime from message content or UDDI registry.</p>
+<p>Example: extract destination bank BIC from XML, look up business service URL from a lookup table.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>Route payment requests: NEFT → RBI NEFT gateway, RTGS → RBI RTGS gateway, SWIFT → SWIFT Alliance — based on payment type.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Content-based routing in OSB eliminates the need for routing logic in individual backend services.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you handle errors in OSB? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">OSB error handling uses <strong>Error Handlers</strong> at stage, pipeline, and proxy level — catching faults, logging, raising alerts, and routing to error queues or returning error responses.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Error handler stages</div>
+<p>Stage error handler: handles faults within that pipeline stage (e.g., transformation failure).</p>
+<p>Pipeline error handler: catches any unhandled fault from all stages.</p>
+<p>Proxy error handler: last resort; typically returns SOAP Fault or HTTP error response to caller.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Actions</div>
+<p>Log the fault ($fault variable) with correlation ID; raise JMX alert for monitoring.</p>
+<p>Route failed messages to error JMS queue for retry or manual investigation.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always implement error handlers at all levels in banking OSB flows — unhandled faults cause silent message loss.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you monitor message failures? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Message failures are monitored via broker DLQ inspection, OSB WLDF alerts, custom dashboard metrics, and automated alerts when DLQ depth exceeds threshold.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">DLQ monitoring</div>
+<p>WebLogic JMX: monitor DLQ message count; alert when count &gt; 0 for financial queues.</p>
+<p>Splunk/ELK: parse OSB error log events; dashboard shows failure rate by service and time.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Proactive</div>
+<p>Set up alerts: if PAYMENT.DLQ.MessageCount &gt; 0 → PagerDuty alert to on-call team.</p>
+<p>Schedule DLQ report: daily summary of DLQ messages by type and error code to ops team.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Any message in a financial DLQ is a potential failed transaction — treat every DLQ entry as a P1 until investigated.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Queue vs Topic. <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Queue</strong> = one consumer per message (point-to-point). <strong>Topic</strong> = many subscribers can receive the same message (pub-sub).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to queue.</div>
+<p>Work distribution — only one worker processes each payment message.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to topic.</div>
+<p>Broadcast — fraud alert sent to audit, notification, and analytics services.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Banking payments often use queues; events/notifications may use topics.</p>
+</div>
+</div>
+</details>
+</div>
+</main>
+<script src="main.js"></script>
 </body>
 </html>

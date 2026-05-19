@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<title>Unix &amp; Shell · Notes</title>
+<link href="../assets/img/logo.png" rel="icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
+</head>
+<body>
+<header class="topbar">
+<div class="topbar-inner">
+<a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+<div class="search-wrap">
+<i class="bi bi-search"></i>
+<input autocomplete="off" id="search" placeholder="Search within Unix &amp; Shell..." spellcheck="false" type="search"/>
+<span class="search-shortcut">/</span>
+</div>
+<div class="topbar-actions">
+<button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+<button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+</div>
+</div>
+</header>
+<main class="topic-page">
+<div class="topic-page-header">
+<div class="topic-page-eyebrow">20 · Unix</div>
+<h1>Unix &amp; Shell</h1>
+<p class="topic-page-desc">Logs, grep, cron, production debugging.</p>
+<div class="topic-page-meta">
+<span><strong>15</strong> questions</span>
+<span>Press <span class="hint-kbd">/</span> to search</span>
+</div>
+</div>
+<div class="no-results" id="noResults">No matches.</div>
+<div class="qa-list">
+<details class="qa">
+<summary>How do you check running Java process? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Find Java processes with <code>jps -l</code>, <code>ps -ef | grep java</code>, or <code>pgrep -f weblogic</code> on Linux.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Details</div>
+<code>jps -v</code> shows JVM args; note PID for jstack/heap dump.
+          <p>WebLogic: managed server PIDs in nodemanager logs or Admin Console.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you check logs in Linux? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">View logs with <code>tail -f /path/app.log</code>, <code>less</code>, or centralized Splunk/ELK search.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Tips</div>
+<code>tail -n 200 app.log</code> for recent lines; <code>zgcat</code> for rotated .gz files.
+          <p>Correlate timestamp with incident report time in IST/UTC.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Difference between `grep`, `awk`, `sed`. <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>grep</strong> searches text in files; <strong>awk</strong> processes columns; <strong>sed</strong> edits streams.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to logs.</div>
+<code>grep -i error app.log</code>, <code>tail -f</code>, <code>zgrep</code> for .gz files.
+          </div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you search error in logs? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Search errors with <code>grep -i error app.log</code>, <code>grep -E 'ERROR|EXCEPTION|ORA-'</code>, and context lines <code>grep -B3 -A10</code>.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Practice</div>
+<p>Start from first error after deployment time; follow stack trace root cause.</p>
+<p>Splunk: &lt;code&gt;index=prod sourcetype=app ERROR | head 50&lt;/code&gt;.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you check disk usage? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Check disk with <code>df -h</code> (filesystem usage) and <code>du -sh /path/*</code> for large directories.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Alerts</div>
+<p>Watch /oracle, /logs, /tmp — full disk stops DB and app servers.</p>
+<p>logrotate for application logs.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you check memory usage? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">OS memory: <code>free -h</code>; Java heap: <code>jstat -gcutil &lt;pid&gt;</code> or VisualVM.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Interpretation</div>
+<p>High swap usage indicates memory pressure; frequent Full GC in jstat → heap tuning or leak.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you check CPU usage? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">CPU: <code>top</code>, <code>htop</code>, or <code>top -H -p &lt;java-pid&gt;</code> for per-thread CPU in Java troubleshooting.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Next step</div>
+<p>If Java process hot, take jstack and match high-CPU thread nid.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you kill a process? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Stop process with <code>kill &lt;pid&gt;</code> (SIGTERM) or <code>kill -9 &lt;pid&gt;</code> (force — last resort).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Safety</div>
+<p>Prefer graceful shutdown: WebLogic Admin Console stop; &lt;code&gt;kill -15&lt;/code&gt; before -9.</p>
+<p>Document PID and reason in change ticket for production.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you check open ports? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Check listening ports: <code>netstat -tlnp</code> or <code>ss -tlnp</code>; test connectivity <code>telnet host 1521</code> or <code>nc -zv host 8080</code>.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>Oracle 1521, WebLogic 7001/7002, MQ 1414 — firewall rules must allow only required peers.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you schedule cron job? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Schedule with <code>crontab -e</code> — format: minute hour day month weekday command.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Example</div>
+<code>0 2 * * * /opt/scripts/archive_logs.sh</code> — daily at 02:00.
+          <p>Use absolute paths; redirect output to log; avoid overlapping long jobs.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you write shell script? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Shell scripts start with <code>#!/bin/bash</code>, use variables, conditionals, loops, and exit codes for automation.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Example</div>
+<code>#!/bin/bash
+set -euo pipefail
+LOG=/var/log/backup.log
+echo "$(date) start" &gt;&gt; "$LOG"</code>
+<code>set -e</code> exits on error — safer for ops scripts.
+          </div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you pass arguments to shell script? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Access arguments as <code>$1</code>, <code>$2</code>, <code>$@</code> (all), <code>$#</code> (count); script invoked as <code>./script.sh arg1 arg2</code>.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Example</div>
+<code>ENV=$1; DATE=$2; echo "Running for $ENV on $DATE"</code>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you check exit status? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Exit status of last command: <code>echo $?</code> — 0 means success, non-zero failure.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Scripting</div>
+<code>if ! grep -q ERROR app.log; then echo OK; else exit 1; fi</code>
+<p>Use in CI/cron to alert on failure.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you monitor application logs? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Monitor logs with <strong>tail -f</strong> for ad hoc, or ship to ELK/Splunk with alerts on error rate patterns.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Alerting</div>
+<p>Alert on ORA- errors, OutOfMemoryError, spike in 5xx count in access log.</p>
+<p>Dashboard per service with correlation ID search.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you find files modified today? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Find today's files: <code>find /path -type f -mtime 0</code> or <code>find . -newermt '2024-01-15'</code>.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Use</div>
+<p>Locate fresh dumps, logs, or deployments during incident triage.</p>
+<code>ls -lt</code> sorts directory by modification time.
+          </div>
+</div>
+</details>
+</div>
+</main>
+<script src="main.js"></script>
+</body>
+</html>

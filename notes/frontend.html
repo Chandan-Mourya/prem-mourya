@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<title>Frontend Basics · Notes</title>
+<link href="../assets/img/logo.png" rel="icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
+</head>
+<body>
+<header class="topbar">
+<div class="topbar-inner">
+<a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+<div class="search-wrap">
+<i class="bi bi-search"></i>
+<input autocomplete="off" id="search" placeholder="Search within Frontend Basics..." spellcheck="false" type="search"/>
+<span class="search-shortcut">/</span>
+</div>
+<div class="topbar-actions">
+<button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+<button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+</div>
+</div>
+</header>
+<main class="topic-page">
+<div class="topic-page-header">
+<div class="topic-page-eyebrow">21 · Frontend</div>
+<h1>Frontend Basics</h1>
+<p class="topic-page-desc">JavaScript, Angular, React — interview basics.</p>
+<div class="topic-page-meta">
+<span><strong>20</strong> questions</span>
+<span>Press <span class="hint-kbd">/</span> to search</span>
+</div>
+</div>
+<div class="no-results" id="noResults">No matches.</div>
+<div class="qa-list">
+<details class="qa">
+<summary>What is JavaScript? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>JavaScript</strong> is a dynamically typed, event-driven, prototype-based scripting language that runs in the browser (and Node.js server-side) to make web pages interactive.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Key features</div>
+<p>Single-threaded with event loop; non-blocking I/O via callbacks, Promises, async/await.</p>
+<p>Prototype-based inheritance; first-class functions; closures; dynamic typing.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking use</div>
+<p>Internet banking portal: form validation, REST API calls for balance inquiry, dynamic transaction table rendering.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>`var` vs `let` vs `const`. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>var</strong> is function-scoped and hoisted; <strong>let</strong> is block-scoped; <strong>const</strong> is block-scoped with a binding that cannot be reassigned.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">var</div>
+<p>Function scope: accessible outside if block — bug-prone. Hoisted with undefined initial value.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">let / const</div>
+<p>Block scope ({}): only accessible within the declaring block. let allows reassignment; const does not.</p>
+<p>const for objects/arrays: the reference is constant but contents can still be mutated — use Object.freeze() for deep immutability.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Prefer const by default; use let only when reassignment is needed; avoid var in modern JavaScript.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is closure? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>closure</strong> is a function that remembers variables from its outer scope even after the outer function finished.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to use.</div>
+<p>Callbacks, event handlers, encapsulation in JavaScript.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is promise? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>Promise</strong> represents the eventual completion (or failure) of an asynchronous operation and its resulting value.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">States</div>
+<p>Pending → Fulfilled (resolve called) → value available via .then(). Pending → Rejected (reject called) → error via .catch().</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Usage</div>
+<p>fetch('/api/account/balance').then(res =&gt; res.json()).then(data =&gt; updateUI(data)).catch(err =&gt; showError(err));</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Promises replaced callback hell; async/await syntactically wraps Promises for sequential-looking async code.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Promise vs async/await. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Promises</strong> use .then()/.catch() chaining; <strong>async/await</strong> is syntactic sugar over Promises, enabling sequential async code without chaining.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">async/await</div>
+<p>async function getBalance(accountId) { const res = await fetch('/api/balance/'+accountId); return await res.json(); }</p>
+<p>Error handling with try/catch instead of .catch() — more readable for sequential async flows.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">When to use</div>
+<p>async/await for sequential dependent async calls; Promises with Promise.all() for parallel async calls.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>async/await is the modern standard — use Promise.all([...]) for concurrent async operations.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is event loop? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">The <strong>event loop</strong> allows JavaScript's single thread to handle asynchronous operations by continuously checking the call stack and processing callbacks from the task queue.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Mechanism</div>
+<p>Call stack: executes synchronous code. Web APIs (setTimeout, fetch): handle async ops outside the stack.</p>
+<p>Task queue (macrotask): setTimeout, setInterval callbacks. Microtask queue: Promise .then() callbacks — processed before next macrotask.</p>
+<p>Event loop: when call stack is empty, processes microtasks first (all of them), then one macrotask.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Microtasks (Promise.then) always execute before macrotasks (setTimeout) — understand this for correct async behavior.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is DOM? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">The <strong>DOM (Document Object Model)</strong> is a tree representation of an HTML document that JavaScript can read and manipulate to dynamically update the page.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Structure</div>
+<p>document.getElementById('balance'), querySelector('.account-row') — access nodes.</p>
+<p>node.textContent = '₹50,000'; node.classList.add('highlight'); node.remove() — manipulate nodes.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>After balance API call: document.getElementById('balance').textContent = formatCurrency(data.balance);</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Excessive DOM manipulation is slow — batch updates or use a framework like React/Angular for efficient rendering.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is Angular? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Angular</strong> is a TypeScript-based full-featured SPA framework by Google offering two-way data binding, dependency injection, routing, forms, and HTTP client out of the box.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Key concepts</div>
+<p>Component: @Component with template, styles, and logic. Module: @NgModule groups related components.</p>
+<p>Two-way binding with [(ngModel)]; event binding (click)='handler()'; property binding [value]='expr'.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>Internet banking portals built in Angular: lazy-loaded modules for Accounts, Loans, Payments — each loaded on demand.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Angular is opinionated — enforces structure which suits large banking teams with multiple developers.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Angular component vs service. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">An Angular <strong>component</strong> handles UI rendering and user interaction; a <strong>service</strong> contains reusable business logic, HTTP calls, and shared state.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Component</div>
+<p>@Component: template (HTML), styles (CSS), class (event handlers, lifecycle hooks).</p>
+<p>Responsible for presentation only — should delegate data fetching to services.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Service</div>
+<p>@Injectable({ providedIn: 'root' }): singleton service; injected into components via constructor.</p>
+<p>AccountService.getBalance(accountId): Observable&lt;Balance&gt; — wraps HTTP call, reusable across multiple components.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Separation of concerns: components are dumb-ish views; services hold business logic and API calls.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is dependency injection in Angular? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Angular's <strong>dependency injection (DI)</strong> system creates and provides service instances to components, managed by the Injector — eliminates manual object creation.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">How it works</div>
+<p>Register provider: @Injectable({ providedIn: 'root' }) creates a singleton at app level.</p>
+<p>Inject: constructor(private accountService: AccountService) — Angular Injector provides the instance.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Scope</div>
+<p>Root: one instance for the entire app. Module: one per module. Component: new instance per component.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Angular DI mirrors Spring DI — both manage singleton beans/services with constructor injection preferred.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is React? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>React</strong> is a JavaScript library by Meta for building UI from declarative components — using a virtual DOM for efficient rendering updates.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Key concepts</div>
+<p>Component: function or class returning JSX (HTML-like syntax in JS). Props: immutable inputs. State: mutable internal data.</p>
+<p>Virtual DOM: React diffs the VDOM tree and only updates real DOM nodes that changed — efficient rendering.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>Mobile banking web apps (React Native for native apps): transaction list, fund transfer form, account dashboard.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>React is a library (just UI); add React Router for navigation, Redux/Zustand for state management.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What are props and state? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Props</strong> are immutable inputs passed from parent to child component; <strong>state</strong> is mutable internal data that triggers re-rendering when updated.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Props</div>
+<p>Read-only in the child; parent-to-child data flow. &lt;AccountCard accountId={id} balance={balance} /&gt;</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">State</div>
+<p>const [balance, setBalance] = useState(0); — calling setBalance() triggers component re-render.</p>
+<p>State changes are batched in React 18; async setState does not immediately reflect in the same render cycle.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Lift state up to the nearest common ancestor when multiple siblings need to share data.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is virtual DOM? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">The <strong>Virtual DOM (VDOM)</strong> is React's in-memory representation of the UI; on state change, React diffs the new VDOM with the previous and applies only the minimal real DOM changes.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Process</div>
+<p>Render: React creates new VDOM tree. Diffing: compare new vs old VDOM (O(n) algorithm with heuristics).</p>
+<p>Reconciliation: apply only the changed nodes to the real DOM — avoids expensive full DOM updates.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Why it matters</div>
+<p>Real DOM manipulation is slow; VDOM diffing in memory is fast — React minimizes DOM writes.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>VDOM is an optimization detail — understand it for performance debugging; don't over-engineer around it.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What are React hooks? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>React hooks</strong> (React 16.8+) let functional components use state, lifecycle, context, and refs — without class components.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Core hooks</div>
+<p>useState: component state. useEffect: side effects (data fetch, subscriptions) — runs after render.</p>
+<p>useContext: consume context. useRef: mutable ref without re-render. useMemo/useCallback: performance optimization.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>useEffect(() =&gt; { fetchBalance(accountId).then(setBalance); }, [accountId]) — fetch on accountId change.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Rules of hooks: only call at top level (not inside conditions); only call from React functions — enforced by linter.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is Knockout.js? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Knockout.js</strong> is a MVVM JavaScript library providing declarative bindings, observables, and computed values for automatic UI updates when data changes.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Key concepts</div>
+<p>observable(): ko.observable(balance) — when value changes, bound UI elements update automatically.</p>
+<p>Declarative binding: data-bind='text: balance, css: {negative: balance() &lt; 0}' in HTML.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking context</div>
+<p>Some legacy FLEXCUBE web screens use Knockout.js for the front-end — important to know for FLEXCUBE customization.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Knockout is mature and stable but largely superseded by Angular/React in modern projects.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is two-way data binding? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Two-way data binding</strong> automatically synchronizes the UI (view) and the application data (model) in both directions — UI change updates model; model change updates UI.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Angular example</div>
+<p>[(ngModel)]='accountName': typing in the input field immediately updates accountName variable; changing accountName in code updates the input.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">React difference</div>
+<p>React uses one-way data flow: state → UI; UI events → event handlers → setState() → re-render. More predictable but more verbose.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Two-way binding simplifies forms but can make data flow harder to trace in large banking forms.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you call REST API from frontend? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Frontend REST API calls use <strong>fetch()</strong> (native) or <strong>Axios</strong> (popular library), with JWT in Authorization header and error handling for network and HTTP errors.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Using fetch</div>
+<p>fetch('/api/accounts/'+id, { headers: { 'Authorization': 'Bearer '+token } }).then(r =&gt; r.json()).then(setData).catch(setError)</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Using Axios</div>
+<p>axios.get('/api/accounts/'+id, { headers: { Authorization: 'Bearer '+token } }).then(r =&gt; setData(r.data))</p>
+<p>Axios interceptors: add token to all requests automatically; handle 401 globally to redirect to login.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always handle 401 (token expired) globally — redirect to login without requiring individual API call handlers to manage it.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you handle form validation? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Form validation is handled with HTML5 built-in constraints, JavaScript validation logic, or library validators — providing immediate feedback before API submission.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Approaches</div>
+<p>HTML5: required, min, max, pattern attributes on input — browser validates before submit.</p>
+<p>Angular: Reactive Forms with Validators.required, Validators.min(1), Validators.pattern() on FormControl.</p>
+<p>React: validate in onChange handler; show error message if invalid; disable submit button until form is valid.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>Transfer amount: positive number, ≤ daily limit. Account number: exactly 16 digits. IFSC: pattern [A-Z]{4}0[A-Z0-9]{6}.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always validate on both client (UX) and server (security) — never rely solely on frontend validation.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you handle authentication token in frontend? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">JWT tokens should be stored in <strong>memory (JS variable)</strong> for SPA security, or <strong>httpOnly cookies</strong> — never in localStorage due to XSS vulnerability.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Storage options</div>
+<p>httpOnly Cookie: set by server; not accessible by JS — immune to XSS. Use SameSite=Strict and Secure flags.</p>
+<p>Memory (JS variable): lost on page refresh; combine with silent token refresh via refresh token in httpOnly cookie.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Usage</div>
+<p>Axios interceptor: config.headers.Authorization = 'Bearer ' + getToken() — adds to every request automatically.</p>
+<p>On 401 response: use refresh token to get new access token; retry original request.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>localStorage is convenient but unsafe for tokens — XSS can steal tokens and impersonate the user in banking.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you debug UI issue? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">UI issues are debugged using browser DevTools: Console for JS errors, Network tab for API calls, Elements tab for DOM inspection, and Sources for breakpoints.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">DevTools workflow</div>
+<p>Console: check for JS exceptions, unhandled Promise rejections, CORS errors.</p>
+<p>Network: inspect API request (URL, headers, payload) and response (status, body) — compare with API contract.</p>
+<p>Sources: set breakpoints in JS code; inspect variable values at each step.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking scenarios</div>
+<p>Wrong balance displayed: Network tab shows API returned correct value → bug is in frontend rendering/formatting logic.</p>
+<p>Form submit does nothing: Console shows validation error or CORS block — check error and fix.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always check Network tab first — most UI bugs are either wrong data from API or incorrect rendering of correct data.</p>
+</div>
+</div>
+</details>
+</div>
+</main>
+<script src="main.js"></script>
+</body>
+</html>

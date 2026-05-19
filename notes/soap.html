@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<title>SOAP Web Services · Notes</title>
+<link href="../assets/img/logo.png" rel="icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
+</head>
+<body>
+<header class="topbar">
+<div class="topbar-inner">
+<a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+<div class="search-wrap">
+<i class="bi bi-search"></i>
+<input autocomplete="off" id="search" placeholder="Search within SOAP Web Services..." spellcheck="false" type="search"/>
+<span class="search-shortcut">/</span>
+</div>
+<div class="topbar-actions">
+<button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+<button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+</div>
+</div>
+</header>
+<main class="topic-page">
+<div class="topic-page-header">
+<div class="topic-page-eyebrow">08 · SOAP</div>
+<h1>SOAP Web Services</h1>
+<p class="topic-page-desc">WSDL, XSD, WS-Security — core banking integrations.</p>
+<div class="topic-page-meta">
+<span><strong>15</strong> questions</span>
+<span>Press <span class="hint-kbd">/</span> to search</span>
+</div>
+</div>
+<div class="no-results" id="noResults">No matches.</div>
+<div class="qa-list">
+<details class="qa">
+<summary>What is SOAP? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>SOAP</strong> is an XML-based protocol for web services with a strict envelope structure (Header + Body) and WSDL contract.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to structure.</div>
+<code>Envelope</code>, <code>Header</code> (security, routing), <code>Body</code> (payload).
+          </div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to banking.</div>
+<p>Many core banking and vendor integrations still use SOAP + WS-Security.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>REST is common for new APIs; SOAP remains in legacy bank integrations.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>SOAP vs REST. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>SOAP</strong> is a protocol with XML envelope, WSDL contract, and WS-Security; <strong>REST</strong> is an architectural style using HTTP verbs with JSON payloads and no enforced message format.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">SOAP</div>
+<p>Strict XML Envelope (Header+Body); WSDL defines contract; XSD validates messages; stateful support via WS-Addressing.</p>
+<p>Enterprise features: WS-Security (message-level encryption/signing), WS-AtomicTransaction, WS-ReliableMessaging.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">REST</div>
+<p>Lightweight; JSON or XML; uses HTTP methods semantically; stateless; easy to consume from any client.</p>
+<p>No built-in transaction or security standards — layered via OAuth2/mTLS/JWT.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>SOAP: inter-bank integration, SWIFT interfaces, legacy core banking. REST: digital channels, microservices.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Choose SOAP when WS-Security or WS-AtomicTransaction is required; REST for all new banking API development.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is WSDL? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>WSDL</strong> describes a SOAP service — operations, messages, endpoints. Used to generate Java client stubs.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to use.</div>
+<code>wsimport</code> or CXF generates classes from WSDL; call port types in code.
+          </div>
+</div>
+</details>
+<details class="qa">
+<summary>What is XSD? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">An <strong>XSD (XML Schema Definition)</strong> defines the structure, data types, and constraints for XML documents — used by SOAP services to validate request and response messages.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Structure</div>
+<p>Defines: elements (names, types), complex types (nested elements), simple types (restrictions on strings/numbers).</p>
+<p>xs:element, xs:complexType, xs:sequence, xs:restriction — core XSD constructs.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">SOAP validation</div>
+<p>SOAP stack validates incoming XML against XSD before processing — invalid messages rejected with fault response.</p>
+<p>XSD version changes require coordinating with all consumers — adding a mandatory element is a breaking change.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>ISO 20022 messages (pacs.008, camt.054) have strict XSD schemas — compliance mandatory for payment system integration.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>XSD is the contract enforcement mechanism for SOAP — always validate incoming messages against the XSD.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is SOAP envelope? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>SOAP</strong> is an XML-based protocol for web services with a strict envelope structure (Header + Body) and WSDL contract.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to structure.</div>
+<code>Envelope</code>, <code>Header</code> (security, routing), <code>Body</code> (payload).
+          </div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to banking.</div>
+<p>Many core banking and vendor integrations still use SOAP + WS-Security.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>REST is common for new APIs; SOAP remains in legacy bank integrations.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is SOAP header and body? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>SOAP</strong> is an XML-based protocol for web services with a strict envelope structure (Header + Body) and WSDL contract.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to structure.</div>
+<code>Envelope</code>, <code>Header</code> (security, routing), <code>Body</code> (payload).
+          </div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to banking.</div>
+<p>Many core banking and vendor integrations still use SOAP + WS-Security.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>REST is common for new APIs; SOAP remains in legacy bank integrations.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is SOAP fault? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>SOAP</strong> is an XML-based protocol for web services with a strict envelope structure (Header + Body) and WSDL contract.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to structure.</div>
+<code>Envelope</code>, <code>Header</code> (security, routing), <code>Body</code> (payload).
+          </div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to banking.</div>
+<p>Many core banking and vendor integrations still use SOAP + WS-Security.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>REST is common for new APIs; SOAP remains in legacy bank integrations.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you generate Java classes from WSDL? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>WSDL</strong> describes a SOAP service — operations, messages, endpoints. Used to generate Java client stubs.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to use.</div>
+<code>wsimport</code> or CXF generates classes from WSDL; call port types in code.
+          </div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you consume SOAP service in Java? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Consume a SOAP service in Java by generating client stubs from the WSDL using wsimport or CXF wsdl2java, then calling the service via the generated proxy.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">wsimport / JAX-WS</div>
+<p>wsimport -s src -d classes http://service.bank.com/payment?wsdl — generates service and port classes.</p>
+<p>PaymentService service = new PaymentService(); PaymentPort port = service.getPaymentPort(); Response r = port.processPayment(req);</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Apache CXF</div>
+<p>Add CXF to pom.xml; configure wsdl2java plugin; use generated stub. CXF supports interceptors for WS-Security headers.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Spring-WS</div>
+<p>WebServiceTemplate.marshalSendAndReceive(uri, request) — marshals Java object to SOAP XML, sends, unmarshals response.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always regenerate stubs when the WSDL changes — stale stubs cause runtime marshaling failures.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you secure SOAP service? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">SOAP services are secured using <strong>WS-Security</strong> (message-level) with UsernameToken, X.509 certificate signing/encryption, or transport-level TLS.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">WS-Security</div>
+<p>UsernameToken: username/password in SOAP header — basic but simple. X.509: sign the SOAP body with private key; encrypt with recipient's public key.</p>
+<p>Provides message-level security — protected end-to-end even if intermediaries are present.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Transport level</div>
+<p>HTTPS (TLS): encrypts the HTTP channel; simpler but only protects in transit — intermediary can read/modify.</p>
+<p>mTLS: client certificate authentication at transport level — used for bank-to-bank SOAP calls.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>For inter-bank SOAP, use X.509 message-level signing for non-repudiation — transport TLS alone is insufficient.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is WS-Security? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>WS-Security</strong> is a SOAP extension standard for message-level security: authentication (UsernameToken, X.509), message integrity (XML signature), and confidentiality (XML encryption).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Components</div>
+<p>Security header in SOAP envelope: contains UsernameToken or BinarySecurityToken (X.509 cert) for authentication.</p>
+<p>XML Signature: signs SOAP body with sender's private key — receiver verifies with sender's public key.</p>
+<p>XML Encryption: encrypts specific SOAP elements with recipient's public key — ensures confidentiality.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking use</div>
+<p>FLEXCUBE exposes SOAP services secured with WS-Security X.509 — partners must present valid certificate to call.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>WS-Security provides non-repudiation (signature) and confidentiality (encryption) — both important for financial messages.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is MTOM? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>MTOM (Message Transmission Optimization Mechanism)</strong> is a SOAP optimization for transmitting binary data (documents, images) by attaching them as MIME parts instead of base64-encoding in XML.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Problem it solves</div>
+<p>Base64-encoding binary data in XML increases size by ~33% and requires expensive parsing.</p>
+<p>MTOM: binary data attached as MIME multipart; XML references the attachment — much more efficient.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking use</div>
+<p>Sending KYC document scans or cheque images via SOAP — MTOM reduces payload size and processing time.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use MTOM for any SOAP service that transmits binary attachments — standard for document-heavy banking integrations.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you debug SOAP request/response? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">SOAP request/response is debugged by capturing the raw XML using logging interceptors, OSB message logs, or network proxies (Fiddler/Wireshark) to inspect the actual SOAP envelope.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Tools</div>
+<p>Apache CXF: add logging interceptor (LoggingInInterceptor, LoggingOutInterceptor) to log full SOAP XML.</p>
+<p>OSB pipeline: add Log action in request/response pipeline to log message body to server log.</p>
+<p>SoapUI: send test SOAP requests manually; inspect request and response XML side by side.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Validation</div>
+<p>Copy captured request XML into xmllint --schema service.xsd — validates against WSDL schema.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always log SOAP request and response with timestamp and correlation ID for post-incident debugging.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you handle SOAP timeout? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">SOAP timeouts are handled by setting connect/read timeouts on the HTTP binding, implementing retry with exponential backoff, and providing a meaningful fault response on timeout.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Configuration</div>
+<p>JAX-WS: ((BindingProvider) port).getRequestContext().put(BindingProviderProperties.REQUEST_TIMEOUT, 30000);</p>
+<p>CXF: HTTPConduit conduit = ...; HTTPClientPolicy policy = ...; policy.setReceiveTimeout(30000);</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Handling</div>
+<p>Catch SOAPFaultException or SocketTimeoutException; log timeout with correlation ID; return error response to caller.</p>
+<p>Retry only if the operation is idempotent — SOAP read operations yes; payment operations only with idempotency key.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>SOAP timeouts without retry leave the caller waiting indefinitely — always set explicit timeouts on all bindings.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you expose SOAP service from Java? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Expose a SOAP service from Java using <strong>JAX-WS annotations</strong> (@WebService, @WebMethod) with a servlet container deployment or Spring-WS with @Endpoint.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">JAX-WS</div>
+<p>@WebService(serviceName='PaymentService') on class; @WebMethod on each operation.</p>
+<p>Deploy to WebLogic as WAR — JAX-WS runtime handles WSDL generation (?wsdl suffix on URL).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Spring-WS</div>
+<p>@Endpoint class with @PayloadRoot(namespace='...', localPart='ProcessPaymentRequest') on method.</p>
+<p>Configure MessageDispatcherServlet in web.xml; define WSDL bean; Spring-WS handles routing and marshaling.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>JAX-WS is simpler for straightforward services; Spring-WS for contract-first development with strict XSD control.</p>
+</div>
+</div>
+</details>
+</div>
+</main>
+<script src="main.js"></script>
+</body>
+</html>

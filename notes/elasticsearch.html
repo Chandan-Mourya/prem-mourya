@@ -1,127 +1,111 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex,nofollow,noarchive">
-  <title>Elasticsearch · Notes</title>
-  <link rel="icon" href="../assets/img/logo.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<title>Elasticsearch · Notes</title>
+<link href="../assets/img/logo.png" rel="icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
-
-  <header class="topbar">
-    <div class="topbar-inner">
-      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
-      <div class="search-wrap">
-        <i class="bi bi-search"></i>
-        <input id="search" type="search" placeholder="Search within Elasticsearch..." autocomplete="off" spellcheck="false">
-        <span class="search-shortcut">/</span>
-      </div>
-      <div class="topbar-actions">
-        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
-        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
-      </div>
-    </div>
-  </header>
-
-  <main class="topic-page">
-
-    <div class="topic-page-header">
-      <div class="topic-page-eyebrow">09 · Elasticsearch</div>
-      <h1>Elasticsearch — indexing, search &amp; scaling</h1>
-      <p class="topic-page-desc">Lucene-backed distributed search. Resume search and kNN similarity, hybrid keyword + vector search.</p>
-      <div class="topic-page-meta">
-        <span><strong>9</strong> questions</span>
-        <span>Press <span class="hint-kbd">/</span> to search</span>
-      </div>
-    </div>
-
-    <div class="no-results" id="noResults">No matches.</div>
-
-    <div class="qa-list">
-
-      <details class="qa">
-        <summary>What is Elasticsearch and where does it shine? <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p><strong>Elasticsearch</strong> is a distributed, near-real-time search and analytics engine built on top of <strong>Apache Lucene</strong>. It stores data as JSON documents in <em>indices</em>, which are split into <em>shards</em> distributed across nodes for horizontal scaling and replicated for high availability.</p>
-          <p>It shines wherever you need <strong>full-text search, ranking, faceting, aggregations, or kNN vector search</strong> — use cases like log analytics (the ELK stack), product search, autocomplete, observability, and now AI semantic search. I've used it for resume search: keyword + filters for skill/location, plus <code>dense_vector</code> fields for semantic match between job descriptions and candidate profiles. Where a relational DB struggles (fuzzy match, scoring, faceted aggregations), Elasticsearch is purpose-built.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Explain index, shard, and replica</summary>
-        <div class="qa-body">
-          <p>An <strong>index</strong> is a logical group of documents — think of it like a database in RDBMS. Each index is split into <strong>primary shards</strong>, which are independent Lucene indices physically holding the data. Shards let you spread an index across many nodes — that's how Elasticsearch scales horizontally.</p>
-          <p>Each primary shard has zero or more <strong>replicas</strong> — exact copies on other nodes. Replicas give you two things: <strong>fault tolerance</strong> (a node failure doesn't lose data) and <strong>read scaling</strong> (queries can hit replicas in parallel). Number of primary shards is fixed at index creation; replicas can be changed live. A common pitfall is over-sharding — too many tiny shards hurt cluster metadata. Rule of thumb: keep shards between 10 GB and 50 GB.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>How does Elasticsearch actually search? Inverted index? <span class="qa-tag hot">hot</span></summary>
-        <div class="qa-body">
-          <p>Underneath Elasticsearch is <strong>Apache Lucene</strong>, which uses an <strong>inverted index</strong>. When you index a document, the text is passed through an <strong>analyzer</strong> — tokenized, lowercased, optionally stemmed — and Lucene stores a mapping from each token to the list of documents (and positions) that contain it.</p>
-          <p>At search time the query is run through the same analyzer, tokens are looked up in the inverted index, posting lists are intersected, and matching documents are scored using <strong>BM25</strong> (default since ES 5). Scoring rewards rare-term matches and shorter documents. That's why "java" matches "Java developer" — both produce the token <code>java</code> after the standard analyzer. For non-tokenized exact match you use <code>keyword</code> fields, which skip analysis.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>match vs term vs match_phrase — when do you use each?</summary>
-        <div class="qa-body">
-          <p><strong><code>match</code></strong> is the most common full-text query — it analyzes the query string the same way as the field, so <code>match: "spring boot"</code> on an analyzed field finds documents containing either token, with BM25 ranking. Use it for human-typed search boxes.</p>
-          <p><strong><code>term</code></strong> does <em>not</em> analyze — it looks up the literal token. It's the right choice for <code>keyword</code> fields, IDs, status codes, tags. <code>term: "Spring Boot"</code> on an analyzed field would almost never match because the indexed tokens are lowercased and split.</p>
-          <p><strong><code>match_phrase</code></strong> matches only when tokens appear in the same order and adjacent. Useful for searching exact phrases like a name or a quoted query: <code>match_phrase: "natural language processing"</code>.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Mappings — dynamic vs explicit. Why does this matter?</summary>
-        <div class="qa-body">
-          <p>A <strong>mapping</strong> is the schema for an index — it declares fields and their types: <code>text</code>, <code>keyword</code>, <code>integer</code>, <code>date</code>, <code>dense_vector</code>, etc. With <strong>dynamic mapping</strong>, ES infers types from the first document. Convenient for prototypes but dangerous in production — a stringified number can lock the field to <code>text</code> and break aggregations later.</p>
-          <p>I always use <strong>explicit mappings</strong> in production, often via index templates. Key choices: <code>text</code> for searchable fields, <code>keyword</code> for exact-match/sortable fields like IDs or enums (or a multi-field combining both), and <code>dense_vector</code> with the right dimension and similarity for kNN. Changing a mapping usually requires <em>reindex</em>, so getting it right early saves a migration later.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Analyzers — what are they and have you customized one?</summary>
-        <div class="qa-body">
-          <p>An <strong>analyzer</strong> processes text in three stages: <strong>char filters</strong> (e.g. strip HTML), a <strong>tokenizer</strong> (e.g. <code>standard</code> splits on whitespace and punctuation), and zero or more <strong>token filters</strong> (lowercase, stop words, stemming, synonyms, ngrams). The default <code>standard</code> analyzer works for most English text.</p>
-          <p>I once built a <strong>custom analyzer</strong> for resumes: standard tokenizer plus lowercase, plus a <strong>synonym filter</strong> mapping <code>js → javascript</code>, <code>k8s → kubernetes</code>, etc., and an <strong>edge_ngram</strong> tokenizer on a separate field for autocomplete. The synonym list was loaded from a file and reloadable without reindexing. That single change improved recall on tech-skill searches noticeably — recruiters typing "ML" started finding "Machine Learning" resumes.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>kNN / vector search in Elasticsearch <span class="qa-tag hot">hot</span></summary>
-        <div class="qa-body">
-          <p>Since ES 8 you can index <strong><code>dense_vector</code></strong> fields and run <strong>kNN search</strong> using HNSW, an approximate nearest-neighbor algorithm. You declare the dimension (e.g. 768 or 1536) and a similarity metric (cosine, dot product, L2), then store embeddings produced by an LLM or embedding model.</p>
-          <p>In one project I stored a 768-dim vector per resume (computed from a summary + skills). At query time we embed the job description, run a <code>knn</code> query with <code>k: 50</code>, then re-rank by combining vector score with BM25 on must-have skills using a <code>function_score</code>. This <strong>hybrid search</strong> gives much better results than pure vector or pure keyword: vector handles "Python developer" ≈ "Pythonista" while BM25 anchors hard requirements like "AWS".</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>How do you handle scaling and hot shards?</summary>
-        <div class="qa-body">
-          <p>The first lever is <strong>shard sizing</strong>: target 10–50 GB primary shards and keep total shard count reasonable (per node). Then choose <strong>replicas</strong> based on read load — more replicas means more parallel query capacity. For time-series data (logs, events) use <strong>time-based indices</strong> (daily/weekly) with the <strong>data streams + ILM</strong> (Index Lifecycle Management) so old indices roll over, shrink, and eventually move to cold storage.</p>
-          <p>For <strong>hot shards</strong> — when one shard gets disproportionate traffic — you can change the routing key, increase shard count via reindex, or use the <code>force_merge</code> only on read-only indices. I monitor shard-level latency in Kibana and the <code>_cat/shards</code> API. When a shard's queries are 10× slower than peers, that's usually a routing-key or document-skew issue.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>How do you keep MongoDB and Elasticsearch in sync?</summary>
-        <div class="qa-body">
-          <p>In a project I worked on, MongoDB was the source of truth and Elasticsearch a read-optimized projection. We used an <strong>event-driven sync</strong>: the service writes to Mongo, then publishes a domain event (<code>ResumeUpserted</code>, <code>ResumeDeleted</code>) to Kafka. A small consumer reads those events and updates the ES index — bulk API in batches of 500 for throughput. Indexing is <strong>idempotent</strong> using the resume ID as the ES document ID, so retries are safe.</p>
-          <p>For initial loads and recovery we have a <strong>full-reindex job</strong> that streams Mongo via a change stream cursor and pushes everything through the bulk API. We also expose a small admin endpoint to reindex a single document on demand. With this pattern the lag is typically &lt;500 ms and we never write to ES directly from request paths — that keeps API latency predictable.</p>
-        </div>
-      </details>
-
-    </div>
-
-  </main>
-
-  <script src="main.js"></script>
+<header class="topbar">
+<div class="topbar-inner">
+<a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+<div class="search-wrap">
+<i class="bi bi-search"></i>
+<input autocomplete="off" id="search" placeholder="Search within Elasticsearch..." spellcheck="false" type="search"/>
+<span class="search-shortcut">/</span>
+</div>
+<div class="topbar-actions">
+<button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+<button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+</div>
+</div>
+</header>
+<main class="topic-page">
+<div class="topic-page-header">
+<div class="topic-page-eyebrow">09 · Elasticsearch</div>
+<h1>Elasticsearch — indexing, search &amp; scaling</h1>
+<p class="topic-page-desc">Lucene-backed distributed search. Resume search and kNN similarity, hybrid keyword + vector search.</p>
+<div class="topic-page-meta">
+<span><strong>9</strong> questions</span>
+<span>Press <span class="hint-kbd">/</span> to search</span>
+</div>
+</div>
+<div class="no-results" id="noResults">No matches.</div>
+<div class="qa-list">
+<details class="qa">
+<summary>What is Elasticsearch and where does it shine? <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p><strong>Elasticsearch</strong> is a distributed, near-real-time search and analytics engine built on top of <strong>Apache Lucene</strong>. It stores data as JSON documents in <em>indices</em>, which are split into <em>shards</em> distributed across nodes for horizontal scaling and replicated for high availability.</p>
+<p>It shines wherever you need <strong>full-text search, ranking, faceting, aggregations, or kNN vector search</strong> — use cases like log analytics (the ELK stack), product search, autocomplete, observability, and now AI semantic search. I've used it for resume search: keyword + filters for skill/location, plus <code>dense_vector</code> fields for semantic match between job descriptions and candidate profiles. Where a relational DB struggles (fuzzy match, scoring, faceted aggregations), Elasticsearch is purpose-built.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Explain index, shard, and replica</summary>
+<div class="qa-body">
+<p>An <strong>index</strong> is a logical group of documents — think of it like a database in RDBMS. Each index is split into <strong>primary shards</strong>, which are independent Lucene indices physically holding the data. Shards let you spread an index across many nodes — that's how Elasticsearch scales horizontally.</p>
+<p>Each primary shard has zero or more <strong>replicas</strong> — exact copies on other nodes. Replicas give you two things: <strong>fault tolerance</strong> (a node failure doesn't lose data) and <strong>read scaling</strong> (queries can hit replicas in parallel). Number of primary shards is fixed at index creation; replicas can be changed live. A common pitfall is over-sharding — too many tiny shards hurt cluster metadata. Rule of thumb: keep shards between 10 GB and 50 GB.</p>
+</div>
+</details>
+<details class="qa">
+<summary>How does Elasticsearch actually search? Inverted index? <span class="qa-tag hot">hot</span></summary>
+<div class="qa-body">
+<p>Underneath Elasticsearch is <strong>Apache Lucene</strong>, which uses an <strong>inverted index</strong>. When you index a document, the text is passed through an <strong>analyzer</strong> — tokenized, lowercased, optionally stemmed — and Lucene stores a mapping from each token to the list of documents (and positions) that contain it.</p>
+<p>At search time the query is run through the same analyzer, tokens are looked up in the inverted index, posting lists are intersected, and matching documents are scored using <strong>BM25</strong> (default since ES 5). Scoring rewards rare-term matches and shorter documents. That's why "java" matches "Java developer" — both produce the token <code>java</code> after the standard analyzer. For non-tokenized exact match you use <code>keyword</code> fields, which skip analysis.</p>
+</div>
+</details>
+<details class="qa">
+<summary>match vs term vs match_phrase — when do you use each?</summary>
+<div class="qa-body">
+<p><strong><code>match</code></strong> is the most common full-text query — it analyzes the query string the same way as the field, so <code>match: "spring boot"</code> on an analyzed field finds documents containing either token, with BM25 ranking. Use it for human-typed search boxes.</p>
+<p><strong><code>term</code></strong> does <em>not</em> analyze — it looks up the literal token. It's the right choice for <code>keyword</code> fields, IDs, status codes, tags. <code>term: "Spring Boot"</code> on an analyzed field would almost never match because the indexed tokens are lowercased and split.</p>
+<p><strong><code>match_phrase</code></strong> matches only when tokens appear in the same order and adjacent. Useful for searching exact phrases like a name or a quoted query: <code>match_phrase: "natural language processing"</code>.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Mappings — dynamic vs explicit. Why does this matter?</summary>
+<div class="qa-body">
+<p>A <strong>mapping</strong> is the schema for an index — it declares fields and their types: <code>text</code>, <code>keyword</code>, <code>integer</code>, <code>date</code>, <code>dense_vector</code>, etc. With <strong>dynamic mapping</strong>, ES infers types from the first document. Convenient for prototypes but dangerous in production — a stringified number can lock the field to <code>text</code> and break aggregations later.</p>
+<p>I always use <strong>explicit mappings</strong> in production, often via index templates. Key choices: <code>text</code> for searchable fields, <code>keyword</code> for exact-match/sortable fields like IDs or enums (or a multi-field combining both), and <code>dense_vector</code> with the right dimension and similarity for kNN. Changing a mapping usually requires <em>reindex</em>, so getting it right early saves a migration later.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Analyzers — what are they and have you customized one?</summary>
+<div class="qa-body">
+<p>An <strong>analyzer</strong> processes text in three stages: <strong>char filters</strong> (e.g. strip HTML), a <strong>tokenizer</strong> (e.g. <code>standard</code> splits on whitespace and punctuation), and zero or more <strong>token filters</strong> (lowercase, stop words, stemming, synonyms, ngrams). The default <code>standard</code> analyzer works for most English text.</p>
+<p>I once built a <strong>custom analyzer</strong> for resumes: standard tokenizer plus lowercase, plus a <strong>synonym filter</strong> mapping <code>js → javascript</code>, <code>k8s → kubernetes</code>, etc., and an <strong>edge_ngram</strong> tokenizer on a separate field for autocomplete. The synonym list was loaded from a file and reloadable without reindexing. That single change improved recall on tech-skill searches noticeably — recruiters typing "ML" started finding "Machine Learning" resumes.</p>
+</div>
+</details>
+<details class="qa">
+<summary>kNN / vector search in Elasticsearch <span class="qa-tag hot">hot</span></summary>
+<div class="qa-body">
+<p>Since ES 8 you can index <strong><code>dense_vector</code></strong> fields and run <strong>kNN search</strong> using HNSW, an approximate nearest-neighbor algorithm. You declare the dimension (e.g. 768 or 1536) and a similarity metric (cosine, dot product, L2), then store embeddings produced by an LLM or embedding model.</p>
+<p>In one project I stored a 768-dim vector per resume (computed from a summary + skills). At query time we embed the job description, run a <code>knn</code> query with <code>k: 50</code>, then re-rank by combining vector score with BM25 on must-have skills using a <code>function_score</code>. This <strong>hybrid search</strong> gives much better results than pure vector or pure keyword: vector handles "Python developer" ≈ "Pythonista" while BM25 anchors hard requirements like "AWS".</p>
+</div>
+</details>
+<details class="qa">
+<summary>How do you handle scaling and hot shards?</summary>
+<div class="qa-body">
+<p>The first lever is <strong>shard sizing</strong>: target 10–50 GB primary shards and keep total shard count reasonable (per node). Then choose <strong>replicas</strong> based on read load — more replicas means more parallel query capacity. For time-series data (logs, events) use <strong>time-based indices</strong> (daily/weekly) with the <strong>data streams + ILM</strong> (Index Lifecycle Management) so old indices roll over, shrink, and eventually move to cold storage.</p>
+<p>For <strong>hot shards</strong> — when one shard gets disproportionate traffic — you can change the routing key, increase shard count via reindex, or use the <code>force_merge</code> only on read-only indices. I monitor shard-level latency in Kibana and the <code>_cat/shards</code> API. When a shard's queries are 10× slower than peers, that's usually a routing-key or document-skew issue.</p>
+</div>
+</details>
+<details class="qa">
+<summary>How do you keep MongoDB and Elasticsearch in sync?</summary>
+<div class="qa-body">
+<p>In a project I worked on, MongoDB was the source of truth and Elasticsearch a read-optimized projection. We used an <strong>event-driven sync</strong>: the service writes to Mongo, then publishes a domain event (<code>ResumeUpserted</code>, <code>ResumeDeleted</code>) to Kafka. A small consumer reads those events and updates the ES index — bulk API in batches of 500 for throughput. Indexing is <strong>idempotent</strong> using the resume ID as the ES document ID, so retries are safe.</p>
+<p>For initial loads and recovery we have a <strong>full-reindex job</strong> that streams Mongo via a change stream cursor and pushes everything through the bulk API. We also expose a small admin endpoint to reindex a single document on demand. With this pattern the lag is typically &lt;500 ms and we never write to ES directly from request paths — that keeps API latency predictable.</p>
+</div>
+</details>
+</div>
+</main>
+<script src="main.js"></script>
 </body>
 </html>

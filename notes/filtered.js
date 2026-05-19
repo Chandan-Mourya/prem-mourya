@@ -11,29 +11,7 @@
 (function () {
   'use strict';
 
-  // Every topic page that uses the qa-tag system.
-  // dsa.html is intentionally excluded — its problem entries
-  // don't follow the same `must`/`hot` interview-tag convention.
-  var TOPICS = [
-    { url: 'behavioral.html',    name: 'Behavioral' },
-    { url: 'core-java.html',     name: 'Core Java' },
-    { url: 'concurrency.html',   name: 'Concurrency' },
-    { url: 'spring-core.html',   name: 'Spring Core' },
-    { url: 'spring-boot.html',   name: 'Spring Boot' },
-    { url: 'rest-security.html', name: 'REST & Security' },
-    { url: 'sql.html',           name: 'SQL & RDBMS' },
-    { url: 'mongodb.html',       name: 'MongoDB' },
-    { url: 'elasticsearch.html', name: 'Elasticsearch' },
-    { url: 'microservices.html', name: 'Microservices' },
-    { url: 'messaging.html',     name: 'Messaging' },
-    { url: 'system-design.html', name: 'System Design' },
-    { url: 'cloud.html',         name: 'Cloud (AWS / Azure)' },
-    { url: 'docker-k8s.html',    name: 'Docker & Kubernetes' },
-    { url: 'cicd.html',          name: 'CI/CD & Git' },
-    { url: 'production.html',    name: 'Production Debugging' },
-    { url: 'ai-llm.html',        name: 'AI / LLM' },
-    { url: 'puzzles.html',       name: 'Code Puzzles' }
-  ];
+  var TOPICS = typeof NOTES_TOPICS !== 'undefined' ? NOTES_TOPICS : [];
 
   var filter = (document.body.getAttribute('data-filter') || '').trim();
   if (filter !== 'hot' && filter !== 'must') return;

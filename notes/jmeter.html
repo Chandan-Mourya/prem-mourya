@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<title>JMeter &amp; Performance · Notes</title>
+<link href="../assets/img/logo.png" rel="icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
+</head>
+<body>
+<header class="topbar">
+<div class="topbar-inner">
+<a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+<div class="search-wrap">
+<i class="bi bi-search"></i>
+<input autocomplete="off" id="search" placeholder="Search within JMeter &amp; Performance..." spellcheck="false" type="search"/>
+<span class="search-shortcut">/</span>
+</div>
+<div class="topbar-actions">
+<button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+<button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+</div>
+</div>
+</header>
+<main class="topic-page">
+<div class="topic-page-header">
+<div class="topic-page-eyebrow">18 · JMeter</div>
+<h1>JMeter &amp; Performance</h1>
+<p class="topic-page-desc">Load, stress, TPS, bottlenecks.</p>
+<div class="topic-page-meta">
+<span><strong>16</strong> questions</span>
+<span>Press <span class="hint-kbd">/</span> to search</span>
+</div>
+</div>
+<div class="no-results" id="noResults">No matches.</div>
+<div class="qa-list">
+<details class="qa">
+<summary>How do you performance test APIs using JMeter? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Apache JMeter</strong> load-tests APIs by simulating many virtual users — measures throughput, latency, errors.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to steps.</div>
+<p>Thread group, HTTP sampler, listeners; ramp-up, duration, assert response code.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is JMeter? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Apache JMeter</strong> load-tests APIs by simulating many virtual users — measures throughput, latency, errors.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to steps.</div>
+<p>Thread group, HTTP sampler, listeners; ramp-up, duration, assert response code.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is load testing? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Load testing</strong> measures system behavior under expected production load — verifying response times, throughput, and error rates stay within SLA at normal and peak concurrent users.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Goal</div>
+<p>Validate that the system meets performance SLA (e.g., p95 &lt; 500ms, throughput &gt; 200 TPS) under expected concurrent users.</p>
+<p>Identify degradation points: at what load does response time start increasing unacceptably?</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>Test the account balance API under 500 concurrent users (morning banking rush simulation).</p>
+<p>Test EOD batch initiation API under 50 concurrent admin operations.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Load testing should run against a production-like environment with realistic data volume and connection pool sizing.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Load testing vs stress testing. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Load testing</strong> validates system behavior at expected load; <strong>stress testing</strong> pushes beyond normal limits to find the breaking point and observe failure behavior.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Load testing</div>
+<p>Run at expected peak load (e.g., 500 users); verify SLA met; identify performance baseline.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Stress testing</div>
+<p>Gradually increase load beyond normal (1000, 2000, 5000 users) until system degrades or fails.</p>
+<p>Observe: does the system fail gracefully (503 errors) or catastrophically (OOM, crash, data corruption)?</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking importance</div>
+<p>Stress test before festive season campaigns — month-end banking transactions can be 5x normal volume.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Stress testing reveals the system's limits and failure modes — plan recovery procedures based on findings.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is throughput? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Throughput</strong> is the number of requests a system processes per unit time — measured as TPS (Transactions Per Second) or RPS (Requests Per Second).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">JMeter metric</div>
+<p>Aggregate Report's Throughput column: requests/second processed during the test run.</p>
+<p>Higher throughput = more capacity; but always read alongside error rate — high throughput with 50% errors is not good.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking target</div>
+<p>Core banking API: &gt; 200 TPS for account balance; &gt; 50 TPS for fund transfer under 500 concurrent users.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Throughput is a capacity metric — combine with p95 latency and error rate for complete performance picture.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is latency? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Latency</strong> is the time delay between sending a request and receiving the first byte of response — distinct from response time which includes full payload transfer.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Components</div>
+<p>Network latency: time to establish connection and transmit. Server latency: processing time on server.</p>
+<p>In JMeter: Response Time = Latency + Data transfer time; Latency is the time to first byte.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>Network latency matters for SWIFT/payment gateway calls — cross-border latency can be 100-300ms baseline.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Optimize server latency (DB queries, processing) first; network latency is often outside the team's control.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is response time? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Response time</strong> is the total time from sending a request to receiving the complete response — includes server processing, DB query, and data transfer.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Metrics</div>
+<p>Average response time: mean across all requests. P95: 95% of requests completed within this time.</p>
+<p>P95 and P99 are more meaningful than average — they reveal tail latency that 5% or 1% of users experience.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">SLA</div>
+<p>Typical banking API SLA: P95 &lt; 500ms, P99 &lt; 1000ms for real-time APIs; batch APIs have looser SLAs.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always report P95 and P99, not just average — average hides the worst user experiences that drive complaints.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is TPS? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>TPS (Transactions Per Second)</strong> is the number of complete financial or business transactions the system processes per second — the primary capacity metric for banking systems.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">JMeter</div>
+<p>JMeter reports throughput (requests/sec); for banking TPS, one 'transaction' may involve multiple API calls (debit + credit + notification).</p>
+<p>Use Transaction Controller in JMeter to group related requests into one logical transaction for TPS measurement.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking targets</div>
+<p>Core banking system: typically 100-500 TPS for fund transfers. UPI/IMPS: 1000+ TPS for high-volume payment rails.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Design banking systems with TPS headroom above peak — at least 2x headroom for unexpected load spikes.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is ramp-up period? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">The <strong>ramp-up period</strong> in JMeter is the time to gradually start all virtual threads — preventing a sudden spike that would overwhelm the server from the first second.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Configuration</div>
+<p>Thread Group: 500 threads, ramp-up 60 seconds → JMeter starts ~8 threads/second over 60 seconds.</p>
+<p>Simulates realistic user load growth (morning log-in ramp) rather than instant 500-user surge.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Best practice</div>
+<p>Set ramp-up to at least the number of threads in seconds (500 users → 500s ramp-up) for gradual load.</p>
+<p>Zero ramp-up: sudden spike test — useful for stress testing but not realistic load modeling.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>A proper ramp-up period reveals whether the system handles gradual load growth — more realistic than instant load.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is thread group in JMeter? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Apache JMeter</strong> load-tests APIs by simulating many virtual users — measures throughput, latency, errors.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to steps.</div>
+<p>Thread group, HTTP sampler, listeners; ramp-up, duration, assert response code.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you test REST API using JMeter? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Apache JMeter</strong> load-tests APIs by simulating many virtual users — measures throughput, latency, errors.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to steps.</div>
+<p>Thread group, HTTP sampler, listeners; ramp-up, duration, assert response code.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you pass dynamic tokens in JMeter? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Apache JMeter</strong> load-tests APIs by simulating many virtual users — measures throughput, latency, errors.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to steps.</div>
+<p>Thread group, HTTP sampler, listeners; ramp-up, duration, assert response code.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you analyze JMeter report? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Apache JMeter</strong> load-tests APIs by simulating many virtual users — measures throughput, latency, errors.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to steps.</div>
+<p>Thread group, HTTP sampler, listeners; ramp-up, duration, assert response code.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you find bottleneck from performance test? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Bottlenecks are identified by correlating JMeter metrics (high response time, errors) with server metrics (CPU, DB wait, GC, thread pool saturation).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Correlation</div>
+<p>High response time + high CPU: application processing bottleneck — look for slow algorithms or GC.</p>
+<p>High response time + low CPU + high DB wait: database bottleneck — missing index, lock contention, slow query.</p>
+<p>High error rate + 503 status: thread pool or connection pool exhaustion — increase pool size or fix slow queries.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Tools</div>
+<p>JMeter Aggregate Report + WebLogic Thread Monitor + Oracle AWR report analyzed together.</p>
+<p>APM tools (Dynatrace, AppDynamics): automatically pinpoint bottleneck layer (app, DB, external API).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Performance bottlenecks are almost always either DB (80%) or connection pool exhaustion — check these first.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you test database performance? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Database performance testing uses JMeter JDBC sampler for direct DB load testing, combined with Oracle AWR reports and V$SQL analysis during load tests.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">JMeter JDBC</div>
+<p>JDBC Request sampler: configure JDBC connection pool, execute SELECT/DML statements, measure query response times.</p>
+<p>Test concurrent DML: 100 threads running INSERT transactions simultaneously — check for deadlocks and lock waits.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Oracle analysis</div>
+<p>During load test: run SELECT * FROM V$SQL WHERE executions &gt; 100 ORDER BY elapsed_time/executions DESC to find slow queries.</p>
+<p>AWR report: buffer gets, disk reads, CPU time per SQL statement — compare pre/post index changes.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>DB performance testing reveals lock contention and missing indexes that only appear under concurrent load.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you test concurrent users? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Concurrent users in JMeter are simulated by Thread Groups — each thread represents one virtual user executing the test scenario in parallel.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Configuration</div>
+<p>Thread Group: set Number of Threads (users), Ramp-Up period, Loop count (or duration).</p>
+<p>Use CSV Data Set Config to feed unique account numbers/credentials per thread — avoid all threads using same data.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Realistic simulation</div>
+<p>Add think time (Timer: Gaussian Random Timer) between requests to simulate human reading/pausing.</p>
+<p>Use Transaction Controller to model full user journeys (login → balance check → transfer → logout).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Parameterize test data for concurrent users — 500 threads all accessing the same account doesn't reflect reality.</p>
+</div>
+</div>
+</details>
+</div>
+</main>
+<script src="main.js"></script>
+</body>
+</html>

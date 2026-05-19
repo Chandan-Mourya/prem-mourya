@@ -1,54 +1,49 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex,nofollow,noarchive">
-  <title>Code Puzzles · Notes</title>
-  <link rel="icon" href="../assets/img/logo.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<title>Code Puzzles · Notes</title>
+<link href="../assets/img/logo.png" rel="icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
-
-  <header class="topbar">
-    <div class="topbar-inner">
-      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
-      <div class="search-wrap">
-        <i class="bi bi-search"></i>
-        <input id="search" type="search" placeholder="Search puzzles..." autocomplete="off" spellcheck="false">
-        <span class="search-shortcut">/</span>
-      </div>
-      <div class="topbar-actions">
-        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
-        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
-      </div>
-    </div>
-  </header>
-
-  <main class="topic-page">
-
-    <div class="topic-page-header">
-      <div class="topic-page-eyebrow">18 · Code Puzzles</div>
-      <h1>Tricky Java output puzzles</h1>
-      <p class="topic-page-desc">"What's the output?" — the classics: String pool, Integer cache, finally returns, deadlocks, autoboxing. Memorize the patterns, not the answers.</p>
-      <div class="topic-page-meta">
-        <span><strong>15</strong> puzzles</span>
-        <span>Press <span class="hint-kbd">/</span> to search · <span class="hint-kbd">E</span> to reveal all</span>
-      </div>
-    </div>
-
-    <div class="no-results" id="noResults">No matches.</div>
-
-    <div class="qa-list">
-
-      <details class="qa">
-        <summary>String pool — what does this print?</summary>
-        <div class="qa-body">
-          <pre><code>String a = "hello";
+<header class="topbar">
+<div class="topbar-inner">
+<a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+<div class="search-wrap">
+<i class="bi bi-search"></i>
+<input autocomplete="off" id="search" placeholder="Search puzzles..." spellcheck="false" type="search"/>
+<span class="search-shortcut">/</span>
+</div>
+<div class="topbar-actions">
+<button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+<button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+</div>
+</div>
+</header>
+<main class="topic-page">
+<div class="topic-page-header">
+<div class="topic-page-eyebrow">18 · Code Puzzles</div>
+<h1>Tricky Java output puzzles</h1>
+<p class="topic-page-desc">"What's the output?" — the classics: String pool, Integer cache, finally returns, deadlocks, autoboxing. Memorize the patterns, not the answers.</p>
+<div class="topic-page-meta">
+<span><strong>15</strong> puzzles</span>
+<span>Press <span class="hint-kbd">/</span> to search · <span class="hint-kbd">E</span> to reveal all</span>
+</div>
+</div>
+<div class="no-results" id="noResults">No matches.</div>
+<div class="qa-list">
+<details class="qa">
+<summary>String pool — what does this print?</summary>
+<div class="qa-body">
+<pre><code>String a = "hello";
 String b = "hello";
 String c = new String("hello");
 String d = c.intern();
@@ -57,16 +52,15 @@ System.out.println(a == b);  // ?
 System.out.println(a == c);  // ?
 System.out.println(a == d);  // ?
 System.out.println(a.equals(c));  // ?</code></pre>
-          <p class="answer-key"><b>Output:</b> true, false, true, true</p>
-          <p><strong>Why:</strong> Literals "hello" are interned into the String pool, so <code>a</code> and <code>b</code> point to the same object. <code>new String("hello")</code> forces a fresh heap object → different reference (<code>a == c</code> false). <code>c.intern()</code> returns the pooled instance, so <code>a == d</code> is true. <code>equals()</code> compares content, always true here.</p>
-          <p><strong>Lesson:</strong> never use <code>==</code> on Strings. Always <code>.equals()</code>.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Integer cache trap <span class="qa-tag hot">hot</span></summary>
-        <div class="qa-body">
-          <pre><code>Integer a = 100;
+<p class="answer-key"><b>Output:</b> true, false, true, true</p>
+<p><strong>Why:</strong> Literals "hello" are interned into the String pool, so <code>a</code> and <code>b</code> point to the same object. <code>new String("hello")</code> forces a fresh heap object → different reference (<code>a == c</code> false). <code>c.intern()</code> returns the pooled instance, so <code>a == d</code> is true. <code>equals()</code> compares content, always true here.</p>
+<p><strong>Lesson:</strong> never use <code>==</code> on Strings. Always <code>.equals()</code>.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Integer cache trap <span class="qa-tag hot">hot</span></summary>
+<div class="qa-body">
+<pre><code>Integer a = 100;
 Integer b = 100;
 Integer c = 200;
 Integer d = 200;
@@ -75,16 +69,15 @@ System.out.println(a == b);  // ?
 System.out.println(c == d);  // ?
 System.out.println(a.equals(b));  // ?
 System.out.println(c.equals(d));  // ?</code></pre>
-          <p class="answer-key"><b>Output:</b> true, false, true, true</p>
-          <p><strong>Why:</strong> <code>Integer.valueOf(n)</code> caches values from <strong>-128 to 127</strong>. So <code>100</code> returns the same cached Integer → <code>a == b</code> true. <code>200</code> is outside the cache → new boxed objects each time → reference compare fails. <code>equals()</code> compares values, always true.</p>
-          <p><strong>Lesson:</strong> never use <code>==</code> on wrapper types. Same for Long, Short, Byte, Character.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>finally with return — which value wins?</summary>
-        <div class="qa-body">
-          <pre><code>public static int test() {
+<p class="answer-key"><b>Output:</b> true, false, true, true</p>
+<p><strong>Why:</strong> <code>Integer.valueOf(n)</code> caches values from <strong>-128 to 127</strong>. So <code>100</code> returns the same cached Integer → <code>a == b</code> true. <code>200</code> is outside the cache → new boxed objects each time → reference compare fails. <code>equals()</code> compares values, always true.</p>
+<p><strong>Lesson:</strong> never use <code>==</code> on wrapper types. Same for Long, Short, Byte, Character.</p>
+</div>
+</details>
+<details class="qa">
+<summary>finally with return — which value wins?</summary>
+<div class="qa-body">
+<pre><code>public static int test() {
     try {
         return 1;
     } finally {
@@ -92,16 +85,15 @@ System.out.println(c.equals(d));  // ?</code></pre>
     }
 }
 // What does test() return?</code></pre>
-          <p class="answer-key"><b>Output:</b> 2</p>
-          <p><strong>Why:</strong> a <code>return</code> in <code>finally</code> always overrides any <code>return</code> (or exception!) from <code>try</code>. The try block's return value is computed and stored, but the finally's return replaces it.</p>
-          <p><strong>Lesson:</strong> never <code>return</code> from <code>finally</code> — it silently swallows exceptions and overrides results. Most IDEs warn about this. Use finally only for cleanup; let the try-catch decide what to return.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>finally with mutation — but not return</summary>
-        <div class="qa-body">
-          <pre><code>public static int test() {
+<p class="answer-key"><b>Output:</b> 2</p>
+<p><strong>Why:</strong> a <code>return</code> in <code>finally</code> always overrides any <code>return</code> (or exception!) from <code>try</code>. The try block's return value is computed and stored, but the finally's return replaces it.</p>
+<p><strong>Lesson:</strong> never <code>return</code> from <code>finally</code> — it silently swallows exceptions and overrides results. Most IDEs warn about this. Use finally only for cleanup; let the try-catch decide what to return.</p>
+</div>
+</details>
+<details class="qa">
+<summary>finally with mutation — but not return</summary>
+<div class="qa-body">
+<pre><code>public static int test() {
     int x = 1;
     try {
         return x;
@@ -109,59 +101,55 @@ System.out.println(c.equals(d));  // ?</code></pre>
         x = 2;   // mutate, but don't return
     }
 }</code></pre>
-          <p class="answer-key"><b>Output:</b> 1</p>
-          <p><strong>Why:</strong> The return value is evaluated and saved <em>before</em> finally runs. Finally can mutate <code>x</code>, but the value to be returned has already been captured.</p>
-          <p>Contrast this with the previous puzzle — the rule is: finally can override <em>via its own return</em>, but post-evaluation mutations to local variables don't propagate.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Autoboxing in collections — NullPointerException?</summary>
-        <div class="qa-body">
-          <pre><code>Map&lt;String, Integer&gt; counts = new HashMap&lt;&gt;();
+<p class="answer-key"><b>Output:</b> 1</p>
+<p><strong>Why:</strong> The return value is evaluated and saved <em>before</em> finally runs. Finally can mutate <code>x</code>, but the value to be returned has already been captured.</p>
+<p>Contrast this with the previous puzzle — the rule is: finally can override <em>via its own return</em>, but post-evaluation mutations to local variables don't propagate.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Autoboxing in collections — NullPointerException?</summary>
+<div class="qa-body">
+<pre><code>Map&lt;String, Integer&gt; counts = new HashMap&lt;&gt;();
 counts.put("a", 1);
 int total = counts.get("a") + counts.get("missing");
 // What happens?</code></pre>
-          <p class="answer-key"><b>Output:</b> NullPointerException</p>
-          <p><strong>Why:</strong> <code>counts.get("missing")</code> returns <code>null</code> (Integer). Auto-unboxing <code>null</code> to <code>int</code> throws NPE — and the stack trace doesn't make it obvious which line caused it.</p>
-          <p><strong>Lesson:</strong> guard against this with <code>getOrDefault(key, 0)</code> or check for null. This is one of the most common production NPEs.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Switch on Integer — null hazard</summary>
-        <div class="qa-body">
-          <pre><code>Integer x = null;
+<p class="answer-key"><b>Output:</b> NullPointerException</p>
+<p><strong>Why:</strong> <code>counts.get("missing")</code> returns <code>null</code> (Integer). Auto-unboxing <code>null</code> to <code>int</code> throws NPE — and the stack trace doesn't make it obvious which line caused it.</p>
+<p><strong>Lesson:</strong> guard against this with <code>getOrDefault(key, 0)</code> or check for null. This is one of the most common production NPEs.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Switch on Integer — null hazard</summary>
+<div class="qa-body">
+<pre><code>Integer x = null;
 switch (x) {
     case 1: System.out.println("one"); break;
     default: System.out.println("other");
 }</code></pre>
-          <p class="answer-key"><b>Output:</b> NullPointerException</p>
-          <p><strong>Why:</strong> <code>switch</code> on a wrapper auto-unboxes — and unboxing null throws NPE. Same for switch on String with a null reference.</p>
-          <p><strong>Lesson:</strong> always null-check before switching on wrappers/Strings, or use Java 21+ <code>switch</code> patterns that can explicitly handle <code>null</code> with a <code>case null</code> branch.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Static initialization order</summary>
-        <div class="qa-body">
-          <pre><code>public class A {
+<p class="answer-key"><b>Output:</b> NullPointerException</p>
+<p><strong>Why:</strong> <code>switch</code> on a wrapper auto-unboxes — and unboxing null throws NPE. Same for switch on String with a null reference.</p>
+<p><strong>Lesson:</strong> always null-check before switching on wrappers/Strings, or use Java 21+ <code>switch</code> patterns that can explicitly handle <code>null</code> with a <code>case null</code> branch.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Static initialization order</summary>
+<div class="qa-body">
+<pre><code>public class A {
     static int x = B.y + 1;
 }
 public class B {
     static int y = A.x + 1;
 }
 // What if we load A first?</code></pre>
-          <p class="answer-key"><b>Output:</b> A.x = 2, B.y = 1 (depends which is loaded first)</p>
-          <p><strong>Why:</strong> Class loading triggers static initialization. If A loads first, A.x evaluation needs B.y — triggers B's initialization. At that point A is being initialized, so A.x is still the default <code>0</code>. So B.y = 0 + 1 = 1. Then back in A: x = 1 + 1 = 2.</p>
-          <p><strong>Lesson:</strong> circular static dependencies produce hard-to-debug bugs. Avoid them; if you must, document which class is loaded first.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Overriding vs overloading at compile time</summary>
-        <div class="qa-body">
-          <pre><code>class Animal {
+<p class="answer-key"><b>Output:</b> A.x = 2, B.y = 1 (depends which is loaded first)</p>
+<p><strong>Why:</strong> Class loading triggers static initialization. If A loads first, A.x evaluation needs B.y — triggers B's initialization. At that point A is being initialized, so A.x is still the default <code>0</code>. So B.y = 0 + 1 = 1. Then back in A: x = 1 + 1 = 2.</p>
+<p><strong>Lesson:</strong> circular static dependencies produce hard-to-debug bugs. Avoid them; if you must, document which class is loaded first.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Overriding vs overloading at compile time</summary>
+<div class="qa-body">
+<pre><code>class Animal {
     void eat(Object o) { System.out.println("Animal Object"); }
 }
 class Dog extends Animal {
@@ -172,15 +160,14 @@ class Dog extends Animal {
 
 Animal a = new Dog();
 a.eat("bone");</code></pre>
-          <p class="answer-key"><b>Output:</b> Dog Object</p>
-          <p><strong>Why:</strong> Method resolution is <strong>compile-time on parameter types</strong> (overloading) and <strong>runtime on receiver</strong> (overriding). The compiler sees <code>a</code> as Animal — Animal only has <code>eat(Object)</code>. So at compile time, <code>eat(Object)</code> is selected. At runtime, dynamic dispatch picks Dog's overridden version: "Dog Object". The <code>eat(String)</code> overload in Dog isn't visible through the Animal reference.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>HashMap put with mutable key</summary>
-        <div class="qa-body">
-          <pre><code>class Key {
+<p class="answer-key"><b>Output:</b> Dog Object</p>
+<p><strong>Why:</strong> Method resolution is <strong>compile-time on parameter types</strong> (overloading) and <strong>runtime on receiver</strong> (overriding). The compiler sees <code>a</code> as Animal — Animal only has <code>eat(Object)</code>. So at compile time, <code>eat(Object)</code> is selected. At runtime, dynamic dispatch picks Dog's overridden version: "Dog Object". The <code>eat(String)</code> overload in Dog isn't visible through the Animal reference.</p>
+</div>
+</details>
+<details class="qa">
+<summary>HashMap put with mutable key</summary>
+<div class="qa-body">
+<pre><code>class Key {
     int id;
     public int hashCode() { return id; }
     public boolean equals(Object o) { return o instanceof Key &amp;&amp; ((Key)o).id == id; }
@@ -194,75 +181,70 @@ map.put(k, "hello");
 k.id = 2;       // mutate the key after insertion
 System.out.println(map.get(k));
 System.out.println(map.size());</code></pre>
-          <p class="answer-key"><b>Output:</b> null, 1</p>
-          <p><strong>Why:</strong> the entry was placed in bucket(hash(1)). After mutation, looking up <code>k</code> hashes to bucket(hash(2)) — empty. The entry is still in the map (size = 1) but unreachable.</p>
-          <p><strong>Lesson:</strong> always use <strong>immutable</strong> keys for HashMap. This is why String, Integer, and records make ideal keys.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Stream — terminal op missing</summary>
-        <div class="qa-body">
-          <pre><code>List&lt;Integer&gt; nums = List.of(1, 2, 3);
+<p class="answer-key"><b>Output:</b> null, 1</p>
+<p><strong>Why:</strong> the entry was placed in bucket(hash(1)). After mutation, looking up <code>k</code> hashes to bucket(hash(2)) — empty. The entry is still in the map (size = 1) but unreachable.</p>
+<p><strong>Lesson:</strong> always use <strong>immutable</strong> keys for HashMap. This is why String, Integer, and records make ideal keys.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Stream — terminal op missing</summary>
+<div class="qa-body">
+<pre><code>List&lt;Integer&gt; nums = List.of(1, 2, 3);
 nums.stream()
     .filter(n -&gt; { System.out.println("filtering " + n); return n &gt; 1; })
     .map(n -&gt; { System.out.println("mapping " + n);    return n * 2; });
 System.out.println("done");</code></pre>
-          <p class="answer-key"><b>Output:</b> just "done" — none of the inner prints</p>
-          <p><strong>Why:</strong> Stream intermediate operations (<code>filter</code>, <code>map</code>) are <strong>lazy</strong>. Without a terminal op (<code>collect</code>, <code>forEach</code>, <code>count</code>, <code>reduce</code>), the pipeline never executes.</p>
-          <p><strong>Lesson:</strong> "my stream isn't doing anything" is almost always a missing terminal operation.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Concurrent modification</summary>
-        <div class="qa-body">
-          <pre><code>List&lt;Integer&gt; list = new ArrayList&lt;&gt;(List.of(1, 2, 3, 4));
+<p class="answer-key"><b>Output:</b> just "done" — none of the inner prints</p>
+<p><strong>Why:</strong> Stream intermediate operations (<code>filter</code>, <code>map</code>) are <strong>lazy</strong>. Without a terminal op (<code>collect</code>, <code>forEach</code>, <code>count</code>, <code>reduce</code>), the pipeline never executes.</p>
+<p><strong>Lesson:</strong> "my stream isn't doing anything" is almost always a missing terminal operation.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Concurrent modification</summary>
+<div class="qa-body">
+<pre><code>List&lt;Integer&gt; list = new ArrayList&lt;&gt;(List.of(1, 2, 3, 4));
 for (Integer n : list) {
     if (n == 2) list.remove(n);
 }</code></pre>
-          <p class="answer-key"><b>Output:</b> ConcurrentModificationException (on most JVMs)</p>
-          <p><strong>Why:</strong> The for-each loop uses an iterator. ArrayList's iterator is <strong>fail-fast</strong> — it checks <code>modCount</code> on each <code>next()</code>. Removing through the list (not the iterator) bumps modCount, so the next iteration throws.</p>
-          <p><strong>Fixes:</strong></p>
-          <ul>
-            <li><code>Iterator.remove()</code> — the iterator-aware way.</li>
-            <li><code>list.removeIf(n -&gt; n == 2)</code> — clean, since Java 8.</li>
-            <li>Stream + collect to a new list.</li>
-          </ul>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Boolean.parseBoolean vs valueOf</summary>
-        <div class="qa-body">
-          <pre><code>System.out.println(Boolean.parseBoolean("TRUE"));   // ?
+<p class="answer-key"><b>Output:</b> ConcurrentModificationException (on most JVMs)</p>
+<p><strong>Why:</strong> The for-each loop uses an iterator. ArrayList's iterator is <strong>fail-fast</strong> — it checks <code>modCount</code> on each <code>next()</code>. Removing through the list (not the iterator) bumps modCount, so the next iteration throws.</p>
+<p><strong>Fixes:</strong></p>
+<ul>
+<li><code>Iterator.remove()</code> — the iterator-aware way.</li>
+<li><code>list.removeIf(n -&gt; n == 2)</code> — clean, since Java 8.</li>
+<li>Stream + collect to a new list.</li>
+</ul>
+</div>
+</details>
+<details class="qa">
+<summary>Boolean.parseBoolean vs valueOf</summary>
+<div class="qa-body">
+<pre><code>System.out.println(Boolean.parseBoolean("TRUE"));   // ?
 System.out.println(Boolean.parseBoolean("yes"));    // ?
 System.out.println(Boolean.valueOf("true").booleanValue());  // ?</code></pre>
-          <p class="answer-key"><b>Output:</b> true, false, true</p>
-          <p><strong>Why:</strong> <code>parseBoolean</code> is case-insensitive but accepts <em>only</em> "true" or anything-else (which is false). "yes" is anything-else, so false. <code>valueOf("true")</code> follows the same rule and returns Boolean.TRUE.</p>
-          <p><strong>Lesson:</strong> if you parse user input (form, env var), validate explicitly — don't rely on "any other string is false" semantics.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Generic method type inference</summary>
-        <div class="qa-body">
-          <pre><code>public static &lt;T&gt; List&lt;T&gt; emptyList() {
+<p class="answer-key"><b>Output:</b> true, false, true</p>
+<p><strong>Why:</strong> <code>parseBoolean</code> is case-insensitive but accepts <em>only</em> "true" or anything-else (which is false). "yes" is anything-else, so false. <code>valueOf("true")</code> follows the same rule and returns Boolean.TRUE.</p>
+<p><strong>Lesson:</strong> if you parse user input (form, env var), validate explicitly — don't rely on "any other string is false" semantics.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Generic method type inference</summary>
+<div class="qa-body">
+<pre><code>public static &lt;T&gt; List&lt;T&gt; emptyList() {
     return new ArrayList&lt;&gt;();
 }
 
 List&lt;String&gt; xs = emptyList();        // OK
 Object o = emptyList();               // What type is T inferred to?</code></pre>
-          <p class="answer-key"><b>Output:</b> Object — but compiles. T is inferred from the target type.</p>
-          <p><strong>Why:</strong> Java's type inference uses the assignment context. For <code>List&lt;String&gt; xs = emptyList()</code>, T is String. For <code>Object o = emptyList()</code>, no list type is specified, so T defaults to Object.</p>
-          <p><strong>Lesson:</strong> if inference is ambiguous, specify explicitly: <code>Collections.&lt;String&gt;emptyList()</code>. Useful when chaining onto a generic factory method.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Equals symmetry trap</summary>
-        <div class="qa-body">
-          <pre><code>class Point {
+<p class="answer-key"><b>Output:</b> Object — but compiles. T is inferred from the target type.</p>
+<p><strong>Why:</strong> Java's type inference uses the assignment context. For <code>List&lt;String&gt; xs = emptyList()</code>, T is String. For <code>Object o = emptyList()</code>, no list type is specified, so T defaults to Object.</p>
+<p><strong>Lesson:</strong> if inference is ambiguous, specify explicitly: <code>Collections.&lt;String&gt;emptyList()</code>. Useful when chaining onto a generic factory method.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Equals symmetry trap</summary>
+<div class="qa-body">
+<pre><code>class Point {
     int x, y;
     public boolean equals(Object o) {
         if (!(o instanceof Point)) return false;
@@ -283,16 +265,15 @@ ColorPoint cp = new ColorPoint(); cp.x = 1; cp.y = 2; cp.color = "red";
 
 System.out.println(p.equals(cp));   // ?
 System.out.println(cp.equals(p));   // ?</code></pre>
-          <p class="answer-key"><b>Output:</b> true, false — violates symmetry</p>
-          <p><strong>Why:</strong> Point's equals accepts any Point, so it sees cp as a Point and returns true. ColorPoint's equals requires a ColorPoint, so p (plain Point) is rejected.</p>
-          <p><strong>Lesson:</strong> mixing inheritance + equals is hard. Best practices: prefer composition, mark equals classes as <code>final</code>, or use <code>getClass()</code> instead of <code>instanceof</code>. This is exactly why Effective Java item 10 spends pages on equals contracts.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Why this synchronizes nothing</summary>
-        <div class="qa-body">
-          <pre><code>class Counter {
+<p class="answer-key"><b>Output:</b> true, false — violates symmetry</p>
+<p><strong>Why:</strong> Point's equals accepts any Point, so it sees cp as a Point and returns true. ColorPoint's equals requires a ColorPoint, so p (plain Point) is rejected.</p>
+<p><strong>Lesson:</strong> mixing inheritance + equals is hard. Best practices: prefer composition, mark equals classes as <code>final</code>, or use <code>getClass()</code> instead of <code>instanceof</code>. This is exactly why Effective Java item 10 spends pages on equals contracts.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Why this synchronizes nothing</summary>
+<div class="qa-body">
+<pre><code>class Counter {
     private Integer count = 0;
     public synchronized void increment() {
         count++;
@@ -300,16 +281,13 @@ System.out.println(cp.equals(p));   // ?</code></pre>
 }
 // Two threads share a Counter and call increment() in a loop.
 // Is count thread-safe?</code></pre>
-          <p class="answer-key"><b>Output:</b> safe within one Counter, but with a subtle issue.</p>
-          <p><strong>Why:</strong> the <code>synchronized</code> method synchronizes on <code>this</code>, so two threads calling on the same Counter <em>are</em> mutually excluded. <code>count++</code> on Integer creates a new Integer each time (autoboxing), but the increment is still atomic relative to other increment calls.</p>
-          <p><strong>However</strong>: if any non-synchronized reader reads <code>count</code> without synchronization, the JMM doesn't guarantee visibility. Either make the field <code>volatile</code>, synchronize reads, or use <code>AtomicInteger</code>. The puzzle is more about subtle JMM rules than the lock itself.</p>
-        </div>
-      </details>
-
-    </div>
-
-  </main>
-
-  <script src="main.js"></script>
+<p class="answer-key"><b>Output:</b> safe within one Counter, but with a subtle issue.</p>
+<p><strong>Why:</strong> the <code>synchronized</code> method synchronizes on <code>this</code>, so two threads calling on the same Counter <em>are</em> mutually excluded. <code>count++</code> on Integer creates a new Integer each time (autoboxing), but the increment is still atomic relative to other increment calls.</p>
+<p><strong>However</strong>: if any non-synchronized reader reads <code>count</code> without synchronization, the JMM doesn't guarantee visibility. Either make the field <code>volatile</code>, synchronize reads, or use <code>AtomicInteger</code>. The puzzle is more about subtle JMM rules than the lock itself.</p>
+</div>
+</details>
+</div>
+</main>
+<script src="main.js"></script>
 </body>
 </html>

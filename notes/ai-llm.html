@@ -1,173 +1,162 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex,nofollow,noarchive">
-  <title>AI &amp; LLM · Notes</title>
-  <link rel="icon" href="../assets/img/logo.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<title>AI &amp; LLM · Notes</title>
+<link href="../assets/img/logo.png" rel="icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
-
-  <header class="topbar">
-    <div class="topbar-inner">
-      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
-      <div class="search-wrap">
-        <i class="bi bi-search"></i>
-        <input id="search" type="search" placeholder="Search within AI / LLM..." autocomplete="off" spellcheck="false">
-        <span class="search-shortcut">/</span>
-      </div>
-      <div class="topbar-actions">
-        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
-        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
-      </div>
-    </div>
-  </header>
-
-  <main class="topic-page">
-
-    <div class="topic-page-header">
-      <div class="topic-page-eyebrow">17 · AI &amp; LLM</div>
-      <h1>AI / LLM engineering</h1>
-      <p class="topic-page-desc">Practical answers from real AI integration work — LLMs, embeddings, RAG, vector DBs, tool calling.</p>
-      <div class="topic-page-meta">
-        <span><strong>12</strong> questions</span>
-        <span>Press <span class="hint-kbd">/</span> to search</span>
-      </div>
-    </div>
-
-    <div class="no-results" id="noResults">No matches.</div>
-
-    <div class="qa-list">
-
-      <details class="qa">
-        <summary>What is an LLM (Large Language Model)? <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">An <strong>LLM</strong> is a deep-learning model — almost always a <strong>Transformer</strong> — trained on huge amounts of text so it can <em>understand</em> language and <em>generate</em> text, one <strong>token</strong> (roughly a word piece) at a time. It's the engine behind tools like ChatGPT, Claude, Gemini, and Llama.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-title"><i class="bi bi-robot"></i> Core Idea</div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">What</span>
-              <span class="core-diff-val">A neural network trained on massive text corpora to <strong>predict the next token</strong> given everything before it.</span>
-            </div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">How</span>
-              <span class="core-diff-val">Transformer architecture + attention mechanism, trained with billions of examples.</span>
-            </div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">Why useful</span>
-              <span class="core-diff-val">Next-token prediction at scale produces emergent skills — reasoning, code, translation, summarization.</span>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> What can it actually do?</div>
-            <ul style="margin: 0 0 10px;">
-              <li><strong>Understand</strong> natural language — intent, sentiment, entities.</li>
-              <li><strong>Generate</strong> text — emails, articles, marketing copy.</li>
-              <li><strong>Answer questions</strong> — open-domain Q&amp;A, FAQs.</li>
-              <li><strong>Write code</strong> — boilerplate, refactors, test cases, regexes.</li>
-              <li><strong>Summarize</strong> long content — meeting notes, papers, support tickets.</li>
-              <li><strong>Translate</strong> between languages — including code-to-code.</li>
-              <li><strong>Classify &amp; extract</strong> — entities, topics, structured JSON.</li>
-            </ul>
-            <p class="solution-desc"><strong>Popular families:</strong> OpenAI GPT, Anthropic Claude, Google Gemini, Meta Llama (open weights), Mistral, DeepSeek.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> Why is it called "Large"?</div>
-            <p class="solution-desc">The "Large" refers to three things — all at once:</p>
-            <div class="cmp-grid">
-              <div class="cmp-card">
-                <div class="cmp-card-head">
-                  <i class="bi bi-database-fill"></i>
-                  <span>Massive Training Data</span>
-                </div>
-                <ul>
-                  <li>Trillions of <strong>tokens</strong> of text</li>
-                  <li>Web pages, books, code, Wikipedia, papers</li>
-                  <li>Multi-language, multi-domain</li>
-                </ul>
-              </div>
-              <div class="cmp-card">
-                <div class="cmp-card-head">
-                  <i class="bi bi-cpu-fill"></i>
-                  <span>Massive Parameter Count</span>
-                </div>
-                <ul>
-                  <li>Billions to <strong>trillions</strong> of learnable weights</li>
-                  <li>e.g. GPT-3 = 175B, Llama 3.1 405B = 405B</li>
-                  <li>More params → more capacity to memorize patterns</li>
-                </ul>
-              </div>
-              <div class="cmp-card">
-                <div class="cmp-card-head">
-                  <i class="bi bi-lightning-charge-fill"></i>
-                  <span>Massive Compute</span>
-                </div>
-                <ul>
-                  <li>Thousands of GPUs/TPUs for weeks-to-months</li>
-                  <li>Training cost: $10M – $100M+</li>
-                  <li>This is why only a few labs train frontier models</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> How an LLM actually works — end-to-end flow</div>
-            <div class="flow">
-              <div class="flow-step">Input prompt <span class="badge">"What is Java?"</span></div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-note">tokenizer splits text into tokens (~¾ of a word each)</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">Token IDs <span class="badge">[1734, 318, 7349, 30]</span></div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-note">embedded into vectors + passed through transformer layers</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step accent">Transformer + Attention <span class="badge">N layers</span></div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-note">produces probability distribution over the next token</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">Predict next token <span class="badge">"Java"</span></div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-note">append, repeat — generates one token at a time</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step accent">Generated response <span class="badge">"Java is a programming language…"</span></div>
-            </div>
-            <p class="solution-desc" style="margin-top: 10px;">
+<header class="topbar">
+<div class="topbar-inner">
+<a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+<div class="search-wrap">
+<i class="bi bi-search"></i>
+<input autocomplete="off" id="search" placeholder="Search within AI / LLM..." spellcheck="false" type="search"/>
+<span class="search-shortcut">/</span>
+</div>
+<div class="topbar-actions">
+<button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+<button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+</div>
+</div>
+</header>
+<main class="topic-page">
+<div class="topic-page-header">
+<div class="topic-page-eyebrow">17 · AI &amp; LLM</div>
+<h1>AI / LLM engineering</h1>
+<p class="topic-page-desc">Practical answers from real AI integration work — LLMs, embeddings, RAG, vector DBs, tool calling.</p>
+<div class="topic-page-meta">
+<span><strong>12</strong> questions</span>
+<span>Press <span class="hint-kbd">/</span> to search</span>
+</div>
+</div>
+<div class="no-results" id="noResults">No matches.</div>
+<div class="qa-list">
+<details class="qa">
+<summary>What is an LLM (Large Language Model)? <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro">An <strong>LLM</strong> is a deep-learning model — almost always a <strong>Transformer</strong> — trained on huge amounts of text so it can <em>understand</em> language and <em>generate</em> text, one <strong>token</strong> (roughly a word piece) at a time. It's the engine behind tools like ChatGPT, Claude, Gemini, and Llama.</p>
+<div class="core-diff">
+<div class="core-diff-title"><i class="bi bi-robot"></i> Core Idea</div>
+<div class="core-diff-row">
+<span class="core-diff-key">What</span>
+<span class="core-diff-val">A neural network trained on massive text corpora to <strong>predict the next token</strong> given everything before it.</span>
+</div>
+<div class="core-diff-row">
+<span class="core-diff-key">How</span>
+<span class="core-diff-val">Transformer architecture + attention mechanism, trained with billions of examples.</span>
+</div>
+<div class="core-diff-row">
+<span class="core-diff-key">Why useful</span>
+<span class="core-diff-val">Next-token prediction at scale produces emergent skills — reasoning, code, translation, summarization.</span>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> What can it actually do?</div>
+<ul style="margin: 0 0 10px;">
+<li><strong>Understand</strong> natural language — intent, sentiment, entities.</li>
+<li><strong>Generate</strong> text — emails, articles, marketing copy.</li>
+<li><strong>Answer questions</strong> — open-domain Q&amp;A, FAQs.</li>
+<li><strong>Write code</strong> — boilerplate, refactors, test cases, regexes.</li>
+<li><strong>Summarize</strong> long content — meeting notes, papers, support tickets.</li>
+<li><strong>Translate</strong> between languages — including code-to-code.</li>
+<li><strong>Classify &amp; extract</strong> — entities, topics, structured JSON.</li>
+</ul>
+<p class="solution-desc"><strong>Popular families:</strong> OpenAI GPT, Anthropic Claude, Google Gemini, Meta Llama (open weights), Mistral, DeepSeek.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> Why is it called "Large"?</div>
+<p class="solution-desc">The "Large" refers to three things — all at once:</p>
+<div class="cmp-grid">
+<div class="cmp-card">
+<div class="cmp-card-head">
+<i class="bi bi-database-fill"></i>
+<span>Massive Training Data</span>
+</div>
+<ul>
+<li>Trillions of <strong>tokens</strong> of text</li>
+<li>Web pages, books, code, Wikipedia, papers</li>
+<li>Multi-language, multi-domain</li>
+</ul>
+</div>
+<div class="cmp-card">
+<div class="cmp-card-head">
+<i class="bi bi-cpu-fill"></i>
+<span>Massive Parameter Count</span>
+</div>
+<ul>
+<li>Billions to <strong>trillions</strong> of learnable weights</li>
+<li>e.g. GPT-3 = 175B, Llama 3.1 405B = 405B</li>
+<li>More params → more capacity to memorize patterns</li>
+</ul>
+</div>
+<div class="cmp-card">
+<div class="cmp-card-head">
+<i class="bi bi-lightning-charge-fill"></i>
+<span>Massive Compute</span>
+</div>
+<ul>
+<li>Thousands of GPUs/TPUs for weeks-to-months</li>
+<li>Training cost: $10M – $100M+</li>
+<li>This is why only a few labs train frontier models</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">3</span> How an LLM actually works — end-to-end flow</div>
+<div class="flow">
+<div class="flow-step">Input prompt <span class="badge">"What is Java?"</span></div>
+<div class="flow-arrow">↓</div>
+<div class="flow-note">tokenizer splits text into tokens (~¾ of a word each)</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Token IDs <span class="badge">[1734, 318, 7349, 30]</span></div>
+<div class="flow-arrow">↓</div>
+<div class="flow-note">embedded into vectors + passed through transformer layers</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step accent">Transformer + Attention <span class="badge">N layers</span></div>
+<div class="flow-arrow">↓</div>
+<div class="flow-note">produces probability distribution over the next token</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Predict next token <span class="badge">"Java"</span></div>
+<div class="flow-arrow">↓</div>
+<div class="flow-note">append, repeat — generates one token at a time</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step accent">Generated response <span class="badge">"Java is a programming language…"</span></div>
+</div>
+<p class="solution-desc" style="margin-top: 10px;">
               The whole thing boils down to: <strong>"given the tokens so far, what's the most likely next token?"</strong> Repeat that thousands of times → coherent text.
             </p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">4</span> Key Technologies behind LLMs</div>
-            <div class="note-table-wrap">
-              <table class="note-table">
-                <thead>
-                  <tr><th>Technology</th><th>Role</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td>Deep Learning</td><td>Layered neural networks that learn from data via backpropagation.</td></tr>
-                  <tr><td>Neural Networks</td><td>The general framework — neurons, weights, activations.</td></tr>
-                  <tr><td>Transformer (2017)</td><td>The breakthrough architecture from Google's "Attention Is All You Need" paper. Replaced RNN/LSTM for sequence modelling.</td></tr>
-                  <tr><td>Attention Mechanism</td><td>Lets the model "focus" on the most relevant words in the input when predicting the next one — captures long-range dependencies.</td></tr>
-                  <tr><td>Tokenization (BPE)</td><td>Splits text into subword units — e.g. <code>"unbreakable"</code> → <code>["un", "break", "able"]</code>.</td></tr>
-                  <tr><td>Pre-training + Fine-tuning</td><td>First trained on raw text (self-supervised), then fine-tuned on instruction data + RLHF for alignment.</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">5</span> Concrete Example</div>
-            <pre><code>// Prompt
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">4</span> Key Technologies behind LLMs</div>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead>
+<tr><th>Technology</th><th>Role</th></tr>
+</thead>
+<tbody>
+<tr><td>Deep Learning</td><td>Layered neural networks that learn from data via backpropagation.</td></tr>
+<tr><td>Neural Networks</td><td>The general framework — neurons, weights, activations.</td></tr>
+<tr><td>Transformer (2017)</td><td>The breakthrough architecture from Google's "Attention Is All You Need" paper. Replaced RNN/LSTM for sequence modelling.</td></tr>
+<tr><td>Attention Mechanism</td><td>Lets the model "focus" on the most relevant words in the input when predicting the next one — captures long-range dependencies.</td></tr>
+<tr><td>Tokenization (BPE)</td><td>Splits text into subword units — e.g. <code>"unbreakable"</code> → <code>["un", "break", "able"]</code>.</td></tr>
+<tr><td>Pre-training + Fine-tuning</td><td>First trained on raw text (self-supervised), then fine-tuned on instruction data + RLHF for alignment.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">5</span> Concrete Example</div>
+<pre><code>// Prompt
 "What is Java?"
 
 // What the LLM does internally (simplified):
@@ -181,307 +170,289 @@
 
 // Final output
 "Java is a programming language designed for portability and platform-independence..."</code></pre>
-            <p class="solution-desc">At every step, the model picks the most probable next token (or samples from the top-K with some randomness controlled by <strong>temperature</strong>).</p>
+<p class="solution-desc">At every step, the model picks the most probable next token (or samples from the top-K with some randomness controlled by <strong>temperature</strong>).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">6</span> Where LLMs are used</div>
+<div class="use-cases">
+<div class="use-case">
+<h4><i class="bi bi-chat-dots-fill"></i> Chatbots &amp; Assistants</h4>
+<ul>
+<li>ChatGPT, Claude, Gemini, Copilot</li>
+<li>Customer-support bots, FAQ deflection</li>
+<li>Voice assistants (Siri, Alexa NLU)</li>
+</ul>
+</div>
+<div class="use-case green">
+<h4><i class="bi bi-code-slash"></i> Code Generation</h4>
+<ul>
+<li>GitHub Copilot, Cursor, Windsurf</li>
+<li>Auto-completion, refactoring, test writing</li>
+<li>SQL / regex / config generation</li>
+</ul>
+</div>
+<div class="use-case pink">
+<h4><i class="bi bi-search"></i> Semantic Search</h4>
+<ul>
+<li>Embedding-powered search (Perplexity, Bing, Google AI Overviews)</li>
+<li>RAG over private knowledge bases</li>
+<li>Document Q&amp;A</li>
+</ul>
+</div>
+<div class="use-case orange">
+<h4><i class="bi bi-file-text-fill"></i> Content &amp; Productivity</h4>
+<ul>
+<li>Article / email / report generation</li>
+<li>Meeting note summarization</li>
+<li>Translation, paraphrasing, tone adjustment</li>
+</ul>
+</div>
+<div class="use-case green">
+<h4><i class="bi bi-list-check"></i> Structured Extraction</h4>
+<ul>
+<li>PDF → JSON, invoice/resume parsing</li>
+<li>Entity extraction from logs/tickets</li>
+<li>Classification, intent detection</li>
+</ul>
+</div>
+<div class="use-case pink">
+<h4><i class="bi bi-bank2"></i> Domain Applications</h4>
+<ul>
+<li>Fraud explanation in fintech</li>
+<li>Medical record summarization</li>
+<li>Legal document review</li>
+<li>Personalized education / tutoring</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">7</span> Advantages vs Limitations</div>
+<div class="cmp-grid">
+<div class="cmp-card">
+<div class="cmp-card-head">
+<i class="bi bi-check-circle-fill" style="color: var(--green);"></i>
+<span>Advantages</span>
+</div>
+<ul>
+<li>Understands and generates <strong>natural language</strong></li>
+<li>Huge breadth of knowledge baked into weights</li>
+<li>Generates human-like, context-aware responses</li>
+<li>Automates tasks previously requiring humans</li>
+<li>Same model handles many domains (general purpose)</li>
+<li>Zero/few-shot — no per-task training needed</li>
+</ul>
+</div>
+<div class="cmp-card">
+<div class="cmp-card-head">
+<i class="bi bi-exclamation-triangle-fill" style="color: #f0883e;"></i>
+<span>Limitations</span>
+</div>
+<ul>
+<li><strong>Hallucinations</strong> — confidently wrong answers</li>
+<li>Knowledge cutoff — outdated information</li>
+<li>Massive compute cost (GPU, latency, $$)</li>
+<li>Bias from training data</li>
+<li>Vulnerable to <strong>prompt injection</strong> and jailbreaks</li>
+<li>Non-deterministic outputs (with temperature &gt; 0)</li>
+<li>Privacy / data-leakage concerns with public APIs</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">8</span> Engineer's perspective — how I treat LLMs in production</div>
+<p class="solution-desc">As a backend engineer, an LLM is just <em>another remote service</em> — and that mental model is the most important one:</p>
+<ul style="margin: 0 0 10px;">
+<li>Wrap calls in a <strong>retry</strong> + <strong>circuit-breaker</strong> + <strong>timeout</strong> just like any HTTP dependency.</li>
+<li>Track <strong>tokens-in / tokens-out</strong> per request — that's your cost meter.</li>
+<li>Watch <strong>p95 latency</strong> — streaming responses help mask it.</li>
+<li>Use <strong>RAG</strong> instead of fine-tuning for fresh / private data.</li>
+<li><strong>Validate</strong> structured outputs (JSON schema) before consuming downstream.</li>
+<li>Set <strong>temperature = 0</strong> for deterministic flows (extraction, classification); higher for creative writing.</li>
+<li>Cap the <strong>context window</strong> — large prompts = more cost + slower response.</li>
+<li>Never trust LLM output for security-critical decisions — always have a deterministic guardrail.</li>
+</ul>
+</div>
+<div class="takeaway">
+<b>One-liner:</b> An LLM is a <strong>transformer-based neural network</strong> trained on massive text data to <strong>predict the next token</strong> — that single capability scales up into chat, code, search, summarization, and translation. It's "large" in three ways at once: data, parameters, and compute. As an engineer, treat it as a remote service — manage <em>latency, cost, hallucination, and security</em> just like any other dependency. Pair it with <strong>RAG</strong> for fresh data, <strong>structured outputs</strong> for downstream pipelines, and never blindly trust its output.
           </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">6</span> Where LLMs are used</div>
-            <div class="use-cases">
-              <div class="use-case">
-                <h4><i class="bi bi-chat-dots-fill"></i> Chatbots &amp; Assistants</h4>
-                <ul>
-                  <li>ChatGPT, Claude, Gemini, Copilot</li>
-                  <li>Customer-support bots, FAQ deflection</li>
-                  <li>Voice assistants (Siri, Alexa NLU)</li>
-                </ul>
-              </div>
-              <div class="use-case green">
-                <h4><i class="bi bi-code-slash"></i> Code Generation</h4>
-                <ul>
-                  <li>GitHub Copilot, Cursor, Windsurf</li>
-                  <li>Auto-completion, refactoring, test writing</li>
-                  <li>SQL / regex / config generation</li>
-                </ul>
-              </div>
-              <div class="use-case pink">
-                <h4><i class="bi bi-search"></i> Semantic Search</h4>
-                <ul>
-                  <li>Embedding-powered search (Perplexity, Bing, Google AI Overviews)</li>
-                  <li>RAG over private knowledge bases</li>
-                  <li>Document Q&amp;A</li>
-                </ul>
-              </div>
-              <div class="use-case orange">
-                <h4><i class="bi bi-file-text-fill"></i> Content &amp; Productivity</h4>
-                <ul>
-                  <li>Article / email / report generation</li>
-                  <li>Meeting note summarization</li>
-                  <li>Translation, paraphrasing, tone adjustment</li>
-                </ul>
-              </div>
-              <div class="use-case green">
-                <h4><i class="bi bi-list-check"></i> Structured Extraction</h4>
-                <ul>
-                  <li>PDF → JSON, invoice/resume parsing</li>
-                  <li>Entity extraction from logs/tickets</li>
-                  <li>Classification, intent detection</li>
-                </ul>
-              </div>
-              <div class="use-case pink">
-                <h4><i class="bi bi-bank2"></i> Domain Applications</h4>
-                <ul>
-                  <li>Fraud explanation in fintech</li>
-                  <li>Medical record summarization</li>
-                  <li>Legal document review</li>
-                  <li>Personalized education / tutoring</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">7</span> Advantages vs Limitations</div>
-            <div class="cmp-grid">
-              <div class="cmp-card">
-                <div class="cmp-card-head">
-                  <i class="bi bi-check-circle-fill" style="color: var(--green);"></i>
-                  <span>Advantages</span>
-                </div>
-                <ul>
-                  <li>Understands and generates <strong>natural language</strong></li>
-                  <li>Huge breadth of knowledge baked into weights</li>
-                  <li>Generates human-like, context-aware responses</li>
-                  <li>Automates tasks previously requiring humans</li>
-                  <li>Same model handles many domains (general purpose)</li>
-                  <li>Zero/few-shot — no per-task training needed</li>
-                </ul>
-              </div>
-              <div class="cmp-card">
-                <div class="cmp-card-head">
-                  <i class="bi bi-exclamation-triangle-fill" style="color: #f0883e;"></i>
-                  <span>Limitations</span>
-                </div>
-                <ul>
-                  <li><strong>Hallucinations</strong> — confidently wrong answers</li>
-                  <li>Knowledge cutoff — outdated information</li>
-                  <li>Massive compute cost (GPU, latency, $$)</li>
-                  <li>Bias from training data</li>
-                  <li>Vulnerable to <strong>prompt injection</strong> and jailbreaks</li>
-                  <li>Non-deterministic outputs (with temperature &gt; 0)</li>
-                  <li>Privacy / data-leakage concerns with public APIs</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">8</span> Engineer's perspective — how I treat LLMs in production</div>
-            <p class="solution-desc">As a backend engineer, an LLM is just <em>another remote service</em> — and that mental model is the most important one:</p>
-            <ul style="margin: 0 0 10px;">
-              <li>Wrap calls in a <strong>retry</strong> + <strong>circuit-breaker</strong> + <strong>timeout</strong> just like any HTTP dependency.</li>
-              <li>Track <strong>tokens-in / tokens-out</strong> per request — that's your cost meter.</li>
-              <li>Watch <strong>p95 latency</strong> — streaming responses help mask it.</li>
-              <li>Use <strong>RAG</strong> instead of fine-tuning for fresh / private data.</li>
-              <li><strong>Validate</strong> structured outputs (JSON schema) before consuming downstream.</li>
-              <li>Set <strong>temperature = 0</strong> for deterministic flows (extraction, classification); higher for creative writing.</li>
-              <li>Cap the <strong>context window</strong> — large prompts = more cost + slower response.</li>
-              <li>Never trust LLM output for security-critical decisions — always have a deterministic guardrail.</li>
-            </ul>
-          </div>
-
-          <div class="takeaway">
-            <b>One-liner:</b> An LLM is a <strong>transformer-based neural network</strong> trained on massive text data to <strong>predict the next token</strong> — that single capability scales up into chat, code, search, summarization, and translation. It's "large" in three ways at once: data, parameters, and compute. As an engineer, treat it as a remote service — manage <em>latency, cost, hallucination, and security</em> just like any other dependency. Pair it with <strong>RAG</strong> for fresh data, <strong>structured outputs</strong> for downstream pipelines, and never blindly trust its output.
-          </div>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>What is RAG (Retrieval-Augmented Generation)? <span class="qa-tag hot">hot</span></summary>
-        <div class="qa-body">
-          <p><strong>RAG</strong> grounds an LLM in your own data. Flow:</p>
-          <ol>
-            <li><strong>Ingest</strong> — split documents into chunks, generate embeddings (vectors) for each, store in a vector DB.</li>
-            <li><strong>Query</strong> — embed the user's question, do a vector search (kNN) for the top-K most similar chunks.</li>
-            <li><strong>Generate</strong> — pass the question plus retrieved chunks as context to the LLM with a prompt like "Answer using only this context."</li>
-          </ol>
-          <p>Why use it: LLMs have stale training data and hallucinate. RAG keeps answers grounded in your current docs without retraining.</p>
-          <p>I've built RAG over a recruiter's candidate database — they can ask "show me Python developers in Bangalore with 3+ years of GenAI work" and the system retrieves matching resume chunks and generates a ranked summary. Tweaks that mattered: <strong>hybrid retrieval</strong> (BM25 + vector), <strong>reranking</strong> (cross-encoder on top 50), and careful prompt engineering with citations.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>What are embeddings? Why do they work?</summary>
-        <div class="qa-body">
-          <p>An <strong>embedding</strong> is a fixed-length vector (commonly 768 or 1536 floats) that represents text in a high-dimensional space. The crucial property: <strong>semantically similar texts produce vectors close together</strong> in that space, regardless of exact wording.</p>
-          <p>Examples: "Python developer" and "Pythonista" land near each other; "Java engineer" sits far from both but near "JVM developer". This is why kNN search on embeddings finds <em>meaning</em>, not just keywords.</p>
-          <p>Practical points:</p>
-          <ul>
-            <li>Use a dedicated embedding model — OpenAI <code>text-embedding-3</code>, Cohere, BGE, all-mpnet, Gemini Embedding.</li>
-            <li>Stick to one model per index (different models produce non-comparable vectors).</li>
-            <li>Storage: Elasticsearch <code>dense_vector</code>, PGVector, Qdrant, Pinecone, Weaviate.</li>
-            <li>Normalize vectors and use cosine similarity (default for most embedding models).</li>
-          </ul>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Vector databases — when do you need one?</summary>
-        <div class="qa-body">
-          <p>A vector DB stores embeddings and supports fast approximate nearest-neighbor (ANN) search. You need it when the dataset is too big or too slow for an exact scan — typically &gt; ~100K vectors.</p>
-          <p>Options:</p>
-          <ul>
-            <li><strong>Elasticsearch / OpenSearch</strong> — kNN support (HNSW), great if you already use ES. My pick for our platform since we needed hybrid search anyway.</li>
-            <li><strong>PostgreSQL + pgvector</strong> — keep vectors next to relational data; simple ops; HNSW or IVFFlat.</li>
-            <li><strong>Qdrant / Milvus / Weaviate</strong> — purpose-built, more advanced filtering and clustering features.</li>
-            <li><strong>Pinecone</strong> — managed, popular for hosted RAG apps.</li>
-            <li><strong>Redis Stack</strong> — vector + KV; latency wins for hot data.</li>
-          </ul>
-          <p>For small datasets (&lt;100K), a flat in-memory cosine search is fine and avoids extra infrastructure. Don't over-engineer.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Prompt engineering — what actually works</summary>
-        <div class="qa-body">
-          <p>Practical techniques that I've found move the needle:</p>
-          <ul>
-            <li><strong>Be specific.</strong> "Summarize this resume in 3 bullet points, each ≤15 words, focused on backend skills" beats "summarize this resume."</li>
-            <li><strong>Give examples (few-shot).</strong> Show 1–3 input/output pairs of the format you want. Often more reliable than instructions.</li>
-            <li><strong>Role + task + constraints.</strong> "You are a senior recruiter. Given the JD and resume below, score 1–10 and list 3 strengths and 2 gaps."</li>
-            <li><strong>Output format</strong> — request strict JSON with a schema, then parse. Use <strong>structured output</strong> (OpenAI JSON mode, Anthropic tool use) when available.</li>
-            <li><strong>Chain of thought / "think step by step"</strong> for reasoning tasks.</li>
-            <li><strong>Temperature 0 (or near)</strong> for deterministic / extraction tasks; higher only for creative work.</li>
-            <li><strong>Test like code</strong> — keep a set of golden inputs and run prompts through an eval harness before changes.</li>
-          </ul>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>How do you reduce LLM latency and cost?</summary>
-        <div class="qa-body">
-          <p>LLM calls are both slow and expensive — these compound at scale. My toolkit:</p>
-          <ul>
-            <li><strong>Cache</strong> — semantic cache (vector similarity) for repeat or near-duplicate queries. On our platform we cache JD embeddings and the matched-resume list keyed by JD hash.</li>
-            <li><strong>Smaller models for easier sub-tasks</strong> — classification, extraction, reranking don't need GPT-4. Use Mistral 7B, Llama 3 8B, or a fine-tuned small model.</li>
-            <li><strong>Streaming</strong> — improves perceived latency; users see output as it arrives.</li>
-            <li><strong>Batch + parallelize</strong> — concurrent calls for unrelated sub-prompts.</li>
-            <li><strong>Truncate context</strong> — don't pass the whole document if the model only needs a section.</li>
-            <li><strong>Prompt caching</strong> (Anthropic, Gemini) for static system prompts.</li>
-            <li><strong>Async pipelines</strong> — heavy LLM work in Kafka workers, not synchronous APIs.</li>
-            <li><strong>Token quotas</strong> per user/tenant for cost protection.</li>
-          </ul>
-          <p>Result on our match service: dropped match latency from 4 s to ~600 ms and cut monthly token spend nearly in half.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Tool calling / function calling</summary>
-        <div class="qa-body">
-          <p><strong>Tool calling</strong> lets the LLM call external functions / APIs in a structured way. You describe tools with JSON schemas; the model decides when to invoke one and produces arguments.</p>
-          <pre><code>tools: [
+</div>
+</details>
+<details class="qa">
+<summary>What is RAG (Retrieval-Augmented Generation)? <span class="qa-tag hot">hot</span></summary>
+<div class="qa-body">
+<p><strong>RAG</strong> grounds an LLM in your own data. Flow:</p>
+<ol>
+<li><strong>Ingest</strong> — split documents into chunks, generate embeddings (vectors) for each, store in a vector DB.</li>
+<li><strong>Query</strong> — embed the user's question, do a vector search (kNN) for the top-K most similar chunks.</li>
+<li><strong>Generate</strong> — pass the question plus retrieved chunks as context to the LLM with a prompt like "Answer using only this context."</li>
+</ol>
+<p>Why use it: LLMs have stale training data and hallucinate. RAG keeps answers grounded in your current docs without retraining.</p>
+<p>I've built RAG over a recruiter's candidate database — they can ask "show me Python developers in Bangalore with 3+ years of GenAI work" and the system retrieves matching resume chunks and generates a ranked summary. Tweaks that mattered: <strong>hybrid retrieval</strong> (BM25 + vector), <strong>reranking</strong> (cross-encoder on top 50), and careful prompt engineering with citations.</p>
+</div>
+</details>
+<details class="qa">
+<summary>What are embeddings? Why do they work?</summary>
+<div class="qa-body">
+<p>An <strong>embedding</strong> is a fixed-length vector (commonly 768 or 1536 floats) that represents text in a high-dimensional space. The crucial property: <strong>semantically similar texts produce vectors close together</strong> in that space, regardless of exact wording.</p>
+<p>Examples: "Python developer" and "Pythonista" land near each other; "Java engineer" sits far from both but near "JVM developer". This is why kNN search on embeddings finds <em>meaning</em>, not just keywords.</p>
+<p>Practical points:</p>
+<ul>
+<li>Use a dedicated embedding model — OpenAI <code>text-embedding-3</code>, Cohere, BGE, all-mpnet, Gemini Embedding.</li>
+<li>Stick to one model per index (different models produce non-comparable vectors).</li>
+<li>Storage: Elasticsearch <code>dense_vector</code>, PGVector, Qdrant, Pinecone, Weaviate.</li>
+<li>Normalize vectors and use cosine similarity (default for most embedding models).</li>
+</ul>
+</div>
+</details>
+<details class="qa">
+<summary>Vector databases — when do you need one?</summary>
+<div class="qa-body">
+<p>A vector DB stores embeddings and supports fast approximate nearest-neighbor (ANN) search. You need it when the dataset is too big or too slow for an exact scan — typically &gt; ~100K vectors.</p>
+<p>Options:</p>
+<ul>
+<li><strong>Elasticsearch / OpenSearch</strong> — kNN support (HNSW), great if you already use ES. My pick for our platform since we needed hybrid search anyway.</li>
+<li><strong>PostgreSQL + pgvector</strong> — keep vectors next to relational data; simple ops; HNSW or IVFFlat.</li>
+<li><strong>Qdrant / Milvus / Weaviate</strong> — purpose-built, more advanced filtering and clustering features.</li>
+<li><strong>Pinecone</strong> — managed, popular for hosted RAG apps.</li>
+<li><strong>Redis Stack</strong> — vector + KV; latency wins for hot data.</li>
+</ul>
+<p>For small datasets (&lt;100K), a flat in-memory cosine search is fine and avoids extra infrastructure. Don't over-engineer.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Prompt engineering — what actually works</summary>
+<div class="qa-body">
+<p>Practical techniques that I've found move the needle:</p>
+<ul>
+<li><strong>Be specific.</strong> "Summarize this resume in 3 bullet points, each ≤15 words, focused on backend skills" beats "summarize this resume."</li>
+<li><strong>Give examples (few-shot).</strong> Show 1–3 input/output pairs of the format you want. Often more reliable than instructions.</li>
+<li><strong>Role + task + constraints.</strong> "You are a senior recruiter. Given the JD and resume below, score 1–10 and list 3 strengths and 2 gaps."</li>
+<li><strong>Output format</strong> — request strict JSON with a schema, then parse. Use <strong>structured output</strong> (OpenAI JSON mode, Anthropic tool use) when available.</li>
+<li><strong>Chain of thought / "think step by step"</strong> for reasoning tasks.</li>
+<li><strong>Temperature 0 (or near)</strong> for deterministic / extraction tasks; higher only for creative work.</li>
+<li><strong>Test like code</strong> — keep a set of golden inputs and run prompts through an eval harness before changes.</li>
+</ul>
+</div>
+</details>
+<details class="qa">
+<summary>How do you reduce LLM latency and cost?</summary>
+<div class="qa-body">
+<p>LLM calls are both slow and expensive — these compound at scale. My toolkit:</p>
+<ul>
+<li><strong>Cache</strong> — semantic cache (vector similarity) for repeat or near-duplicate queries. On our platform we cache JD embeddings and the matched-resume list keyed by JD hash.</li>
+<li><strong>Smaller models for easier sub-tasks</strong> — classification, extraction, reranking don't need GPT-4. Use Mistral 7B, Llama 3 8B, or a fine-tuned small model.</li>
+<li><strong>Streaming</strong> — improves perceived latency; users see output as it arrives.</li>
+<li><strong>Batch + parallelize</strong> — concurrent calls for unrelated sub-prompts.</li>
+<li><strong>Truncate context</strong> — don't pass the whole document if the model only needs a section.</li>
+<li><strong>Prompt caching</strong> (Anthropic, Gemini) for static system prompts.</li>
+<li><strong>Async pipelines</strong> — heavy LLM work in Kafka workers, not synchronous APIs.</li>
+<li><strong>Token quotas</strong> per user/tenant for cost protection.</li>
+</ul>
+<p>Result on our match service: dropped match latency from 4 s to ~600 ms and cut monthly token spend nearly in half.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Tool calling / function calling</summary>
+<div class="qa-body">
+<p><strong>Tool calling</strong> lets the LLM call external functions / APIs in a structured way. You describe tools with JSON schemas; the model decides when to invoke one and produces arguments.</p>
+<pre><code>tools: [
   { name: "lookupCandidate", parameters: { id: "string" } },
   { name: "sendInterviewInvite", parameters: { candidateId, slot } }
 ]
 // Model returns: { tool: "lookupCandidate", args: { id: "C-123" } }
 // Your code executes, returns result, model continues.</code></pre>
-          <p>Builds agentic flows: the model decides which tool, you execute, feed the result back, loop until done.</p>
-          <p>On a recruiter-assistant feature I built, tool calling was used for: <code>search_candidates</code>, <code>get_resume</code>, <code>send_invite</code>, <code>schedule_meeting</code>. The LLM is the planner; tools are deterministic. Important: <strong>always validate tool arguments server-side</strong> — never trust the model to send safe inputs. Authorize like any other API call.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Hallucinations — what causes them, how to mitigate?</summary>
-        <div class="qa-body">
-          <p><strong>Hallucination</strong> = the model produces fluent text that's confidently wrong — fabricated facts, invented citations, made-up APIs. Root cause: an LLM optimizes for plausible-next-token, not truth.</p>
-          <p>Mitigations:</p>
-          <ul>
-            <li><strong>Ground with RAG</strong> — feed authoritative context; instruct the model to answer only from it; insist on citations.</li>
-            <li><strong>Low temperature</strong> for factual tasks.</li>
-            <li><strong>Structured output</strong> with schemas — harder to make up shape than free text.</li>
-            <li><strong>Verify</strong> — when an answer matters (linking to a real candidate, real product), check IDs exist before returning.</li>
-            <li><strong>Self-check / critique</strong> — a second model pass asking "is this fully supported by the context?"</li>
-            <li><strong>Set user expectations</strong> — show sources, "AI-generated, verify before acting".</li>
-            <li><strong>Eval harness</strong> with hallucination-specific tests so we catch regressions.</li>
-          </ul>
-          <p>Can't be eliminated entirely; design around it.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>How do you evaluate an LLM application?</summary>
-        <div class="qa-body">
-          <p>Without evals, every prompt change is guesswork. My approach:</p>
-          <ul>
-            <li><strong>Golden set</strong> — 50–500 hand-curated input/expected-output pairs for the most critical paths. Stored in a repo, versioned.</li>
-            <li><strong>Automated metrics</strong> where possible: exact-match for extraction, BLEU/ROUGE for short generations, custom rule checks for format.</li>
-            <li><strong>LLM-as-judge</strong> — a stronger model scores outputs on rubric criteria (accuracy, helpfulness, format). Calibrate with human spot-checks; can be noisy.</li>
-            <li><strong>Human eval</strong> on a sample — gold standard but expensive. Use for high-stakes flows.</li>
-            <li><strong>Production telemetry</strong> — log queries + responses (with consent/privacy controls), thumbs-up/down feedback, drop-offs.</li>
-            <li><strong>CI integration</strong> — block prompt changes that regress the golden set beyond a threshold.</li>
-          </ul>
-          <p>Frameworks I've looked at: LangSmith, Braintrust, Promptfoo, Ragas (for RAG). The pattern matters more than the tool.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>RAG vs fine-tuning — when which?</summary>
-        <div class="qa-body">
-          <p>Different tools for different problems.</p>
-          <p><strong>RAG</strong> adds <em>knowledge</em> — facts, docs, latest data. Best when:</p>
-          <ul>
-            <li>The knowledge changes often (you can update without retraining).</li>
-            <li>You need citations / traceability.</li>
-            <li>You have a lot of grounding documents.</li>
-          </ul>
-          <p><strong>Fine-tuning</strong> adapts <em>behavior or style</em> — tone, format, domain jargon, specific tasks. Best when:</p>
-          <ul>
-            <li>You need a specific output style or structure consistently.</li>
-            <li>You can produce high-quality training pairs (~1000+).</li>
-            <li>Latency/cost is critical — smaller fine-tuned model can beat a larger general one.</li>
-          </ul>
-          <p>They combine well: fine-tune for style + RAG for knowledge. <strong>Start with RAG and prompting</strong> — 90% of use cases solved without fine-tuning. Reach for fine-tuning only when prompting plateaus.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Safety, PII, prompt injection — production concerns</summary>
-        <div class="qa-body">
-          <p>Production LLM apps need a security mindset.</p>
-          <ul>
-            <li><strong>PII handling</strong> — don't send user PII to third-party APIs unless covered by your DPA. Mask or redact (regex + NER) before sending; log minimally.</li>
-            <li><strong>Prompt injection</strong> — user input containing "ignore previous instructions and …" can hijack your prompt. Mitigations: separate system vs user roles, sanitize, never let model output drive privileged actions without authorization checks, isolate untrusted text in clearly tagged sections.</li>
-            <li><strong>Tool authorization</strong> — every tool call goes through real RBAC, not "the model said it was OK."</li>
-            <li><strong>Output filtering</strong> — content moderation APIs to catch unsafe outputs (toxic, harmful, leakage).</li>
-            <li><strong>Rate limits + quotas</strong> per user — protect against abuse and runaway costs.</li>
-            <li><strong>Logging + audit</strong> — keep prompts/responses for incident investigation; consider PII redaction in logs.</li>
-            <li><strong>Vendor risk</strong> — multi-provider abstraction so you can fail over (Anthropic ↔ OpenAI ↔ Bedrock).</li>
-          </ul>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>How would you architect a production AI feature?</summary>
-        <div class="qa-body">
-          <p>My reference architecture for an LLM-powered feature in production:</p>
-          <ul>
-            <li><strong>Synchronous edge</strong>: API gateway → auth → rate limit → feature service.</li>
-            <li><strong>Decide sync vs async</strong>: if &gt;3 s expected, push to a Kafka topic and return a job ID; client polls or websocket.</li>
-            <li><strong>Retrieval layer</strong>: ES + vector DB; hybrid retrieval; small cache for hot queries.</li>
-            <li><strong>LLM gateway</strong>: a thin internal service that abstracts providers (OpenAI / Anthropic / Bedrock), with circuit breaker, retry, budget enforcement, and prompt caching.</li>
-            <li><strong>Worker pool</strong>: scales on queue depth (Kafka lag based HPA).</li>
-            <li><strong>State store</strong>: Mongo or Postgres for jobs and outputs; S3 for large artifacts.</li>
-            <li><strong>Observability</strong>: log prompts + responses (with privacy controls), distributed tracing per request, dashboards for token usage, latency, error rate per model.</li>
-            <li><strong>Evals</strong> in CI on the golden set before prompt changes ship.</li>
-            <li><strong>Feature flags</strong> to switch models/prompts without redeploy.</li>
-          </ul>
-          <p>This is roughly the shape of the AI match service I worked on.</p>
-        </div>
-      </details>
-
-    </div>
-
-  </main>
-
-  <script src="main.js"></script>
+<p>Builds agentic flows: the model decides which tool, you execute, feed the result back, loop until done.</p>
+<p>On a recruiter-assistant feature I built, tool calling was used for: <code>search_candidates</code>, <code>get_resume</code>, <code>send_invite</code>, <code>schedule_meeting</code>. The LLM is the planner; tools are deterministic. Important: <strong>always validate tool arguments server-side</strong> — never trust the model to send safe inputs. Authorize like any other API call.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Hallucinations — what causes them, how to mitigate?</summary>
+<div class="qa-body">
+<p><strong>Hallucination</strong> = the model produces fluent text that's confidently wrong — fabricated facts, invented citations, made-up APIs. Root cause: an LLM optimizes for plausible-next-token, not truth.</p>
+<p>Mitigations:</p>
+<ul>
+<li><strong>Ground with RAG</strong> — feed authoritative context; instruct the model to answer only from it; insist on citations.</li>
+<li><strong>Low temperature</strong> for factual tasks.</li>
+<li><strong>Structured output</strong> with schemas — harder to make up shape than free text.</li>
+<li><strong>Verify</strong> — when an answer matters (linking to a real candidate, real product), check IDs exist before returning.</li>
+<li><strong>Self-check / critique</strong> — a second model pass asking "is this fully supported by the context?"</li>
+<li><strong>Set user expectations</strong> — show sources, "AI-generated, verify before acting".</li>
+<li><strong>Eval harness</strong> with hallucination-specific tests so we catch regressions.</li>
+</ul>
+<p>Can't be eliminated entirely; design around it.</p>
+</div>
+</details>
+<details class="qa">
+<summary>How do you evaluate an LLM application?</summary>
+<div class="qa-body">
+<p>Without evals, every prompt change is guesswork. My approach:</p>
+<ul>
+<li><strong>Golden set</strong> — 50–500 hand-curated input/expected-output pairs for the most critical paths. Stored in a repo, versioned.</li>
+<li><strong>Automated metrics</strong> where possible: exact-match for extraction, BLEU/ROUGE for short generations, custom rule checks for format.</li>
+<li><strong>LLM-as-judge</strong> — a stronger model scores outputs on rubric criteria (accuracy, helpfulness, format). Calibrate with human spot-checks; can be noisy.</li>
+<li><strong>Human eval</strong> on a sample — gold standard but expensive. Use for high-stakes flows.</li>
+<li><strong>Production telemetry</strong> — log queries + responses (with consent/privacy controls), thumbs-up/down feedback, drop-offs.</li>
+<li><strong>CI integration</strong> — block prompt changes that regress the golden set beyond a threshold.</li>
+</ul>
+<p>Frameworks I've looked at: LangSmith, Braintrust, Promptfoo, Ragas (for RAG). The pattern matters more than the tool.</p>
+</div>
+</details>
+<details class="qa">
+<summary>RAG vs fine-tuning — when which?</summary>
+<div class="qa-body">
+<p>Different tools for different problems.</p>
+<p><strong>RAG</strong> adds <em>knowledge</em> — facts, docs, latest data. Best when:</p>
+<ul>
+<li>The knowledge changes often (you can update without retraining).</li>
+<li>You need citations / traceability.</li>
+<li>You have a lot of grounding documents.</li>
+</ul>
+<p><strong>Fine-tuning</strong> adapts <em>behavior or style</em> — tone, format, domain jargon, specific tasks. Best when:</p>
+<ul>
+<li>You need a specific output style or structure consistently.</li>
+<li>You can produce high-quality training pairs (~1000+).</li>
+<li>Latency/cost is critical — smaller fine-tuned model can beat a larger general one.</li>
+</ul>
+<p>They combine well: fine-tune for style + RAG for knowledge. <strong>Start with RAG and prompting</strong> — 90% of use cases solved without fine-tuning. Reach for fine-tuning only when prompting plateaus.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Safety, PII, prompt injection — production concerns</summary>
+<div class="qa-body">
+<p>Production LLM apps need a security mindset.</p>
+<ul>
+<li><strong>PII handling</strong> — don't send user PII to third-party APIs unless covered by your DPA. Mask or redact (regex + NER) before sending; log minimally.</li>
+<li><strong>Prompt injection</strong> — user input containing "ignore previous instructions and …" can hijack your prompt. Mitigations: separate system vs user roles, sanitize, never let model output drive privileged actions without authorization checks, isolate untrusted text in clearly tagged sections.</li>
+<li><strong>Tool authorization</strong> — every tool call goes through real RBAC, not "the model said it was OK."</li>
+<li><strong>Output filtering</strong> — content moderation APIs to catch unsafe outputs (toxic, harmful, leakage).</li>
+<li><strong>Rate limits + quotas</strong> per user — protect against abuse and runaway costs.</li>
+<li><strong>Logging + audit</strong> — keep prompts/responses for incident investigation; consider PII redaction in logs.</li>
+<li><strong>Vendor risk</strong> — multi-provider abstraction so you can fail over (Anthropic ↔ OpenAI ↔ Bedrock).</li>
+</ul>
+</div>
+</details>
+<details class="qa">
+<summary>How would you architect a production AI feature?</summary>
+<div class="qa-body">
+<p>My reference architecture for an LLM-powered feature in production:</p>
+<ul>
+<li><strong>Synchronous edge</strong>: API gateway → auth → rate limit → feature service.</li>
+<li><strong>Decide sync vs async</strong>: if &gt;3 s expected, push to a Kafka topic and return a job ID; client polls or websocket.</li>
+<li><strong>Retrieval layer</strong>: ES + vector DB; hybrid retrieval; small cache for hot queries.</li>
+<li><strong>LLM gateway</strong>: a thin internal service that abstracts providers (OpenAI / Anthropic / Bedrock), with circuit breaker, retry, budget enforcement, and prompt caching.</li>
+<li><strong>Worker pool</strong>: scales on queue depth (Kafka lag based HPA).</li>
+<li><strong>State store</strong>: Mongo or Postgres for jobs and outputs; S3 for large artifacts.</li>
+<li><strong>Observability</strong>: log prompts + responses (with privacy controls), distributed tracing per request, dashboards for token usage, latency, error rate per model.</li>
+<li><strong>Evals</strong> in CI on the golden set before prompt changes ship.</li>
+<li><strong>Feature flags</strong> to switch models/prompts without redeploy.</li>
+</ul>
+<p>This is roughly the shape of the AI match service I worked on.</p>
+</div>
+</details>
+</div>
+</main>
+<script src="main.js"></script>
 </body>
 </html>

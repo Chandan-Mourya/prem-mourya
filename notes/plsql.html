@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<title>Oracle PL/SQL · Notes</title>
+<link href="../assets/img/logo.png" rel="icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
+</head>
+<body>
+<header class="topbar">
+<div class="topbar-inner">
+<a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+<div class="search-wrap">
+<i class="bi bi-search"></i>
+<input autocomplete="off" id="search" placeholder="Search within Oracle PL/SQL..." spellcheck="false" type="search"/>
+<span class="search-shortcut">/</span>
+</div>
+<div class="topbar-actions">
+<button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+<button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+</div>
+</div>
+</header>
+<main class="topic-page">
+<div class="topic-page-header">
+<div class="topic-page-eyebrow">10 · PL/SQL</div>
+<h1>Oracle PL/SQL</h1>
+<p class="topic-page-desc">Procedures, packages, triggers, cursors, bulk collect.</p>
+<div class="topic-page-meta">
+<span><strong>41</strong> questions</span>
+<span>Press <span class="hint-kbd">/</span> to search</span>
+</div>
+</div>
+<div class="no-results" id="noResults">No matches.</div>
+<div class="qa-list">
+<details class="qa">
+<summary>What is the difference between procedure, function, package, trigger? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">In Oracle PL/SQL: <strong>procedure</strong> performs actions; <strong>function</strong> returns a value; <strong>package</strong> groups related code; <strong>trigger</strong> runs automatically on DML.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to procedure.</div>
+<p>Posting, batch update — may use OUT parameters, no return value required.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to function.</div>
+<p>Calculate interest — must RETURN; can be used in SQL SELECT.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to package.</div>
+<p>Spec + body; shared variables; better organization for large banking logic.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to trigger.</div>
+<p>BEFORE/AFTER INSERT/UPDATE — audit, validation; watch mutating table error.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Banking: business rules in packages; audit in triggers.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is PL/SQL? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>PL/SQL (Procedural Language/SQL)</strong> is Oracle's procedural extension to SQL — combining SQL DML/DQL with loops, conditions, cursors, exception handling, and modular programming constructs.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Key features</div>
+<p>Block structure: DECLARE (variables), BEGIN (executable), EXCEPTION (error handling), END.</p>
+<p>Tight SQL integration: SQL statements embedded directly in PL/SQL blocks — no connection overhead per statement.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking use</div>
+<p>EOD batch interest accrual, charge posting, reconciliation checks — all implemented as PL/SQL packages.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>PL/SQL processes data close to the database, eliminating network round trips for batch operations on millions of rows.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Difference between SQL and PL/SQL. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>SQL</strong> is a declarative query language for data manipulation; <strong>PL/SQL</strong> adds procedural constructs (loops, conditions, exception handling) to build complex business logic close to the data.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">SQL</div>
+<p>Set-based operations: SELECT, INSERT, UPDATE, DELETE, MERGE — one statement, one result set.</p>
+<p>No variables, loops, or conditions — pure declarative.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">PL/SQL</div>
+<p>Procedural: variables, IF-THEN-ELSE, loops (FOR, WHILE, LOOP), cursors, exception handlers.</p>
+<p>Can embed SQL statements; execute multiple SQL statements in sequence as a transaction.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use SQL for set-based data retrieval; PL/SQL when business logic requires iteration, conditions, or exception handling.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is procedure? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A PL/SQL <strong>procedure</strong> is a named, stored, reusable block that performs an action — accepting IN, OUT, or IN OUT parameters but not returning a value via RETURN.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Syntax</div>
+<p>CREATE OR REPLACE PROCEDURE calculate_interest(p_date IN DATE, p_count OUT NUMBER) IS BEGIN ... END;</p>
+<p>Called with EXEC or from another block: calculate_interest(SYSDATE, v_count);</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking use</div>
+<p>EOD procedures: calculate_daily_interest(p_date), post_monthly_charges(p_month), generate_statements(p_date).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Procedures encapsulate multi-step business operations; use packages to group related procedures.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is function? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A PL/SQL <strong>function</strong> is a named block that returns exactly one value — can be called in SQL SELECT statements if it is a pure function.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Syntax</div>
+<p>CREATE OR REPLACE FUNCTION calculate_emi(p_principal NUMBER, p_rate NUMBER, p_months NUMBER) RETURN NUMBER IS BEGIN ... RETURN v_emi; END;</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">SQL usage</div>
+<p>SELECT account_id, calculate_emi(loan_amount, interest_rate, tenure) emi FROM loan_accounts;</p>
+<p>Restriction for SQL usage: cannot use DML inside function (unless autonomous transaction), no OUT params.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use functions for calculations that return a single value and may be reused in SQL queries.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Procedure vs function. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>procedure</strong> performs an action with IN/OUT params and no RETURN; a <strong>function</strong> returns a single value and can be used in SQL expressions.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Key differences</div>
+<p>Function has a RETURN clause (mandatory); procedure does not. Function can be called in SQL SELECT; procedure cannot.</p>
+<p>Procedure can have multiple OUT parameters to return multiple values; function returns one value.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking choice</div>
+<p>Procedure: post_emi_collection(p_account, p_date) — performs DML, has side effects.</p>
+<p>Function: get_available_balance(p_account) RETURN NUMBER — pure calculation used in queries.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is package? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A PL/SQL <strong>package</strong> groups related procedures, functions, variables, cursors, and exceptions into a named module — providing encapsulation and improved performance.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Benefits</div>
+<p>Encapsulation: spec (public interface) vs body (private implementation) — callers only see the spec.</p>
+<p>Performance: entire package loaded into shared memory on first call — subsequent calls use cached code.</p>
+<p>Session state: package variables persist for the duration of the session — useful for caching lookups.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>PKG_INTEREST_CALC: package with accrual procedures, interest functions, and shared constants for all interest-related logic.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Prefer packages over standalone procedures/functions — they reduce recompilation dependencies and organize module logic.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Package specification vs package body. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">The <strong>package specification</strong> declares the public interface (procedure/function signatures, public types/variables); the <strong>package body</strong> contains the implementation.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Specification</div>
+<p>CREATE OR REPLACE PACKAGE pkg_account IS PROCEDURE open_account(...); FUNCTION get_balance(...) RETURN NUMBER; END;</p>
+<p>Callers only need the spec; body can be changed without recompiling callers (if spec unchanged).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Body</div>
+<p>CREATE OR REPLACE PACKAGE BODY pkg_account IS PROCEDURE open_account IS BEGIN ... END; ... END;</p>
+<p>Can have private procedures/functions not declared in spec — internal helpers.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Changing the body without changing the spec doesn't invalidate dependent objects — key for patching.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is trigger? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A PL/SQL <strong>trigger</strong> is a named block that fires automatically in response to a DML event (INSERT, UPDATE, DELETE) or DDL/system event on a table or view.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Usage</div>
+<p>BEFORE INSERT trigger: auto-populate created_by, created_date, generate sequence-based ID.</p>
+<p>AFTER UPDATE trigger: write audit log entry to audit_trail table when sensitive field changes.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking use</div>
+<p>Trigger on account_transactions: AFTER INSERT log every new transaction to audit_log with user, timestamp, amounts.</p>
+<p>Trigger on account_master: BEFORE UPDATE validate status transitions (ACTIVE→DORMANT is OK; CLOSED→ACTIVE is not).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use triggers for cross-cutting concerns (audit, defaults) — avoid complex business logic in triggers.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Types of triggers. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Oracle triggers are classified by timing (BEFORE/AFTER/INSTEAD OF), level (row/statement), and event type (DML/DDL/system).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">By timing</div>
+<p>BEFORE: fires before the DML; can modify :NEW values. AFTER: fires after DML; cannot modify :NEW.</p>
+<p>INSTEAD OF: fires on views that cannot be directly updated — redirects DML to base tables.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">By level</div>
+<p>Row-level (FOR EACH ROW): fires once per affected row; accesses :OLD and :NEW values.</p>
+<p>Statement-level: fires once per DML statement regardless of rows affected; no :OLD/:NEW access.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Before trigger vs after trigger. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>BEFORE trigger</strong> fires before the DML operation, allowing modification of :NEW values; <strong>AFTER trigger</strong> fires after the DML, useful for auditing the committed change.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">BEFORE</div>
+<p>Can modify :NEW.column_value before the row is inserted/updated — use for defaulting and validation.</p>
+<p>Example: :NEW.created_date := SYSDATE; :NEW.created_by := SYS_CONTEXT('USERENV','SESSION_USER');</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">AFTER</div>
+<p>DML is already applied; cannot modify :NEW. Ideal for audit logging, raising events, sending notifications.</p>
+<p>Example: AFTER UPDATE OF status ON accounts — write status change to accounts_audit table.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use BEFORE for data defaulting/validation; AFTER for audit logging and cascading effects.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Row-level trigger vs statement-level trigger. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>row-level trigger</strong> fires once for each row affected by the DML; a <strong>statement-level trigger</strong> fires once per DML statement regardless of rows affected.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Row-level (FOR EACH ROW)</div>
+<p>Has access to :OLD (original values) and :NEW (new values) for the current row.</p>
+<p>Use for per-row audit logging, per-row validation, or computing derived values.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Statement-level</div>
+<p>No access to individual row values; fires once even if DML affects 1000 rows.</p>
+<p>Use for: logging the occurrence of a DML event, enforcing non-row-specific constraints.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Row triggers are most common in banking for per-account audit; statement triggers for monitoring DDL events.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is cursor? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>cursor</strong> is a named context area in the PGA that holds the result of a SQL query, allowing row-by-row processing.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Types</div>
+<p>Implicit cursor: automatically created by Oracle for single-row DML and SELECT INTO; attributes: SQL%ROWCOUNT, SQL%FOUND.</p>
+<p>Explicit cursor: declared by programmer with CURSOR c IS SELECT ...; controlled with OPEN/FETCH/CLOSE.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Best practice</div>
+<p>Use cursor FOR loops: FOR rec IN cursor LOOP ... END LOOP — Oracle auto-opens, fetches, closes.</p>
+<p>For large datasets, use BULK COLLECT + FORALL to avoid row-by-row context switching.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Avoid fetching millions of rows in a cursor loop — use BULK COLLECT with LIMIT for batch processing.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Implicit cursor vs explicit cursor. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Implicit cursors</strong> are automatically managed by Oracle for DML and SELECT INTO; <strong>explicit cursors</strong> are declared and controlled by the programmer for multi-row queries.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Implicit</div>
+<p>Created automatically for: INSERT, UPDATE, DELETE, SELECT INTO. Attributes: SQL%FOUND, SQL%NOTFOUND, SQL%ROWCOUNT.</p>
+<p>SELECT INTO raises NO_DATA_FOUND if no rows, TOO_MANY_ROWS if multiple — must handle exceptions.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Explicit</div>
+<p>CURSOR c IS SELECT account_id, balance FROM accounts WHERE status='ACTIVE'; OPEN c; FETCH c INTO v_id, v_bal; CLOSE c;</p>
+<p>More control over fetch size; can use BULK COLLECT; can pass as parameter (ref cursor).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use explicit cursors for multi-row processing; use SELECT INTO with exception handling for single-row lookups.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Cursor vs ref cursor. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>static cursor</strong> has a fixed query defined at compile time; a <strong>ref cursor</strong> is a pointer to a cursor result set whose query is determined at runtime.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Static cursor</div>
+<p>CURSOR c IS SELECT * FROM accounts WHERE status = 'ACTIVE'; — query fixed at compile time.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Ref cursor</div>
+<p>TYPE ref_cur IS REF CURSOR; or SYS_REFCURSOR (weak); OPEN p_cur FOR SELECT * FROM accounts WHERE branch = p_branch;</p>
+<p>Passed as OUT parameter from procedure; Java JDBC receives it as a ResultSet via CallableStatement.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking use</div>
+<p>FLEXCUBE APIs: procedure takes parameters, opens ref cursor with dynamic query, Java layer fetches results.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Ref cursors enable dynamic queries and result set return from procedures — standard pattern in FLEXCUBE API layer.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Strong ref cursor vs weak ref cursor. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>strong ref cursor</strong> is typed (bound to a specific row type); a <strong>weak ref cursor</strong> (SYS_REFCURSOR) is untyped and can be opened for any query.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Strong</div>
+<p>TYPE account_cur IS REF CURSOR RETURN accounts%ROWTYPE; — compiler checks column compatibility.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Weak (SYS_REFCURSOR)</div>
+<p>SYS_REFCURSOR can be opened for any SELECT query — flexible but no compile-time type checking.</p>
+<p>Standard in FLEXCUBE API procedures — SYS_REFCURSOR OUT parameter passed back to Java.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use strong ref cursors when the query shape is known and fixed; SYS_REFCURSOR for flexible dynamic queries.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is bulk collect? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Bulk COLLECT</strong> fetches many rows into a collection at once; <strong>FORALL</strong> runs DML for all elements in a collection in one context switch.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to why.</div>
+<p>Row-by-row processing is slow; bulk reduces context switches between SQL and PL/SQL.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to example.</div>
+<p>EOD batch loading 100k transactions — use LIMIT bulk fetch in loops.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use for high-volume banking batches.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is forall? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Bulk COLLECT</strong> fetches many rows into a collection at once; <strong>FORALL</strong> runs DML for all elements in a collection in one context switch.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to why.</div>
+<p>Row-by-row processing is slow; bulk reduces context switches between SQL and PL/SQL.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to example.</div>
+<p>EOD batch loading 100k transactions — use LIMIT bulk fetch in loops.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use for high-volume banking batches.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Bulk collect vs forall. <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Bulk COLLECT</strong> fetches many rows into a collection at once; <strong>FORALL</strong> runs DML for all elements in a collection in one context switch.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to why.</div>
+<p>Row-by-row processing is slow; bulk reduces context switches between SQL and PL/SQL.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to example.</div>
+<p>EOD batch loading 100k transactions — use LIMIT bulk fetch in loops.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use for high-volume banking batches.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is exception handling in PL/SQL? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">PL/SQL exception handling catches runtime errors in the EXCEPTION section, allowing graceful error recovery, logging, and re-raising or converting to custom exceptions.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Structure</div>
+<p>EXCEPTION WHEN NO_DATA_FOUND THEN handle; WHEN TOO_MANY_ROWS THEN handle; WHEN OTHERS THEN log and re-raise.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Best practices</div>
+<p>Always include WHEN OTHERS THEN as last resort — log SQLCODE, SQLERRM, and re-raise with RAISE.</p>
+<p>Never use WHEN OTHERS THEN NULL — silently swallowing exceptions hides critical errors in banking.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Exception handling in banking PL/SQL must log error details (SQLCODE, SQLERRM, business context) before raising.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Predefined vs user-defined exceptions. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Predefined exceptions</strong> are Oracle's built-in named exceptions; <strong>user-defined exceptions</strong> are declared by the programmer and raised explicitly for business rule violations.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Predefined</div>
+<p>NO_DATA_FOUND, TOO_MANY_ROWS, ZERO_DIVIDE, DUP_VAL_ON_INDEX, VALUE_ERROR — raised automatically by Oracle.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">User-defined</div>
+<p>DECLARE insufficient_balance EXCEPTION; ... RAISE insufficient_balance; EXCEPTION WHEN insufficient_balance THEN ...</p>
+<p>PRAGMA EXCEPTION_INIT(my_exc, -20001) to associate with error number for RAISE_APPLICATION_ERROR.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking use</div>
+<p>RAISE_APPLICATION_ERROR(-20100, 'Insufficient available balance for debit of '||p_amount) — meaningful error to caller.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use RAISE_APPLICATION_ERROR with specific error codes (-20000 to -20999) for business rule violations.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is autonomous transaction? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">An <strong>autonomous transaction</strong> (PRAGMA AUTONOMOUS_TRANSACTION) runs in a separate transaction context — commits or rolls back independently from the calling transaction.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Usage</div>
+<p>PRAGMA AUTONOMOUS_TRANSACTION in procedure declaration; it commits/rollbacks without affecting caller's transaction.</p>
+<p>Use case: error logging procedure that must commit the log even if the calling transaction rolls back.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking example</div>
+<p>log_error() procedure: PRAGMA AUTONOMOUS_TRANSACTION; INSERT INTO error_log; COMMIT; — log persists even when caller rolls back on exception.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Caution</div>
+<p>Autonomous transactions can see committed data from other sessions but not uncommitted data from caller — use carefully to avoid inconsistency.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Autonomous transactions are essential for audit logging and error logging in PL/SQL — ensure log survives rollback.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is pragma exception_init? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>PRAGMA EXCEPTION_INIT</strong> associates a user-defined exception variable with a specific Oracle error number, enabling catching of named Oracle errors.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Syntax</div>
+<p>DECLARE deadlock_err EXCEPTION; PRAGMA EXCEPTION_INIT(deadlock_err, -60); BEGIN ... EXCEPTION WHEN deadlock_err THEN ...</p>
+<p>Allows catching specific ORA- errors by name rather than checking SQLCODE in WHEN OTHERS.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking use</div>
+<p>PRAGMA EXCEPTION_INIT(dup_payment, -00001) — catches unique constraint violation when duplicate payment reference inserted.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is dynamic SQL? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Dynamic SQL</strong> in PL/SQL builds and executes SQL statements whose structure is determined at runtime — using EXECUTE IMMEDIATE or DBMS_SQL.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">EXECUTE IMMEDIATE</div>
+<p>EXECUTE IMMEDIATE 'SELECT COUNT(*) FROM ' || p_table_name INTO v_count; — simple dynamic queries.</p>
+<p>With bind variables: EXECUTE IMMEDIATE 'SELECT balance FROM accounts WHERE id = :1' USING p_id;</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Use cases</div>
+<p>Dynamic table names, dynamic WHERE clauses, DDL in PL/SQL (CREATE, ALTER — cannot use static SQL for DDL).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Security</div>
+<p>Always use bind variables (:1, :name) for values — concatenating user input into dynamic SQL causes SQL injection.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Avoid dynamic SQL for simple cases — prefer static SQL. When needed, always use bind variables for user-supplied values.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Execute immediate vs DBMS_SQL. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>EXECUTE IMMEDIATE</strong> is simpler for most dynamic SQL; <strong>DBMS_SQL</strong> provides advanced features like unknown column count at compile time and re-use of parsed cursors.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">EXECUTE IMMEDIATE</div>
+<p>Simpler syntax; supports bind variables; executes and fetches in one step for queries.</p>
+<p>Limitation: column count and types must be known at compile time.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">DBMS_SQL</div>
+<p>Handles truly dynamic result sets (unknown columns); supports DESCRIBE_COLUMNS to discover column structure.</p>
+<p>More verbose but powerful for generic report generators or schema-agnostic utilities.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use EXECUTE IMMEDIATE for 95% of dynamic SQL; DBMS_SQL only when column structure is completely unknown at runtime.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is mutating table error? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">ORA-04091 (mutating table error) occurs when a row-level trigger tries to query or modify the same table the triggering DML is currently changing.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Cause</div>
+<p>Row-level AFTER UPDATE trigger on accounts tries to SELECT FROM accounts — table is mid-DML, inconsistent state.</p>
+<p>Oracle prevents dirty reads within the same DML statement.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Solutions</div>
+<p>Compound trigger (Oracle 11g+): use AFTER STATEMENT section for the query/DML, accumulating data in AFTER EACH ROW.</p>
+<p>Autonomous transaction in trigger — reads committed state; use carefully (won't see uncommitted current changes).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Compound triggers are the preferred Oracle solution — they handle accumulation and post-statement processing cleanly.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you avoid mutating table error? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Avoid ORA-04091 using a <strong>compound trigger</strong> that separates row-level accumulation from statement-level processing, or by moving logic out of triggers into the application layer.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Compound trigger</div>
+<p>BEFORE EACH ROW: accumulate affected IDs in package-level collection.</p>
+<p>AFTER STATEMENT: query/DML on the table using the accumulated IDs — table is stable at this point.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Application layer</div>
+<p>Move business logic from trigger to stored procedure called explicitly — avoids trigger context entirely.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What are collections in PL/SQL? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">PL/SQL <strong>collections</strong> are data structures storing multiple elements: <strong>associative arrays</strong>, <strong>nested tables</strong>, and <strong>varrays</strong>.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Types</div>
+<p>Associative array (index-by table): indexed by VARCHAR2 or PLS_INTEGER; sparse; cannot be stored in DB.</p>
+<p>Nested table: unordered, unbounded, can be stored in DB columns; supports SET operations.</p>
+<p>Varray: ordered, bounded (max size fixed at declaration); stored in DB columns.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking use</div>
+<p>BULK COLLECT INTO l_account_ids — collection holds fetched account IDs for FORALL DML.</p>
+<p>Associative array for in-memory lookup: l_rate_map('SAVINGS') := 0.035 — avoids repeated DB queries.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use associative arrays for session-scoped caches; nested tables for BULK COLLECT and set operations.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Nested table vs varray vs associative array. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Associative arrays</strong> are sparse key-indexed PL/SQL-only; <strong>nested tables</strong> are unordered, DB-storable, unbounded; <strong>varrays</strong> are ordered, bounded, DB-storable.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Comparison</div>
+<p>Associative array: best for in-memory lookup/cache; any key type; cannot store in DB column.</p>
+<p>Nested table: best for BULK COLLECT, DB storage, set operations (MULTISET UNION); sparse after DELETE.</p>
+<p>Varray: best when max size is known; stored inline in DB row (up to 4000 bytes) or out-of-line for larger.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use nested table for BULK COLLECT; associative array for in-memory dictionaries; varray for small ordered lists.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is `%TYPE` and `%ROWTYPE`? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>%TYPE</strong> anchors a variable's type to a column's datatype; <strong>%ROWTYPE</strong> anchors to a whole table or cursor row structure — both auto-adapt when the schema changes.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">%TYPE</div>
+<p>v_balance accounts.balance%TYPE; — if balance column changes from NUMBER(15,2) to NUMBER(18,4), code adapts automatically.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">%ROWTYPE</div>
+<p>v_account accounts%ROWTYPE; — v_account.account_id, v_account.balance etc. all available without individual declarations.</p>
+<p>FETCH cursor_name INTO v_account — fetches entire row into the record variable.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always use %TYPE and %ROWTYPE — they prevent type mismatch bugs when the underlying table schema changes.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you optimize PL/SQL code? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Optimize PL/SQL by replacing row-by-row processing with BULK COLLECT+FORALL, avoiding context switches, using bind variables, and leveraging set-based SQL over procedural loops.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Key optimizations</div>
+<p>BULK COLLECT with LIMIT 1000: fetch in batches, not row-by-row — reduces context switches dramatically.</p>
+<p>FORALL: single round-trip for all DML operations instead of one per row.</p>
+<p>Set-based SQL: replace cursor loop with single UPDATE/INSERT..SELECT — SQL engine processes in bulk.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Other tips</div>
+<p>Cache frequently used lookups in package-level associative arrays — avoid repeated SELECT per row.</p>
+<p>Use RETURNING clause: INSERT ... RETURNING id INTO v_id — avoids separate SELECT after INSERT.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>The biggest PL/SQL optimization gain is always replacing row-by-row loops with BULK COLLECT and set-based SQL.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you debug PL/SQL procedure? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">PL/SQL debugging uses DBMS_OUTPUT for simple tracing, Oracle SQL Developer's debugger for step-through, and custom logging tables for production troubleshooting.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Tools</div>
+<p>DBMS_OUTPUT.PUT_LINE('v_count='||v_count) — works in SQL*Plus/SQL Developer; disabled in production.</p>
+<p>SQL Developer debugger: set breakpoints, step through, inspect variable values — development environment only.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Production logging</div>
+<p>Log to debug_log table using autonomous transaction procedure: log_debug(p_proc, p_step, p_msg, p_data).</p>
+<p>Enable/disable via a parameter: if get_param('DEBUG_INTEREST_CALC') = 'Y' then log_debug(...); end if;</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Production debugging should use parameterized logging tables — DBMS_OUTPUT is invisible in production.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you log errors in PL/SQL? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">PL/SQL errors are logged using an autonomous transaction error-logging procedure that captures SQLCODE, SQLERRM, DBMS_UTILITY.FORMAT_ERROR_BACKTRACE, and business context.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Pattern</div>
+<p>EXCEPTION WHEN OTHERS THEN log_error(p_proc_name, p_account, SQLCODE, SQLERRM, DBMS_UTILITY.FORMAT_ERROR_BACKTRACE); RAISE;</p>
+<p>log_error() uses PRAGMA AUTONOMOUS_TRANSACTION — commits log entry even if calling transaction rolls back.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Log table</div>
+<p>error_log(error_id, proc_name, account_id, error_code, error_msg, stack_trace, created_at) — query for post-incident analysis.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>DBMS_UTILITY.FORMAT_ERROR_BACKTRACE gives the exact line number of the error — essential for debugging complex packages.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is commit and rollback? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>COMMIT</strong> permanently saves all DML changes made since the last commit/rollback; <strong>ROLLBACK</strong> undoes all uncommitted DML changes back to the last commit point.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Behaviour</div>
+<p>COMMIT: makes changes visible to other sessions; releases row locks; marks the transaction boundary.</p>
+<p>ROLLBACK: undoes all changes in the current transaction; releases locks; used on exception.</p>
+<p>ROLLBACK TO SAVEPOINT sp1: partial rollback to a named savepoint within the transaction.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>Fund transfer procedure: COMMIT only after both debit and credit are posted — never commit partial transactions.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>In banking PL/SQL, COMMIT exactly once at the end of the complete business transaction — never mid-transaction.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Can we commit inside trigger? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A regular trigger <strong>cannot COMMIT</strong> — it is part of the triggering transaction. However, an <strong>autonomous transaction</strong> trigger can COMMIT its own work independently.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Regular trigger</div>
+<p>COMMIT/ROLLBACK in a regular trigger raises ORA-04092 — the trigger cannot control the enclosing transaction.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Autonomous transaction trigger</div>
+<p>PRAGMA AUTONOMOUS_TRANSACTION in the trigger enables its own COMMIT/ROLLBACK.</p>
+<p>Use case: audit trigger that must persist its log even if the main transaction rolls back.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use autonomous transaction triggers sparingly — they can create data inconsistencies if not designed carefully.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is savepoint? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>SAVEPOINT</strong> marks a point in a transaction to which you can partially rollback without rolling back the entire transaction.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Usage</div>
+<p>SAVEPOINT sp_after_validation; ... ROLLBACK TO SAVEPOINT sp_after_validation; — undoes work after the savepoint.</p>
+<p>Multiple savepoints: release or rollback to specific points for fine-grained transaction control.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>EOD job with multiple accounts: SAVEPOINT before each account; if one account fails, ROLLBACK TO SAVEPOINT and continue with next account.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Savepoints enable partial rollback — useful for batch processing where one failed record should not abort the entire batch.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you schedule PL/SQL jobs? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">PL/SQL jobs are scheduled using <strong>DBMS_SCHEDULER</strong> (preferred, Oracle 10g+) or the legacy DBMS_JOB, defining programs, schedules, and job attributes.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">DBMS_SCHEDULER</div>
+<p>DBMS_SCHEDULER.CREATE_JOB(job_name=&gt;'EOD_INTEREST', job_type=&gt;'STORED_PROCEDURE', job_action=&gt;'PKG_EOD.calculate_interest', start_date=&gt;SYSDATE, repeat_interval=&gt;'FREQ=DAILY;BYHOUR=22;BYMINUTE=0', enabled=&gt;TRUE);</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking use</div>
+<p>EOD batch: schedule at 10 PM daily. Monthly fee posting: first day of month at midnight. NPA classification: nightly.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>DBMS_SCHEDULER provides logging, email notification on failure, and dependency chains — far superior to DBMS_JOB.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is DBMS_SCHEDULER? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>DBMS_SCHEDULER</strong> is Oracle's built-in job scheduler managing PL/SQL jobs, external programs, and job chains with logging, notification, and complex schedules.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Key objects</div>
+<p>Program: defines what to run (stored procedure, external script). Schedule: when to run (calendar expression).</p>
+<p>Job: combines program + schedule + attributes (logging level, email notification, priority).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Operations</div>
+<p>DBMS_SCHEDULER.RUN_JOB('EOD_INTEREST') — run immediately on demand. DBMS_SCHEDULER.DISABLE('JOB_NAME') — temporarily disable.</p>
+<p>DBA_SCHEDULER_JOB_RUN_DETAILS: query job history, status, actual start/end, error message.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>DBMS_SCHEDULER job run history is the first place to check when an EOD batch fails — shows exact error and timestamp.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is DBMS_OUTPUT? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>DBMS_OUTPUT</strong> is an Oracle built-in package that buffers text output during PL/SQL execution, displayed in SQL*Plus or SQL Developer after execution completes.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Usage</div>
+<p>DBMS_OUTPUT.PUT_LINE('Processing account: '||v_account_id); — writes to output buffer.</p>
+<p>Enable in SQL*Plus: SET SERVEROUTPUT ON SIZE UNLIMITED. In SQL Developer: View → DBMS Output panel.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Limitation</div>
+<p>Not visible during batch execution or in production web apps — use logging tables for production diagnostics.</p>
+<p>Buffer limited (default 1MB) — verbose output may truncate; set UNLIMITED for large outputs.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>DBMS_OUTPUT is for development/debugging only — use autonomous-transaction log tables for production diagnostics.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is DBMS_LOB? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>DBMS_LOB</strong> is Oracle's package for manipulating LOB (Large Object) values — CLOB, BLOB, NCLOB, BFILE — enabling read, write, append, copy, and search operations.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Common operations</div>
+<p>DBMS_LOB.READ(clob_col, amount, offset, buffer) — read portion of CLOB into buffer.</p>
+<p>DBMS_LOB.WRITEAPPEND(clob_col, amount, buffer) — append text to CLOB.</p>
+<p>DBMS_LOB.GETLENGTH(blob_col) — get length in bytes/chars.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking use</div>
+<p>FLEXCUBE stores SWIFT XML messages and document scans as CLOB/BLOB; DBMS_LOB used to extract or append XML content.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use DBMS_LOB for programmatic LOB manipulation; for simple reads, direct SQL or SUBSTR on CLOB may suffice.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is DBMS_ALERT / DBMS_PIPE? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>DBMS_ALERT</strong> provides asynchronous database event notification between sessions; <strong>DBMS_PIPE</strong> provides synchronous inter-session message passing within the same database.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">DBMS_ALERT</div>
+<p>Session A: DBMS_ALERT.SIGNAL('EOD_COMPLETE', 'date=2024-01-15'); Session B: DBMS_ALERT.WAITONE('EOD_COMPLETE', msg, status, timeout);</p>
+<p>Alert is transaction-based — signaled on COMMIT; used to notify downstream processes after batch completion.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">DBMS_PIPE</div>
+<p>DBMS_PIPE.SEND_MESSAGE: send to named pipe (private or public); DBMS_PIPE.RECEIVE_MESSAGE: receive from pipe.</p>
+<p>Not transaction-bound — message sent immediately regardless of transaction state.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>DBMS_ALERT is preferred for EOD/BOD completion notifications; DBMS_PIPE for quick inter-session communication.</p>
+</div>
+</div>
+</details>
+</div>
+</main>
+<script src="main.js"></script>
+</body>
+</html>

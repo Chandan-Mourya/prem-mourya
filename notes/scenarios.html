@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<title>Scenario-Based · Notes</title>
+<link href="../assets/img/logo.png" rel="icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
+</head>
+<body>
+<header class="topbar">
+<div class="topbar-inner">
+<a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+<div class="search-wrap">
+<i class="bi bi-search"></i>
+<input autocomplete="off" id="search" placeholder="Search within Scenario-Based..." spellcheck="false" type="search"/>
+<span class="search-shortcut">/</span>
+</div>
+<div class="topbar-actions">
+<button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+<button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+</div>
+</div>
+</header>
+<main class="topic-page">
+<div class="topic-page-header">
+<div class="topic-page-eyebrow">30 · Scenarios</div>
+<h1>Scenario-Based</h1>
+<p class="topic-page-desc">Production debugging scenarios for interviews.</p>
+<div class="topic-page-meta">
+<span><strong>15</strong> questions</span>
+<span>Press <span class="hint-kbd">/</span> to search</span>
+</div>
+</div>
+<div class="no-results" id="noResults">No matches.</div>
+<div class="qa-list">
+<details class="qa">
+<summary>API is slow in production. How will you debug? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Production debugging: stabilize first, gather evidence (logs, metrics, thread dump), reproduce, fix, RCA.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to steps.</div>
+<p>Check alerts and error rate spike time.</p>
+<p>Logs with correlation/trace id.</p>
+<p>Thread dump if CPU high; heap dump if OOM.</p>
+<p>DB slow query and downstream timeouts.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Communicate to business during Sev1.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>SQL query is taking 5 minutes. What will you do? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A slow SQL query is investigated using EXPLAIN PLAN, AWR/V$SQL, and index analysis — then fixed with indexes, query rewrite, or statistics refresh.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Investigation</div>
+<p>EXPLAIN PLAN FOR &lt;query&gt;; SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY) — look for FULL TABLE SCAN on large tables.</p>
+<p>Check V$SQL: SELECT elapsed_time, buffer_gets, disk_reads, executions FROM V$SQL WHERE sql_id = '&lt;id&gt;'.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Fixes</div>
+<p>Missing index: CREATE INDEX idx_txn_account ON transactions(account_id, txn_date) — if query filters on these columns.</p>
+<p>Stale statistics: EXEC DBMS_STATS.GATHER_TABLE_STATS('schema', 'transactions') — optimizer needs accurate stats.</p>
+<p>Query rewrite: replace correlated subquery with JOIN; replace function on indexed column with alternate expression.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Never tune without measuring — compare execution plan and elapsed time before and after each change.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Customer says transaction is debited but not credited. How will you investigate? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Investigate a debit-without-credit issue by tracing the transaction reference through application logs, DB audit tables, and GL postings to find where the credit was lost.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Step 1: verify debit</div>
+<p>Query account_transactions: SELECT * FROM account_transactions WHERE txn_ref = '&lt;ref&gt;' — confirm debit posting exists.</p>
+<p>Check debit amount, timestamp, and channel — get the exact transaction record.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Step 2: find credit</div>
+<p>Check beneficiary account transactions table. Check GL postings for this reference. Check OSB/MQ logs for message routing.</p>
+<p>If credit message was sent to queue but not processed: check DLQ and consumer logs for processing failure.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Resolution</div>
+<p>If credit was never posted: manual credit posting with proper authorization and audit trail.</p>
+<p>If credit was posted to wrong account: reverse and re-post with maker-checker approval.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Trace by transaction reference through every system hop — logs must carry the same reference for effective tracing.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Batch job failed during EOD. What will you do? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">EOD batch failure is handled by checking logs for the failed step, resolving root cause, and re-running from the failure point — not from the beginning.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Immediate</div>
+<p>Check DBMS_SCHEDULER job run details or batch log table: which step failed, error message, timestamp.</p>
+<p>Assess impact: which accounts were processed before failure? Safe to continue from failure point?</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Resolution</div>
+<p>Data issue: fix the bad record that caused failure; mark it as exception; continue batch.</p>
+<p>Code/resource issue: fix or add more space/memory; re-run the failed step only.</p>
+<p>Notify business: EOD delayed, estimated completion time, any impact on BOD opening.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Batch restartability from failure point is critical — design job tracking table from the start.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Message is stuck in queue. How will you debug? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A stuck queue message is debugged by checking consumer service health, examining the message payload for processing errors, and inspecting the DLQ for repeated failures.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Diagnosis</div>
+<p>Check consumer service logs: is it running? Any exception for this message type?</p>
+<p>Check DLQ: has the message been moved to DLQ (exceeded retry limit)?</p>
+<p>Browse message payload (IBM MQ Explorer or JMS browser): is the message malformed or missing required fields?</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Resolution</div>
+<p>Consumer down: restart consumer service; messages will be processed on reconnect.</p>
+<p>Poison message: fix the message data or consumer code; replay from DLQ after fix.</p>
+<p>Consumer too slow: scale up consumer instances or increase thread pool size.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>A message stuck in a payment queue is a potential failed transaction — escalate to operations team immediately.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>WebLogic server is down. What will you check? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">WebLogic server down is triaged by checking Node Manager status, server state, logs, and resource constraints — then restarting if no data-critical issue exists.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Check</div>
+<p>Admin Console: is admin server accessible? Check managed server state (FAILED, SHUTDOWN, UNKNOWN).</p>
+<p>Server log: domain/servers/&lt;name&gt;/logs/&lt;name&gt;.log — look for OOM, startup failure, or JVM crash.</p>
+<p>OS: check if JVM process is still running (ps -ef | grep weblogic). Check disk space and memory.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Recovery</div>
+<p>If Node Manager running: Admin Console → Servers → Control → Start. If not: ssh to server, start Node Manager, then start managed server.</p>
+<p>If OOM: adjust -Xmx before restart. If disk full: free space then restart.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always read the full server log before restarting — blindly restarting without understanding the cause leads to repeated outages.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Application is giving OutOfMemoryError. How will you handle? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">OutOfMemoryError is diagnosed via heap dump analysis to find the top retained objects, then fixed by fixing the memory leak or increasing heap.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Diagnosis</div>
+<p>Take heap dump: -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/dumps/ — auto-generated on OOM.</p>
+<p>Analyze with Eclipse MAT: find Leak Suspects, top retained objects, and their GC roots.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Fixes</div>
+<p>Memory leak: unbounded cache, static collections, unclosed resources — fix the root cause.</p>
+<p>Legitimate heap need: increase -Xmx if application genuinely needs more memory.</p>
+<p>Short-term: restart application; add OOM auto-restart via WebLogic server lifecycle management.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>OOM from a leak will recur after restart — always find and fix the leak, not just restart.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>REST API works in dev but fails in UAT. What will you check? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">API working in DEV but failing in UAT points to environment differences: configuration, data, certificates, network policies, or connection pool settings.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Checklist</div>
+<p>Configuration: compare application.properties/JNDI settings between DEV and UAT — DB URL, timeouts, API endpoints.</p>
+<p>SSL/TLS: UAT may use different certificates or enforce mTLS that DEV doesn't — check for SSLHandshakeException.</p>
+<p>Data: UAT has different/more data — check if query that works on DEV data fails on UAT volume or specific records.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Network</div>
+<p>Firewall rules: UAT may block outbound calls to external APIs that DEV allows — check connection refused errors.</p>
+<p>DNS: API endpoint resolved differently in UAT — verify with nslookup from UAT server.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Environment parity is the goal — document all differences between environments and address them before UAT.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>SOAP integration is failing with schema validation error. What will you do? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">SOAP schema validation errors mean the request or response XML doesn't conform to the WSDL's XSD — fix by comparing the actual XML against the expected schema.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Diagnosis</div>
+<p>Capture actual SOAP request/response using OSB message log or network proxy (Fiddler, Wireshark).</p>
+<p>Validate captured XML against XSD: xmllint --schema service.xsd request.xml — shows exact failing element.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Common causes</div>
+<p>Missing mandatory element in request, extra unexpected element, wrong data type (sending string where decimal expected).</p>
+<p>WSDL version mismatch: producer updated WSDL but consumer not refreshed — regenerate client stubs from latest WSDL.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Fix</div>
+<p>Update request XML structure to match schema. If schema change: coordinate with both producer and consumer teams.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always log the full SOAP envelope on validation errors — the element path in the error message tells you exactly what's wrong.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Deployment failed before production release. What will you do? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A deployment failure before production release requires stopping, diagnosing, fixing in lower environment first, then re-deploying — never forcing through a broken deployment.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Immediate</div>
+<p>Stop deployment: don't proceed with partial deployment to remaining servers — partial deployment causes split-brain.</p>
+<p>Check WebLogic deployment log and application startup log for the root exception.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Fix and redeploy</div>
+<p>Fix in DEV: reproduce and fix the deployment issue (missing JAR, wrong descriptor, port conflict).</p>
+<p>Redeploy to SIT/staging: verify successful deployment and smoke test before re-attempting production.</p>
+<p>Re-raise change request with updated artifact if required.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>A failed deployment is stressful — stay calm, diagnose first, never apply random fixes under pressure.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Bank wants new field in existing screen. How will you approach? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Adding a new field to an existing banking screen requires requirement analysis, impact assessment on DB schema and APIs, development, testing, and user training.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Analysis</div>
+<p>Understand the field: mandatory/optional, data type, validation, storage, and reporting requirements.</p>
+<p>Impact: DB schema change (ALTER TABLE), API change (new field in DTO), screen change, reports update.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Implementation</div>
+<p>DB: ALTER TABLE accounts ADD kyc_remarks VARCHAR2(500); — with appropriate migration script.</p>
+<p>API: add kycRemarks field to AccountDTO; update Swagger. Screen: add input field with validation.</p>
+<p>Migration: back-fill default value for existing records if field is mandatory.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>A seemingly simple new field can cascade to 10+ places — always do full impact analysis before estimating.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Bank wants custom business validation. Where will you implement it? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Custom business validation should be implemented at the service layer in Java (not in the database trigger or UI) for testability, maintainability, and clear separation of concerns.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Service layer</div>
+<p>Java @Service class: validate business rules before calling DB — amount limits, account status, AML flags.</p>
+<p>Testable with JUnit + Mockito without DB dependency. Reusable across multiple endpoints.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">FLEXCUBE hooks</div>
+<p>For FLEXCUBE screens: implement validation in PL/SQL hook procedure that FLEXCUBE calls at pre-processing stage.</p>
+<p>Hook approach: bank-specific logic without modifying product code — upgrade-safe.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Not in</div>
+<p>Not in DB trigger: hard to test, hard to debug, causes mutating table issues.</p>
+<p>Not in UI only: UI validation is for UX, not security — server-side validation is mandatory.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Service layer validation is the right place — testable, maintainable, and centralized for all callers.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Customer reports wrong report data. How will you debug? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Wrong report data is debugged by tracing the report query to its data source, comparing with source tables, and identifying the transformation or filter causing the discrepancy.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Steps</div>
+<p>Run the report query manually against the DB; compare with customer's expected result.</p>
+<p>Check report date parameters: is the report filtering on the correct date range? Business date vs. system date confusion.</p>
+<p>Check GL vs. account ledger consistency: report may sum from GL while customer expects account-level balance.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Common causes</div>
+<p>Wrong join: outer join expected but inner join used — missing records for accounts with no transactions.</p>
+<p>Wrong filter: report excludes reversed transactions but business expects to include them.</p>
+<p>Data latency: report uses materialized view not refreshed after EOD — stale data.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always validate report results against raw table data before fixing code — it may be a data quality issue.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Performance test shows high response time. How will you analyze? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">High response time in performance tests is analyzed by correlating JMeter metrics with server CPU, DB wait times, thread pool usage, and GC behavior to find the bottleneck.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Correlation</div>
+<p>High response time + high DB wait: check V$SQL for slow queries; check V$SESSION for lock waits.</p>
+<p>High response time + high JVM CPU: thread dump to find hot threads; check GC pauses (gc.log).</p>
+<p>High response time + thread pool full: request queuing — increase pool or fix slow downstream calls.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Tools</div>
+<p>JMeter Active Threads Over Time graph: shows if threads are completing or accumulating.</p>
+<p>Oracle AWR report run during test: TOP SQL by elapsed time reveals DB bottleneck.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Performance analysis requires correlating multiple data sources — no single metric tells the full story.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>After release, old functionality breaks. How will you handle? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Regression after a release is handled by quickly identifying if the new release caused it (rollback candidate), fixing in hotfix branch, and deploying after fast-track testing.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Triage</div>
+<p>Confirm regression: was this functionality working before the release? Check git log for recent changes to affected code.</p>
+<p>Assess rollback viability: if regression is severe (Sev1) and fix is complex, rollback the release may be faster.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Fix</div>
+<p>Hotfix branch from current production tag: fix, smoke test in staging, emergency change request, deploy.</p>
+<p>Add regression test case for the broken scenario to prevent recurrence.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Prevention</div>
+<p>Regression test suite should cover this scenario — if it didn't catch it, add it now.</p>
+<p>Smoke test checklist for every production release covering top 20 critical flows.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Rollback is a valid option for severe regressions — pride in the release should never delay restoring service.</p>
+</div>
+</div>
+</details>
+</div>
+</main>
+<script src="main.js"></script>
+</body>
+</html>

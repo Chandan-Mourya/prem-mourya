@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<title>JUnit &amp; Testing · Notes</title>
+<link href="../assets/img/logo.png" rel="icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
+</head>
+<body>
+<header class="topbar">
+<div class="topbar-inner">
+<a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+<div class="search-wrap">
+<i class="bi bi-search"></i>
+<input autocomplete="off" id="search" placeholder="Search within JUnit &amp; Testing..." spellcheck="false" type="search"/>
+<span class="search-shortcut">/</span>
+</div>
+<div class="topbar-actions">
+<button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+<button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+</div>
+</div>
+</header>
+<main class="topic-page">
+<div class="topic-page-header">
+<div class="topic-page-eyebrow">17 · Testing</div>
+<h1>JUnit &amp; Testing</h1>
+<p class="topic-page-desc">Unit, integration, Mockito, Spring tests.</p>
+<div class="topic-page-meta">
+<span><strong>21</strong> questions</span>
+<span>Press <span class="hint-kbd">/</span> to search</span>
+</div>
+</div>
+<div class="no-results" id="noResults">No matches.</div>
+<div class="qa-list">
+<details class="qa">
+<summary>How do you write unit test cases using JUnit? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>JUnit</strong> is the standard Java unit test framework — <code>@Test</code>, assertions, <code>@BeforeEach</code>.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to with Mockito.</div>
+<p>Mock dependencies; test service logic in isolation; &lt;code&gt;@MockBean&lt;/code&gt; in Spring tests.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is unit testing? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Unit testing</strong> verifies a single class or method in isolation — fast, no real DB/network, using mocks for dependencies.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">JUnit</div>
+<code>@Test</code> methods; AssertJ/Hamcrest assertions; run in CI on every commit.
+          <p>Target business logic: interest calculation, validation rules, mappers.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Unit tests are the first safety net — keep them fast (&amp;lt; few minutes total).</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is JUnit? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>JUnit</strong> is the standard Java unit test framework — <code>@Test</code>, assertions, <code>@BeforeEach</code>.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to with Mockito.</div>
+<p>Mock dependencies; test service logic in isolation; &lt;code&gt;@MockBean&lt;/code&gt; in Spring tests.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>JUnit 4 vs JUnit 5. <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>JUnit</strong> is the standard Java unit test framework — <code>@Test</code>, assertions, <code>@BeforeEach</code>.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to with Mockito.</div>
+<p>Mock dependencies; test service logic in isolation; &lt;code&gt;@MockBean&lt;/code&gt; in Spring tests.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is Mockito? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Mockito</strong> creates mock objects to stub collaborator behavior in unit tests — <code>@Mock</code>, <code>when(...).thenReturn(...)</code>, <code>verify(...)</code>.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Usage</div>
+<p>Mock repositories and external APIs; test service layer without Oracle/Kafka.</p>
+<code>@InjectMocks</code> wires the class under test.
+          </div>
+</div>
+</details>
+<details class="qa">
+<summary>Mock vs Spy. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>mock</strong> is fully fake; a <strong>spy</strong> wraps a real object and can stub specific methods while calling real code for others.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">When to use</div>
+<p>Mock: pure unit test, no real side effects.</p>
+<p>Spy: partial real behavior (e.g. spy on ArrayList) — use sparingly; prefer mock for clarity.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is test coverage? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Test coverage</strong> measures which lines/branches execute during tests — JaCoCo in Maven/Gradle reports percentage.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Practice</div>
+<p>Aim for high coverage on domain logic; 80%+ on critical payment modules.</p>
+<p>Coverage is a guide, not proof of quality — assert behavior, not just lines.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is assertion? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">An <strong>assertion</strong> checks an expected condition in a test — fails the test immediately if wrong.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Examples</div>
+<code>assertEquals(expected, actual)</code>; <code>assertThrows(InsufficientBalanceException.class, () -&gt; service.debit(...))</code>.
+          <p>AssertJ fluent: &lt;code&gt;assertThat(balance).isEqualByComparingTo("100.00")&lt;/code&gt;.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you test service layer? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Test the service layer with <strong>@ExtendWith(MockitoExtension.class)</strong> — mock repositories/clients, invoke service method, assert result and interactions.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Example</div>
+<p>Mock &lt;code&gt;AccountRepository&lt;/code&gt;; when find returns account; call &lt;code&gt;transfer()&lt;/code&gt;; verify save called twice.</p>
+<p>Test edge cases: insufficient balance, invalid state transitions.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you test controller layer? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Test controllers with <strong>@WebMvcTest</strong> or <strong>MockMvc</strong> — mock service layer, send HTTP request, assert status and JSON body.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Example</div>
+<code>mockMvc.perform(post("/payments").content(json)).andExpect(status().isCreated())</code>.
+          <p>Validate validation errors return 400 with field messages.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you test repository/database layer? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Repository tests use <strong>@DataJpaTest</strong> with in-memory H2 or Testcontainers Oracle — verify queries return correct entities.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Approach</div>
+<p>Insert test data; call repository method; assert results.</p>
+<p>Testcontainers gives production-like SQL dialect for complex native queries.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you mock external API calls? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Mock external APIs with <strong>MockWebServer</strong>, WireMock, or Mockito stub of RestTemplate/WebClient wrapper.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Practice</div>
+<p>Return canned JSON for success/timeout/500; verify retry logic.</p>
+<p>Contract tests (Pact) for partner API compatibility.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you test exceptions? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Use <code>assertThrows</code> or <code>assertThatThrownBy</code> to verify the correct exception type and message for invalid input.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Example</div>
+<code>assertThrows(InsufficientBalanceException.class, () -&gt; paymentService.debit(account, amount))</code>.
+          <p>Also test that global handler maps to correct HTTP status in MVC tests.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is integration testing? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Integration testing</strong> verifies multiple components together — real Spring context, DB, messaging — slower than unit tests.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Spring</div>
+<code>@SpringBootTest</code> with Testcontainers; test full flow from API to DB.
+          <p>Use dedicated test profile and clean data between tests.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Unit test vs integration test. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Unit tests</strong> are fast and isolated with mocks; <strong>integration tests</strong> use real wiring (DB, context) and catch configuration/SQL issues.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Pyramid</div>
+<p>Many unit tests, fewer integration tests, few E2E/UI tests.</p>
+<p>CI runs unit on every commit; integration on PR or nightly.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is regression testing? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Regression testing</strong> re-runs existing tests after a change to ensure nothing broke — automated suite in CI before release.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>Full regression before UAT sign-off and after vendor patches.</p>
+<p>Include payment, interest, and reconciliation scenarios.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is UAT? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>UAT (User Acceptance Testing)</strong> is business-owned validation that the system meets requirements before go-live.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Process</div>
+<p>Business writes test cases from BRD; executes on UAT environment; signs off or logs defects.</p>
+<p>Distinct from SIT — focuses on business outcomes, not technical integration only.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is test case and test plan? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>test case</strong> is steps + expected result for one scenario; a <strong>test plan</strong> defines scope, environments, schedule, and entry/exit criteria.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking example</div>
+<p>Test case: NEFT transfer with insufficient balance → expect rejection message X.</p>
+<p>Test plan: all payment modules in SIT week 2; exit criteria 95% pass rate.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you write unit test for private methods? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Do <strong>not</strong> test private methods directly — test through public API; if untestable, refactor extraction to package-visible collaborator.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Alternatives</div>
+<p>Reflection-based tests are brittle — avoid.</p>
+<p>Extract pure function to testable utility class.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you test asynchronous code? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Test async code with <code>@Async</code> test config, <code>CompletableFuture.get(timeout)</code>, Awaitility, or <code>@TransactionalEventListener</code> with test event publisher.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Kafka</div>
+<p>Embedded Kafka or Testcontainers; consume test topic and assert message content.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you test message queue consumers? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Publish test message to queue/topic (or mock channel), invoke listener, assert DB side effects and ack behavior.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Tools</div>
+<p>Spring &lt;code&gt;@JmsListener&lt;/code&gt; tests with embedded broker; Kafka Testcontainers.</p>
+<p>Verify DLQ path on processing failure.</p>
+</div>
+</div>
+</details>
+</div>
+</main>
+<script src="main.js"></script>
+</body>
+</html>

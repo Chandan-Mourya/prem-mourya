@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<title>SDLC &amp; Agile · Notes</title>
+<link href="../assets/img/logo.png" rel="icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
+</head>
+<body>
+<header class="topbar">
+<div class="topbar-inner">
+<a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+<div class="search-wrap">
+<i class="bi bi-search"></i>
+<input autocomplete="off" id="search" placeholder="Search within SDLC &amp; Agile..." spellcheck="false" type="search"/>
+<span class="search-shortcut">/</span>
+</div>
+<div class="topbar-actions">
+<button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+<button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+</div>
+</div>
+</header>
+<main class="topic-page">
+<div class="topic-page-header">
+<div class="topic-page-eyebrow">24 · SDLC</div>
+<h1>SDLC &amp; Agile</h1>
+<p class="topic-page-desc">Waterfall, Agile, UAT, go-live, change control.</p>
+<div class="topic-page-meta">
+<span><strong>21</strong> questions</span>
+<span>Press <span class="hint-kbd">/</span> to search</span>
+</div>
+</div>
+<div class="no-results" id="noResults">No matches.</div>
+<div class="qa-list">
+<details class="qa">
+<summary>What happens in end-to-end implementation from requirement to go-live? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">End-to-end banking implementation follows: requirement gathering → solution design → development → SIT → UAT → parallel run → go-live → hypercare.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Phases</div>
+<p>Requirements: BRD/FRS from business; gap analysis against product capabilities; change request for gaps.</p>
+<p>Design: solution design document, DB schema, API contracts, interface design — reviewed and signed off.</p>
+<p>Development: customization, unit testing, code review; artifacts checked into version control.</p>
+<p>Testing: SIT (IT team integration test), UAT (business acceptance), performance testing.</p>
+<p>Go-live: data migration, cutover, parallel run, production support (hypercare).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Each phase requires formal sign-off before proceeding — gate reviews prevent discovering issues too late.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Explain SDLC phases. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">SDLC phases cover the complete software development lifecycle: planning, requirements, design, development, testing, deployment, and maintenance.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Phases</div>
+<p>Planning: feasibility, resource estimation, timeline, risk assessment.</p>
+<p>Requirements: gather BRD/FRS; create user stories; define acceptance criteria.</p>
+<p>Design: system architecture, DB schema, API contracts, UI wireframes.</p>
+<p>Development: coding, unit testing, code review, integration.</p>
+<p>Testing: SIT, UAT, performance, security testing.</p>
+<p>Deployment: release to production under change management.</p>
+<p>Maintenance: production support, bug fixes, enhancements.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>SDLC phases are sequential in Waterfall, iterative in Agile — both cover the same concerns, differently paced.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Waterfall vs Agile. <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Waterfall</strong> — fixed phases (requirements → design → build → test → deploy). <strong>Agile</strong> — iterative sprints, frequent delivery.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to banking.</div>
+<p>Waterfall for fixed-scope vendor implementations; Agile for in-house product teams.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>When would you use Waterfall? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Use <strong>Waterfall</strong> when requirements are fixed, well-understood, and unlikely to change — such as regulatory compliance implementations or hardware-integrated banking systems.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Good fit</div>
+<p>Fixed requirements: core banking product rollout with predefined FLEXCUBE configuration scope.</p>
+<p>Contractual projects: fixed scope, price, and delivery date — Waterfall's documentation and sign-offs protect both parties.</p>
+<p>Compliance projects: RBI mandate with specific requirements and deadline — no scope ambiguity.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Drawbacks</div>
+<p>Inflexible to requirement changes mid-project. Testing at the end means late defect discovery.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Waterfall suits compliance and large product rollouts; Agile suits evolving product development.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>When would you use Agile? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Use <strong>Agile</strong> when requirements will evolve, early feedback is valuable, and the team can deliver incremental value in short iterations.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Good fit</div>
+<p>Product development with evolving requirements: digital banking app features changing based on user feedback.</p>
+<p>Long projects: 12+ month implementations where business needs evolve — Agile adapts vs. Waterfall's rigid scope.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking agile</div>
+<p>Scrum sprints for microservice development: 2-week sprint delivers a working API endpoint end-to-end.</p>
+<p>Product backlog prioritized by business value — highest ROI features delivered first.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Agile does not mean no documentation — banking projects need architecture docs, API specs, and RCA reports regardless.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is sprint planning? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Sprint planning</strong> is the Scrum ceremony where the team selects user stories from the product backlog for the upcoming sprint and defines how to deliver the sprint goal.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Activities</div>
+<p>PO presents top backlog items; team estimates effort (story points); team commits to sprint goal.</p>
+<p>Break stories into tasks: '5-point API story' → design DTO, implement endpoint, unit test, code review, SIT test.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Capacity</div>
+<p>Team velocity (avg story points from last 3 sprints) guides how much to commit. Account for leave, meetings.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Sprint planning commitment is a team promise — don't over-commit; under-deliver breeds distrust.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is daily standup? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">The <strong>daily standup</strong> is a 15-minute synchronization meeting where each team member answers: what I did yesterday, what I'll do today, and any blockers.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Purpose</div>
+<p>Identify blockers early (dependency on another team, environment issue, unclear requirement).</p>
+<p>Team coordination: who is working on what; avoid duplicate or conflicting work.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Anti-patterns</div>
+<p>Status report to manager: standup is for the team, not management. Long discussions: take offline.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Blockers raised in standup should be resolved the same day — unresolved blockers stall the sprint.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is retrospective? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>sprint retrospective</strong> is the Scrum ceremony after each sprint where the team reflects on what went well, what didn't, and defines concrete improvements for the next sprint.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Format</div>
+<p>What went well (keep doing), what didn't work (stop doing), what to try (start doing).</p>
+<p>Each item gets an owner and action due by next sprint — tracked in Jira or action log.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Value</div>
+<p>Continuous improvement: sprint-over-sprint, teams reduce waste and improve process.</p>
+<p>Blameless: focus on process gaps, not individuals — psychological safety enables honest feedback.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Retrospectives without action items are just conversations — each improvement must have an owner and due date.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is backlog grooming? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Backlog grooming (refinement)</strong> is the ongoing process of reviewing, clarifying, estimating, and prioritizing product backlog items — ensuring the backlog is ready for sprint planning.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Activities</div>
+<p>PO clarifies story requirements; team estimates story points; stories split if too large (&gt; 8 points).</p>
+<p>Acceptance criteria defined and agreed before sprint — prevents ambiguity during development.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Frequency</div>
+<p>Typically mid-sprint (weekly for 2-week sprints) — ensures top 2 sprints of backlog are always ready.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Well-groomed backlog enables efficient sprint planning — team spends less time in planning clarifying requirements.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is user story? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>user story</strong> describes a software feature from the user's perspective: 'As a [user], I want [goal] so that [benefit]' — enabling team to understand purpose behind the requirement.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Format</div>
+<p>'As a bank customer, I want to see my last 10 transactions so that I can monitor my spending.'</p>
+<p>INVEST criteria: Independent, Negotiable, Valuable, Estimable, Small, Testable.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking examples</div>
+<p>'As a teller, I want to place a hold on a cheque amount so that funds are blocked until clearance.'</p>
+<p>'As a risk officer, I want to see AML flagged transactions so that I can investigate suspicious activity.'</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>User stories focus on value and outcome — not implementation details, which the team decides.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is acceptance criteria? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Acceptance criteria</strong> define the conditions that must be met for a user story to be considered done — specific, testable, and agreed between PO and team before development.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Format</div>
+<p>Given-When-Then (Gherkin): 'Given account balance is ₹1000, When debit ₹500, Then balance shows ₹500 and SMS sent within 10 seconds.'</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Good criteria</div>
+<p>Specific: 'Transaction list shows last 30 days by default' — not 'shows recent transactions'.</p>
+<p>Testable: QA can write a test case from the criterion without further clarification.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Acceptance criteria prevent the #1 sprint failure: 'done' meaning different things to developer and product owner.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is definition of done? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">The <strong>definition of done (DoD)</strong> is the team's shared standard that a story must meet before it can be marked complete — ensuring consistent quality across all stories.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Typical DoD</div>
+<p>Code complete and reviewed. Unit tests written and passing. Integration tests passing. SonarQube quality gate passed.</p>
+<p>API documented (Swagger). Deployed to SIT and smoke-tested. No open blocker defects.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking DoD additions</div>
+<p>Audit logging verified. Security checklist completed. Performance test passed (if applicable). Test evidence in Jira.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>DoD prevents 'it works on my machine' — every story must pass the same objective criteria before closure.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is impact analysis? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Impact analysis</strong> assesses the full effect of a proposed change — which components, tests, databases, interfaces, and downstream systems are affected before proceeding.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Process</div>
+<p>Identify the change: new field, logic change, DB schema change, API change.</p>
+<p>Trace dependencies: which code uses this field/API/table? Which reports? Which interfaces? Which tests?</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>Adding a column to accounts table: impacts stored procedures, JPA entities, DTOs, reports, OSB transformations, migration scripts.</p>
+<p>Changing business rule: which products/account types are affected? Are there regulatory implications?</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Incomplete impact analysis is the most common root cause of regression bugs — be thorough before estimating.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is requirement traceability matrix? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>Requirements Traceability Matrix (RTM)</strong> maps each business requirement to its design artifact, code module, and test case — ensuring nothing is missed.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Contents</div>
+<p>Columns: Requirement ID, Requirement Description, Design Document Reference, Code Module, Test Case ID, Test Status.</p>
+<p>Each row traces one requirement through all phases — proves complete coverage.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking use</div>
+<p>Mandatory for regulatory projects: auditors verify that RBI mandate requirements are implemented and tested via RTM.</p>
+<p>Helps during UAT: each UAT test case linked to requirement — gaps in test coverage visible immediately.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>RTM is the audit evidence that all requirements were designed, built, and tested — keep it updated throughout.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is technical specification document? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>Technical Specification Document (TSD)</strong> describes the detailed technical design: DB schema, API contracts, sequence diagrams, error handling, and performance considerations.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Contents</div>
+<p>Architecture: component diagram, tech stack, integration points. DB design: tables, columns, indexes, sequences.</p>
+<p>API design: endpoint URLs, request/response DTOs, error codes, authentication mechanism.</p>
+<p>Sequence diagrams: end-to-end flow for each use case. Non-functional: performance targets, security controls.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>TSD reviewed by solution architect and DBA before development — catch design issues early.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>A good TSD reduces development ambiguity and enables parallel work across team members.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is release note? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>release note</strong> documents what is included in a release: new features, bug fixes, known issues, configuration changes, and deployment instructions for the operations team.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Contents</div>
+<p>Version number, release date. What's new (features, enhancements). Bugs fixed (Jira IDs). Known issues.</p>
+<p>Deployment instructions: DB scripts to run, config changes, WebLogic restart requirements, verification steps.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>Distributed to: dev team, QA, operations, business stakeholders. Required before change management approval.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Release notes are the operations team's deployment guide — incomplete notes cause deployment failures.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is deployment document? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>deployment document</strong> provides step-by-step instructions for deploying a release to an environment — including pre-conditions, steps, verification, and rollback procedure.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Contents</div>
+<p>Pre-conditions: environment health check, backup verification, maintenance window confirmation.</p>
+<p>Steps: DB scripts (in order), application EAR deployment, config changes, WebLogic restart, smoke test.</p>
+<p>Verification: list of health checks post-deployment. Rollback: steps to revert if deployment fails.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Importance</div>
+<p>Reviewed and approved by CAB (Change Advisory Board) before production deployment window.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>A deployment without a document is a risk — ops team needs precise steps, not assumptions.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is rollback plan? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>rollback plan</strong> defines how to revert a production deployment to the previous stable state if the new release causes critical issues.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Components</div>
+<p>Decision criteria: what conditions trigger rollback (Sev1 issue within X hours of deployment, data corruption).</p>
+<p>Steps: revert application EAR to previous version, run DB rollback scripts, restore config, verify.</p>
+<p>Time estimate: rollback must complete before business impact exceeds reverting cost.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>Test rollback in staging before production deployment — a rollback plan never tested is a plan that will fail under pressure.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Every production deployment must have a tested rollback plan — this is non-negotiable in banking.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is change request? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>change request (CR)</strong> is a formal document requesting a modification to an IT system — assessed for risk, impact, and approved by the Change Advisory Board before implementation.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Process</div>
+<p>CR raised with: description of change, business justification, risk assessment, rollback plan, test evidence.</p>
+<p>CAB review: assesses risk, scheduling conflicts, resources; approves or defers.</p>
+<p>Post-implementation: verify change success; update CR status; post-implementation review for major changes.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>Emergency CR: expedited approval for Sev1 hotfixes — not zero process, but faster (2-4 hours vs. 1 week).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Change management prevents unplanned changes that cause incidents — no change to production without a CR.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is defect lifecycle? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">The <strong>defect lifecycle</strong> tracks a bug from discovery through triage, assignment, fix, re-test, and closure — ensuring no defect is lost or prematurely closed.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">States</div>
+<p>New → Assigned (to developer) → In Progress → Fixed → In Testing → Closed.</p>
+<p>If re-test fails: Reopened → In Progress → Fixed → In Testing → Closed.</p>
+<p>Deferred: valid bug, scheduled for future release. Rejected: not a bug or duplicate.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking specifics</div>
+<p>Sev1 defects: bypass normal cycle with emergency fix path. All defects require test evidence for closure.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>A defect closed without verified test evidence will reappear in production — enforce the testing requirement.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you handle scope change? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Scope changes are managed through formal change control: document the change, assess impact on timeline/cost/resources, get stakeholder approval, then adjust the plan.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Process</div>
+<p>Document: what is changing, why, and what was originally agreed.</p>
+<p>Impact: estimate additional effort, timeline extension, resource needs, and risks.</p>
+<p>Approval: stakeholder sign-off on the change and its implications before proceeding.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking</div>
+<p>Regulatory scope change (new RBI mandate mid-project): mandatory — adjust timeline with regulator's deadline in mind.</p>
+<p>Business-driven scope change: evaluate if it can wait for next phase vs. immediate priority.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Never absorb scope changes silently — undocumented scope creep causes team burnout and project failure.</p>
+</div>
+</div>
+</details>
+</div>
+</main>
+<script src="main.js"></script>
+</body>
+</html>

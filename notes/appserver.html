@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<title>WebLogic / Tomcat · Notes</title>
+<link href="../assets/img/logo.png" rel="icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
+</head>
+<body>
+<header class="topbar">
+<div class="topbar-inner">
+<a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+<div class="search-wrap">
+<i class="bi bi-search"></i>
+<input autocomplete="off" id="search" placeholder="Search within WebLogic / Tomcat..." spellcheck="false" type="search"/>
+<span class="search-shortcut">/</span>
+</div>
+<div class="topbar-actions">
+<button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+<button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+</div>
+</div>
+</header>
+<main class="topic-page">
+<div class="topic-page-header">
+<div class="topic-page-eyebrow">14 · App Server</div>
+<h1>WebLogic / Tomcat</h1>
+<p class="topic-page-desc">WAR, cluster, JNDI, deployment.</p>
+<div class="topic-page-meta">
+<span><strong>20</strong> questions</span>
+<span>Press <span class="hint-kbd">/</span> to search</span>
+</div>
+</div>
+<div class="no-results" id="noResults">No matches.</div>
+<div class="qa-list">
+<details class="qa">
+<summary>What is application server? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">An <strong>application server</strong> provides a managed runtime for business logic, handling connection pools, JMS, JTA, and EJB alongside its servlet container.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Definition</div>
+<p>Implements Java EE/Jakarta EE specs: Servlet container, EJB container, JTA, JNDI, JMS — e.g., Oracle WebLogic, IBM WebSphere, JBoss.</p>
+<p>Differs from a plain web server (Apache HTTP, Nginx) which only serves static content and proxies HTTP.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking angle</div>
+<p>FLEXCUBE runs on Oracle WebLogic; admin server manages domain configuration while managed servers host the banking application.</p>
+<p>DB connection pools are configured on WebLogic and looked up by the app via JNDI names like jdbc/flexDS.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>App servers are the backbone of enterprise banking deployments providing HA clustering and transactional resource management.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Tomcat vs WebLogic vs JBoss. <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Tomcat</strong> is a servlet container (lighter). <strong>WebLogic</strong> is a full Java EE application server used in many banks (clustering, JNDI, managed datasources).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to deployment.</div>
+<p>Deploy WAR/EAR; configure datasource and JNDI; managed server cluster for HA.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Web server vs application server. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>web server</strong> handles HTTP and static content; an <strong>application server</strong> adds full Java EE services like EJB, JTA, JMS, and connection pooling.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Differences</div>
+<p>Web server (Apache HTTP, Nginx): static files, SSL termination, reverse proxy — no EJB or JTA support.</p>
+<p>App server (WebLogic, JBoss): web container PLUS EJB, JMS, JTA, JNDI, connection pooling.</p>
+<p>In banking: Nginx sits in front of WebLogic for SSL offloading and load balancing.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Modern deployments combine both: web server for SSL/static, app server for dynamic banking business logic.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is WAR file? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>WAR (Web Application Archive)</strong> is a JAR-formatted archive containing servlets, JSPs, HTML, and WEB-INF/web.xml for deployment to a servlet container.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Structure</div>
+<p>Contains: /WEB-INF/web.xml (deployment descriptor), /WEB-INF/classes (compiled bytecode), /WEB-INF/lib (JARs), static resources.</p>
+<p>Deployed to Tomcat or embedded in an EAR for deployment to a full app server.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking angle</div>
+<p>FLEXCUBE web layer (REST controllers, JSF screens) is typically packaged as a WAR inside an EAR on WebLogic.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is EAR file? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">An <strong>EAR (Enterprise Application Archive)</strong> bundles multiple Java EE modules (WAR + EJB JARs) with a META-INF/application.xml descriptor for app-server deployment.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Structure</div>
+<p>Contains: one or more WAR modules, EJB JARs, application-scoped lib/, and META-INF/application.xml.</p>
+<p>Supports shared class loader across modules enabling cross-module JNDI lookups and transactions.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking angle</div>
+<p>FLEXCUBE ships as an EAR combining the web WAR and EJB module; single deployment unit ensures consistent versioning on WebLogic.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>WAR vs EAR. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>WAR</strong> packages a single web application; an <strong>EAR</strong> packages multiple Java EE modules (WAR + EJB) as one deployable unit with shared class loading.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Key differences</div>
+<p>WAR: servlet/JSP apps, deployed to servlet container or app server web container.</p>
+<p>EAR: enterprise apps with EJBs + WARs bundled, deployed to full app server; supports cross-module JTA transactions.</p>
+<p>EAR has application-scoped class loader shared across modules; WAR has isolated web class loader.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use WAR for Spring Boot microservices; use EAR for legacy enterprise apps with EJBs like FLEXCUBE.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you deploy Java application on WebLogic? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Tomcat</strong> is a servlet container (lighter). <strong>WebLogic</strong> is a full Java EE application server used in many banks (clustering, JNDI, managed datasources).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to deployment.</div>
+<p>Deploy WAR/EAR; configure datasource and JNDI; managed server cluster for HA.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is WebLogic domain? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Tomcat</strong> is a servlet container (lighter). <strong>WebLogic</strong> is a full Java EE application server used in many banks (clustering, JNDI, managed datasources).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to deployment.</div>
+<p>Deploy WAR/EAR; configure datasource and JNDI; managed server cluster for HA.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is admin server and managed server? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">In Oracle WebLogic, the <strong>admin server</strong> is the central management node while <strong>managed servers</strong> run the actual deployed applications.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Admin server</div>
+<p>Hosts WebLogic Admin Console (port 7001); manages domain config, deployments, data sources, JMS servers.</p>
+<p>Single point of configuration — changes pushed to managed servers via Node Manager.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Managed servers</div>
+<p>Run deployed applications (EAR/WAR); grouped into clusters for load balancing and session failover.</p>
+<p>In banking: separate managed server clusters for FLEXCUBE OLTP, OSB integration, and batch processing.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Never run production applications on the admin server — reserve it for management only.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is cluster in WebLogic? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Tomcat</strong> is a servlet container (lighter). <strong>WebLogic</strong> is a full Java EE application server used in many banks (clustering, JNDI, managed datasources).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to deployment.</div>
+<p>Deploy WAR/EAR; configure datasource and JNDI; managed server cluster for HA.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How does session replication work? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Session replication</strong> copies HTTP session state across cluster members so any server can handle a user request if another node fails.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Mechanisms</div>
+<p>In-memory replication (WebLogic cluster default): each server holds replica of peer sessions via multicast/unicast heartbeat.</p>
+<p>Database-backed sessions: session serialized to DB — survives full cluster restart but adds DB I/O per request.</p>
+<p>Sticky sessions (no replication): load balancer always routes user to same node — simple but no failover.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Requirements</div>
+<p>Session objects and all attributes must implement Serializable; non-serializable attributes cause replication failures.</p>
+<p>Prefer stateless JWT-based auth in REST APIs to eliminate session replication overhead entirely.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Banking apps should use stateless JWT tokens or serializable sessions with a configured replication group.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you configure datasource in WebLogic? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Tomcat</strong> is a servlet container (lighter). <strong>WebLogic</strong> is a full Java EE application server used in many banks (clustering, JNDI, managed datasources).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to deployment.</div>
+<p>Deploy WAR/EAR; configure datasource and JNDI; managed server cluster for HA.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you configure connection pool? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>connection pool</strong> pre-creates and reuses DB connections, configured on WebLogic as a Data Source with JNDI name, driver URL, and pool size parameters.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">WebLogic steps</div>
+<p>Admin Console → Services → Data Sources → New Generic Data Source; set JNDI name (jdbc/oracleDS), driver, URL, credentials.</p>
+<p>Set InitialCapacity, MaxCapacity, MinCapacity, TestConnectionsOnReserve=true, TestTableName='SQL SELECT 1 FROM DUAL'.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Key parameters</div>
+<p>ConnectionReserveTimeoutSeconds: how long a thread waits for connection before throwing exception — prevents starvation.</p>
+<p>StatementCacheSize: caches prepared statements per connection for Oracle performance improvement.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking angle</div>
+<p>FLEXCUBE uses multiple data sources: OLTP DS (max 50 connections), batch DS (max 20), reporting DS (max 10) — each sized per workload.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always configure test-on-reserve and connection timeout to detect stale connections and prevent thread starvation.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is JNDI? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>JNDI</strong> is a lookup service — apps get DataSource or JMS connection by name (<code>java:comp/env/jdbc/...</code>) configured on the server.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to why.</div>
+<p>Same WAR across environments; only server config changes.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you troubleshoot deployment failure? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Deployment failures on WebLogic require checking server logs, class-loading order, and descriptor validation to identify the root exception.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Steps</div>
+<p>1. Check AdminServer.log and managed server log under domain/servers/&lt;name&gt;/logs/ for the root cause exception.</p>
+<p>2. Look for ClassNotFoundException (missing JAR), version conflicts, or deployment descriptor validation errors.</p>
+<p>3. Verify EAR/WAR structure is valid; use jar -tf app.ear to inspect contents.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Common causes</div>
+<p>Missing JARs in EAR/lib, wrong context-root in application.xml, port already in use.</p>
+<p>Java EE spec version mismatch — app compiled with newer APIs than server supports.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always deploy to staging managed server first and compare logs; never deploy directly to production cluster.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you check server logs? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">WebLogic server logs reside under <strong>domain/servers/&lt;name&gt;/logs/</strong> and are also accessible via the Admin Console Diagnostics tab.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Log locations</div>
+<p>AdminServer.log: domain-wide events; &lt;ServerName&gt;.log: per-server runtime events including deployment and JTA.</p>
+<p>wls-domain.log: aggregated domain log; access.log: HTTP access log with request/response details.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Useful commands</div>
+<p>tail -f &lt;ServerName&gt;.log | grep -i ERROR to watch live errors on Unix.</p>
+<p>Admin Console → Diagnostics → Log Files for browser-based log viewing with severity and time filters.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Set log rotation and retention policies to prevent disk exhaustion on long-running banking production servers.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is thread stuck issue? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>thread stuck</strong> alert in WebLogic fires when an execute thread is occupied beyond the configured stuck-thread-max-time (default 600 seconds), indicating blocking or deadlock.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Causes</div>
+<p>Infinite loop, deadlock, or blocking I/O — waiting for slow DB query, external API timeout, or lock contention.</p>
+<p>Connection pool exhaustion: thread waits indefinitely for a DB connection when pool is at MaxCapacity.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Resolution</div>
+<p>Take thread dump (Admin Console → Servers → Monitoring → Threads or jstack &lt;pid&gt;) to identify blocked stack trace.</p>
+<p>Fix the underlying slow query, add connection/read timeout on external calls, or increase pool size.</p>
+<p>EOD batch holding row locks can cause stuck threads on OLTP server — isolate batch to a dedicated managed server.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Take 3 thread dumps 10 seconds apart — truly stuck threads appear BLOCKED at the same frame in all dumps.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you troubleshoot high CPU in app server? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">High CPU on an app server is diagnosed by combining OS thread identification (top) with Java thread dumps (jstack) to pinpoint the hot stack.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Steps</div>
+<p>1. Run top -H -p &lt;pid&gt; (Linux) to find the OS thread ID with highest CPU; convert tid to hex.</p>
+<p>2. Run jstack &lt;pid&gt; and find the thread whose nid matches the hex tid; examine its stack trace.</p>
+<p>3. Look for RUNNABLE threads in tight loops, excessive GC (jstat -gcutil), or busy XML parsing.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking causes</div>
+<p>Poorly written PL/SQL returning millions of rows processed in a Java loop; unbounded cache causing frequent full GC.</p>
+<p>DEBUG-level logging in production; repeated XML parsing for high-volume SOAP messages.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Fix GC-caused CPU by tuning heap and GC algorithm; fix logic CPU by profiling with async-profiler or JProfiler.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you tune JVM for app server? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">JVM tuning for an app server involves setting heap size, GC algorithm, thread stack, metaspace, and enabling GC logging for ongoing analysis.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Heap and GC</div>
+<p>-Xms4g -Xmx4g (equal to avoid resize pauses); typical banking servers: 4–16 GB depending on session load.</p>
+<p>-XX:+UseG1GC for balanced throughput/latency; -XX:MaxGCPauseMillis=200 to cap STW pauses.</p>
+<p>Enable GC log: -Xlog:gc*:file=gc.log:time (JDK 9+); analyze with GCEasy or GCViewer.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Other parameters</div>
+<p>-Xss256k: reduce thread stack size to fit more threads in available memory.</p>
+<p>-XX:MaxMetaspaceSize=512m: cap metaspace growth from dynamic class generation (e.g., Spring proxies).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always baseline before tuning, change one parameter at a time, and validate with a realistic load test.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you configure SSL in WebLogic/Tomcat? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Tomcat</strong> is a servlet container (lighter). <strong>WebLogic</strong> is a full Java EE application server used in many banks (clustering, JNDI, managed datasources).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to deployment.</div>
+<p>Deploy WAR/EAR; configure datasource and JNDI; managed server cluster for HA.</p>
+</div>
+</div>
+</details>
+</div>
+</main>
+<script src="main.js"></script>
+</body>
+</html>

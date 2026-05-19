@@ -1,119 +1,110 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex,nofollow,noarchive">
-  <title>Docker &amp; Kubernetes · Notes</title>
-  <link rel="icon" href="../assets/img/logo.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<title>Docker &amp; Kubernetes · Notes</title>
+<link href="../assets/img/logo.png" rel="icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
-
-  <header class="topbar">
-    <div class="topbar-inner">
-      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
-      <div class="search-wrap">
-        <i class="bi bi-search"></i>
-        <input id="search" type="search" placeholder="Search within Docker &amp; K8s..." autocomplete="off" spellcheck="false">
-        <span class="search-shortcut">/</span>
-      </div>
-      <div class="topbar-actions">
-        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
-        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
-      </div>
-    </div>
-  </header>
-
-  <main class="topic-page">
-
-    <div class="topic-page-header">
-      <div class="topic-page-eyebrow">14 · Docker &amp; Kubernetes</div>
-      <h1>Containers &amp; orchestration</h1>
-      <p class="topic-page-desc">Docker basics, image best practices, K8s core objects, probes, autoscaling, networking. Bring K8s deployment stories from your services.</p>
-      <div class="topic-page-meta">
-        <span><strong>13</strong> questions</span>
-        <span>Press <span class="hint-kbd">/</span> to search</span>
-      </div>
-    </div>
-
-    <div class="no-results" id="noResults">No matches.</div>
-
-    <div class="qa-list">
-
-      <details class="qa">
-        <summary>What is Docker? <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro"><strong>Docker</strong> is a <strong>containerization platform</strong> that packages an application along with its <em>dependencies, libraries, runtime, and configuration</em> into a single lightweight unit called a <strong>container</strong>. The container then runs <em>identically</em> on any machine that has Docker — dev laptop, CI server, staging, production — solving the infamous <em>"works on my machine"</em> problem.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-title"><i class="bi bi-box-seam-fill"></i> Core Idea</div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">What</span>
-              <span class="core-diff-val">A platform to package apps + dependencies into <strong>containers</strong> — isolated, lightweight runtime units.</span>
-            </div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">Why</span>
-              <span class="core-diff-val">"Build once, run anywhere" — same container behaves identically in dev, test, and prod.</span>
-            </div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">How</span>
-              <span class="core-diff-val">Containers share the host OS kernel (Linux namespaces + cgroups), so they're faster &amp; lighter than VMs.</span>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> Why we need Docker — "works on my machine" 💥</div>
-            <div class="cmp-grid">
-              <div class="cmp-card">
-                <div class="cmp-card-head">
-                  <i class="bi bi-x-circle-fill" style="color: #ff7b72;"></i>
-                  <span>Before Docker</span>
-                </div>
-                <ul>
-                  <li>Different OS versions on dev / staging / prod</li>
-                  <li>Different library / runtime versions (Java 8 vs 17)</li>
-                  <li>Missing system tools, broken <code>PATH</code></li>
-                  <li>Manual setup docs that go stale</li>
-                  <li>Onboarding a new dev = full day of <code>brew install</code></li>
-                </ul>
-              </div>
-              <div class="cmp-card">
-                <div class="cmp-card-head">
-                  <i class="bi bi-check-circle-fill" style="color: var(--green);"></i>
-                  <span>With Docker</span>
-                </div>
-                <ul>
-                  <li>App + everything it needs in <strong>one image</strong></li>
-                  <li>Identical behavior <strong>everywhere</strong></li>
-                  <li>Onboard a new dev → <code>docker run</code>, 30 seconds</li>
-                  <li>Deploy &amp; rollback are atomic (just swap images)</li>
-                  <li>Same artifact promoted dev → staging → prod</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> What is a Container?</div>
-            <p class="solution-desc">A <strong>container</strong> is an <em>isolated, lightweight runtime</em> that contains everything an app needs to run:</p>
-            <ul style="margin: 0 0 10px;">
-              <li>Application code &amp; binary</li>
-              <li>Language runtime (JVM, Node, Python interpreter…)</li>
-              <li>Libraries &amp; dependencies</li>
-              <li>System tools (curl, bash, ca-certificates)</li>
-              <li>Configuration (env vars, config files)</li>
-            </ul>
-            <p class="solution-desc">Containers <strong>share the host OS kernel</strong> (via Linux namespaces &amp; cgroups) — that's why they're so cheap. They're <em>not</em> mini-VMs.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> Architecture — how the pieces stack</div>
-            <div class="tree-viz">    ┌─────────────────────────────────────────────┐
+<header class="topbar">
+<div class="topbar-inner">
+<a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+<div class="search-wrap">
+<i class="bi bi-search"></i>
+<input autocomplete="off" id="search" placeholder="Search within Docker &amp; K8s..." spellcheck="false" type="search"/>
+<span class="search-shortcut">/</span>
+</div>
+<div class="topbar-actions">
+<button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+<button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+</div>
+</div>
+</header>
+<main class="topic-page">
+<div class="topic-page-header">
+<div class="topic-page-eyebrow">14 · Docker &amp; Kubernetes</div>
+<h1>Containers &amp; orchestration</h1>
+<p class="topic-page-desc">Docker basics, image best practices, K8s core objects, probes, autoscaling, networking. Bring K8s deployment stories from your services.</p>
+<div class="topic-page-meta">
+<span><strong>26</strong> questions</span>
+<span>Press <span class="hint-kbd">/</span> to search</span>
+</div>
+</div>
+<div class="no-results" id="noResults">No matches.</div>
+<div class="qa-list">
+<details class="qa">
+<summary>What is Docker? <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro"><strong>Docker</strong> is a <strong>containerization platform</strong> that packages an application along with its <em>dependencies, libraries, runtime, and configuration</em> into a single lightweight unit called a <strong>container</strong>. The container then runs <em>identically</em> on any machine that has Docker — dev laptop, CI server, staging, production — solving the infamous <em>"works on my machine"</em> problem.</p>
+<div class="core-diff">
+<div class="core-diff-title"><i class="bi bi-box-seam-fill"></i> Core Idea</div>
+<div class="core-diff-row">
+<span class="core-diff-key">What</span>
+<span class="core-diff-val">A platform to package apps + dependencies into <strong>containers</strong> — isolated, lightweight runtime units.</span>
+</div>
+<div class="core-diff-row">
+<span class="core-diff-key">Why</span>
+<span class="core-diff-val">"Build once, run anywhere" — same container behaves identically in dev, test, and prod.</span>
+</div>
+<div class="core-diff-row">
+<span class="core-diff-key">How</span>
+<span class="core-diff-val">Containers share the host OS kernel (Linux namespaces + cgroups), so they're faster &amp; lighter than VMs.</span>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> Why we need Docker — "works on my machine" 💥</div>
+<div class="cmp-grid">
+<div class="cmp-card">
+<div class="cmp-card-head">
+<i class="bi bi-x-circle-fill" style="color: #ff7b72;"></i>
+<span>Before Docker</span>
+</div>
+<ul>
+<li>Different OS versions on dev / staging / prod</li>
+<li>Different library / runtime versions (Java 8 vs 17)</li>
+<li>Missing system tools, broken <code>PATH</code></li>
+<li>Manual setup docs that go stale</li>
+<li>Onboarding a new dev = full day of <code>brew install</code></li>
+</ul>
+</div>
+<div class="cmp-card">
+<div class="cmp-card-head">
+<i class="bi bi-check-circle-fill" style="color: var(--green);"></i>
+<span>With Docker</span>
+</div>
+<ul>
+<li>App + everything it needs in <strong>one image</strong></li>
+<li>Identical behavior <strong>everywhere</strong></li>
+<li>Onboard a new dev → <code>docker run</code>, 30 seconds</li>
+<li>Deploy &amp; rollback are atomic (just swap images)</li>
+<li>Same artifact promoted dev → staging → prod</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> What is a Container?</div>
+<p class="solution-desc">A <strong>container</strong> is an <em>isolated, lightweight runtime</em> that contains everything an app needs to run:</p>
+<ul style="margin: 0 0 10px;">
+<li>Application code &amp; binary</li>
+<li>Language runtime (JVM, Node, Python interpreter…)</li>
+<li>Libraries &amp; dependencies</li>
+<li>System tools (curl, bash, ca-certificates)</li>
+<li>Configuration (env vars, config files)</li>
+</ul>
+<p class="solution-desc">Containers <strong>share the host OS kernel</strong> (via Linux namespaces &amp; cgroups) — that's why they're so cheap. They're <em>not</em> mini-VMs.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">3</span> Architecture — how the pieces stack</div>
+<div class="tree-viz">    ┌─────────────────────────────────────────────┐
     │  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
     │  │ App A    │  │ App B    │  │ App C    │   │   ← your apps
     │  │ + deps   │  │ + deps   │  │ + deps   │   │
@@ -131,283 +122,268 @@
                   │   Host OS Kernel   │   ← shared by all containers
                   │   (Linux / WSL2)   │
                   └────────────────────┘</div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">4</span> Docker vs Virtual Machine — quick view</div>
-            <div class="cmp-grid">
-              <div class="cmp-card">
-                <div class="cmp-card-head">
-                  <i class="bi bi-box-fill"></i>
-                  <span>Docker Container</span>
-                </div>
-                <ul>
-                  <li><b>Weight:</b> ~tens of MB</li>
-                  <li><b>Startup:</b> milliseconds</li>
-                  <li><b>OS:</b> shares host kernel</li>
-                  <li><b>Memory:</b> low (per-process)</li>
-                  <li><b>Density:</b> 100s on one host</li>
-                </ul>
-              </div>
-              <div class="cmp-card">
-                <div class="cmp-card-head">
-                  <i class="bi bi-hdd-stack-fill"></i>
-                  <span>Virtual Machine</span>
-                </div>
-                <ul>
-                  <li><b>Weight:</b> GBs (full OS image)</li>
-                  <li><b>Startup:</b> tens of seconds to minutes</li>
-                  <li><b>OS:</b> full guest OS each</li>
-                  <li><b>Memory:</b> hundreds of MB minimum</li>
-                  <li><b>Density:</b> ~10s per host</li>
-                </ul>
-              </div>
-            </div>
-            <p class="solution-desc">See the dedicated <strong>"Docker (Container) vs Virtual Machine"</strong> question below for the deep comparison.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">5</span> Key Docker Components</div>
-            <div class="note-table-wrap">
-              <table class="note-table">
-                <thead>
-                  <tr><th>Component</th><th>Purpose</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td>Docker Engine</td>     <td>The daemon that actually runs containers on a host.</td></tr>
-                  <tr><td>Image</td>             <td>Read-only <em>blueprint / template</em> — built from a <code>Dockerfile</code>. Immutable.</td></tr>
-                  <tr><td>Container</td>         <td>A <em>running instance</em> of an image. Stateful, mutable, ephemeral.</td></tr>
-                  <tr><td>Dockerfile</td>        <td>Plain-text recipe: instructions like <code>FROM</code>, <code>COPY</code>, <code>RUN</code>, <code>CMD</code> that build the image.</td></tr>
-                  <tr><td>Registry</td>          <td>Server that stores images — public (Docker Hub) or private (ECR, GCR, Harbor).</td></tr>
-                  <tr><td>Docker Compose</td>    <td>Defines multi-container apps in a single <code>docker-compose.yml</code>.</td></tr>
-                  <tr><td>Volume</td>            <td>Persistent storage that survives container restarts.</td></tr>
-                  <tr><td>Network</td>           <td>Virtual network connecting containers — bridge / host / overlay.</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">6</span> The Flow — Dockerfile → Image → Container</div>
-            <div class="flow">
-              <div class="flow-step">Dockerfile <span class="badge">recipe</span></div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-note"><code>docker build</code> — reads instructions, layers each step</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">Image <span class="badge">immutable</span></div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-note"><code>docker push</code> — upload to registry (Hub, ECR…)</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">Registry <span class="badge">shared</span></div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-note"><code>docker pull</code> + <code>docker run</code> — same image, anywhere</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step accent">Container <span class="badge">running</span></div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">7</span> Concrete Java example — Dockerfile</div>
-            <pre><code># Dockerfile for a Spring Boot app
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">4</span> Docker vs Virtual Machine — quick view</div>
+<div class="cmp-grid">
+<div class="cmp-card">
+<div class="cmp-card-head">
+<i class="bi bi-box-fill"></i>
+<span>Docker Container</span>
+</div>
+<ul>
+<li><b>Weight:</b> ~tens of MB</li>
+<li><b>Startup:</b> milliseconds</li>
+<li><b>OS:</b> shares host kernel</li>
+<li><b>Memory:</b> low (per-process)</li>
+<li><b>Density:</b> 100s on one host</li>
+</ul>
+</div>
+<div class="cmp-card">
+<div class="cmp-card-head">
+<i class="bi bi-hdd-stack-fill"></i>
+<span>Virtual Machine</span>
+</div>
+<ul>
+<li><b>Weight:</b> GBs (full OS image)</li>
+<li><b>Startup:</b> tens of seconds to minutes</li>
+<li><b>OS:</b> full guest OS each</li>
+<li><b>Memory:</b> hundreds of MB minimum</li>
+<li><b>Density:</b> ~10s per host</li>
+</ul>
+</div>
+</div>
+<p class="solution-desc">See the dedicated <strong>"Docker (Container) vs Virtual Machine"</strong> question below for the deep comparison.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">5</span> Key Docker Components</div>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead>
+<tr><th>Component</th><th>Purpose</th></tr>
+</thead>
+<tbody>
+<tr><td>Docker Engine</td> <td>The daemon that actually runs containers on a host.</td></tr>
+<tr><td>Image</td> <td>Read-only <em>blueprint / template</em> — built from a <code>Dockerfile</code>. Immutable.</td></tr>
+<tr><td>Container</td> <td>A <em>running instance</em> of an image. Stateful, mutable, ephemeral.</td></tr>
+<tr><td>Dockerfile</td> <td>Plain-text recipe: instructions like <code>FROM</code>, <code>COPY</code>, <code>RUN</code>, <code>CMD</code> that build the image.</td></tr>
+<tr><td>Registry</td> <td>Server that stores images — public (Docker Hub) or private (ECR, GCR, Harbor).</td></tr>
+<tr><td>Docker Compose</td> <td>Defines multi-container apps in a single <code>docker-compose.yml</code>.</td></tr>
+<tr><td>Volume</td> <td>Persistent storage that survives container restarts.</td></tr>
+<tr><td>Network</td> <td>Virtual network connecting containers — bridge / host / overlay.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">6</span> The Flow — Dockerfile → Image → Container</div>
+<div class="flow">
+<div class="flow-step">Dockerfile <span class="badge">recipe</span></div>
+<div class="flow-arrow">↓</div>
+<div class="flow-note"><code>docker build</code> — reads instructions, layers each step</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Image <span class="badge">immutable</span></div>
+<div class="flow-arrow">↓</div>
+<div class="flow-note"><code>docker push</code> — upload to registry (Hub, ECR…)</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Registry <span class="badge">shared</span></div>
+<div class="flow-arrow">↓</div>
+<div class="flow-note"><code>docker pull</code> + <code>docker run</code> — same image, anywhere</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step accent">Container <span class="badge">running</span></div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">7</span> Concrete Java example — Dockerfile</div>
+<pre><code># Dockerfile for a Spring Boot app
 FROM eclipse-temurin:17-jre-alpine          # base image with JDK 17
 WORKDIR /app
 COPY target/myapp.jar /app/app.jar          # copy the built JAR
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]</code></pre>
-            <p class="solution-desc">Build, push, and run:</p>
-            <pre><code>docker build  -t myapp:1.0 .                # build image from Dockerfile
+<p class="solution-desc">Build, push, and run:</p>
+<pre><code>docker build  -t myapp:1.0 .                # build image from Dockerfile
 docker push   myrepo/myapp:1.0              # upload to registry
 docker run -p 8080:8080 -d myapp:1.0        # start container, port 8080</code></pre>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">8</span> Most-used Docker commands</div>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead>
+<tr><th>Command</th><th>What it does</th></tr>
+</thead>
+<tbody>
+<tr><td><code>docker build -t name:tag .</code></td> <td>Build an image from the <code>Dockerfile</code> in the current directory.</td></tr>
+<tr><td><code>docker run -d -p 80:8080 name</code></td> <td>Run a container in detached mode with port mapping.</td></tr>
+<tr><td><code>docker ps</code></td> <td>List running containers (add <code>-a</code> for stopped ones too).</td></tr>
+<tr><td><code>docker logs &lt;container&gt;</code></td> <td>Stream a container's stdout/stderr.</td></tr>
+<tr><td><code>docker exec -it &lt;c&gt; bash</code></td> <td>Open a shell inside a running container — debugging gold.</td></tr>
+<tr><td><code>docker stop &lt;c&gt;</code></td> <td>Send SIGTERM; container has 10s to shut down gracefully.</td></tr>
+<tr><td><code>docker rm &lt;c&gt;</code> / <code>docker rmi &lt;img&gt;</code></td> <td>Remove a container / image.</td></tr>
+<tr><td><code>docker pull &lt;image&gt;</code></td> <td>Download an image from a registry.</td></tr>
+<tr><td><code>docker compose up -d</code></td> <td>Start a multi-container app defined in <code>docker-compose.yml</code>.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">9</span> Real-world use cases</div>
+<div class="use-cases">
+<div class="use-case">
+<h4><i class="bi bi-diagram-3-fill"></i> Microservices</h4>
+<ul>
+<li>One container per service — independent deploys</li>
+<li>Different services run different runtimes / languages</li>
+<li>Kubernetes schedules them</li>
+</ul>
+</div>
+<div class="use-case green">
+<h4><i class="bi bi-arrow-repeat"></i> CI / CD Pipelines</h4>
+<ul>
+<li>Build image once → promote the same artifact through stages</li>
+<li>Tests run in identical containers as production</li>
+<li>GitHub Actions, GitLab CI, Jenkins — all container-native</li>
+</ul>
+</div>
+<div class="use-case pink">
+<h4><i class="bi bi-cloud-fill"></i> Cloud Deployments</h4>
+<ul>
+<li>AWS ECS / EKS / Fargate</li>
+<li>GCP Cloud Run / GKE</li>
+<li>Azure AKS / Container Apps</li>
+</ul>
+</div>
+<div class="use-case orange">
+<h4><i class="bi bi-laptop-fill"></i> Local Dev Consistency</h4>
+<ul>
+<li>Spin up Postgres, Kafka, Redis with one <code>compose up</code></li>
+<li>Every dev has the exact same setup</li>
+<li>No "but on my Mac…" bugs</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="takeaway">
+<b>Interview-friendly answer:</b> Docker is a <strong>containerization platform</strong> used to package an application along with its <em>dependencies, libraries, and runtime</em> into a lightweight unit called a <strong>container</strong>. This ensures the application runs <em>consistently</em> across dev, test, and production — solving the classic <em>"works on my machine"</em> problem. Containers share the host OS kernel (via Linux namespaces &amp; cgroups), so they're <strong>much lighter and faster than virtual machines</strong> — milliseconds to start, tens of MB in size. The typical flow is <strong>Dockerfile → Image → Container</strong>, with images stored in a registry like Docker Hub or AWS ECR. It's the foundation for modern <em>microservices, CI/CD pipelines, and cloud deployments</em> (ECS, EKS, GKE, Cloud Run, Kubernetes everywhere).
           </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">8</span> Most-used Docker commands</div>
-            <div class="note-table-wrap">
-              <table class="note-table">
-                <thead>
-                  <tr><th>Command</th><th>What it does</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td><code>docker build -t name:tag .</code></td>     <td>Build an image from the <code>Dockerfile</code> in the current directory.</td></tr>
-                  <tr><td><code>docker run -d -p 80:8080 name</code></td>  <td>Run a container in detached mode with port mapping.</td></tr>
-                  <tr><td><code>docker ps</code></td>                       <td>List running containers (add <code>-a</code> for stopped ones too).</td></tr>
-                  <tr><td><code>docker logs &lt;container&gt;</code></td>         <td>Stream a container's stdout/stderr.</td></tr>
-                  <tr><td><code>docker exec -it &lt;c&gt; bash</code></td>           <td>Open a shell inside a running container — debugging gold.</td></tr>
-                  <tr><td><code>docker stop &lt;c&gt;</code></td>                   <td>Send SIGTERM; container has 10s to shut down gracefully.</td></tr>
-                  <tr><td><code>docker rm &lt;c&gt;</code> / <code>docker rmi &lt;img&gt;</code></td> <td>Remove a container / image.</td></tr>
-                  <tr><td><code>docker pull &lt;image&gt;</code></td>             <td>Download an image from a registry.</td></tr>
-                  <tr><td><code>docker compose up -d</code></td>            <td>Start a multi-container app defined in <code>docker-compose.yml</code>.</td></tr>
-                </tbody>
-              </table>
-            </div>
+</div>
+</details>
+<details class="qa">
+<summary>Docker (Container) vs Virtual Machine <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro">Both isolate workloads, but at very different layers of the stack — that single difference explains everything about their size, speed, and density.</p>
+<div class="core-diff">
+<div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+<div class="core-diff-row">
+<span class="core-diff-key">VM</span>
+<span class="core-diff-val">Runs a <strong>full guest OS</strong> on a hypervisor — strong isolation, heavy.</span>
+</div>
+<div class="core-diff-row">
+<span class="core-diff-key">Container</span>
+<span class="core-diff-val"><strong>Shares the host kernel</strong> — isolated via namespaces + cgroups; lightweight.</span>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> Architecture</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> VM</div>
+<ul>
+<li>Hardware → Hypervisor (KVM, VMware, Hyper-V) → Guest OS → App.</li>
+<li>Each VM bundles its own kernel.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> Container</div>
+<ul>
+<li>Hardware → Host OS → Container runtime → App.</li>
+<li>Uses Linux <strong>namespaces</strong> (PID, network, mount, user) and <strong>cgroups</strong> (CPU, memory limits).</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> Size &amp; Start Time</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> VM</div>
+<ul>
+<li>Images: <strong>GBs</strong> (full OS).</li>
+<li>Boot: <strong>seconds to minutes</strong>.</li>
+<li>Density: <strong>tens</strong> per host.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> Container</div>
+<ul>
+<li>Images: <strong>MBs to a few hundred MB</strong>.</li>
+<li>Start: <strong>milliseconds</strong>.</li>
+<li>Density: <strong>hundreds</strong> per host.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">3</span> Isolation &amp; Security</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> VM</div>
+<ul>
+<li class="cmp-mark-yes">Strong hardware-level isolation.</li>
+<li>Different OS family per VM (Windows + Linux on one host).</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> Container</div>
+<ul>
+<li>Shared kernel — isolation weaker than VMs.</li>
+<li>All containers on a Linux host must use the Linux kernel.</li>
+<li>For untrusted code use additional sandboxing (gVisor, Kata, Firecracker).</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">4</span> Use Case</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> VM</div>
+<ul>
+<li>Multi-tenant infrastructure where isolation matters.</li>
+<li>Running different OSes on the same host.</li>
+<li>Legacy workloads tied to specific kernel versions.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> Container</div>
+<ul>
+<li>Microservices, dev/prod parity, CI runners.</li>
+<li>Kubernetes, ECS, Cloud Run — modern orchestrators.</li>
+<li>Fast scaling and rolling deploys.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="takeaway">
+<b>In practice:</b> the two compose well — cloud providers run <strong>containers on top of VMs</strong> (EKS nodes are EC2 instances). <strong>Docker</strong> is the most popular container runtime/image format/build tool; Kubernetes works with any OCI-compliant runtime (containerd, CRI-O).
           </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">9</span> Real-world use cases</div>
-            <div class="use-cases">
-              <div class="use-case">
-                <h4><i class="bi bi-diagram-3-fill"></i> Microservices</h4>
-                <ul>
-                  <li>One container per service — independent deploys</li>
-                  <li>Different services run different runtimes / languages</li>
-                  <li>Kubernetes schedules them</li>
-                </ul>
-              </div>
-              <div class="use-case green">
-                <h4><i class="bi bi-arrow-repeat"></i> CI / CD Pipelines</h4>
-                <ul>
-                  <li>Build image once → promote the same artifact through stages</li>
-                  <li>Tests run in identical containers as production</li>
-                  <li>GitHub Actions, GitLab CI, Jenkins — all container-native</li>
-                </ul>
-              </div>
-              <div class="use-case pink">
-                <h4><i class="bi bi-cloud-fill"></i> Cloud Deployments</h4>
-                <ul>
-                  <li>AWS ECS / EKS / Fargate</li>
-                  <li>GCP Cloud Run / GKE</li>
-                  <li>Azure AKS / Container Apps</li>
-                </ul>
-              </div>
-              <div class="use-case orange">
-                <h4><i class="bi bi-laptop-fill"></i> Local Dev Consistency</h4>
-                <ul>
-                  <li>Spin up Postgres, Kafka, Redis with one <code>compose up</code></li>
-                  <li>Every dev has the exact same setup</li>
-                  <li>No "but on my Mac…" bugs</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="takeaway">
-            <b>Interview-friendly answer:</b> Docker is a <strong>containerization platform</strong> used to package an application along with its <em>dependencies, libraries, and runtime</em> into a lightweight unit called a <strong>container</strong>. This ensures the application runs <em>consistently</em> across dev, test, and production — solving the classic <em>"works on my machine"</em> problem. Containers share the host OS kernel (via Linux namespaces &amp; cgroups), so they're <strong>much lighter and faster than virtual machines</strong> — milliseconds to start, tens of MB in size. The typical flow is <strong>Dockerfile → Image → Container</strong>, with images stored in a registry like Docker Hub or AWS ECR. It's the foundation for modern <em>microservices, CI/CD pipelines, and cloud deployments</em> (ECS, EKS, GKE, Cloud Run, Kubernetes everywhere).
-          </div>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Docker (Container) vs Virtual Machine <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">Both isolate workloads, but at very different layers of the stack — that single difference explains everything about their size, speed, and density.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">VM</span>
-              <span class="core-diff-val">Runs a <strong>full guest OS</strong> on a hypervisor — strong isolation, heavy.</span>
-            </div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">Container</span>
-              <span class="core-diff-val"><strong>Shares the host kernel</strong> — isolated via namespaces + cgroups; lightweight.</span>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> Architecture</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> VM</div>
-                <ul>
-                  <li>Hardware → Hypervisor (KVM, VMware, Hyper-V) → Guest OS → App.</li>
-                  <li>Each VM bundles its own kernel.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> Container</div>
-                <ul>
-                  <li>Hardware → Host OS → Container runtime → App.</li>
-                  <li>Uses Linux <strong>namespaces</strong> (PID, network, mount, user) and <strong>cgroups</strong> (CPU, memory limits).</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> Size &amp; Start Time</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> VM</div>
-                <ul>
-                  <li>Images: <strong>GBs</strong> (full OS).</li>
-                  <li>Boot: <strong>seconds to minutes</strong>.</li>
-                  <li>Density: <strong>tens</strong> per host.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> Container</div>
-                <ul>
-                  <li>Images: <strong>MBs to a few hundred MB</strong>.</li>
-                  <li>Start: <strong>milliseconds</strong>.</li>
-                  <li>Density: <strong>hundreds</strong> per host.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> Isolation &amp; Security</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> VM</div>
-                <ul>
-                  <li class="cmp-mark-yes">Strong hardware-level isolation.</li>
-                  <li>Different OS family per VM (Windows + Linux on one host).</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> Container</div>
-                <ul>
-                  <li>Shared kernel — isolation weaker than VMs.</li>
-                  <li>All containers on a Linux host must use the Linux kernel.</li>
-                  <li>For untrusted code use additional sandboxing (gVisor, Kata, Firecracker).</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">4</span> Use Case</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> VM</div>
-                <ul>
-                  <li>Multi-tenant infrastructure where isolation matters.</li>
-                  <li>Running different OSes on the same host.</li>
-                  <li>Legacy workloads tied to specific kernel versions.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> Container</div>
-                <ul>
-                  <li>Microservices, dev/prod parity, CI runners.</li>
-                  <li>Kubernetes, ECS, Cloud Run — modern orchestrators.</li>
-                  <li>Fast scaling and rolling deploys.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="takeaway">
-            <b>In practice:</b> the two compose well — cloud providers run <strong>containers on top of VMs</strong> (EKS nodes are EC2 instances). <strong>Docker</strong> is the most popular container runtime/image format/build tool; Kubernetes works with any OCI-compliant runtime (containerd, CRI-O).
-          </div>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Dockerfile best practices for a Java app</summary>
-        <div class="qa-body">
-          <p>Things I always do:</p>
-          <ul>
-            <li><strong>Multi-stage build</strong> — build with the JDK image, run with a smaller JRE base. Final image is much smaller.</li>
-            <li><strong>Use specific base image tags</strong> — never <code>:latest</code>. Eclipse Temurin or distroless for security.</li>
-            <li><strong>Layer caching</strong> — copy <code>pom.xml</code> and run <code>mvn dependency:go-offline</code> before copying source. Code changes don't bust the deps cache.</li>
-            <li><strong>Non-root user</strong> — <code>USER 1001</code> for security.</li>
-            <li><strong>Healthcheck</strong> hitting <code>/actuator/health</code>.</li>
-            <li><strong>.dockerignore</strong> to exclude <code>target/</code>, <code>.git</code>, IDE files.</li>
-            <li><strong>Pin JVM flags</strong> — heap %, GC settings.</li>
-          </ul>
-          <pre><code>FROM eclipse-temurin:21-jdk AS build
+</div>
+</details>
+<details class="qa">
+<summary>Dockerfile best practices for a Java app</summary>
+<div class="qa-body">
+<p>Things I always do:</p>
+<ul>
+<li><strong>Multi-stage build</strong> — build with the JDK image, run with a smaller JRE base. Final image is much smaller.</li>
+<li><strong>Use specific base image tags</strong> — never <code>:latest</code>. Eclipse Temurin or distroless for security.</li>
+<li><strong>Layer caching</strong> — copy <code>pom.xml</code> and run <code>mvn dependency:go-offline</code> before copying source. Code changes don't bust the deps cache.</li>
+<li><strong>Non-root user</strong> — <code>USER 1001</code> for security.</li>
+<li><strong>Healthcheck</strong> hitting <code>/actuator/health</code>.</li>
+<li><strong>.dockerignore</strong> to exclude <code>target/</code>, <code>.git</code>, IDE files.</li>
+<li><strong>Pin JVM flags</strong> — heap %, GC settings.</li>
+</ul>
+<pre><code>FROM eclipse-temurin:21-jdk AS build
 WORKDIR /app
 COPY pom.xml ./
 RUN mvn -B dependency:go-offline
@@ -420,101 +396,95 @@ COPY --from=build /app/target/*.jar app.jar
 USER 1001
 EXPOSE 8080
 ENTRYPOINT ["java","-jar","/app/app.jar"]</code></pre>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Docker image layers and caching</summary>
-        <div class="qa-body">
-          <p>A Docker image is built as a stack of <strong>layers</strong> — each instruction in a Dockerfile (<code>COPY</code>, <code>RUN</code>, <code>ADD</code>) creates an immutable layer. Layers are content-addressed and cached.</p>
-          <p>If a layer changes, all layers <em>after</em> it are rebuilt. So <strong>order matters</strong>: put the least frequently changing things first.</p>
-          <p>Layered correctly, a small source change rebuilds in seconds because Maven dependencies, base image, and OS packages are all cached. Done wrong, every change downloads everything again.</p>
-          <p>Other tips:</p>
-          <ul>
-            <li><strong>Combine RUN commands</strong> with <code>&amp;&amp;</code> and clean up apt caches in the same layer — uncleaned cache stays in the layer forever.</li>
-            <li><strong>Multi-stage builds</strong> let you discard build-time layers entirely.</li>
-            <li><strong>BuildKit</strong> (Docker 23+) has parallel layer building and cache mounts (<code>--mount=type=cache</code>) for Maven/Gradle/npm dirs.</li>
-          </ul>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>What is Kubernetes (K8s)? <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro"><strong>Kubernetes</strong> (often shortened to <strong>K8s</strong> — "k" + 8 letters + "s") is an open-source <strong>container orchestration platform</strong> used to <em>automate the deployment, scaling, management, and monitoring</em> of containerized applications. In practice it's the production-grade way to run Docker (or any OCI-compliant container) at scale.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-title"><i class="bi bi-diagram-3-fill"></i> Core Idea</div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">What</span>
-              <span class="core-diff-val">Open-source container orchestrator originally built by Google (from "Borg"), now run by the CNCF.</span>
-            </div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">Why</span>
-              <span class="core-diff-val">Running 1 container is easy. Running <em>thousands</em> across many machines — with health checks, scaling, rolling updates — needs orchestration.</span>
-            </div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">How</span>
-              <span class="core-diff-val">You declare <strong>desired state</strong> in YAML; the control plane <em>continuously reconciles</em> reality with that state.</span>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> Why we need Kubernetes — without vs with</div>
-            <div class="cmp-grid">
-              <div class="cmp-card">
-                <div class="cmp-card-head">
-                  <i class="bi bi-x-circle-fill" style="color: #ff7b72;"></i>
-                  <span>Without K8s</span>
-                </div>
-                <ul>
-                  <li>Manual <code>docker run</code> on every server</li>
-                  <li>A container crashes → it stays dead until someone notices</li>
-                  <li>Traffic spike → scaling means waking up the on-call</li>
-                  <li>Deploying = SSH + restart, hope for the best</li>
-                  <li>Networking, secrets, configs scattered everywhere</li>
-                </ul>
-              </div>
-              <div class="cmp-card">
-                <div class="cmp-card-head">
-                  <i class="bi bi-check-circle-fill" style="color: var(--green);"></i>
-                  <span>With K8s</span>
-                </div>
-                <ul>
-                  <li>Declare desired state in YAML — K8s makes it real</li>
-                  <li><strong>Self-healing</strong> — crashed pods are restarted automatically</li>
-                  <li><strong>Auto-scaling</strong> — HPA spins up replicas on CPU / RPS</li>
-                  <li><strong>Rolling updates</strong> — zero-downtime deploys + 1-command rollback</li>
-                  <li>Built-in <strong>service discovery</strong>, <strong>load balancing</strong>, <strong>secret management</strong></li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> What K8s actually does — its 6 superpowers</div>
-            <div class="note-table-wrap">
-              <table class="note-table">
-                <thead>
-                  <tr><th>Feature</th><th>What it does</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td>Container Orchestration</td>     <td>Schedules pods onto nodes with enough CPU/memory; respects affinities, taints, tolerations.</td></tr>
-                  <tr><td>Self-Healing</td>                <td>If a container crashes or a node dies, K8s recreates the pod elsewhere — automatically.</td></tr>
-                  <tr><td>Auto-Scaling</td>                <td><strong>HPA</strong> scales pod count on CPU / custom metrics; <strong>Cluster Autoscaler</strong> adds/removes nodes; <strong>VPA</strong> right-sizes per pod.</td></tr>
-                  <tr><td>Load Balancing</td>              <td>Built-in <code>Service</code> objects distribute traffic across all pods of a deployment.</td></tr>
-                  <tr><td>Rolling Updates &amp; Rollbacks</td> <td>Replace pods one batch at a time, with health checks; <code>kubectl rollout undo</code> reverts in seconds.</td></tr>
-                  <tr><td>Service Discovery</td>           <td>Built-in DNS — any pod can reach <code>orders-service.default.svc.cluster.local</code> without knowing IPs.</td></tr>
-                  <tr><td>Config &amp; Secret Mgmt</td>        <td><code>ConfigMap</code> &amp; <code>Secret</code> objects inject env vars or files into pods — no rebuilds.</td></tr>
-                  <tr><td>Storage Abstraction</td>         <td><code>PersistentVolume</code> + <code>PVC</code> abstract EBS, NFS, Ceph, etc. for stateful workloads.</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> Architecture — what's inside a cluster</div>
-            <div class="tree-viz">                  ┌────────────────────────────────────┐
+</div>
+</details>
+<details class="qa">
+<summary>Docker image layers and caching</summary>
+<div class="qa-body">
+<p>A Docker image is built as a stack of <strong>layers</strong> — each instruction in a Dockerfile (<code>COPY</code>, <code>RUN</code>, <code>ADD</code>) creates an immutable layer. Layers are content-addressed and cached.</p>
+<p>If a layer changes, all layers <em>after</em> it are rebuilt. So <strong>order matters</strong>: put the least frequently changing things first.</p>
+<p>Layered correctly, a small source change rebuilds in seconds because Maven dependencies, base image, and OS packages are all cached. Done wrong, every change downloads everything again.</p>
+<p>Other tips:</p>
+<ul>
+<li><strong>Combine RUN commands</strong> with <code>&amp;&amp;</code> and clean up apt caches in the same layer — uncleaned cache stays in the layer forever.</li>
+<li><strong>Multi-stage builds</strong> let you discard build-time layers entirely.</li>
+<li><strong>BuildKit</strong> (Docker 23+) has parallel layer building and cache mounts (<code>--mount=type=cache</code>) for Maven/Gradle/npm dirs.</li>
+</ul>
+</div>
+</details>
+<details class="qa">
+<summary>What is Kubernetes (K8s)? <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro"><strong>Kubernetes</strong> (often shortened to <strong>K8s</strong> — "k" + 8 letters + "s") is an open-source <strong>container orchestration platform</strong> used to <em>automate the deployment, scaling, management, and monitoring</em> of containerized applications. In practice it's the production-grade way to run Docker (or any OCI-compliant container) at scale.</p>
+<div class="core-diff">
+<div class="core-diff-title"><i class="bi bi-diagram-3-fill"></i> Core Idea</div>
+<div class="core-diff-row">
+<span class="core-diff-key">What</span>
+<span class="core-diff-val">Open-source container orchestrator originally built by Google (from "Borg"), now run by the CNCF.</span>
+</div>
+<div class="core-diff-row">
+<span class="core-diff-key">Why</span>
+<span class="core-diff-val">Running 1 container is easy. Running <em>thousands</em> across many machines — with health checks, scaling, rolling updates — needs orchestration.</span>
+</div>
+<div class="core-diff-row">
+<span class="core-diff-key">How</span>
+<span class="core-diff-val">You declare <strong>desired state</strong> in YAML; the control plane <em>continuously reconciles</em> reality with that state.</span>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> Why we need Kubernetes — without vs with</div>
+<div class="cmp-grid">
+<div class="cmp-card">
+<div class="cmp-card-head">
+<i class="bi bi-x-circle-fill" style="color: #ff7b72;"></i>
+<span>Without K8s</span>
+</div>
+<ul>
+<li>Manual <code>docker run</code> on every server</li>
+<li>A container crashes → it stays dead until someone notices</li>
+<li>Traffic spike → scaling means waking up the on-call</li>
+<li>Deploying = SSH + restart, hope for the best</li>
+<li>Networking, secrets, configs scattered everywhere</li>
+</ul>
+</div>
+<div class="cmp-card">
+<div class="cmp-card-head">
+<i class="bi bi-check-circle-fill" style="color: var(--green);"></i>
+<span>With K8s</span>
+</div>
+<ul>
+<li>Declare desired state in YAML — K8s makes it real</li>
+<li><strong>Self-healing</strong> — crashed pods are restarted automatically</li>
+<li><strong>Auto-scaling</strong> — HPA spins up replicas on CPU / RPS</li>
+<li><strong>Rolling updates</strong> — zero-downtime deploys + 1-command rollback</li>
+<li>Built-in <strong>service discovery</strong>, <strong>load balancing</strong>, <strong>secret management</strong></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> What K8s actually does — its 6 superpowers</div>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead>
+<tr><th>Feature</th><th>What it does</th></tr>
+</thead>
+<tbody>
+<tr><td>Container Orchestration</td> <td>Schedules pods onto nodes with enough CPU/memory; respects affinities, taints, tolerations.</td></tr>
+<tr><td>Self-Healing</td> <td>If a container crashes or a node dies, K8s recreates the pod elsewhere — automatically.</td></tr>
+<tr><td>Auto-Scaling</td> <td><strong>HPA</strong> scales pod count on CPU / custom metrics; <strong>Cluster Autoscaler</strong> adds/removes nodes; <strong>VPA</strong> right-sizes per pod.</td></tr>
+<tr><td>Load Balancing</td> <td>Built-in <code>Service</code> objects distribute traffic across all pods of a deployment.</td></tr>
+<tr><td>Rolling Updates &amp; Rollbacks</td> <td>Replace pods one batch at a time, with health checks; <code>kubectl rollout undo</code> reverts in seconds.</td></tr>
+<tr><td>Service Discovery</td> <td>Built-in DNS — any pod can reach <code>orders-service.default.svc.cluster.local</code> without knowing IPs.</td></tr>
+<tr><td>Config &amp; Secret Mgmt</td> <td><code>ConfigMap</code> &amp; <code>Secret</code> objects inject env vars or files into pods — no rebuilds.</td></tr>
+<tr><td>Storage Abstraction</td> <td><code>PersistentVolume</code> + <code>PVC</code> abstract EBS, NFS, Ceph, etc. for stateful workloads.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">3</span> Architecture — what's inside a cluster</div>
+<div class="tree-viz">                  ┌────────────────────────────────────┐
                   │         CONTROL PLANE              │
                   │  ┌──────────┐  ┌──────────────┐    │
                   │  │ API      │  │  Scheduler   │    │
@@ -536,39 +506,37 @@ ENTRYPOINT ["java","-jar","/app/app.jar"]</code></pre>
 │  └──┘ └──┘ └──┘│     │  └──┘ └──┘    │     │  └──┘ └──┘    │
 │  kubelet+proxy │     │  kubelet+proxy │     │  kubelet+proxy │
 └────────────────┘     └────────────────┘     └────────────────┘</div>
-            <p class="solution-desc"><strong>Control plane:</strong> the brain — schedules pods, stores state in <code>etcd</code>, runs controllers that reconcile actual vs desired state.</p>
-            <p class="solution-desc"><strong>Worker nodes:</strong> the muscle — each runs <code>kubelet</code> (agent), <code>kube-proxy</code> (networking), and the actual pods.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">4</span> Key Kubernetes Concepts</div>
-            <div class="note-table-wrap">
-              <table class="note-table">
-                <thead>
-                  <tr><th>Concept</th><th>What it is</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td>Cluster</td>      <td>A group of machines (nodes) running K8s — control plane + workers.</td></tr>
-                  <tr><td>Node</td>         <td>A single machine (VM or physical) in the cluster.</td></tr>
-                  <tr><td>Pod</td>          <td>The smallest deployable unit — one or more tightly-coupled containers that share network &amp; storage.</td></tr>
-                  <tr><td>Deployment</td>   <td>Declarative recipe to run N replicas of a pod, with rolling-update strategy.</td></tr>
-                  <tr><td>Service</td>      <td>Stable virtual IP + DNS name that load-balances traffic across pods of a deployment.</td></tr>
-                  <tr><td>Ingress</td>      <td>HTTP(S) routing from outside the cluster to internal services (path &amp; host based).</td></tr>
-                  <tr><td>ConfigMap</td>    <td>Non-secret config injected into pods.</td></tr>
-                  <tr><td>Secret</td>       <td>Sensitive config (passwords, API keys) injected into pods.</td></tr>
-                  <tr><td>Namespace</td>    <td>Logical partition of the cluster — for multi-team / multi-env separation.</td></tr>
-                  <tr><td>Volume / PVC</td> <td>Persistent storage attached to pods (databases, file caches).</td></tr>
-                  <tr><td>StatefulSet</td>  <td>Like Deployment, but for stateful apps (DBs, queues) — stable identity + storage per pod.</td></tr>
-                  <tr><td>Job / CronJob</td><td>Run-to-completion tasks &amp; scheduled jobs.</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">5</span> Example — a minimal Deployment + Service</div>
-            <p class="solution-desc">Declare 3 replicas of a Spring Boot app, with a service to load-balance traffic:</p>
-            <pre><code># deployment.yaml
+<p class="solution-desc"><strong>Control plane:</strong> the brain — schedules pods, stores state in <code>etcd</code>, runs controllers that reconcile actual vs desired state.</p>
+<p class="solution-desc"><strong>Worker nodes:</strong> the muscle — each runs <code>kubelet</code> (agent), <code>kube-proxy</code> (networking), and the actual pods.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">4</span> Key Kubernetes Concepts</div>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead>
+<tr><th>Concept</th><th>What it is</th></tr>
+</thead>
+<tbody>
+<tr><td>Cluster</td> <td>A group of machines (nodes) running K8s — control plane + workers.</td></tr>
+<tr><td>Node</td> <td>A single machine (VM or physical) in the cluster.</td></tr>
+<tr><td>Pod</td> <td>The smallest deployable unit — one or more tightly-coupled containers that share network &amp; storage.</td></tr>
+<tr><td>Deployment</td> <td>Declarative recipe to run N replicas of a pod, with rolling-update strategy.</td></tr>
+<tr><td>Service</td> <td>Stable virtual IP + DNS name that load-balances traffic across pods of a deployment.</td></tr>
+<tr><td>Ingress</td> <td>HTTP(S) routing from outside the cluster to internal services (path &amp; host based).</td></tr>
+<tr><td>ConfigMap</td> <td>Non-secret config injected into pods.</td></tr>
+<tr><td>Secret</td> <td>Sensitive config (passwords, API keys) injected into pods.</td></tr>
+<tr><td>Namespace</td> <td>Logical partition of the cluster — for multi-team / multi-env separation.</td></tr>
+<tr><td>Volume / PVC</td> <td>Persistent storage attached to pods (databases, file caches).</td></tr>
+<tr><td>StatefulSet</td> <td>Like Deployment, but for stateful apps (DBs, queues) — stable identity + storage per pod.</td></tr>
+<tr><td>Job / CronJob</td><td>Run-to-completion tasks &amp; scheduled jobs.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">5</span> Example — a minimal Deployment + Service</div>
+<p class="solution-desc">Declare 3 replicas of a Spring Boot app, with a service to load-balance traffic:</p>
+<pre><code># deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -600,186 +568,177 @@ spec:
   - port: 80
     targetPort: 8080
   type: ClusterIP                      # internal LB; use LoadBalancer for external</code></pre>
-            <p class="solution-desc">Then apply with one command:</p>
-            <pre><code>kubectl apply -f deployment.yaml -f service.yaml
+<p class="solution-desc">Then apply with one command:</p>
+<pre><code>kubectl apply -f deployment.yaml -f service.yaml
 kubectl get pods                                # see all 3 pods running
 kubectl scale deployment/orders-app --replicas=10
 kubectl rollout status deployment/orders-app    # watch a rolling update</code></pre>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">6</span> Docker vs Kubernetes — different roles</div>
+<div class="cmp-grid">
+<div class="cmp-card">
+<div class="cmp-card-head">
+<i class="bi bi-box-fill"></i>
+<span>Docker</span>
+</div>
+<ul>
+<li><b>What:</b> container runtime + image builder</li>
+<li><b>Scope:</b> single machine</li>
+<li><b>Job:</b> create &amp; run containers</li>
+<li>Builds the image, runs <em>one</em> instance</li>
+</ul>
+</div>
+<div class="cmp-card">
+<div class="cmp-card-head">
+<i class="bi bi-diagram-3-fill"></i>
+<span>Kubernetes</span>
+</div>
+<ul>
+<li><b>What:</b> container orchestrator</li>
+<li><b>Scope:</b> entire cluster (many machines)</li>
+<li><b>Job:</b> schedule, scale, heal containers at scale</li>
+<li>Manages <em>thousands</em> of instances across many nodes</li>
+</ul>
+</div>
+</div>
+<p class="solution-desc"><strong>In short:</strong> Docker creates and runs containers; Kubernetes <em>manages</em> those containers in production.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">7</span> Most-used <code>kubectl</code> commands</div>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead>
+<tr><th>Command</th><th>What it does</th></tr>
+</thead>
+<tbody>
+<tr><td><code>kubectl apply -f file.yaml</code></td> <td>Create / update resources from a YAML manifest.</td></tr>
+<tr><td><code>kubectl get pods</code></td> <td>List pods (add <code>-A</code> for all namespaces).</td></tr>
+<tr><td><code>kubectl describe pod &lt;name&gt;</code></td> <td>Show events &amp; details — first thing on any "why is it broken?".</td></tr>
+<tr><td><code>kubectl logs &lt;pod&gt;</code></td> <td>Stream a pod's logs (<code>-f</code> to follow, <code>--previous</code> for crashed).</td></tr>
+<tr><td><code>kubectl exec -it &lt;pod&gt; -- bash</code></td> <td>Open a shell inside a running container.</td></tr>
+<tr><td><code>kubectl scale deploy/x --replicas=N</code></td><td>Scale a deployment manually.</td></tr>
+<tr><td><code>kubectl rollout status / undo</code></td> <td>Watch a rolling deploy / instantly roll back.</td></tr>
+<tr><td><code>kubectl port-forward svc/x 8080:80</code></td><td>Tunnel a cluster service to your laptop.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">8</span> Where K8s runs in production</div>
+<div class="use-cases">
+<div class="use-case">
+<h4><i class="bi bi-cloud-fill"></i> Managed Cloud K8s</h4>
+<ul>
+<li><strong>AWS EKS</strong></li>
+<li><strong>Google GKE</strong> (original creator!)</li>
+<li><strong>Azure AKS</strong></li>
+<li><strong>DigitalOcean DOKS</strong>, Linode LKE</li>
+</ul>
+<div class="examples"><b>Best for:</b> most teams — no control-plane ops to manage.</div>
+</div>
+<div class="use-case green">
+<h4><i class="bi bi-laptop-fill"></i> Local Dev</h4>
+<ul>
+<li><strong>Docker Desktop</strong> built-in K8s</li>
+<li><strong>minikube</strong>, <strong>kind</strong> (K8s in Docker)</li>
+<li><strong>k3d / k3s</strong> — lightweight K8s</li>
+</ul>
+<div class="examples"><b>Best for:</b> developing locally with the same APIs as prod.</div>
+</div>
+<div class="use-case pink">
+<h4><i class="bi bi-puzzle-fill"></i> The K8s Ecosystem</h4>
+<ul>
+<li><strong>Helm</strong> — package manager for K8s</li>
+<li><strong>ArgoCD</strong> — GitOps deploys</li>
+<li><strong>Istio / Linkerd</strong> — service mesh</li>
+<li><strong>Prometheus + Grafana</strong> — metrics</li>
+</ul>
+<div class="examples"><b>Note:</b> K8s itself is just the foundation — the ecosystem is huge.</div>
+</div>
+<div class="use-case orange">
+<h4><i class="bi bi-trophy-fill"></i> Who uses it</h4>
+<ul>
+<li>Netflix, Spotify, Airbnb, Pinterest</li>
+<li>Most modern fintech / BFSI platforms</li>
+<li>Practically every cloud-native startup</li>
+</ul>
+<div class="examples"><b>Why:</b> standard tooling, multi-cloud portable, huge talent pool.</div>
+</div>
+</div>
+</div>
+<div class="takeaway">
+<b>Interview-ready answer:</b> Kubernetes (K8s) is an <strong>open-source container orchestration platform</strong> that automates the deployment, scaling, management, and monitoring of containerized applications — most commonly Docker containers. You declare the <em>desired state</em> in YAML (e.g. <em>"run 3 replicas of this app, expose port 8080, restart on failure"</em>) and the K8s control plane continuously reconciles reality with that state. It provides <strong>auto-scaling, self-healing, rolling updates, service discovery, load balancing</strong>, and config / secret management out of the box. <strong>Docker</strong> creates and runs individual containers on a single machine; <strong>Kubernetes</strong> manages thousands of containers across a cluster of many machines. It's the cloud-native standard — multi-cloud portable, with managed offerings like <em>AWS EKS, Google GKE, and Azure AKS</em>.
           </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">6</span> Docker vs Kubernetes — different roles</div>
-            <div class="cmp-grid">
-              <div class="cmp-card">
-                <div class="cmp-card-head">
-                  <i class="bi bi-box-fill"></i>
-                  <span>Docker</span>
-                </div>
-                <ul>
-                  <li><b>What:</b> container runtime + image builder</li>
-                  <li><b>Scope:</b> single machine</li>
-                  <li><b>Job:</b> create &amp; run containers</li>
-                  <li>Builds the image, runs <em>one</em> instance</li>
-                </ul>
-              </div>
-              <div class="cmp-card">
-                <div class="cmp-card-head">
-                  <i class="bi bi-diagram-3-fill"></i>
-                  <span>Kubernetes</span>
-                </div>
-                <ul>
-                  <li><b>What:</b> container orchestrator</li>
-                  <li><b>Scope:</b> entire cluster (many machines)</li>
-                  <li><b>Job:</b> schedule, scale, heal containers at scale</li>
-                  <li>Manages <em>thousands</em> of instances across many nodes</li>
-                </ul>
-              </div>
-            </div>
-            <p class="solution-desc"><strong>In short:</strong> Docker creates and runs containers; Kubernetes <em>manages</em> those containers in production.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">7</span> Most-used <code>kubectl</code> commands</div>
-            <div class="note-table-wrap">
-              <table class="note-table">
-                <thead>
-                  <tr><th>Command</th><th>What it does</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td><code>kubectl apply -f file.yaml</code></td>    <td>Create / update resources from a YAML manifest.</td></tr>
-                  <tr><td><code>kubectl get pods</code></td>              <td>List pods (add <code>-A</code> for all namespaces).</td></tr>
-                  <tr><td><code>kubectl describe pod &lt;name&gt;</code></td>    <td>Show events &amp; details — first thing on any "why is it broken?".</td></tr>
-                  <tr><td><code>kubectl logs &lt;pod&gt;</code></td>             <td>Stream a pod's logs (<code>-f</code> to follow, <code>--previous</code> for crashed).</td></tr>
-                  <tr><td><code>kubectl exec -it &lt;pod&gt; -- bash</code></td>  <td>Open a shell inside a running container.</td></tr>
-                  <tr><td><code>kubectl scale deploy/x --replicas=N</code></td><td>Scale a deployment manually.</td></tr>
-                  <tr><td><code>kubectl rollout status / undo</code></td> <td>Watch a rolling deploy / instantly roll back.</td></tr>
-                  <tr><td><code>kubectl port-forward svc/x 8080:80</code></td><td>Tunnel a cluster service to your laptop.</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">8</span> Where K8s runs in production</div>
-            <div class="use-cases">
-              <div class="use-case">
-                <h4><i class="bi bi-cloud-fill"></i> Managed Cloud K8s</h4>
-                <ul>
-                  <li><strong>AWS EKS</strong></li>
-                  <li><strong>Google GKE</strong> (original creator!)</li>
-                  <li><strong>Azure AKS</strong></li>
-                  <li><strong>DigitalOcean DOKS</strong>, Linode LKE</li>
-                </ul>
-                <div class="examples"><b>Best for:</b> most teams — no control-plane ops to manage.</div>
-              </div>
-              <div class="use-case green">
-                <h4><i class="bi bi-laptop-fill"></i> Local Dev</h4>
-                <ul>
-                  <li><strong>Docker Desktop</strong> built-in K8s</li>
-                  <li><strong>minikube</strong>, <strong>kind</strong> (K8s in Docker)</li>
-                  <li><strong>k3d / k3s</strong> — lightweight K8s</li>
-                </ul>
-                <div class="examples"><b>Best for:</b> developing locally with the same APIs as prod.</div>
-              </div>
-              <div class="use-case pink">
-                <h4><i class="bi bi-puzzle-fill"></i> The K8s Ecosystem</h4>
-                <ul>
-                  <li><strong>Helm</strong> — package manager for K8s</li>
-                  <li><strong>ArgoCD</strong> — GitOps deploys</li>
-                  <li><strong>Istio / Linkerd</strong> — service mesh</li>
-                  <li><strong>Prometheus + Grafana</strong> — metrics</li>
-                </ul>
-                <div class="examples"><b>Note:</b> K8s itself is just the foundation — the ecosystem is huge.</div>
-              </div>
-              <div class="use-case orange">
-                <h4><i class="bi bi-trophy-fill"></i> Who uses it</h4>
-                <ul>
-                  <li>Netflix, Spotify, Airbnb, Pinterest</li>
-                  <li>Most modern fintech / BFSI platforms</li>
-                  <li>Practically every cloud-native startup</li>
-                </ul>
-                <div class="examples"><b>Why:</b> standard tooling, multi-cloud portable, huge talent pool.</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="takeaway">
-            <b>Interview-ready answer:</b> Kubernetes (K8s) is an <strong>open-source container orchestration platform</strong> that automates the deployment, scaling, management, and monitoring of containerized applications — most commonly Docker containers. You declare the <em>desired state</em> in YAML (e.g. <em>"run 3 replicas of this app, expose port 8080, restart on failure"</em>) and the K8s control plane continuously reconciles reality with that state. It provides <strong>auto-scaling, self-healing, rolling updates, service discovery, load balancing</strong>, and config / secret management out of the box. <strong>Docker</strong> creates and runs individual containers on a single machine; <strong>Kubernetes</strong> manages thousands of containers across a cluster of many machines. It's the cloud-native standard — multi-cloud portable, with managed offerings like <em>AWS EKS, Google GKE, and Azure AKS</em>.
-          </div>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Pod vs Deployment vs Service vs Ingress</summary>
-        <div class="qa-body">
-          <p>The core K8s objects you touch daily:</p>
-          <ul>
-            <li><strong>Pod</strong> — smallest deployable unit, one or more co-located containers sharing network and storage. You rarely create pods directly.</li>
-            <li><strong>ReplicaSet</strong> — keeps N pods running. Created by Deployment.</li>
-            <li><strong>Deployment</strong> — desired state for a stateless app: image, replicas, rolling update strategy. Manages ReplicaSets to safely transition versions.</li>
-            <li><strong>StatefulSet</strong> — for stateful apps (DBs, Kafka). Stable network identity, ordered scaling, persistent storage per pod.</li>
-            <li><strong>Service</strong> — stable virtual IP + DNS that load-balances to a set of pods. Types: ClusterIP (internal), NodePort, LoadBalancer (cloud LB), Headless.</li>
-            <li><strong>Ingress</strong> — HTTP/HTTPS routing rules from outside the cluster to Services. Implemented by an ingress controller (Nginx, AWS ALB, Traefik).</li>
-            <li><strong>Job/CronJob</strong> — one-shot or scheduled batch work.</li>
-          </ul>
-          <p>Typical service: Deployment + Service + Ingress + ConfigMap + Secret + HPA.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Liveness, readiness, startup probes — differences</summary>
-        <div class="qa-body">
-          <p>(Also covered in Spring Boot.) Three K8s probes:</p>
-          <ul>
-            <li><strong>Liveness</strong> — is the container alive? Failure → K8s <strong>restarts</strong> the pod. Should check only fatal in-process state. Wrong checks cause restart loops.</li>
-            <li><strong>Readiness</strong> — is it ready to serve traffic? Failure → K8s <strong>removes</strong> from Service endpoints. Should check downstream dependencies. Used to gate traffic during startup or temporary unhealthiness.</li>
-            <li><strong>Startup</strong> — slow-start apps. Once it passes, liveness/readiness take over. Lets you set generous startup time without making liveness too lax later.</li>
-          </ul>
-          <p>For Java services I use <code>/actuator/health/liveness</code> and <code>/health/readiness</code>. Tune <code>initialDelaySeconds</code>, <code>periodSeconds</code>, <code>failureThreshold</code> based on real startup time. Misconfiguring probes is one of the top causes of production incidents — I always check them in PRs.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Resource requests vs limits</summary>
-        <div class="qa-body">
-          <p>Every container can declare <strong>requests</strong> (minimum guaranteed CPU/memory) and <strong>limits</strong> (maximum allowed).</p>
-          <ul>
-            <li><strong>CPU request</strong> — used by the scheduler to find a node with capacity. Used for fair sharing under contention.</li>
-            <li><strong>CPU limit</strong> — throttled if exceeded. Aggressive throttling is often the root cause of "slow service" mystery.</li>
-            <li><strong>Memory request</strong> — guaranteed; used by scheduler.</li>
-            <li><strong>Memory limit</strong> — exceeding it → OOMKilled by the kernel. Hard kill.</li>
-          </ul>
-          <p>For Java: heap should be well under the memory limit (leave room for metaspace, threads, native memory). I set <code>-XX:MaxRAMPercentage=70</code> with a slightly higher container memory limit so JVM has headroom.</p>
-          <p>Quality of Service classes: <strong>Guaranteed</strong> (request==limit), <strong>Burstable</strong>, <strong>BestEffort</strong>. Production services should be Guaranteed or Burstable; BestEffort gets evicted first.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>ConfigMap vs Secret — what's the difference?</summary>
-        <div class="qa-body">
-          <p>Both store key-value data and can be mounted as env vars or files in pods.</p>
-          <p><strong>ConfigMap</strong> is for non-sensitive config (feature flags, URLs, log levels). Stored as plain text in etcd.</p>
-          <p><strong>Secret</strong> is for sensitive data (DB passwords, API keys). Stored base64-encoded in etcd — which is <strong>not encryption</strong>. The security comes from RBAC (who can read secrets) and from enabling <strong>encryption-at-rest</strong> for etcd.</p>
-          <p>In production I use external secrets stores:</p>
-          <ul>
-            <li><strong>AWS Secrets Manager / Parameter Store</strong> + <strong>External Secrets Operator</strong> (ESO) to sync into K8s Secrets.</li>
-            <li><strong>HashiCorp Vault</strong> + Vault Agent injector.</li>
-            <li><strong>Sealed Secrets</strong> if you want secrets in git encrypted with a cluster public key.</li>
-          </ul>
-          <p>Never commit raw secrets to git; never log secret env vars. Rotate regularly.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Horizontal Pod Autoscaler (HPA)</summary>
-        <div class="qa-body">
-          <p><strong>HPA</strong> automatically scales pod replicas based on metrics. Typical metrics:</p>
-          <ul>
-            <li><strong>CPU utilization</strong> — most common. Target ~60–70%.</li>
-            <li><strong>Memory utilization</strong> — for memory-bound apps.</li>
-            <li><strong>Custom metrics</strong> via Prometheus Adapter — e.g., requests-per-second, Kafka consumer lag, queue depth. <strong>This is what really matters in production</strong>.</li>
-          </ul>
-          <pre><code>apiVersion: autoscaling/v2
+</div>
+</details>
+<details class="qa">
+<summary>Pod vs Deployment vs Service vs Ingress</summary>
+<div class="qa-body">
+<p>The core K8s objects you touch daily:</p>
+<ul>
+<li><strong>Pod</strong> — smallest deployable unit, one or more co-located containers sharing network and storage. You rarely create pods directly.</li>
+<li><strong>ReplicaSet</strong> — keeps N pods running. Created by Deployment.</li>
+<li><strong>Deployment</strong> — desired state for a stateless app: image, replicas, rolling update strategy. Manages ReplicaSets to safely transition versions.</li>
+<li><strong>StatefulSet</strong> — for stateful apps (DBs, Kafka). Stable network identity, ordered scaling, persistent storage per pod.</li>
+<li><strong>Service</strong> — stable virtual IP + DNS that load-balances to a set of pods. Types: ClusterIP (internal), NodePort, LoadBalancer (cloud LB), Headless.</li>
+<li><strong>Ingress</strong> — HTTP/HTTPS routing rules from outside the cluster to Services. Implemented by an ingress controller (Nginx, AWS ALB, Traefik).</li>
+<li><strong>Job/CronJob</strong> — one-shot or scheduled batch work.</li>
+</ul>
+<p>Typical service: Deployment + Service + Ingress + ConfigMap + Secret + HPA.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Liveness, readiness, startup probes — differences</summary>
+<div class="qa-body">
+<p>(Also covered in Spring Boot.) Three K8s probes:</p>
+<ul>
+<li><strong>Liveness</strong> — is the container alive? Failure → K8s <strong>restarts</strong> the pod. Should check only fatal in-process state. Wrong checks cause restart loops.</li>
+<li><strong>Readiness</strong> — is it ready to serve traffic? Failure → K8s <strong>removes</strong> from Service endpoints. Should check downstream dependencies. Used to gate traffic during startup or temporary unhealthiness.</li>
+<li><strong>Startup</strong> — slow-start apps. Once it passes, liveness/readiness take over. Lets you set generous startup time without making liveness too lax later.</li>
+</ul>
+<p>For Java services I use <code>/actuator/health/liveness</code> and <code>/health/readiness</code>. Tune <code>initialDelaySeconds</code>, <code>periodSeconds</code>, <code>failureThreshold</code> based on real startup time. Misconfiguring probes is one of the top causes of production incidents — I always check them in PRs.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Resource requests vs limits</summary>
+<div class="qa-body">
+<p>Every container can declare <strong>requests</strong> (minimum guaranteed CPU/memory) and <strong>limits</strong> (maximum allowed).</p>
+<ul>
+<li><strong>CPU request</strong> — used by the scheduler to find a node with capacity. Used for fair sharing under contention.</li>
+<li><strong>CPU limit</strong> — throttled if exceeded. Aggressive throttling is often the root cause of "slow service" mystery.</li>
+<li><strong>Memory request</strong> — guaranteed; used by scheduler.</li>
+<li><strong>Memory limit</strong> — exceeding it → OOMKilled by the kernel. Hard kill.</li>
+</ul>
+<p>For Java: heap should be well under the memory limit (leave room for metaspace, threads, native memory). I set <code>-XX:MaxRAMPercentage=70</code> with a slightly higher container memory limit so JVM has headroom.</p>
+<p>Quality of Service classes: <strong>Guaranteed</strong> (request==limit), <strong>Burstable</strong>, <strong>BestEffort</strong>. Production services should be Guaranteed or Burstable; BestEffort gets evicted first.</p>
+</div>
+</details>
+<details class="qa">
+<summary>ConfigMap vs Secret — what's the difference?</summary>
+<div class="qa-body">
+<p>Both store key-value data and can be mounted as env vars or files in pods.</p>
+<p><strong>ConfigMap</strong> is for non-sensitive config (feature flags, URLs, log levels). Stored as plain text in etcd.</p>
+<p><strong>Secret</strong> is for sensitive data (DB passwords, API keys). Stored base64-encoded in etcd — which is <strong>not encryption</strong>. The security comes from RBAC (who can read secrets) and from enabling <strong>encryption-at-rest</strong> for etcd.</p>
+<p>In production I use external secrets stores:</p>
+<ul>
+<li><strong>AWS Secrets Manager / Parameter Store</strong> + <strong>External Secrets Operator</strong> (ESO) to sync into K8s Secrets.</li>
+<li><strong>HashiCorp Vault</strong> + Vault Agent injector.</li>
+<li><strong>Sealed Secrets</strong> if you want secrets in git encrypted with a cluster public key.</li>
+</ul>
+<p>Never commit raw secrets to git; never log secret env vars. Rotate regularly.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Horizontal Pod Autoscaler (HPA)</summary>
+<div class="qa-body">
+<p><strong>HPA</strong> automatically scales pod replicas based on metrics. Typical metrics:</p>
+<ul>
+<li><strong>CPU utilization</strong> — most common. Target ~60–70%.</li>
+<li><strong>Memory utilization</strong> — for memory-bound apps.</li>
+<li><strong>Custom metrics</strong> via Prometheus Adapter — e.g., requests-per-second, Kafka consumer lag, queue depth. <strong>This is what really matters in production</strong>.</li>
+</ul>
+<pre><code>apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 spec:
   scaleTargetRef: { kind: Deployment, name: my-app }
@@ -788,73 +747,240 @@ spec:
   metrics:
   - type: Resource
     resource: { name: cpu, target: { type: Utilization, averageUtilization: 60 } }</code></pre>
-          <p>Sizing: minReplicas should survive a single-AZ outage. Tune <code>behavior</code> stabilization windows to avoid flapping. Pair with cluster autoscaler so adding pods triggers node growth. At Indus Net I scaled the resume-parsing service on Kafka lag rather than CPU — more responsive to actual demand.</p>
-        </div>
-      </details>
+<p>Sizing: minReplicas should survive a single-AZ outage. Tune <code>behavior</code> stabilization windows to avoid flapping. Pair with cluster autoscaler so adding pods triggers node growth. At Indus Net I scaled the resume-parsing service on Kafka lag rather than CPU — more responsive to actual demand.</p>
+</div>
+</details>
+<details class="qa">
+<summary>How does service discovery work in K8s?</summary>
+<div class="qa-body">
+<p>K8s ships service discovery out of the box.</p>
+<p>When you create a <strong>Service</strong>, K8s assigns it a stable <strong>cluster IP</strong> and a DNS name: <code>my-service.my-namespace.svc.cluster.local</code> (or just <code>my-service</code> within the same namespace). CoreDNS resolves these to the cluster IP.</p>
+<p>Behind the cluster IP, kube-proxy programs iptables (or IPVS) rules that load-balance to the actual pod IPs. Pod IPs change on every restart, but the Service IP and DNS are stable.</p>
+<p>For headless services (<code>clusterIP: None</code>), DNS returns all pod IPs directly — useful for clients that want to do their own LB (e.g., gRPC client-side balancing, StatefulSet members talking to each other).</p>
+<p>Modern setups add a <strong>service mesh</strong> (Istio, Linkerd) on top for mTLS, traffic splitting, retries, and observability — sidecar proxies (Envoy) handle service-to-service calls.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Rolling updates and rollbacks in K8s</summary>
+<div class="qa-body">
+<p>K8s Deployments handle rolling updates declaratively. You update the pod template (e.g., new image tag); K8s creates a new ReplicaSet and gradually shifts pods from old to new.</p>
+<p>Knobs:</p>
+<ul>
+<li><strong><code>maxSurge</code></strong> — how many extra pods can run during update (default 25%).</li>
+<li><strong><code>maxUnavailable</code></strong> — how many old pods can be down (default 25%).</li>
+<li><strong>Readiness probe</strong> — new pods must pass before old ones are killed.</li>
+</ul>
+<p>Rollback is simple: <code>kubectl rollout undo deployment/my-app</code>. K8s keeps ReplicaSet history (configurable <code>revisionHistoryLimit</code>).</p>
+<p>For higher-risk changes I use <strong>Argo Rollouts</strong> or <strong>Flagger</strong> on top — they add canary, blue/green, and automated metric-based rollback. At Indus Net we use Argo Rollouts to canary 5% → 25% → 100% over 10 minutes, watching error rate and p99 latency, and auto-rolling back if either spikes.</p>
+</div>
+</details>
+<details class="qa">
+<summary>How do you debug a failing pod?</summary>
+<div class="qa-body">
+<p>My triage sequence:</p>
+<ol>
+<li><code>kubectl get pods -n ns</code> — what's the status? <em>Pending, ImagePullBackOff, CrashLoopBackOff, Error?</em></li>
+<li><code>kubectl describe pod &lt;name&gt;</code> — events at the bottom usually tell you exactly what's wrong (scheduling failure, probe failure, OOMKilled, image issue).</li>
+<li><code>kubectl logs &lt;name&gt; --previous</code> — logs from the previous container instance (essential for CrashLoopBackOff).</li>
+<li><code>kubectl logs &lt;name&gt; -c &lt;container&gt;</code> — multi-container pods need the container name.</li>
+<li><code>kubectl exec -it &lt;pod&gt; -- sh</code> — exec into the pod for live inspection (curl localhost, check files).</li>
+<li><code>kubectl get events --sort-by=.lastTimestamp -n ns</code> — broader cluster events.</li>
+<li><code>kubectl top pod</code> — current resource usage.</li>
+<li>For "service unreachable": check Service endpoints (<code>kubectl get endpoints</code>) — empty means no pods are <em>Ready</em>.</li>
+</ol>
+<p>Common culprits: OOM (raise limit or fix leak), probe misconfigured, missing config, image tag typo, network policy blocking traffic.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Helm — what is it and why?</summary>
+<div class="qa-body">
+<p>Plain YAML manifests don't scale: same Deployment + Service + Ingress + ConfigMap repeated across services and environments, with small differences. <strong>Helm</strong> is the package manager for Kubernetes — templates YAML with Go templating, packaging the result as a <strong>chart</strong>.</p>
+<p>A chart has:</p>
+<ul>
+<li><strong>Templates</strong> — parameterized YAML.</li>
+<li><strong>values.yaml</strong> — defaults, overridden per environment with <code>values-prod.yaml</code>, <code>values-staging.yaml</code>.</li>
+<li><strong>Chart.yaml</strong> — metadata, versioning.</li>
+</ul>
+<p>Run <code>helm install / upgrade / rollback</code> — Helm tracks releases and supports rollback.</p>
+<p>I use Helm for: (a) installing off-the-shelf software (Prometheus, ingress-nginx, Argo CD) — the community charts are mature; (b) packaging our own services. For tighter control / kustomize-style, some teams prefer <strong>Kustomize</strong>. Both are fine; pick one and be consistent.</p>
+</div>
+</details>
 
-      <details class="qa">
-        <summary>How does service discovery work in K8s?</summary>
-        <div class="qa-body">
-          <p>K8s ships service discovery out of the box.</p>
-          <p>When you create a <strong>Service</strong>, K8s assigns it a stable <strong>cluster IP</strong> and a DNS name: <code>my-service.my-namespace.svc.cluster.local</code> (or just <code>my-service</code> within the same namespace). CoreDNS resolves these to the cluster IP.</p>
-          <p>Behind the cluster IP, kube-proxy programs iptables (or IPVS) rules that load-balance to the actual pod IPs. Pod IPs change on every restart, but the Service IP and DNS are stable.</p>
-          <p>For headless services (<code>clusterIP: None</code>), DNS returns all pod IPs directly — useful for clients that want to do their own LB (e.g., gRPC client-side balancing, StatefulSet members talking to each other).</p>
-          <p>Modern setups add a <strong>service mesh</strong> (Istio, Linkerd) on top for mTLS, traffic splitting, retries, and observability — sidecar proxies (Envoy) handle service-to-service calls.</p>
-        </div>
-      </details>
+<details class="qa">
+<summary>How do you containerize a Java application? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">To containerize a Java/Spring Boot app, I package the fat JAR in a minimal JRE image with health checks and externalized config.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to steps.</div>
+<p>Build JAR: &lt;code&gt;mvn package&lt;/code&gt; or Gradle.</p>
+<p>Dockerfile: multi-stage or copy JAR to &lt;code&gt;eclipse-temurin:21-jre-alpine&lt;/code&gt;.</p>
+<p>Set &lt;code&gt;JAVA_TOOL_OPTIONS&lt;/code&gt; for heap; use &lt;code&gt;MaxRAMPercentage&lt;/code&gt;.</p>
+<p>Expose actuator health for K8s probes.</p>
+<p>Pass config via env vars — not baked into image.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Same image promotes dev → UAT → prod with different env.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Pod vs container. <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>container</strong> is one runtime instance; a <strong>Pod</strong> is the smallest unit in Kubernetes — usually one container, sometimes more (sidecars).</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to Pod.</div>
+<p>K8s schedules Pods, not raw containers. Pod gets one IP; containers in Pod share network.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>We deploy Deployments, which manage Pods.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Deployment vs StatefulSet. <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Deployment</strong> is for stateless apps; <strong>StatefulSet</strong> is for stateful apps needing stable identity and storage.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to Deployment.</div>
+<p>Web APIs, payment services — random pod names, interchangeable replicas.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to StatefulSet.</div>
+<p>Databases, Kafka — stable names, ordered startup, persistent volumes per pod.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Banking APIs = Deployment; embedded DB on K8s = StatefulSet (or managed DB outside).</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you scale containers? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Scale containers manually with more replicas, or automatically with <strong>HPA</strong> (Horizontal Pod Autoscaler) on CPU, memory, or custom metrics.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to production.</div>
+<code>kubectl scale</code> or HPA; cluster autoscaler adds nodes when needed.
+          </div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Prefer custom metrics (queue lag, RPS) over CPU alone.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is health check? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>health check</strong> verifies the app is healthy — used by Docker, Kubernetes, and load balancers.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to types.</div>
+<p>HTTP probe, TCP probe, exec command. Spring: &lt;code&gt;/actuator/health&lt;/code&gt;.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Separate liveness vs readiness in K8s.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you handle logs in containers? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Containers should log to <strong>stdout/stderr</strong>; cluster agents (Fluent Bit, Filebeat) ship logs to ELK/Splunk/CloudWatch.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to practice.</div>
+<p>Structured JSON logs with &lt;code&gt;traceId&lt;/code&gt;, &lt;code&gt;tenantId&lt;/code&gt;; never log secrets.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Do not rely on files inside container — they disappear when pod restarts.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you handle environment-specific configs? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Never bake environment URLs into images — use <strong>ConfigMaps</strong>, <strong>Secrets</strong>, or env vars per environment.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to K8s.</div>
+<p>Different values files for dev/UAT/prod; Helm or Kustomize overlays.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Same image, different config at deploy time.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is rolling deployment? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Rolling deployment</strong> updates pods gradually — new version replaces old without full downtime.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to K8s.</div>
+<code>maxSurge</code>, <code>maxUnavailable</code>; readiness must pass before old pod terminates.
+          </div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Default safe upgrade for stateless services.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is blue-green deployment? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Blue-green</strong> runs two full environments (blue=live, green=new); switch traffic instantly after green is verified.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to trade-off.</div>
+<p>Fast rollback, zero downtime switch; needs double resources during cutover.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Used for high-risk releases in banking.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is canary deployment? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Canary</strong> sends a small % of traffic to the new version first, then increases if metrics are good.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to tools.</div>
+<p>Argo Rollouts, Flagger — watch error rate and latency; auto-rollback on spike.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Safer than big-bang deploy.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you troubleshoot a failed container? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">I debug failed containers with <code>kubectl describe pod</code>, <code>kubectl logs --previous</code>, and events.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to common statuses.</div>
+<code>CrashLoopBackOff</code> — check logs, OOM, wrong command.
+          <code>ImagePullBackOff</code> — wrong tag or registry auth.
+          <code>Pending</code> — insufficient CPU/memory on nodes.
+          </div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Events at bottom of describe usually show root cause.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you reduce Docker image size? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Image</strong> = read-only template; <strong>container</strong> = running instance of that image.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to image.</div>
+<p>Built from Dockerfile; versioned with tags; stored in registry.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to container.</div>
+<p>Created with &lt;code&gt;docker run&lt;/code&gt;; has writable layer; many containers per image.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Image is class; container is object.</p>
+</div>
+</div>
+</details>
 
-      <details class="qa">
-        <summary>Rolling updates and rollbacks in K8s</summary>
-        <div class="qa-body">
-          <p>K8s Deployments handle rolling updates declaratively. You update the pod template (e.g., new image tag); K8s creates a new ReplicaSet and gradually shifts pods from old to new.</p>
-          <p>Knobs:</p>
-          <ul>
-            <li><strong><code>maxSurge</code></strong> — how many extra pods can run during update (default 25%).</li>
-            <li><strong><code>maxUnavailable</code></strong> — how many old pods can be down (default 25%).</li>
-            <li><strong>Readiness probe</strong> — new pods must pass before old ones are killed.</li>
-          </ul>
-          <p>Rollback is simple: <code>kubectl rollout undo deployment/my-app</code>. K8s keeps ReplicaSet history (configurable <code>revisionHistoryLimit</code>).</p>
-          <p>For higher-risk changes I use <strong>Argo Rollouts</strong> or <strong>Flagger</strong> on top — they add canary, blue/green, and automated metric-based rollback. At Indus Net we use Argo Rollouts to canary 5% → 25% → 100% over 10 minutes, watching error rate and p99 latency, and auto-rolling back if either spikes.</p>
-        </div>
-      </details>
 
-      <details class="qa">
-        <summary>How do you debug a failing pod?</summary>
-        <div class="qa-body">
-          <p>My triage sequence:</p>
-          <ol>
-            <li><code>kubectl get pods -n ns</code> — what's the status? <em>Pending, ImagePullBackOff, CrashLoopBackOff, Error?</em></li>
-            <li><code>kubectl describe pod &lt;name&gt;</code> — events at the bottom usually tell you exactly what's wrong (scheduling failure, probe failure, OOMKilled, image issue).</li>
-            <li><code>kubectl logs &lt;name&gt; --previous</code> — logs from the previous container instance (essential for CrashLoopBackOff).</li>
-            <li><code>kubectl logs &lt;name&gt; -c &lt;container&gt;</code> — multi-container pods need the container name.</li>
-            <li><code>kubectl exec -it &lt;pod&gt; -- sh</code> — exec into the pod for live inspection (curl localhost, check files).</li>
-            <li><code>kubectl get events --sort-by=.lastTimestamp -n ns</code> — broader cluster events.</li>
-            <li><code>kubectl top pod</code> — current resource usage.</li>
-            <li>For "service unreachable": check Service endpoints (<code>kubectl get endpoints</code>) — empty means no pods are <em>Ready</em>.</li>
-          </ol>
-          <p>Common culprits: OOM (raise limit or fix leak), probe misconfigured, missing config, image tag typo, network policy blocking traffic.</p>
-        </div>
-      </details>
 
-      <details class="qa">
-        <summary>Helm — what is it and why?</summary>
-        <div class="qa-body">
-          <p>Plain YAML manifests don't scale: same Deployment + Service + Ingress + ConfigMap repeated across services and environments, with small differences. <strong>Helm</strong> is the package manager for Kubernetes — templates YAML with Go templating, packaging the result as a <strong>chart</strong>.</p>
-          <p>A chart has:</p>
-          <ul>
-            <li><strong>Templates</strong> — parameterized YAML.</li>
-            <li><strong>values.yaml</strong> — defaults, overridden per environment with <code>values-prod.yaml</code>, <code>values-staging.yaml</code>.</li>
-            <li><strong>Chart.yaml</strong> — metadata, versioning.</li>
-          </ul>
-          <p>Run <code>helm install / upgrade / rollback</code> — Helm tracks releases and supports rollback.</p>
-          <p>I use Helm for: (a) installing off-the-shelf software (Prometheus, ingress-nginx, Argo CD) — the community charts are mature; (b) packaging our own services. For tighter control / kustomize-style, some teams prefer <strong>Kustomize</strong>. Both are fine; pick one and be consistent.</p>
-        </div>
-      </details>
-
-    </div>
-
-  </main>
-
-  <script src="main.js"></script>
+</div>
+</main>
+<script src="main.js"></script>
 </body>
 </html>

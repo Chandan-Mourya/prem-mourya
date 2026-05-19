@@ -1,0 +1,1074 @@
+> **Progress:** ✅ All questions below have answers in notes (expand topic HTML files).
+
+> **New topic files:** `soap.html`, `plsql.html`, `bfsi.html`, `testing.html`, `jmeter.html`, `appserver.html`, `unix.html`, `frontend.html`, `sdlc.html`, `scenarios.html`
+
+## 1. Most Expected Questions
+
+| Priority | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| Very High | Explain your current project architecture. | ✅ | behavioral.html |
+| Very High | What is your role in the project? | ✅ | behavioral.html |
+| Very High | Explain one complex issue you solved in production. | ✅ | behavioral.html |
+| Very High | What is the difference between REST and SOAP? | ✅ | rest-security.html |
+| Very High | How do you optimize a slow SQL query? | ✅ | sql.html |
+| Very High | What are indexes in Oracle? | ✅ | sql.html |
+| Very High | What is the difference between procedure, function, package, trigger? | ✅ | plsql.html |
+| Very High | How do you handle transactions in Java/Spring? | ✅ | spring-core.html |
+| Very High | How do microservices communicate with each other? | ✅ | microservices.html |
+| Very High | How do you secure REST APIs? | ✅ | rest-security.html |
+| Very High | What is JMS? | ✅ | messaging.html |
+| Very High | What is the difference between queue and topic? | ✅ | messaging.html |
+| Very High | What is SSO/SAML? | ✅ | rest-security.html |
+| Very High | What is core banking? | ✅ | bfsi.html |
+| Very High | What is FLEXCUBE? | ✅ | bfsi.html |
+| Very High | What happens in end-to-end implementation from requirement to go-live? | ✅ | sdlc.html |
+| Very High | How do you handle production support? | ✅ | production.html |
+| Very High | How do you do code review? | ✅ | behavioral.html |
+| Very High | How do you write unit test cases using JUnit? | ✅ | testing.html |
+| Very High | How do you performance test APIs using JMeter? | ✅ | jmeter.html |
+
+---
+
+## 2. Java Core Questions
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | Explain OOP principles with examples. | ✅ | core-java.html |
+| 2 | Difference between abstraction and encapsulation. | ✅ | core-java.html |
+| 3 | Difference between interface and abstract class. | ✅ | core-java.html |
+| 4 | Can an interface have default and static methods? | ✅ | core-java.html |
+| 5 | Difference between method overloading and overriding. | ✅ | core-java.html |
+| 6 | What is runtime polymorphism? | ✅ | core-java.html |
+| 7 | Difference between `==` and `.equals()` | ✅ | core-java.html |
+| 8 | How do you override `equals()` and `hashCode()`? | ✅ | core-java.html |
+| 9 | Why is String immutable in Java? | ✅ | core-java.html |
+| 10 | Difference between String, StringBuilder, StringBuffer. | ✅ | core-java.html |
+| 11 | What is the Java memory model? | ✅ | core-java.html |
+| 12 | Difference between heap and stack memory. | ✅ | core-java.html |
+| 13 | What is garbage collection? | ✅ | core-java.html |
+| 14 | Types of garbage collectors in Java. | ✅ | core-java.html |
+| 15 | What causes memory leak in Java? | ✅ | core-java.html |
+| 16 | What is `final`, `finally`, and `finalize()`? | ✅ | core-java.html |
+| 17 | Difference between checked and unchecked exceptions. | ✅ | core-java.html |
+| 18 | Best practices for exception handling. | ✅ | core-java.html |
+| 19 | What is serialization? | ✅ | core-java.html |
+| 20 | What is `serialVersionUID`? | ✅ | core-java.html |
+| 21 | What is reflection in Java? | ✅ | core-java.html |
+| 22 | What is cloning? Shallow copy vs deep copy. | ✅ | core-java.html |
+| 23 | What are annotations? | ✅ | core-java.html |
+| 24 | What is enum in Java? | ✅ | core-java.html |
+| 25 | What are wrapper classes? | ✅ | core-java.html |
+
+---
+
+## 3. Java Collections Questions
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | Difference between List, Set, Map. | ✅ | core-java.html |
+| 2 | Difference between ArrayList and LinkedList. | ✅ | core-java.html |
+| 3 | Difference between HashMap and Hashtable. | ✅ | core-java.html |
+| 4 | Difference between HashMap and ConcurrentHashMap. | ✅ | core-java.html |
+| 5 | Internal working of HashMap. | ✅ | core-java.html |
+| 6 | What happens when two keys have same hashCode? | ✅ | core-java.html |
+| 7 | Why String is commonly used as HashMap key? | ✅ | core-java.html |
+| 8 | Difference between HashSet and TreeSet. | ✅ | core-java.html |
+| 9 | Difference between HashMap and TreeMap. | ✅ | core-java.html |
+| 10 | What is fail-fast and fail-safe iterator? | ✅ | core-java.html |
+| 11 | What is ConcurrentModificationException? | ✅ | core-java.html |
+| 12 | How does ConcurrentHashMap achieve thread safety? | ✅ | core-java.html |
+| 13 | Difference between Comparable and Comparator. | ✅ | core-java.html |
+| 14 | What is blocking queue? | ✅ | core-java.html |
+| 15 | Difference between ArrayBlockingQueue and LinkedBlockingQueue. | ✅ | core-java.html |
+
+---
+
+## 4. Java 8+ Questions
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | What are functional interfaces? | ✅ | core-java.html |
+| 2 | What is lambda expression? | ✅ | core-java.html |
+| 3 | What is Stream API? | ✅ | core-java.html |
+| 4 | Difference between map and flatMap. | ✅ | core-java.html |
+| 5 | Difference between filter and map. | ✅ | core-java.html |
+| 6 | Difference between findFirst and findAny. | ✅ | core-java.html |
+| 7 | Difference between reduce and collect. | ✅ | core-java.html |
+| 8 | What is Optional? | ✅ | core-java.html |
+| 9 | Why should we use Optional carefully? | ✅ | core-java.html |
+| 10 | Difference between parallel stream and normal stream. | ✅ | core-java.html |
+| 11 | What are default methods in interface? | ✅ | core-java.html |
+| 12 | What is method reference? | ✅ | core-java.html |
+| 13 | How to group data using streams? | ✅ | core-java.html |
+| 14 | How to sort using streams? | ✅ | core-java.html |
+| 15 | How to remove duplicates using streams? | ✅ | core-java.html |
+
+---
+
+## 5. Multithreading Questions
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | Difference between process and thread. | ✅ | concurrency.html |
+| 2 | How to create a thread in Java? | ✅ | concurrency.html |
+| 3 | Difference between Runnable and Callable. | ✅ | concurrency.html |
+| 4 | Difference between `start()` and `run()`. | ✅ | concurrency.html |
+| 5 | What is thread lifecycle? | ✅ | concurrency.html |
+| 6 | What is synchronization? | ✅ | concurrency.html |
+| 7 | What is volatile keyword? | ✅ | concurrency.html |
+| 8 | Difference between synchronized and ReentrantLock. | ✅ | concurrency.html |
+| 9 | What is deadlock? | ✅ | concurrency.html |
+| 10 | How to prevent deadlock? | ✅ | concurrency.html |
+| 11 | What is race condition? | ✅ | concurrency.html |
+| 12 | What is thread pool? | ✅ | concurrency.html |
+| 13 | What is ExecutorService? | ✅ | concurrency.html |
+| 14 | Difference between fixed thread pool and cached thread pool. | ✅ | concurrency.html |
+| 15 | What is Future and CompletableFuture? | ✅ | concurrency.html |
+| 16 | What is CountDownLatch? | ✅ | concurrency.html |
+| 17 | What is CyclicBarrier? | ✅ | concurrency.html |
+| 18 | What is Semaphore? | ✅ | concurrency.html |
+| 19 | What is ThreadLocal? | ✅ | concurrency.html |
+| 20 | How do you debug thread issues in production? | ✅ | concurrency.html |
+
+---
+
+## 6. Spring / Spring Boot Questions
+
+Even though Spring is not directly written in the JD, Oracle Java interviews often ask it.
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | What is Spring Framework? | ✅ | spring-boot.html |
+| 2 | What is dependency injection? | ✅ | spring-boot.html |
+| 3 | Constructor injection vs field injection. | ✅ | spring-boot.html |
+| 4 | What is IoC container? | ✅ | spring-boot.html |
+| 5 | Bean lifecycle in Spring. | ✅ | spring-boot.html |
+| 6 | Difference between `@Component`, `@Service`, `@Repository`, `@Controller`. | ✅ | spring-boot.html |
+| 7 | Difference between `@RestController` and `@Controller`. | ✅ | spring-boot.html |
+| 8 | What is Spring Boot auto-configuration? | ✅ | spring-boot.html |
+| 9 | What is `application.properties` / `application.yml`? | ✅ | spring-boot.html |
+| 10 | How do you handle exceptions globally in Spring Boot? | ✅ | spring-boot.html |
+| 11 | What is `@Transactional`? | ✅ | spring-boot.html |
+| 12 | Transaction propagation types. | ✅ | spring-boot.html |
+| 13 | Transaction isolation levels. | ✅ | spring-boot.html |
+| 14 | How do you secure Spring Boot APIs? | ✅ | spring-boot.html |
+| 15 | How do you call another microservice from Spring Boot? | ✅ | spring-boot.html |
+| 16 | RestTemplate vs WebClient vs Feign Client. | ✅ | spring-boot.html |
+| 17 | How do you implement retry in Spring Boot? | ✅ | spring-boot.html |
+| 18 | How do you implement circuit breaker? | ✅ | spring-boot.html |
+| 19 | How do you validate request body? | ✅ | spring-boot.html |
+| 20 | How do you externalize configuration? | ✅ | spring-boot.html |
+
+---
+
+## 7. REST API Questions
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | What is REST? | ✅ | rest-security.html |
+| 2 | REST vs SOAP. | ✅ | rest-security.html |
+| 3 | PUT vs POST. | ✅ | rest-security.html |
+| 4 | PATCH vs PUT. | ✅ | rest-security.html |
+| 5 | GET vs POST. | ✅ | rest-security.html |
+| 6 | What are idempotent APIs? | ✅ | rest-security.html |
+| 7 | What are HTTP status codes? | ✅ | rest-security.html |
+| 8 | Difference between 400, 401, 403, 404, 409, 500. | ✅ | rest-security.html |
+| 9 | How do you version REST APIs? | ✅ | rest-security.html |
+| 10 | How do you handle pagination? | ✅ | rest-security.html |
+| 11 | Offset pagination vs cursor pagination. | ✅ | rest-security.html |
+| 12 | How do you handle API errors? | ✅ | rest-security.html |
+| 13 | How do you design request/response DTOs? | ✅ | rest-security.html |
+| 14 | How do you secure REST APIs? | ✅ | rest-security.html |
+| 15 | What is JWT? | ✅ | rest-security.html |
+| 16 | What is OAuth2? | ✅ | rest-security.html |
+| 17 | What is rate limiting? | ✅ | rest-security.html |
+| 18 | What is API gateway? | ✅ | rest-security.html |
+| 19 | How do you handle timeout while calling external APIs? | ✅ | rest-security.html |
+| 20 | How do you make APIs backward compatible? | ✅ | rest-security.html |
+
+---
+
+## 8. SOAP Web Service Questions
+
+Very important for Oracle/core banking because many banks still use SOAP.
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | What is SOAP? | ✅ | soap.html |
+| 2 | SOAP vs REST. | ✅ | soap.html |
+| 3 | What is WSDL? | ✅ | soap.html |
+| 4 | What is XSD? | ✅ | soap.html |
+| 5 | What is SOAP envelope? | ✅ | soap.html |
+| 6 | What is SOAP header and body? | ✅ | soap.html |
+| 7 | What is SOAP fault? | ✅ | soap.html |
+| 8 | How do you generate Java classes from WSDL? | ✅ | soap.html |
+| 9 | How do you consume SOAP service in Java? | ✅ | soap.html |
+| 10 | How do you secure SOAP service? | ✅ | soap.html |
+| 11 | What is WS-Security? | ✅ | soap.html |
+| 12 | What is MTOM? | ✅ | soap.html |
+| 13 | How do you debug SOAP request/response? | ✅ | soap.html |
+| 14 | How do you handle SOAP timeout? | ✅ | soap.html |
+| 15 | How do you expose SOAP service from Java? | ✅ | soap.html |
+
+---
+
+## 9. Oracle SQL Questions
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | Difference between DELETE, TRUNCATE, DROP. | ✅ | sql.html |
+| 2 | Difference between WHERE and HAVING. | ✅ | sql.html |
+| 3 | Difference between INNER JOIN, LEFT JOIN, RIGHT JOIN, FULL JOIN. | ✅ | sql.html |
+| 4 | Difference between UNION and UNION ALL. | ✅ | sql.html |
+| 5 | What is primary key? | ✅ | sql.html |
+| 6 | What is foreign key? | ✅ | sql.html |
+| 7 | What is unique key? | ✅ | sql.html |
+| 8 | What is composite key? | ✅ | sql.html |
+| 9 | What is index? | ✅ | sql.html |
+| 10 | Types of indexes in Oracle. | ✅ | sql.html |
+| 11 | Clustered vs non-clustered index. | ✅ | sql.html |
+| 12 | What is function-based index? | ✅ | sql.html |
+| 13 | What is bitmap index? | ✅ | sql.html |
+| 14 | When should we not use index? | ✅ | sql.html |
+| 15 | How do you find duplicate records? | ✅ | sql.html |
+| 16 | How do you delete duplicate records? | ✅ | sql.html |
+| 17 | What is normalization? | ✅ | sql.html |
+| 18 | What is denormalization? | ✅ | sql.html |
+| 19 | What is view? | ✅ | sql.html |
+| 20 | What is materialized view? | ✅ | sql.html |
+| 21 | View vs materialized view. | ✅ | sql.html |
+| 22 | What is sequence? | ✅ | sql.html |
+| 23 | What is synonym? | ✅ | sql.html |
+| 24 | What is partitioning? | ✅ | sql.html |
+| 25 | Range partition vs hash partition. | ✅ | sql.html |
+| 26 | What is explain plan? | ✅ | sql.html |
+| 27 | How do you tune slow queries? | ✅ | sql.html |
+| 28 | What is rownum? | ✅ | sql.html |
+| 29 | ROWNUM vs ROW_NUMBER. | ✅ | sql.html |
+| 30 | What are analytical functions? | ✅ | sql.html |
+| 31 | Rank vs Dense_Rank vs Row_Number. | ✅ | sql.html |
+| 32 | What is CTE? | ✅ | sql.html |
+| 33 | What is hierarchical query? | ✅ | sql.html |
+| 34 | What is connect by prior? | ✅ | sql.html |
+| 35 | What is merge statement? | ✅ | sql.html |
+| 36 | What is upsert? | ✅ | sql.html |
+| 37 | What is deadlock in database? | ✅ | sql.html |
+| 38 | What is locking in Oracle? | ✅ | sql.html |
+| 39 | Shared lock vs exclusive lock. | ✅ | sql.html |
+| 40 | What is transaction isolation? | ✅ | sql.html |
+
+---
+
+## 10. PL/SQL Questions
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | What is PL/SQL? | ✅ | plsql.html |
+| 2 | Difference between SQL and PL/SQL. | ✅ | plsql.html |
+| 3 | What is procedure? | ✅ | plsql.html |
+| 4 | What is function? | ✅ | plsql.html |
+| 5 | Procedure vs function. | ✅ | plsql.html |
+| 6 | What is package? | ✅ | plsql.html |
+| 7 | Package specification vs package body. | ✅ | plsql.html |
+| 8 | What is trigger? | ✅ | plsql.html |
+| 9 | Types of triggers. | ✅ | plsql.html |
+| 10 | Before trigger vs after trigger. | ✅ | plsql.html |
+| 11 | Row-level trigger vs statement-level trigger. | ✅ | plsql.html |
+| 12 | What is cursor? | ✅ | plsql.html |
+| 13 | Implicit cursor vs explicit cursor. | ✅ | plsql.html |
+| 14 | Cursor vs ref cursor. | ✅ | plsql.html |
+| 15 | Strong ref cursor vs weak ref cursor. | ✅ | plsql.html |
+| 16 | What is bulk collect? | ✅ | plsql.html |
+| 17 | What is forall? | ✅ | plsql.html |
+| 18 | Bulk collect vs forall. | ✅ | plsql.html |
+| 19 | What is exception handling in PL/SQL? | ✅ | plsql.html |
+| 20 | Predefined vs user-defined exceptions. | ✅ | plsql.html |
+| 21 | What is autonomous transaction? | ✅ | plsql.html |
+| 22 | What is pragma exception_init? | ✅ | plsql.html |
+| 23 | What is dynamic SQL? | ✅ | plsql.html |
+| 24 | Execute immediate vs DBMS_SQL. | ✅ | plsql.html |
+| 25 | What is mutating table error? | ✅ | plsql.html |
+| 26 | How do you avoid mutating table error? | ✅ | plsql.html |
+| 27 | What are collections in PL/SQL? | ✅ | plsql.html |
+| 28 | Nested table vs varray vs associative array. | ✅ | plsql.html |
+| 29 | What is `%TYPE` and `%ROWTYPE`? | ✅ | plsql.html |
+| 30 | How do you optimize PL/SQL code? | ✅ | plsql.html |
+| 31 | How do you debug PL/SQL procedure? | ✅ | plsql.html |
+| 32 | How do you log errors in PL/SQL? | ✅ | plsql.html |
+| 33 | What is commit and rollback? | ✅ | plsql.html |
+| 34 | Can we commit inside trigger? | ✅ | plsql.html |
+| 35 | What is savepoint? | ✅ | plsql.html |
+| 36 | How do you schedule PL/SQL jobs? | ✅ | plsql.html |
+| 37 | What is DBMS_SCHEDULER? | ✅ | plsql.html |
+| 38 | What is DBMS_OUTPUT? | ✅ | plsql.html |
+| 39 | What is DBMS_LOB? | ✅ | plsql.html |
+| 40 | What is DBMS_ALERT / DBMS_PIPE? | ✅ | plsql.html |
+
+---
+
+## 11. SQL Coding Questions
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | Find second highest salary. | ✅ | sql.html |
+| 2 | Find nth highest salary. | ✅ | sql.html |
+| 3 | Find duplicate records in a table. | ✅ | sql.html |
+| 4 | Delete duplicate records. | ✅ | sql.html |
+| 5 | Find employees whose salary is greater than department average. | ✅ | sql.html |
+| 6 | Find department-wise highest salary. | ✅ | sql.html |
+| 7 | Find running total. | ✅ | sql.html |
+| 8 | Find customers with no transactions. | ✅ | sql.html |
+| 9 | Find latest transaction for each account. | ✅ | sql.html |
+| 10 | Find top 3 transactions per customer. | ✅ | sql.html |
+| 11 | Find gaps in sequence numbers. | ✅ | sql.html |
+| 12 | Find consecutive failed transactions. | ✅ | sql.html |
+| 13 | Find monthly transaction volume. | ✅ | sql.html |
+| 14 | Find account balance using transaction table. | ✅ | sql.html |
+| 15 | Find users who logged in for 3 consecutive days. | ✅ | sql.html |
+| 16 | Find duplicate mobile numbers/emails. | ✅ | sql.html |
+| 17 | Convert rows into columns using pivot. | ✅ | sql.html |
+| 18 | Convert columns into rows using unpivot. | ✅ | sql.html |
+| 19 | Write query using analytic functions. | ✅ | sql.html |
+| 20 | Write query to reconcile two tables. | ✅ | sql.html |
+
+---
+
+## 12. Microservices Questions
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | What is microservices architecture? | ✅ | microservices.html |
+| 2 | Monolith vs microservices. | ✅ | microservices.html |
+| 3 | Advantages and disadvantages of microservices. | ✅ | microservices.html |
+| 4 | How do microservices communicate? | ✅ | microservices.html |
+| 5 | REST vs messaging communication. | ✅ | microservices.html |
+| 6 | What is service discovery? | ✅ | microservices.html |
+| 7 | What is API gateway? | ✅ | microservices.html |
+| 8 | What is circuit breaker? | ✅ | microservices.html |
+| 9 | What is bulkhead pattern? | ✅ | microservices.html |
+| 10 | What is retry pattern? | ✅ | microservices.html |
+| 11 | What is timeout? | ✅ | microservices.html |
+| 12 | What is distributed tracing? | ✅ | microservices.html |
+| 13 | How do you handle logging in microservices? | ✅ | microservices.html |
+| 14 | How do you handle transactions in microservices? | ✅ | microservices.html |
+| 15 | What is saga pattern? | ✅ | microservices.html |
+| 16 | Choreography vs orchestration. | ✅ | microservices.html |
+| 17 | What is eventual consistency? | ✅ | microservices.html |
+| 18 | How do you handle idempotency? | ✅ | microservices.html |
+| 19 | How do you handle duplicate requests? | ✅ | microservices.html |
+| 20 | How do you design database per service? | ✅ | microservices.html |
+| 21 | How do you manage configuration? | ✅ | microservices.html |
+| 22 | How do you deploy microservices? | ✅ | microservices.html |
+| 23 | How do you monitor microservices? | ✅ | microservices.html |
+| 24 | How do you secure microservices? | ✅ | microservices.html |
+| 25 | What challenges have you faced in microservices? | ✅ | microservices.html |
+
+---
+
+## 13. Containerization / Cloud Native Questions
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | What is Docker? | ✅ | docker-k8s.html |
+| 2 | Docker image vs container. | ✅ | docker-k8s.html |
+| 3 | What is Dockerfile? | ✅ | docker-k8s.html |
+| 4 | What is Docker Compose? | ✅ | docker-k8s.html |
+| 5 | How do you containerize a Java application? | ✅ | docker-k8s.html |
+| 6 | What is Kubernetes? | ✅ | docker-k8s.html |
+| 7 | Pod vs container. | ✅ | docker-k8s.html |
+| 8 | Deployment vs StatefulSet. | ✅ | docker-k8s.html |
+| 9 | Service vs Ingress. | ✅ | docker-k8s.html |
+| 10 | ConfigMap vs Secret. | ✅ | docker-k8s.html |
+| 11 | How do you scale containers? | ✅ | docker-k8s.html |
+| 12 | What is health check? | ✅ | docker-k8s.html |
+| 13 | Liveness probe vs readiness probe. | ✅ | docker-k8s.html |
+| 14 | How do you handle logs in containers? | ✅ | docker-k8s.html |
+| 15 | How do you handle environment-specific configs? | ✅ | docker-k8s.html |
+| 16 | What is rolling deployment? | ✅ | docker-k8s.html |
+| 17 | What is blue-green deployment? | ✅ | docker-k8s.html |
+| 18 | What is canary deployment? | ✅ | docker-k8s.html |
+| 19 | How do you troubleshoot a failed container? | ✅ | docker-k8s.html |
+| 20 | How do you reduce Docker image size? | ✅ | docker-k8s.html |
+
+---
+
+## 14. WebLogic / Tomcat / JBoss Questions
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | What is application server? | ✅ | appserver.html |
+| 2 | Tomcat vs WebLogic vs JBoss. | ✅ | appserver.html |
+| 3 | Web server vs application server. | ✅ | appserver.html |
+| 4 | What is WAR file? | ✅ | appserver.html |
+| 5 | What is EAR file? | ✅ | appserver.html |
+| 6 | WAR vs EAR. | ✅ | appserver.html |
+| 7 | How do you deploy Java application on WebLogic? | ✅ | appserver.html |
+| 8 | What is WebLogic domain? | ✅ | appserver.html |
+| 9 | What is admin server and managed server? | ✅ | appserver.html |
+| 10 | What is cluster in WebLogic? | ✅ | appserver.html |
+| 11 | How does session replication work? | ✅ | appserver.html |
+| 12 | How do you configure datasource in WebLogic? | ✅ | appserver.html |
+| 13 | How do you configure connection pool? | ✅ | appserver.html |
+| 14 | What is JNDI? | ✅ | appserver.html |
+| 15 | How do you troubleshoot deployment failure? | ✅ | appserver.html |
+| 16 | How do you check server logs? | ✅ | appserver.html |
+| 17 | What is thread stuck issue? | ✅ | appserver.html |
+| 18 | How do you troubleshoot high CPU in app server? | ✅ | appserver.html |
+| 19 | How do you tune JVM for app server? | ✅ | appserver.html |
+| 20 | How do you configure SSL in WebLogic/Tomcat? | ✅ | appserver.html |
+
+---
+
+## 15. JMS / MQ / OSB Questions
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | What is JMS? | ✅ | messaging.html |
+| 2 | Queue vs Topic. | ✅ | messaging.html |
+| 3 | Point-to-point vs publish-subscribe. | ✅ | messaging.html |
+| 4 | What is message producer and consumer? | ✅ | messaging.html |
+| 5 | What is durable subscriber? | ✅ | messaging.html |
+| 6 | What is message acknowledgement? | ✅ | messaging.html |
+| 7 | Auto acknowledge vs client acknowledge. | ✅ | messaging.html |
+| 8 | What is dead letter queue? | ✅ | messaging.html |
+| 9 | What is message redelivery? | ✅ | messaging.html |
+| 10 | How do you handle duplicate messages? | ✅ | messaging.html |
+| 11 | How do you ensure message ordering? | ✅ | messaging.html |
+| 12 | What is IBM MQ? | ✅ | messaging.html |
+| 13 | JMS vs Kafka. | ✅ | messaging.html |
+| 14 | What is OSB? | ✅ | messaging.html |
+| 15 | Why use Oracle Service Bus? | ✅ | messaging.html |
+| 16 | Proxy service vs business service in OSB. | ✅ | messaging.html |
+| 17 | How does OSB transform messages? | ✅ | messaging.html |
+| 18 | What is routing in OSB? | ✅ | messaging.html |
+| 19 | How do you handle errors in OSB? | ✅ | messaging.html |
+| 20 | How do you monitor message failures? | ✅ | messaging.html |
+
+---
+
+## 16. Security Questions: PKI, SSO, SAML
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | What is authentication vs authorization? | ✅ | rest-security.html |
+| 2 | What is SSO? | ✅ | rest-security.html |
+| 3 | What is SAML? | ✅ | rest-security.html |
+| 4 | SAML vs OAuth2. | ✅ | rest-security.html |
+| 5 | SAML vs JWT. | ✅ | rest-security.html |
+| 6 | What is identity provider? | ✅ | rest-security.html |
+| 7 | What is service provider? | ✅ | rest-security.html |
+| 8 | What is assertion in SAML? | ✅ | rest-security.html |
+| 9 | What is PKI? | ✅ | rest-security.html |
+| 10 | Public key vs private key. | ✅ | rest-security.html |
+| 11 | Symmetric vs asymmetric encryption. | ✅ | rest-security.html |
+| 12 | What is digital certificate? | ✅ | rest-security.html |
+| 13 | What is certificate authority? | ✅ | rest-security.html |
+| 14 | What is SSL/TLS? | ✅ | rest-security.html |
+| 15 | How does HTTPS work? | ✅ | rest-security.html |
+| 16 | What is mTLS? | ✅ | rest-security.html |
+| 17 | How do you store passwords securely? | ✅ | rest-security.html |
+| 18 | What is hashing vs encryption? | ✅ | rest-security.html |
+| 19 | How do you prevent SQL injection? | ✅ | rest-security.html |
+| 20 | How do you secure banking APIs? | ✅ | rest-security.html |
+
+---
+
+## 17. JUnit / Testing Questions
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | What is unit testing? | ✅ | testing.html |
+| 2 | What is JUnit? | ✅ | testing.html |
+| 3 | JUnit 4 vs JUnit 5. | ✅ | testing.html |
+| 4 | What is Mockito? | ✅ | testing.html |
+| 5 | Mock vs Spy. | ✅ | testing.html |
+| 6 | What is test coverage? | ✅ | testing.html |
+| 7 | What is assertion? | ✅ | testing.html |
+| 8 | How do you test service layer? | ✅ | testing.html |
+| 9 | How do you test controller layer? | ✅ | testing.html |
+| 10 | How do you test repository/database layer? | ✅ | testing.html |
+| 11 | How do you mock external API calls? | ✅ | testing.html |
+| 12 | How do you test exceptions? | ✅ | testing.html |
+| 13 | What is integration testing? | ✅ | testing.html |
+| 14 | Unit test vs integration test. | ✅ | testing.html |
+| 15 | What is regression testing? | ✅ | testing.html |
+| 16 | What is UAT? | ✅ | testing.html |
+| 17 | What is test case and test plan? | ✅ | testing.html |
+| 18 | How do you write unit test for private methods? | ✅ | testing.html |
+| 19 | How do you test asynchronous code? | ✅ | testing.html |
+| 20 | How do you test message queue consumers? | ✅ | testing.html |
+
+---
+
+## 18. JMeter / Performance Testing Questions
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | What is JMeter? | ✅ | jmeter.html |
+| 2 | What is load testing? | ✅ | jmeter.html |
+| 3 | Load testing vs stress testing. | ✅ | jmeter.html |
+| 4 | What is throughput? | ✅ | jmeter.html |
+| 5 | What is latency? | ✅ | jmeter.html |
+| 6 | What is response time? | ✅ | jmeter.html |
+| 7 | What is TPS? | ✅ | jmeter.html |
+| 8 | What is ramp-up period? | ✅ | jmeter.html |
+| 9 | What is thread group in JMeter? | ✅ | jmeter.html |
+| 10 | How do you test REST API using JMeter? | ✅ | jmeter.html |
+| 11 | How do you pass dynamic tokens in JMeter? | ✅ | jmeter.html |
+| 12 | How do you analyze JMeter report? | ✅ | jmeter.html |
+| 13 | How do you find bottleneck from performance test? | ✅ | jmeter.html |
+| 14 | How do you test database performance? | ✅ | jmeter.html |
+| 15 | How do you test concurrent users? | ✅ | jmeter.html |
+
+---
+
+## 19. Maven / Gradle / Ant / Git / Jira Questions
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | Maven vs Gradle. | ✅ | cicd.html |
+| 2 | What is `pom.xml`? | ✅ | cicd.html |
+| 3 | What is dependency management? | ✅ | cicd.html |
+| 4 | What is transitive dependency? | ✅ | cicd.html |
+| 5 | What is Maven lifecycle? | ✅ | cicd.html |
+| 6 | What is Maven profile? | ✅ | cicd.html |
+| 7 | What is snapshot version? | ✅ | cicd.html |
+| 8 | How do you resolve dependency conflict? | ✅ | cicd.html |
+| 9 | What is Git branching strategy? | ✅ | cicd.html |
+| 10 | Merge vs rebase. | ✅ | cicd.html |
+| 11 | What is pull request? | ✅ | cicd.html |
+| 12 | How do you resolve merge conflicts? | ✅ | cicd.html |
+| 13 | What is Git stash? | ✅ | cicd.html |
+| 14 | What is cherry-pick? | ✅ | cicd.html |
+| 15 | What is Jira workflow? | ✅ | cicd.html |
+| 16 | How do you estimate story points? | ✅ | cicd.html |
+| 17 | What is sprint? | ✅ | cicd.html |
+| 18 | What is bug lifecycle? | ✅ | cicd.html |
+| 19 | What is release branch? | ✅ | cicd.html |
+| 20 | How do you manage hotfix? | ✅ | cicd.html |
+
+---
+
+## 20. Unix / Shell Scripting Questions
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | How do you check running Java process? | ✅ | unix.html |
+| 2 | How do you check logs in Linux? | ✅ | unix.html |
+| 3 | Difference between `grep`, `awk`, `sed`. | ✅ | unix.html |
+| 4 | How do you search error in logs? | ✅ | unix.html |
+| 5 | How do you check disk usage? | ✅ | unix.html |
+| 6 | How do you check memory usage? | ✅ | unix.html |
+| 7 | How do you check CPU usage? | ✅ | unix.html |
+| 8 | How do you kill a process? | ✅ | unix.html |
+| 9 | How do you check open ports? | ✅ | unix.html |
+| 10 | How do you schedule cron job? | ✅ | unix.html |
+| 11 | How do you write shell script? | ✅ | unix.html |
+| 12 | How do you pass arguments to shell script? | ✅ | unix.html |
+| 13 | How do you check exit status? | ✅ | unix.html |
+| 14 | How do you monitor application logs? | ✅ | unix.html |
+| 15 | How do you find files modified today? | ✅ | unix.html |
+
+---
+
+## 21. Frontend Questions: JavaScript / Angular / React / Knockout
+
+They may ask basic questions only unless role is full-stack.
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | What is JavaScript? | ✅ | frontend.html |
+| 2 | `var` vs `let` vs `const`. | ✅ | frontend.html |
+| 3 | What is closure? | ✅ | frontend.html |
+| 4 | What is promise? | ✅ | frontend.html |
+| 5 | Promise vs async/await. | ✅ | frontend.html |
+| 6 | What is event loop? | ✅ | frontend.html |
+| 7 | What is DOM? | ✅ | frontend.html |
+| 8 | What is Angular? | ✅ | frontend.html |
+| 9 | Angular component vs service. | ✅ | frontend.html |
+| 10 | What is dependency injection in Angular? | ✅ | frontend.html |
+| 11 | What is React? | ✅ | frontend.html |
+| 12 | What are props and state? | ✅ | frontend.html |
+| 13 | What is virtual DOM? | ✅ | frontend.html |
+| 14 | What are React hooks? | ✅ | frontend.html |
+| 15 | What is Knockout.js? | ✅ | frontend.html |
+| 16 | What is two-way data binding? | ✅ | frontend.html |
+| 17 | How do you call REST API from frontend? | ✅ | frontend.html |
+| 18 | How do you handle form validation? | ✅ | frontend.html |
+| 19 | How do you handle authentication token in frontend? | ✅ | frontend.html |
+| 20 | How do you debug UI issue? | ✅ | frontend.html |
+
+---
+
+## 22. Core Banking / BFSI Domain Questions
+
+Very important for this job.
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | What is core banking system? | ✅ | bfsi.html |
+| 2 | What is CASA? | ✅ | bfsi.html |
+| 3 | Savings account vs current account. | ✅ | bfsi.html |
+| 4 | What is customer onboarding? | ✅ | bfsi.html |
+| 5 | What is KYC? | ✅ | bfsi.html |
+| 6 | What is AML? | ✅ | bfsi.html |
+| 7 | What is CIF/customer ID? | ✅ | bfsi.html |
+| 8 | What is account opening process? | ✅ | bfsi.html |
+| 9 | What is transaction posting? | ✅ | bfsi.html |
+| 10 | What is debit and credit in banking? | ✅ | bfsi.html |
+| 11 | What is ledger balance vs available balance? | ✅ | bfsi.html |
+| 12 | What is hold amount/lien amount? | ✅ | bfsi.html |
+| 13 | What is interest calculation? | ✅ | bfsi.html |
+| 14 | What is GL account? | ✅ | bfsi.html |
+| 15 | What is reconciliation? | ✅ | bfsi.html |
+| 16 | What is EOD/BOD process? | ✅ | bfsi.html |
+| 17 | What is batch processing in banking? | ✅ | bfsi.html |
+| 18 | What is NEFT/RTGS/IMPS/UPI? | ✅ | bfsi.html |
+| 19 | What is SWIFT? | ✅ | bfsi.html |
+| 20 | What is loan lifecycle? | ✅ | bfsi.html |
+| 21 | What is EMI? | ✅ | bfsi.html |
+| 22 | What is NPA? | ✅ | bfsi.html |
+| 23 | What is overdraft? | ✅ | bfsi.html |
+| 24 | What is standing instruction? | ✅ | bfsi.html |
+| 25 | What is cheque clearing? | ✅ | bfsi.html |
+| 26 | What is payment gateway? | ✅ | bfsi.html |
+| 27 | What is maker-checker process? | ✅ | bfsi.html |
+| 28 | What is four-eye principle? | ✅ | bfsi.html |
+| 29 | Why audit trail is important in banking? | ✅ | bfsi.html |
+| 30 | What are typical integrations in core banking? | ✅ | bfsi.html |
+
+---
+
+## 23. FLEXCUBE / Core Banking Product Questions
+
+Even if you have not worked on FLEXCUBE, prepare conceptual answers.
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | What do you know about Oracle FLEXCUBE? | ✅ | bfsi.html |
+| 2 | What modules are usually present in core banking? | ✅ | bfsi.html |
+| 3 | How does a core banking product integrate with external systems? | ✅ | bfsi.html |
+| 4 | What is product customization? | ✅ | bfsi.html |
+| 5 | What is product configuration? | ✅ | bfsi.html |
+| 6 | Configuration vs customization. | ✅ | bfsi.html |
+| 7 | What is parameterization in banking product? | ✅ | bfsi.html |
+| 8 | What is interface development? | ✅ | bfsi.html |
+| 9 | What are inbound and outbound interfaces? | ✅ | bfsi.html |
+| 10 | What is report customization? | ✅ | bfsi.html |
+| 11 | How do you handle bank-specific business rules? | ✅ | bfsi.html |
+| 12 | How do you test core banking customization? | ✅ | bfsi.html |
+| 13 | What is UAT in banking implementation? | ✅ | bfsi.html |
+| 14 | What is data migration in core banking? | ✅ | bfsi.html |
+| 15 | How do you handle go-live support? | ✅ | bfsi.html |
+| 16 | How do you handle production defects after go-live? | ✅ | bfsi.html |
+| 17 | What is product patching? | ✅ | bfsi.html |
+| 18 | What is regression testing in product implementation? | ✅ | bfsi.html |
+| 19 | What is environment setup in banking project? | ✅ | bfsi.html |
+| 20 | What is SIT/UAT/Production environment? | ✅ | bfsi.html |
+
+---
+
+## 24. SDLC / Agile / Waterfall Questions
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | Explain SDLC phases. | ✅ | sdlc.html |
+| 2 | Waterfall vs Agile. | ✅ | sdlc.html |
+| 3 | When would you use Waterfall? | ✅ | sdlc.html |
+| 4 | When would you use Agile? | ✅ | sdlc.html |
+| 5 | What is sprint planning? | ✅ | sdlc.html |
+| 6 | What is daily standup? | ✅ | sdlc.html |
+| 7 | What is retrospective? | ✅ | sdlc.html |
+| 8 | What is backlog grooming? | ✅ | sdlc.html |
+| 9 | What is user story? | ✅ | sdlc.html |
+| 10 | What is acceptance criteria? | ✅ | sdlc.html |
+| 11 | What is definition of done? | ✅ | sdlc.html |
+| 12 | What is impact analysis? | ✅ | sdlc.html |
+| 13 | What is requirement traceability matrix? | ✅ | sdlc.html |
+| 14 | What is technical specification document? | ✅ | sdlc.html |
+| 15 | What is release note? | ✅ | sdlc.html |
+| 16 | What is deployment document? | ✅ | sdlc.html |
+| 17 | What is rollback plan? | ✅ | sdlc.html |
+| 18 | What is change request? | ✅ | sdlc.html |
+| 19 | What is defect lifecycle? | ✅ | sdlc.html |
+| 20 | How do you handle scope change? | ✅ | sdlc.html |
+
+---
+
+## 25. Production Support Questions
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | What kind of production issues have you handled? | ✅ | production.html |
+| 2 | How do you debug production issue? | ✅ | production.html |
+| 3 | How do you handle Sev1/critical issue? | ✅ | production.html |
+| 4 | How do you perform root cause analysis? | ✅ | production.html |
+| 5 | What is RCA document? | ✅ | production.html |
+| 6 | How do you check logs? | ✅ | production.html |
+| 7 | How do you check database issue? | ✅ | production.html |
+| 8 | How do you identify API timeout? | ✅ | production.html |
+| 9 | How do you handle memory leak? | ✅ | production.html |
+| 10 | How do you handle high CPU issue? | ✅ | production.html |
+| 11 | How do you handle stuck thread issue? | ✅ | production.html |
+| 12 | How do you handle DB deadlock? | ✅ | production.html |
+| 13 | How do you handle failed batch job? | ✅ | production.html |
+| 14 | How do you handle message queue backlog? | ✅ | production.html |
+| 15 | How do you communicate with business during outage? | ✅ | production.html |
+| 16 | How do you prepare incident report? | ✅ | production.html |
+| 17 | How do you prevent repeated issues? | ✅ | production.html |
+| 18 | What is monitoring and alerting? | ✅ | production.html |
+| 19 | What is SLA? | ✅ | production.html |
+| 20 | What is escalation matrix? | ✅ | production.html |
+
+---
+
+## 26. Code Review / Design Review Questions
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | What do you check in code review? | ✅ | behavioral.html |
+| 2 | How do you review SQL/PLSQL code? | ✅ | behavioral.html |
+| 3 | How do you review Java code? | ✅ | behavioral.html |
+| 4 | How do you check performance issues in code? | ✅ | behavioral.html |
+| 5 | How do you check security issues in code? | ✅ | behavioral.html |
+| 6 | How do you handle disagreement in code review? | ✅ | behavioral.html |
+| 7 | What are common code smells? | ✅ | behavioral.html |
+| 8 | What is SOLID principle? | ✅ | behavioral.html |
+| 9 | What design patterns have you used? | ✅ | behavioral.html |
+| 10 | Factory vs Strategy pattern. | ✅ | behavioral.html |
+| 11 | Singleton pattern and its issues. | ✅ | behavioral.html |
+| 12 | How do you design reusable components? | ✅ | behavioral.html |
+| 13 | How do you avoid duplicate code? | ✅ | behavioral.html |
+| 14 | What is clean code? | ✅ | behavioral.html |
+| 15 | How do you ensure maintainability? | ✅ | behavioral.html |
+
+---
+
+## 27. System Design Questions for Oracle Role
+
+| Priority | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| Very High | Design API Rate Limiter. | ✅ | system-design.html |
+| Very High | Design Distributed Rate Limiter. | ✅ | system-design.html |
+| Very High | Design File Upload/Object Storage System. | ✅ | system-design.html |
+| Very High | Design Core Banking Transaction System. | ✅ | system-design.html |
+| Very High | Design Payment Processing System. | ✅ | system-design.html |
+| Very High | Design Notification System for banking alerts. | ✅ | system-design.html |
+| Very High | Design Audit Logging System. | ✅ | system-design.html |
+| Very High | Design API Gateway for banking microservices. | ✅ | system-design.html |
+| High | Design Distributed Cache. | ✅ | system-design.html |
+| High | Design Transaction Reconciliation System. | ✅ | system-design.html |
+| High | Design Batch Processing System for EOD. | ✅ | system-design.html |
+| High | Design Loan EMI Processing System. | ✅ | system-design.html |
+| High | Design Account Statement Generation System. | ✅ | system-design.html |
+| High | Design Secure Login/SSO System. | ✅ | system-design.html |
+| High | Design KYC Document Upload System. | ✅ | system-design.html |
+| High | Design Fund Transfer System. | ✅ | system-design.html |
+| High | Design Message Queue System. | ✅ | system-design.html |
+| Medium | Design Monitoring and Alerting System. | ✅ | system-design.html |
+| Medium | Design Report Generation System. | ✅ | system-design.html |
+| Medium | Design Multi-tenant Banking SaaS Platform. | ✅ | system-design.html |
+
+---
+
+## 28. Banking System Design Follow-Up Questions
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | How will you ensure transaction consistency? | ✅ | system-design.html |
+| 2 | How will you handle duplicate payment request? | ✅ | system-design.html |
+| 3 | How will you make payment API idempotent? | ✅ | system-design.html |
+| 4 | How will you handle failed transaction? | ✅ | system-design.html |
+| 5 | How will you reverse a transaction? | ✅ | system-design.html |
+| 6 | How will you handle reconciliation? | ✅ | system-design.html |
+| 7 | How will you maintain audit trail? | ✅ | system-design.html |
+| 8 | How will you secure sensitive customer data? | ✅ | system-design.html |
+| 9 | How will you encrypt account details? | ✅ | system-design.html |
+| 10 | How will you handle high TPS? | ✅ | system-design.html |
+| 11 | How will you handle database locking? | ✅ | system-design.html |
+| 12 | How will you avoid double debit? | ✅ | system-design.html |
+| 13 | How will you handle timeout after debit but before credit? | ✅ | system-design.html |
+| 14 | How will you design retry mechanism? | ✅ | system-design.html |
+| 15 | How will you handle message duplication from MQ? | ✅ | system-design.html |
+| 16 | How will you ensure ordering of financial events? | ✅ | system-design.html |
+| 17 | How will you design maker-checker approval? | ✅ | system-design.html |
+| 18 | How will you design role-based access control? | ✅ | system-design.html |
+| 19 | How will you design audit reports? | ✅ | system-design.html |
+| 20 | How will you design EOD batch safely? | ✅ | system-design.html |
+
+---
+
+## 29. Coding / DSA Questions They May Ask
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | Reverse a string. | ✅ | dsa.html |
+| 2 | Check palindrome. | ✅ | dsa.html |
+| 3 | Find first non-repeating character. | ✅ | dsa.html |
+| 4 | Find duplicate characters in string. | ✅ | dsa.html |
+| 5 | Count frequency of words. | ✅ | dsa.html |
+| 6 | Reverse words in sentence. | ✅ | dsa.html |
+| 7 | Check anagram. | ✅ | dsa.html |
+| 8 | Find second largest number. | ✅ | dsa.html |
+| 9 | Remove duplicates from array. | ✅ | dsa.html |
+| 10 | Merge two sorted arrays. | ✅ | dsa.html |
+| 11 | Two sum problem. | ✅ | dsa.html |
+| 12 | Find missing number. | ✅ | dsa.html |
+| 13 | Find duplicate number. | ✅ | dsa.html |
+| 14 | Kadane’s algorithm. | ✅ | dsa.html |
+| 15 | Binary search. | ✅ | dsa.html |
+| 16 | Valid parentheses. | ✅ | dsa.html |
+| 17 | Implement stack using queue. | ✅ | dsa.html |
+| 18 | Implement queue using stack. | ✅ | dsa.html |
+| 19 | Detect cycle in linked list. | ✅ | dsa.html |
+| 20 | Reverse linked list. | ✅ | dsa.html |
+| 21 | Merge two sorted linked lists. | ✅ | dsa.html |
+| 22 | LRU cache. | ✅ | dsa.html |
+| 23 | Producer-consumer problem. | ✅ | dsa.html |
+| 24 | Print odd-even using two threads. | ✅ | dsa.html |
+| 25 | Design thread-safe singleton. | ✅ | dsa.html |
+
+---
+
+## 30. Scenario-Based Questions
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | API is slow in production. How will you debug? | ✅ | scenarios.html |
+| 2 | SQL query is taking 5 minutes. What will you do? | ✅ | scenarios.html |
+| 3 | Customer says transaction is debited but not credited. How will you investigate? | ✅ | scenarios.html |
+| 4 | Batch job failed during EOD. What will you do? | ✅ | scenarios.html |
+| 5 | Message is stuck in queue. How will you debug? | ✅ | scenarios.html |
+| 6 | WebLogic server is down. What will you check? | ✅ | scenarios.html |
+| 7 | Application is giving OutOfMemoryError. How will you handle? | ✅ | scenarios.html |
+| 8 | REST API works in dev but fails in UAT. What will you check? | ✅ | scenarios.html |
+| 9 | SOAP integration is failing with schema validation error. What will you do? | ✅ | scenarios.html |
+| 10 | Deployment failed before production release. What will you do? | ✅ | scenarios.html |
+| 11 | Bank wants new field in existing screen. How will you approach? | ✅ | scenarios.html |
+| 12 | Bank wants custom business validation. Where will you implement it? | ✅ | scenarios.html |
+| 13 | Customer reports wrong report data. How will you debug? | ✅ | scenarios.html |
+| 14 | Performance test shows high response time. How will you analyze? | ✅ | scenarios.html |
+| 15 | After release, old functionality breaks. How will you handle? | ✅ | scenarios.html |
+
+---
+
+## 31. HR / Managerial / Consulting Questions
+
+| No. | Question | Status | Notes file |
+| --- | --- | --- | --- |
+| 1 | Tell me about yourself. | ✅ | behavioral.html |
+| 2 | Why Oracle? | ✅ | behavioral.html |
+| 3 | Why do you want to work in banking domain? | ✅ | behavioral.html |
+| 4 | Explain your strongest technical skill. | ✅ | behavioral.html |
+| 5 | Explain your current project. | ✅ | behavioral.html |
+| 6 | What was your most challenging task? | ✅ | behavioral.html |
+| 7 | Tell me about a production issue you solved. | ✅ | behavioral.html |
+| 8 | Tell me about a time you handled customer pressure. | ✅ | behavioral.html |
+| 9 | Tell me about a time you disagreed with a teammate. | ✅ | behavioral.html |
+| 10 | How do you handle tight deadlines? | ✅ | behavioral.html |
+| 11 | Are you comfortable working from customer location? | ✅ | behavioral.html |
+| 12 | Are you comfortable with support activities? | ✅ | behavioral.html |
+| 13 | Are you comfortable learning FLEXCUBE? | ✅ | behavioral.html |
+| 14 | Are you comfortable with documentation? | ✅ | behavioral.html |
+| 15 | What are your strengths? | ✅ | behavioral.html |
+| 16 | What are your weaknesses? | ✅ | behavioral.html |
+| 17 | Where do you see yourself in 3 years? | ✅ | behavioral.html |
+| 18 | Why should we hire you? | ✅ | behavioral.html |
+| 19 | Are you comfortable with client communication? | ✅ | behavioral.html |
+| 20 | Do you have any questions for us? | ✅ | behavioral.html |
+| 1 | Explain your project architecture. | ✅ | behavioral.html |
+| 2 | Explain your role and responsibilities. | ✅ | behavioral.html |
+| 3 | Java OOP concepts. | ✅ | behavioral.html |
+| 4 | HashMap internal working. | ✅ | behavioral.html |
+| 5 | ConcurrentHashMap internal working. | ✅ | behavioral.html |
+| 6 | Multithreading and ExecutorService. | ✅ | behavioral.html |
+| 7 | Exception handling best practices. | ✅ | behavioral.html |
+| 8 | Java 8 Stream API. | ✅ | behavioral.html |
+| 9 | REST vs SOAP. | ✅ | behavioral.html |
+| 10 | HTTP methods and status codes. | ✅ | behavioral.html |
+| 11 | API security. | ✅ | behavioral.html |
+| 12 | JWT/OAuth2 basics. | ✅ | behavioral.html |
+| 13 | SOAP/WSDL/XSD. | ✅ | behavioral.html |
+| 14 | Oracle indexes. | ✅ | behavioral.html |
+| 15 | Query tuning. | ✅ | behavioral.html |
+| 16 | Explain plan. | ✅ | behavioral.html |
+| 17 | Procedure vs function vs package. | ✅ | behavioral.html |
+| 18 | Cursor vs ref cursor. | ✅ | behavioral.html |
+| 19 | Bulk collect and forall. | ✅ | behavioral.html |
+| 20 | Trigger and mutating table error. | ✅ | behavioral.html |
+| 21 | Transaction isolation. | ✅ | behavioral.html |
+| 22 | Deadlock handling. | ✅ | behavioral.html |
+| 23 | Spring Boot basics. | ✅ | behavioral.html |
+| 24 | `@Transactional`. | ✅ | behavioral.html |
+| 25 | Microservices communication. | ✅ | behavioral.html |
+| 26 | Saga pattern. | ✅ | behavioral.html |
+| 27 | Circuit breaker/retry/timeout. | ✅ | behavioral.html |
+| 28 | Docker basics. | ✅ | behavioral.html |
+| 29 | Kubernetes basics. | ✅ | behavioral.html |
+| 30 | WebLogic deployment. | ✅ | behavioral.html |
+| 31 | Connection pool/JNDI. | ✅ | behavioral.html |
+| 32 | JMS queue vs topic. | ✅ | behavioral.html |
+| 33 | Dead letter queue. | ✅ | behavioral.html |
+| 34 | OSB basics. | ✅ | behavioral.html |
+| 35 | SSO/SAML/PKI. | ✅ | behavioral.html |
+| 36 | JUnit/Mockito. | ✅ | behavioral.html |
+| 37 | JMeter performance testing. | ✅ | behavioral.html |
+| 38 | Git merge vs rebase. | ✅ | behavioral.html |
+| 39 | Maven lifecycle. | ✅ | behavioral.html |
+| 40 | Unix log debugging. | ✅ | behavioral.html |
+| 41 | Core banking basics. | ✅ | behavioral.html |
+| 42 | CASA/KYC/AML/CIF. | ✅ | behavioral.html |
+| 43 | Transaction posting. | ✅ | behavioral.html |
+| 44 | Ledger balance vs available balance. | ✅ | behavioral.html |
+| 45 | Maker-checker process. | ✅ | behavioral.html |
+| 46 | Audit logging. | ✅ | behavioral.html |
+| 47 | EOD/BOD batch. | ✅ | behavioral.html |
+| 48 | Production support scenario. | ✅ | behavioral.html |
+| 49 | End-to-end implementation lifecycle. | ✅ | behavioral.html |
+| 50 | Code review/design review process. | ✅ | behavioral.html |
+| 1 | Your project explanation | ✅ | behavioral.html |
+| 2 | Java Core + Collections + Multithreading | ✅ | behavioral.html |
+| 3 | Oracle SQL + PL/SQL | ✅ | behavioral.html |
+| 4 | REST + SOAP | ✅ | behavioral.html |
+| 5 | Spring Boot + Microservices | ✅ | behavioral.html |
+| 6 | Banking domain basics | ✅ | behavioral.html |
+| 7 | JMS/MQ/OSB | ✅ | behavioral.html |
+| 8 | Security: SSO/SAML/PKI | ✅ | behavioral.html |
+| 9 | WebLogic/Tomcat/JBoss | ✅ | behavioral.html |
+| 10 | Production support + implementation scenarios | ✅ | behavioral.html |
+
+---
+
+# Top 50 You Must Prepare First
+
+| Rank | Question                                | | Status | Notes file |
+| ---- | --------------------------------------- | | --- | --- | | --- | --- |
+| 1 | Explain your project architecture. | ✅ | notes |
+| 1 | Explain your project architecture. | ✅ | notes |
+| 2 | Explain your role and responsibilities. | ✅ | notes |
+| 2 | Explain your role and responsibilities. | ✅ | notes |
+| 3 | Java OOP concepts. | ✅ | notes |
+| 3 | Java OOP concepts. | ✅ | notes |
+| 4 | HashMap internal working. | ✅ | notes |
+| 4 | HashMap internal working. | ✅ | notes |
+| 5 | ConcurrentHashMap internal working. | ✅ | notes |
+| 5 | ConcurrentHashMap internal working. | ✅ | notes |
+| 6 | Multithreading and ExecutorService. | ✅ | notes |
+| 6 | Multithreading and ExecutorService. | ✅ | notes |
+| 7 | Exception handling best practices. | ✅ | notes |
+| 7 | Exception handling best practices. | ✅ | notes |
+| 8 | Java 8 Stream API. | ✅ | notes |
+| 8 | Java 8 Stream API. | ✅ | notes |
+| 9 | REST vs SOAP. | ✅ | notes |
+| 9 | REST vs SOAP. | ✅ | notes |
+| 10 | HTTP methods and status codes. | ✅ | notes |
+| 10 | HTTP methods and status codes. | ✅ | notes |
+| 11 | API security. | ✅ | notes |
+| 11 | API security. | ✅ | notes |
+| 12 | JWT/OAuth2 basics. | ✅ | notes |
+| 12 | JWT/OAuth2 basics. | ✅ | notes |
+| 13 | SOAP/WSDL/XSD. | ✅ | notes |
+| 13 | SOAP/WSDL/XSD. | ✅ | notes |
+| 14 | Oracle indexes. | ✅ | notes |
+| 14 | Oracle indexes. | ✅ | notes |
+| 15 | Query tuning. | ✅ | notes |
+| 15 | Query tuning. | ✅ | notes |
+| 16 | Explain plan. | ✅ | notes |
+| 16 | Explain plan. | ✅ | notes |
+| 17 | Procedure vs function vs package. | ✅ | notes |
+| 17 | Procedure vs function vs package. | ✅ | notes |
+| 18 | Cursor vs ref cursor. | ✅ | notes |
+| 18 | Cursor vs ref cursor. | ✅ | notes |
+| 19 | Bulk collect and forall. | ✅ | notes |
+| 19 | Bulk collect and forall. | ✅ | notes |
+| 20 | Trigger and mutating table error. | ✅ | notes |
+| 20 | Trigger and mutating table error. | ✅ | notes |
+| 21 | Transaction isolation. | ✅ | notes |
+| 21 | Transaction isolation. | ✅ | notes |
+| 22 | Deadlock handling. | ✅ | notes |
+| 22 | Deadlock handling. | ✅ | notes |
+| 23 | Spring Boot basics. | ✅ | notes |
+| 23 | Spring Boot basics. | ✅ | notes |
+| 24 | `@Transactional`. | ✅ | notes |
+| 24 | `@Transactional`. | ✅ | notes |
+| 25 | Microservices communication. | ✅ | notes |
+| 25 | Microservices communication. | ✅ | notes |
+| 26 | Saga pattern. | ✅ | notes |
+| 26 | Saga pattern. | ✅ | notes |
+| 27 | Circuit breaker/retry/timeout. | ✅ | notes |
+| 27 | Circuit breaker/retry/timeout. | ✅ | notes |
+| 28 | Docker basics. | ✅ | notes |
+| 28 | Docker basics. | ✅ | notes |
+| 29 | Kubernetes basics. | ✅ | notes |
+| 29 | Kubernetes basics. | ✅ | notes |
+| 30 | WebLogic deployment. | ✅ | notes |
+| 30 | WebLogic deployment. | ✅ | notes |
+| 31 | Connection pool/JNDI. | ✅ | notes |
+| 31 | Connection pool/JNDI. | ✅ | notes |
+| 32 | JMS queue vs topic. | ✅ | notes |
+| 32 | JMS queue vs topic. | ✅ | notes |
+| 33 | Dead letter queue. | ✅ | notes |
+| 33 | Dead letter queue. | ✅ | notes |
+| 34 | OSB basics. | ✅ | notes |
+| 34 | OSB basics. | ✅ | notes |
+| 35 | SSO/SAML/PKI. | ✅ | notes |
+| 35 | SSO/SAML/PKI. | ✅ | notes |
+| 36 | JUnit/Mockito. | ✅ | notes |
+| 36 | JUnit/Mockito. | ✅ | notes |
+| 37 | JMeter performance testing. | ✅ | notes |
+| 37 | JMeter performance testing. | ✅ | notes |
+| 38 | Git merge vs rebase. | ✅ | notes |
+| 38 | Git merge vs rebase. | ✅ | notes |
+| 39 | Maven lifecycle. | ✅ | notes |
+| 39 | Maven lifecycle. | ✅ | notes |
+| 40 | Unix log debugging. | ✅ | notes |
+| 40 | Unix log debugging. | ✅ | notes |
+| 41 | Core banking basics. | ✅ | notes |
+| 41 | Core banking basics. | ✅ | notes |
+| 42 | CASA/KYC/AML/CIF. | ✅ | notes |
+| 42 | CASA/KYC/AML/CIF. | ✅ | notes |
+| 43 | Transaction posting. | ✅ | notes |
+| 43 | Transaction posting. | ✅ | notes |
+| 44 | Ledger balance vs available balance. | ✅ | notes |
+| 44 | Ledger balance vs available balance. | ✅ | notes |
+| 45 | Maker-checker process. | ✅ | notes |
+| 45 | Maker-checker process. | ✅ | notes |
+| 46 | Audit logging. | ✅ | notes |
+| 46 | Audit logging. | ✅ | notes |
+| 47 | EOD/BOD batch. | ✅ | notes |
+| 47 | EOD/BOD batch. | ✅ | notes |
+| 48 | Production support scenario. | ✅ | notes |
+| 48 | Production support scenario. | ✅ | notes |
+| 49 | End-to-end implementation lifecycle. | ✅ | notes |
+| 49 | End-to-end implementation lifecycle. | ✅ | notes |
+| 50 | Code review/design review process. | ✅ | notes |
+| 50 | Code review/design review process. | ✅ | notes |
+
+---
+
+# Best Preparation Order for You
+
+| Order | Topic                                         |
+| ----- | --------------------------------------------- | | --- | --- |
+| 1 | Your project explanation | ✅ | notes |
+| 1 | Your project explanation | ✅ | notes |
+| 2 | Java Core + Collections + Multithreading | ✅ | notes |
+| 2 | Java Core + Collections + Multithreading | ✅ | notes |
+| 3 | Oracle SQL + PL/SQL | ✅ | notes |
+| 3 | Oracle SQL + PL/SQL | ✅ | notes |
+| 4 | REST + SOAP | ✅ | notes |
+| 4 | REST + SOAP | ✅ | notes |
+| 5 | Spring Boot + Microservices | ✅ | notes |
+| 5 | Spring Boot + Microservices | ✅ | notes |
+| 6 | Banking domain basics | ✅ | notes |
+| 6 | Banking domain basics | ✅ | notes |
+| 7 | JMS/MQ/OSB | ✅ | notes |
+| 7 | JMS/MQ/OSB | ✅ | notes |
+| 8 | Security: SSO/SAML/PKI | ✅ | notes |
+| 8 | Security: SSO/SAML/PKI | ✅ | notes |
+| 9 | WebLogic/Tomcat/JBoss | ✅ | notes |
+| 9 | WebLogic/Tomcat/JBoss | ✅ | notes |
+| 10 | Production support + implementation scenarios | ✅ | notes |
+| 10 | Production support + implementation scenarios | ✅ | notes |
+
+This JD is not only pure Java. It is a **Java + Oracle PL/SQL + Banking implementation + integration + production support** role. So do not prepare only DSA/system design; prepare **project, SQL/PLSQL, REST/SOAP, banking domain, and scenario-based support questions** very strongly.

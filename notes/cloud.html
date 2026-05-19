@@ -1,259 +1,236 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex,nofollow,noarchive">
-  <title>Cloud · Notes</title>
-  <link rel="icon" href="../assets/img/logo.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<title>Cloud · Notes</title>
+<link href="../assets/img/logo.png" rel="icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
-
-  <header class="topbar">
-    <div class="topbar-inner">
-      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
-      <div class="search-wrap">
-        <i class="bi bi-search"></i>
-        <input id="search" type="search" placeholder="Search within Cloud..." autocomplete="off" spellcheck="false">
-        <span class="search-shortcut">/</span>
-      </div>
-      <div class="topbar-actions">
-        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
-        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
-      </div>
-    </div>
-  </header>
-
-  <main class="topic-page">
-
-    <div class="topic-page-header">
-      <div class="topic-page-eyebrow">13 · Cloud</div>
-      <h1>Cloud (AWS / Azure)</h1>
-      <p class="topic-page-desc">IaaS/PaaS/SaaS, compute, storage, networking, IAM, deployments. Bring stories from the AWS deployments at OneXtel and Indus Net.</p>
-      <div class="topic-page-meta">
-        <span><strong>10</strong> questions</span>
-        <span>Press <span class="hint-kbd">/</span> to search</span>
-      </div>
-    </div>
-
-    <div class="no-results" id="noResults">No matches.</div>
-
-    <div class="qa-list">
-
-      <details class="qa">
-        <summary>IaaS vs PaaS vs SaaS</summary>
-        <div class="qa-body">
-          <p class="answer-intro">Three layers of "cloud abstraction" — each one hands more of the stack to the provider and leaves less for you to manage.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">IaaS</span>
-              <span class="core-diff-val"><strong>Infrastructure</strong> — you get VMs and networks; you manage the OS, runtime, app.</span>
-            </div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">PaaS</span>
-              <span class="core-diff-val"><strong>Platform</strong> — you deploy code; the provider runs it.</span>
-            </div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">SaaS</span>
-              <span class="core-diff-val"><strong>Software</strong> — you just use the app over the internet.</span>
-            </div>
+<header class="topbar">
+<div class="topbar-inner">
+<a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+<div class="search-wrap">
+<i class="bi bi-search"></i>
+<input autocomplete="off" id="search" placeholder="Search within Cloud..." spellcheck="false" type="search"/>
+<span class="search-shortcut">/</span>
+</div>
+<div class="topbar-actions">
+<button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+<button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+</div>
+</div>
+</header>
+<main class="topic-page">
+<div class="topic-page-header">
+<div class="topic-page-eyebrow">13 · Cloud</div>
+<h1>Cloud (AWS / Azure)</h1>
+<p class="topic-page-desc">IaaS/PaaS/SaaS, compute, storage, networking, IAM, deployments. Bring stories from the AWS deployments at OneXtel and Indus Net.</p>
+<div class="topic-page-meta">
+<span><strong>13</strong> questions</span>
+<span>Press <span class="hint-kbd">/</span> to search</span>
+</div>
+</div>
+<div class="no-results" id="noResults">No matches.</div>
+<div class="qa-list">
+<details class="qa">
+<summary>IaaS vs PaaS vs SaaS</summary>
+<div class="qa-body">
+<p class="answer-intro">Three layers of "cloud abstraction" — each one hands more of the stack to the provider and leaves less for you to manage.</p>
+<div class="core-diff">
+<div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+<div class="core-diff-row">
+<span class="core-diff-key">IaaS</span>
+<span class="core-diff-val"><strong>Infrastructure</strong> — you get VMs and networks; you manage the OS, runtime, app.</span>
+</div>
+<div class="core-diff-row">
+<span class="core-diff-key">PaaS</span>
+<span class="core-diff-val"><strong>Platform</strong> — you deploy code; the provider runs it.</span>
+</div>
+<div class="core-diff-row">
+<span class="core-diff-key">SaaS</span>
+<span class="core-diff-val"><strong>Software</strong> — you just use the app over the internet.</span>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> What You Manage</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> IaaS</div>
+<ul>
+<li>OS, runtime, middleware, app, data.</li>
+<li>Provider gives you VM, network, storage.</li>
+<li>Maximum control, maximum ops work.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> PaaS / SaaS</div>
+<ul>
+<li><strong>PaaS</strong> — you just push code. App + data are yours, infra + runtime + scaling are theirs.</li>
+<li><strong>SaaS</strong> — you just log in. Everything else is theirs.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> Examples</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> IaaS</div>
+<ul>
+<li>AWS EC2, Azure VMs, GCP Compute Engine.</li>
+<li>S3 / EBS for storage. VPC for networking.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> PaaS / SaaS</div>
+<ul>
+<li><strong>PaaS</strong> — AWS Elastic Beanstalk, App Service, Heroku, App Engine, ECS Fargate.</li>
+<li><strong>SaaS</strong> — Gmail, Salesforce, Slack, Datadog, GitHub.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">3</span> Tradeoffs</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> IaaS</div>
+<ul>
+<li class="cmp-mark-yes">Maximum flexibility — any tech stack, any OS.</li>
+<li class="cmp-mark-no">You patch, secure, monitor, and scale everything.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> PaaS / SaaS</div>
+<ul>
+<li class="cmp-mark-yes">Less ops, faster to ship.</li>
+<li class="cmp-mark-no">Vendor lock-in, limited customization.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">4</span> Bonus: FaaS / Serverless</div>
+<p style="margin:0;">A fourth layer often called out separately: <strong>FaaS</strong> (Function as a Service) — write a function, deploy it, pay per invocation. Examples: <strong>AWS Lambda</strong>, <strong>Azure Functions</strong>, <strong>GCP Cloud Functions</strong>. Stateless, auto-scaled to zero, but with cold starts and a 15-min max runtime.</p>
+</div>
+<div class="takeaway">
+<b>In practice:</b> most modern teams mix all four — containers on K8s (between IaaS and PaaS) + managed DBs/queues (PaaS) + Lambdas for event-driven glue (FaaS) + SaaS for observability and dev tools. Pick the highest-level abstraction that still gives you what you need.
           </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> What You Manage</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> IaaS</div>
-                <ul>
-                  <li>OS, runtime, middleware, app, data.</li>
-                  <li>Provider gives you VM, network, storage.</li>
-                  <li>Maximum control, maximum ops work.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> PaaS / SaaS</div>
-                <ul>
-                  <li><strong>PaaS</strong> — you just push code. App + data are yours, infra + runtime + scaling are theirs.</li>
-                  <li><strong>SaaS</strong> — you just log in. Everything else is theirs.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> Examples</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> IaaS</div>
-                <ul>
-                  <li>AWS EC2, Azure VMs, GCP Compute Engine.</li>
-                  <li>S3 / EBS for storage. VPC for networking.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> PaaS / SaaS</div>
-                <ul>
-                  <li><strong>PaaS</strong> — AWS Elastic Beanstalk, App Service, Heroku, App Engine, ECS Fargate.</li>
-                  <li><strong>SaaS</strong> — Gmail, Salesforce, Slack, Datadog, GitHub.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> Tradeoffs</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> IaaS</div>
-                <ul>
-                  <li class="cmp-mark-yes">Maximum flexibility — any tech stack, any OS.</li>
-                  <li class="cmp-mark-no">You patch, secure, monitor, and scale everything.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> PaaS / SaaS</div>
-                <ul>
-                  <li class="cmp-mark-yes">Less ops, faster to ship.</li>
-                  <li class="cmp-mark-no">Vendor lock-in, limited customization.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">4</span> Bonus: FaaS / Serverless</div>
-            <p style="margin:0;">A fourth layer often called out separately: <strong>FaaS</strong> (Function as a Service) — write a function, deploy it, pay per invocation. Examples: <strong>AWS Lambda</strong>, <strong>Azure Functions</strong>, <strong>GCP Cloud Functions</strong>. Stateless, auto-scaled to zero, but with cold starts and a 15-min max runtime.</p>
-          </div>
-
-          <div class="takeaway">
-            <b>In practice:</b> most modern teams mix all four — containers on K8s (between IaaS and PaaS) + managed DBs/queues (PaaS) + Lambdas for event-driven glue (FaaS) + SaaS for observability and dev tools. Pick the highest-level abstraction that still gives you what you need.
-          </div>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>AWS core services you'd use for a typical backend <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p>For a typical Java/Spring Boot microservice:</p>
-          <ul>
-            <li><strong>Compute</strong>: EKS (Kubernetes) or ECS Fargate; Lambda for event-driven work.</li>
-            <li><strong>Database</strong>: RDS (Postgres/MySQL) or Aurora; DynamoDB for KV; DocumentDB for Mongo-compatible; ElastiCache (Redis) for cache.</li>
-            <li><strong>Search</strong>: OpenSearch (managed Elasticsearch).</li>
-            <li><strong>Messaging</strong>: MSK (managed Kafka), SQS for queues, SNS for fan-out.</li>
-            <li><strong>Storage</strong>: S3 for objects/files, EFS for shared file storage.</li>
-            <li><strong>Networking</strong>: VPC, ALB/NLB, Route 53 (DNS), CloudFront (CDN).</li>
-            <li><strong>Secrets &amp; config</strong>: Secrets Manager, Parameter Store, KMS.</li>
-            <li><strong>Observability</strong>: CloudWatch (logs/metrics), X-Ray (tracing).</li>
-            <li><strong>IAM</strong>: roles for least-privilege, IRSA for K8s service accounts.</li>
-            <li><strong>CI/CD</strong>: CodePipeline / CodeBuild, or external (GitHub Actions, GitLab).</li>
-          </ul>
-          <p>I've shipped services using almost all of these — naming them in interviews signals real experience.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>EC2 vs ECS vs EKS vs Lambda — when?</summary>
-        <div class="qa-body">
-          <p><strong>EC2</strong> — raw VMs. Maximum control. I rarely run apps directly on EC2 anymore; mostly worker nodes under EKS.</p>
-          <p><strong>ECS (Fargate)</strong> — managed container orchestration. Great for small/medium teams: no nodes to manage. Less ecosystem than Kubernetes.</p>
-          <p><strong>EKS</strong> — managed Kubernetes. Standard for teams with multiple services, Helm, custom operators, multi-cloud portability. What I use most in production.</p>
-          <p><strong>Lambda</strong> — event-driven, no servers, scales to zero. Best for: short-lived tasks (image resizing), event handlers (S3 upload → process), low-traffic APIs, glue code. Watch: cold starts, max 15 min, fragmented observability, harder local dev.</p>
-          <p>Rule of thumb: <strong>EKS for long-running services</strong>, <strong>Lambda for bursty/event-driven</strong>, <strong>Fargate as a Kubernetes-lite option</strong> for small teams.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>How do you deploy a Spring Boot app to AWS? (step-by-step on EC2) <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">Classic interview walk-through: <em>"Take me through deploying a Spring Boot service to AWS."</em> The simplest end-to-end answer uses <strong>EC2 + JAR + Nginx</strong>; the production-grade answer brings in <strong>RDS, S3, IAM roles, CloudWatch</strong>, and a CI/CD pipeline. Here is the full picture, starting from the basics.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-row">
-              <span class="core-diff-key">CORE IDEA</span>
-              <span class="core-diff-val"><strong>Build → Provision → Configure → Ship → Run → Expose → Observe.</strong> Every AWS deployment is some version of those seven phases, whether it's a single EC2 VM or a full EKS pipeline.</span>
-            </div>
-          </div>
-
-          <p><b>The 10-step deployment flow (EC2 + JAR — the interview-friendly path):</b></p>
-          <div class="flow">
-            <div class="flow-step"><b>1.</b> Build the JAR locally — <code>mvn clean package</code> → <code>target/app.jar</code></div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step"><b>2.</b> Launch an EC2 instance (Amazon Linux / Ubuntu) in the right region/VPC</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step"><b>3.</b> Configure a Security Group — open <code>22</code> (SSH), <code>8080</code> (app), <code>80</code> (HTTP)</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step"><b>4.</b> SSH into the instance — <code>ssh -i key.pem ec2-user@&lt;public-ip&gt;</code></div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step"><b>5.</b> Install Java 17 — <code>sudo yum install java-17 -y</code></div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step"><b>6.</b> Copy the JAR — <code>scp -i key.pem target/app.jar ec2-user@&lt;public-ip&gt;:~</code></div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step"><b>7.</b> Run the app in background — <code>nohup java -jar app.jar &gt; app.log 2&gt;&amp;1 &amp;</code></div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step"><b>8.</b> Test — open <code>http://&lt;public-ip&gt;:8080</code></div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step"><b>9.</b> (Optional) Add Nginx in front — route port 80 → 8080</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step"><b>10.</b> Wire in RDS, S3, IAM Role, CloudWatch for a real deployment</div>
-          </div>
-
-          <p><b>Step 1 — Build the application.</b> Use Maven (or Gradle) to package an executable JAR:</p>
-          <pre><code>mvn clean package
+</div>
+</details>
+<details class="qa">
+<summary>AWS core services you'd use for a typical backend <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p>For a typical Java/Spring Boot microservice:</p>
+<ul>
+<li><strong>Compute</strong>: EKS (Kubernetes) or ECS Fargate; Lambda for event-driven work.</li>
+<li><strong>Database</strong>: RDS (Postgres/MySQL) or Aurora; DynamoDB for KV; DocumentDB for Mongo-compatible; ElastiCache (Redis) for cache.</li>
+<li><strong>Search</strong>: OpenSearch (managed Elasticsearch).</li>
+<li><strong>Messaging</strong>: MSK (managed Kafka), SQS for queues, SNS for fan-out.</li>
+<li><strong>Storage</strong>: S3 for objects/files, EFS for shared file storage.</li>
+<li><strong>Networking</strong>: VPC, ALB/NLB, Route 53 (DNS), CloudFront (CDN).</li>
+<li><strong>Secrets &amp; config</strong>: Secrets Manager, Parameter Store, KMS.</li>
+<li><strong>Observability</strong>: CloudWatch (logs/metrics), X-Ray (tracing).</li>
+<li><strong>IAM</strong>: roles for least-privilege, IRSA for K8s service accounts.</li>
+<li><strong>CI/CD</strong>: CodePipeline / CodeBuild, or external (GitHub Actions, GitLab).</li>
+</ul>
+<p>I've shipped services using almost all of these — naming them in interviews signals real experience.</p>
+</div>
+</details>
+<details class="qa">
+<summary>EC2 vs ECS vs EKS vs Lambda — when?</summary>
+<div class="qa-body">
+<p><strong>EC2</strong> — raw VMs. Maximum control. I rarely run apps directly on EC2 anymore; mostly worker nodes under EKS.</p>
+<p><strong>ECS (Fargate)</strong> — managed container orchestration. Great for small/medium teams: no nodes to manage. Less ecosystem than Kubernetes.</p>
+<p><strong>EKS</strong> — managed Kubernetes. Standard for teams with multiple services, Helm, custom operators, multi-cloud portability. What I use most in production.</p>
+<p><strong>Lambda</strong> — event-driven, no servers, scales to zero. Best for: short-lived tasks (image resizing), event handlers (S3 upload → process), low-traffic APIs, glue code. Watch: cold starts, max 15 min, fragmented observability, harder local dev.</p>
+<p>Rule of thumb: <strong>EKS for long-running services</strong>, <strong>Lambda for bursty/event-driven</strong>, <strong>Fargate as a Kubernetes-lite option</strong> for small teams.</p>
+</div>
+</details>
+<details class="qa">
+<summary>How do you deploy a Spring Boot app to AWS? (step-by-step on EC2) <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro">Classic interview walk-through: <em>"Take me through deploying a Spring Boot service to AWS."</em> The simplest end-to-end answer uses <strong>EC2 + JAR + Nginx</strong>; the production-grade answer brings in <strong>RDS, S3, IAM roles, CloudWatch</strong>, and a CI/CD pipeline. Here is the full picture, starting from the basics.</p>
+<div class="core-diff">
+<div class="core-diff-row">
+<span class="core-diff-key">CORE IDEA</span>
+<span class="core-diff-val"><strong>Build → Provision → Configure → Ship → Run → Expose → Observe.</strong> Every AWS deployment is some version of those seven phases, whether it's a single EC2 VM or a full EKS pipeline.</span>
+</div>
+</div>
+<p><b>The 10-step deployment flow (EC2 + JAR — the interview-friendly path):</b></p>
+<div class="flow">
+<div class="flow-step"><b>1.</b> Build the JAR locally — <code>mvn clean package</code> → <code>target/app.jar</code></div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step"><b>2.</b> Launch an EC2 instance (Amazon Linux / Ubuntu) in the right region/VPC</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step"><b>3.</b> Configure a Security Group — open <code>22</code> (SSH), <code>8080</code> (app), <code>80</code> (HTTP)</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step"><b>4.</b> SSH into the instance — <code>ssh -i key.pem ec2-user@&lt;public-ip&gt;</code></div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step"><b>5.</b> Install Java 17 — <code>sudo yum install java-17 -y</code></div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step"><b>6.</b> Copy the JAR — <code>scp -i key.pem target/app.jar ec2-user@&lt;public-ip&gt;:~</code></div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step"><b>7.</b> Run the app in background — <code>nohup java -jar app.jar &gt; app.log 2&gt;&amp;1 &amp;</code></div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step"><b>8.</b> Test — open <code>http://&lt;public-ip&gt;:8080</code></div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step"><b>9.</b> (Optional) Add Nginx in front — route port 80 → 8080</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step"><b>10.</b> Wire in RDS, S3, IAM Role, CloudWatch for a real deployment</div>
+</div>
+<p><b>Step 1 — Build the application.</b> Use Maven (or Gradle) to package an executable JAR:</p>
+<pre><code>mvn clean package
 # → target/app.jar</code></pre>
-
-          <p><b>Step 2 — Launch the EC2 instance.</b> AWS Console → EC2 → Launch Instance. Pick:</p>
-          <ul>
-            <li><strong>AMI:</strong> Amazon Linux 2023 or Ubuntu 22.04.</li>
-            <li><strong>Instance type:</strong> <code>t3.micro</code> for testing, <code>t3.small/medium</code> or higher for prod.</li>
-            <li><strong>Key pair:</strong> create / select an SSH key pair (download the <code>.pem</code>).</li>
-            <li><strong>VPC + subnet:</strong> a public subnet for now (production = private subnet + LB).</li>
-          </ul>
-
-          <p><b>Step 3 — Configure the Security Group.</b> A Security Group is a stateful firewall on the instance:</p>
-          <div class="note-table-wrap">
-            <table class="note-table">
-              <thead><tr><th>Port</th><th>Protocol</th><th>Source</th><th>Use</th></tr></thead>
-              <tbody>
-                <tr><td><code>22</code></td><td>TCP</td><td>My IP only</td><td>SSH access (never <code>0.0.0.0/0</code> in prod)</td></tr>
-                <tr><td><code>8080</code></td><td>TCP</td><td>LB / VPC CIDR</td><td>Spring Boot app port</td></tr>
-                <tr><td><code>80</code> / <code>443</code></td><td>TCP</td><td>0.0.0.0/0</td><td>Public HTTP / HTTPS through Nginx or LB</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <p><b>Step 4 — Connect via SSH:</b></p>
-          <pre><code>chmod 400 key.pem
+<p><b>Step 2 — Launch the EC2 instance.</b> AWS Console → EC2 → Launch Instance. Pick:</p>
+<ul>
+<li><strong>AMI:</strong> Amazon Linux 2023 or Ubuntu 22.04.</li>
+<li><strong>Instance type:</strong> <code>t3.micro</code> for testing, <code>t3.small/medium</code> or higher for prod.</li>
+<li><strong>Key pair:</strong> create / select an SSH key pair (download the <code>.pem</code>).</li>
+<li><strong>VPC + subnet:</strong> a public subnet for now (production = private subnet + LB).</li>
+</ul>
+<p><b>Step 3 — Configure the Security Group.</b> A Security Group is a stateful firewall on the instance:</p>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead><tr><th>Port</th><th>Protocol</th><th>Source</th><th>Use</th></tr></thead>
+<tbody>
+<tr><td><code>22</code></td><td>TCP</td><td>My IP only</td><td>SSH access (never <code>0.0.0.0/0</code> in prod)</td></tr>
+<tr><td><code>8080</code></td><td>TCP</td><td>LB / VPC CIDR</td><td>Spring Boot app port</td></tr>
+<tr><td><code>80</code> / <code>443</code></td><td>TCP</td><td>0.0.0.0/0</td><td>Public HTTP / HTTPS through Nginx or LB</td></tr>
+</tbody>
+</table>
+</div>
+<p><b>Step 4 — Connect via SSH:</b></p>
+<pre><code>chmod 400 key.pem
 ssh -i key.pem ec2-user@&lt;public-ip&gt;     # Amazon Linux
 ssh -i key.pem ubuntu@&lt;public-ip&gt;       # Ubuntu</code></pre>
-
-          <p><b>Step 5 — Install Java on the instance:</b></p>
-          <pre><code># Amazon Linux
+<p><b>Step 5 — Install Java on the instance:</b></p>
+<pre><code># Amazon Linux
 sudo yum install java-17-amazon-corretto -y
 
 # Ubuntu
 sudo apt update &amp;&amp; sudo apt install openjdk-17-jdk -y
 
 java -version</code></pre>
-
-          <p><b>Step 6 — Copy the JAR with SCP:</b></p>
-          <pre><code># From your laptop
+<p><b>Step 6 — Copy the JAR with SCP:</b></p>
+<pre><code># From your laptop
 scp -i key.pem target/app.jar ec2-user@&lt;public-ip&gt;:/home/ec2-user/</code></pre>
-
-          <p><b>Step 7 — Run the application.</b> Foreground for testing, background for "real" use:</p>
-          <pre><code># Quick test
+<p><b>Step 7 — Run the application.</b> Foreground for testing, background for "real" use:</p>
+<pre><code># Quick test
 java -jar app.jar
 
 # Detached, survives logout, log to file
 nohup java -jar app.jar &gt; app.log 2&gt;&amp;1 &amp;</code></pre>
-          <p>For anything beyond a demo, register it as a systemd service so it auto-restarts on failure and on reboot:</p>
-          <pre><code># /etc/systemd/system/app.service
+<p>For anything beyond a demo, register it as a systemd service so it auto-restarts on failure and on reboot:</p>
+<pre><code># /etc/systemd/system/app.service
 [Unit]
 Description=Spring Boot App
 After=network.target
@@ -267,17 +244,15 @@ RestartSec=5
 
 [Install]
 WantedBy=multi-user.target</code></pre>
-          <pre><code>sudo systemctl daemon-reload
+<pre><code>sudo systemctl daemon-reload
 sudo systemctl enable --now app
 sudo systemctl status app</code></pre>
-
-          <p><b>Step 8 — Test it works:</b></p>
-          <pre><code>curl http://&lt;public-ip&gt;:8080/actuator/health
+<p><b>Step 8 — Test it works:</b></p>
+<pre><code>curl http://&lt;public-ip&gt;:8080/actuator/health
 # Or open in browser: http://&lt;public-ip&gt;:8080</code></pre>
-
-          <p><b>Step 9 — (Optional) Nginx in front for port 80 / HTTPS:</b></p>
-          <pre class="tree-viz">User → Port 80 / 443 → Nginx → Spring Boot :8080</pre>
-          <pre><code># /etc/nginx/conf.d/app.conf
+<p><b>Step 9 — (Optional) Nginx in front for port 80 / HTTPS:</b></p>
+<pre class="tree-viz">User → Port 80 / 443 → Nginx → Spring Boot :8080</pre>
+<pre><code># /etc/nginx/conf.d/app.conf
 server {
     listen 80;
     server_name api.example.com;
@@ -289,27 +264,25 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 }</code></pre>
-          <p>Add HTTPS with <strong>Let's Encrypt (certbot)</strong> or terminate TLS at an <strong>Application Load Balancer (ALB)</strong> with an ACM certificate — that's the production pattern.</p>
-
-          <p><b>Step 10 — Wire in the rest of AWS (the real-world part):</b></p>
-          <div class="note-table-wrap">
-            <table class="note-table">
-              <thead><tr><th>Service</th><th>Used for</th><th>How the app talks to it</th></tr></thead>
-              <tbody>
-                <tr><td><strong>RDS</strong> (MySQL / Postgres)</td><td>Managed database — backups, replicas, patching.</td><td>JDBC URL in <code>application.yml</code>; credentials from Secrets Manager.</td></tr>
-                <tr><td><strong>S3</strong></td><td>File uploads, logs, backups, static assets.</td><td>AWS SDK using credentials from the IAM Role.</td></tr>
-                <tr><td><strong>IAM Role</strong></td><td>Authorise the EC2 / ECS / EKS workload to call AWS.</td><td>Attached as an Instance Profile — SDK picks it up automatically.</td></tr>
-                <tr><td><strong>Secrets Manager / Parameter Store</strong></td><td>DB passwords, API keys.</td><td>Read at startup using <code>spring-cloud-aws-secrets-manager</code>.</td></tr>
-                <tr><td><strong>CloudWatch Logs</strong></td><td>Centralised app logs, alarms.</td><td>CloudWatch agent or <code>logback-cloudwatch</code> appender.</td></tr>
-                <tr><td><strong>CloudWatch Metrics / X-Ray</strong></td><td>Latency, error rate, tracing.</td><td>Spring Boot Micrometer → CloudWatch / OTel exporter.</td></tr>
-                <tr><td><strong>ALB</strong></td><td>HTTPS termination, multi-AZ traffic distribution.</td><td>Target group points at EC2 instance / ECS task / pods.</td></tr>
-                <tr><td><strong>Route 53</strong></td><td>DNS — <code>api.example.com</code> → ALB.</td><td>Alias record in the hosted zone.</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <p><b>A production-grade architecture looks like this:</b></p>
-          <pre class="tree-viz">          (Internet)
+<p>Add HTTPS with <strong>Let's Encrypt (certbot)</strong> or terminate TLS at an <strong>Application Load Balancer (ALB)</strong> with an ACM certificate — that's the production pattern.</p>
+<p><b>Step 10 — Wire in the rest of AWS (the real-world part):</b></p>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead><tr><th>Service</th><th>Used for</th><th>How the app talks to it</th></tr></thead>
+<tbody>
+<tr><td><strong>RDS</strong> (MySQL / Postgres)</td><td>Managed database — backups, replicas, patching.</td><td>JDBC URL in <code>application.yml</code>; credentials from Secrets Manager.</td></tr>
+<tr><td><strong>S3</strong></td><td>File uploads, logs, backups, static assets.</td><td>AWS SDK using credentials from the IAM Role.</td></tr>
+<tr><td><strong>IAM Role</strong></td><td>Authorise the EC2 / ECS / EKS workload to call AWS.</td><td>Attached as an Instance Profile — SDK picks it up automatically.</td></tr>
+<tr><td><strong>Secrets Manager / Parameter Store</strong></td><td>DB passwords, API keys.</td><td>Read at startup using <code>spring-cloud-aws-secrets-manager</code>.</td></tr>
+<tr><td><strong>CloudWatch Logs</strong></td><td>Centralised app logs, alarms.</td><td>CloudWatch agent or <code>logback-cloudwatch</code> appender.</td></tr>
+<tr><td><strong>CloudWatch Metrics / X-Ray</strong></td><td>Latency, error rate, tracing.</td><td>Spring Boot Micrometer → CloudWatch / OTel exporter.</td></tr>
+<tr><td><strong>ALB</strong></td><td>HTTPS termination, multi-AZ traffic distribution.</td><td>Target group points at EC2 instance / ECS task / pods.</td></tr>
+<tr><td><strong>Route 53</strong></td><td>DNS — <code>api.example.com</code> → ALB.</td><td>Alias record in the hosted zone.</td></tr>
+</tbody>
+</table>
+</div>
+<p><b>A production-grade architecture looks like this:</b></p>
+<pre class="tree-viz">          (Internet)
               │
         Route 53 (DNS)
               │
@@ -323,109 +296,99 @@ server {
    ├── S3             — via VPC endpoint
    ├── Secrets Manager
    └── CloudWatch Logs &amp; Metrics</pre>
-
-          <p><b>Beyond manual EC2 — what real teams do:</b></p>
-          <div class="cmp-grid">
-            <div class="cmp-card">
-              <div class="cmp-card-title">Manual EC2 (what we just did)</div>
-              <ul>
-                <li>Good for learning, demos, small side projects.</li>
-                <li>No auto-scaling, no rolling deploys, no self-healing.</li>
-                <li>SSH + <code>scp</code> is fine once; brittle after.</li>
-              </ul>
-            </div>
-            <div class="cmp-card">
-              <div class="cmp-card-title">Production deployment</div>
-              <ul>
-                <li><strong>Containerise</strong> the app with Docker, push to <strong>ECR</strong>.</li>
-                <li>Run on <strong>ECS Fargate</strong> or <strong>EKS</strong> — auto-scaling, rolling updates, health checks.</li>
-                <li><strong>CI/CD</strong> with GitHub Actions / CodePipeline → build → push image → deploy.</li>
-                <li><strong>Infra as code</strong> — Terraform or CloudFormation for VPC/ALB/RDS.</li>
-                <li><strong>IAM Roles</strong> everywhere — no access keys in code.</li>
-              </ul>
-            </div>
-          </div>
-
-          <p><b>Modern CI/CD flow on AWS:</b></p>
-          <div class="flow">
-            <div class="flow-step">Developer pushes to <strong>GitHub</strong></div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step"><strong>GitHub Actions / CodePipeline</strong> — build, test, scan</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step">Build Docker image → push to <strong>ECR</strong> with commit-SHA tag</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step">Update <strong>ECS service / EKS Deployment</strong> with new image</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step">Rolling deploy with health-check gating — old tasks drained, new tasks ramp up</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step">CloudWatch alarms watch error rate / latency → auto-rollback if it spikes</div>
-          </div>
-
-          <p><b>Best practices I always follow:</b></p>
-          <ul>
-            <li><strong>Don't put apps in public subnets</strong> — put EC2/ECS/EKS in private subnets behind an ALB.</li>
-            <li><strong>IAM Role, not access keys</strong> — every workload gets its own least-privilege role.</li>
-            <li><strong>Secrets in Secrets Manager / Parameter Store</strong>, never in <code>application.yml</code> or the AMI.</li>
-            <li><strong>Multi-AZ from day one</strong> — RDS Multi-AZ, ALB across 2–3 AZs, ASG spanning AZs.</li>
-            <li><strong>Health checks &amp; readiness probes</strong> — so rolling deploys don't send traffic to a half-started JVM.</li>
-            <li><strong>Centralised logs &amp; metrics</strong> — CloudWatch Logs + Micrometer; alarms on p99 latency, error rate, JVM heap.</li>
-            <li><strong>Automate everything</strong> — Terraform + CI/CD. SSH-to-prod is an emergency tool, not a workflow.</li>
-          </ul>
-
-          <p class="takeaway">
-            <b>Interview one-liner:</b> To deploy a Spring Boot app to AWS, I <em>build</em> the JAR (<code>mvn clean package</code>), <em>provision</em> an EC2 instance with the right Security Group (22/8080/80), SSH in, install Java, <code>scp</code> the JAR, and run it as a <strong>systemd service</strong> for auto-restart. I put <strong>Nginx (or an ALB)</strong> in front for HTTPS, use <strong>RDS</strong> for the database, <strong>S3</strong> for files, <strong>IAM Roles</strong> for secure access, and <strong>CloudWatch</strong> for logs/metrics. For real production, I move to <strong>Docker → ECR → ECS Fargate or EKS</strong> behind an <strong>ALB</strong>, fronted by <strong>Route 53</strong>, with <strong>CI/CD via GitHub Actions / CodePipeline</strong> and infra in <strong>Terraform</strong> — no SSH, no manual JAR copying.
+<p><b>Beyond manual EC2 — what real teams do:</b></p>
+<div class="cmp-grid">
+<div class="cmp-card">
+<div class="cmp-card-title">Manual EC2 (what we just did)</div>
+<ul>
+<li>Good for learning, demos, small side projects.</li>
+<li>No auto-scaling, no rolling deploys, no self-healing.</li>
+<li>SSH + <code>scp</code> is fine once; brittle after.</li>
+</ul>
+</div>
+<div class="cmp-card">
+<div class="cmp-card-title">Production deployment</div>
+<ul>
+<li><strong>Containerise</strong> the app with Docker, push to <strong>ECR</strong>.</li>
+<li>Run on <strong>ECS Fargate</strong> or <strong>EKS</strong> — auto-scaling, rolling updates, health checks.</li>
+<li><strong>CI/CD</strong> with GitHub Actions / CodePipeline → build → push image → deploy.</li>
+<li><strong>Infra as code</strong> — Terraform or CloudFormation for VPC/ALB/RDS.</li>
+<li><strong>IAM Roles</strong> everywhere — no access keys in code.</li>
+</ul>
+</div>
+</div>
+<p><b>Modern CI/CD flow on AWS:</b></p>
+<div class="flow">
+<div class="flow-step">Developer pushes to <strong>GitHub</strong></div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step"><strong>GitHub Actions / CodePipeline</strong> — build, test, scan</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Build Docker image → push to <strong>ECR</strong> with commit-SHA tag</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Update <strong>ECS service / EKS Deployment</strong> with new image</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Rolling deploy with health-check gating — old tasks drained, new tasks ramp up</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">CloudWatch alarms watch error rate / latency → auto-rollback if it spikes</div>
+</div>
+<p><b>Best practices I always follow:</b></p>
+<ul>
+<li><strong>Don't put apps in public subnets</strong> — put EC2/ECS/EKS in private subnets behind an ALB.</li>
+<li><strong>IAM Role, not access keys</strong> — every workload gets its own least-privilege role.</li>
+<li><strong>Secrets in Secrets Manager / Parameter Store</strong>, never in <code>application.yml</code> or the AMI.</li>
+<li><strong>Multi-AZ from day one</strong> — RDS Multi-AZ, ALB across 2–3 AZs, ASG spanning AZs.</li>
+<li><strong>Health checks &amp; readiness probes</strong> — so rolling deploys don't send traffic to a half-started JVM.</li>
+<li><strong>Centralised logs &amp; metrics</strong> — CloudWatch Logs + Micrometer; alarms on p99 latency, error rate, JVM heap.</li>
+<li><strong>Automate everything</strong> — Terraform + CI/CD. SSH-to-prod is an emergency tool, not a workflow.</li>
+</ul>
+<p class="takeaway">
+<b>Interview one-liner:</b> To deploy a Spring Boot app to AWS, I <em>build</em> the JAR (<code>mvn clean package</code>), <em>provision</em> an EC2 instance with the right Security Group (22/8080/80), SSH in, install Java, <code>scp</code> the JAR, and run it as a <strong>systemd service</strong> for auto-restart. I put <strong>Nginx (or an ALB)</strong> in front for HTTPS, use <strong>RDS</strong> for the database, <strong>S3</strong> for files, <strong>IAM Roles</strong> for secure access, and <strong>CloudWatch</strong> for logs/metrics. For real production, I move to <strong>Docker → ECR → ECS Fargate or EKS</strong> behind an <strong>ALB</strong>, fronted by <strong>Route 53</strong>, with <strong>CI/CD via GitHub Actions / CodePipeline</strong> and infra in <strong>Terraform</strong> — no SSH, no manual JAR copying.
           </p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>AWS S3 — object storage explained <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro"><strong>Amazon S3 (Simple Storage Service)</strong> is AWS's <em>object storage</em> service — a virtually unlimited place to store files like images, videos, backups, logs, and static assets. It's not a filesystem; it's a flat key-value store of objects organised inside <strong>buckets</strong>, accessed over HTTP.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-row">
-              <span class="core-diff-key">CORE IDEA</span>
-              <span class="core-diff-val">Store any blob — file, image, video, backup, log line — under a unique <strong>key</strong> in a globally addressable <strong>bucket</strong>. AWS handles durability (<strong>11 nines</strong> = 99.999999999%), scale, replication, and HTTP access. You just <code>PUT</code> and <code>GET</code>.</span>
-            </div>
-          </div>
-
-          <p><b>Key concepts:</b></p>
-          <div class="note-table-wrap">
-            <table class="note-table">
-              <thead><tr><th>Concept</th><th>Meaning</th></tr></thead>
-              <tbody>
-                <tr><td><strong>Bucket</strong></td><td>Top-level container for objects. Globally unique name. Lives in one region.</td></tr>
-                <tr><td><strong>Object</strong></td><td>The actual file (up to 5 TB) plus metadata.</td></tr>
-                <tr><td><strong>Key</strong></td><td>Unique identifier within a bucket — e.g., <code>users/42/avatar.png</code>. Looks like a path, but the structure is flat.</td></tr>
-                <tr><td><strong>Region</strong></td><td>Geographic location of the bucket. Pick close to users / compute for latency and cost.</td></tr>
-                <tr><td><strong>Storage Class</strong></td><td>Tier: <em>Standard</em> (hot), <em>Infrequent Access</em>, <em>Glacier</em>, <em>Glacier Deep Archive</em> — trades latency for cost.</td></tr>
-                <tr><td><strong>Version</strong></td><td>Each overwrite/delete keeps the previous version when versioning is on.</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <p><b>Simple example:</b></p>
-          <pre class="tree-viz">Bucket: employee-docs   (eu-west-1)
+</div>
+</details>
+<details class="qa">
+<summary>AWS S3 — object storage explained <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro"><strong>Amazon S3 (Simple Storage Service)</strong> is AWS's <em>object storage</em> service — a virtually unlimited place to store files like images, videos, backups, logs, and static assets. It's not a filesystem; it's a flat key-value store of objects organised inside <strong>buckets</strong>, accessed over HTTP.</p>
+<div class="core-diff">
+<div class="core-diff-row">
+<span class="core-diff-key">CORE IDEA</span>
+<span class="core-diff-val">Store any blob — file, image, video, backup, log line — under a unique <strong>key</strong> in a globally addressable <strong>bucket</strong>. AWS handles durability (<strong>11 nines</strong> = 99.999999999%), scale, replication, and HTTP access. You just <code>PUT</code> and <code>GET</code>.</span>
+</div>
+</div>
+<p><b>Key concepts:</b></p>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead><tr><th>Concept</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><strong>Bucket</strong></td><td>Top-level container for objects. Globally unique name. Lives in one region.</td></tr>
+<tr><td><strong>Object</strong></td><td>The actual file (up to 5 TB) plus metadata.</td></tr>
+<tr><td><strong>Key</strong></td><td>Unique identifier within a bucket — e.g., <code>users/42/avatar.png</code>. Looks like a path, but the structure is flat.</td></tr>
+<tr><td><strong>Region</strong></td><td>Geographic location of the bucket. Pick close to users / compute for latency and cost.</td></tr>
+<tr><td><strong>Storage Class</strong></td><td>Tier: <em>Standard</em> (hot), <em>Infrequent Access</em>, <em>Glacier</em>, <em>Glacier Deep Archive</em> — trades latency for cost.</td></tr>
+<tr><td><strong>Version</strong></td><td>Each overwrite/delete keeps the previous version when versioning is on.</td></tr>
+</tbody>
+</table>
+</div>
+<p><b>Simple example:</b></p>
+<pre class="tree-viz">Bucket: employee-docs   (eu-west-1)
  ├── resumes/alice.pdf      ← key
  ├── resumes/bob.pdf
  ├── photos/alice.png
  └── backups/2026-05-15.zip</pre>
-
-          <p><b>Features that matter in production:</b></p>
-          <ul>
-            <li><strong>Durability &amp; availability</strong> — 11 nines of durability, designed for 99.99% availability per region.</li>
-            <li><strong>Virtually unlimited capacity</strong> — petabytes per bucket, no provisioning.</li>
-            <li><strong>Versioning</strong> — keep previous versions automatically; pairs with MFA Delete for ransomware protection.</li>
-            <li><strong>Lifecycle policies</strong> — auto-transition objects to cheaper tiers (Standard → IA → Glacier) by age.</li>
-            <li><strong>Encryption</strong> — server-side (SSE-S3 / SSE-KMS) and TLS in transit, default-on for new buckets.</li>
-            <li><strong>Replication</strong> — cross-region (CRR) or same-region (SRR) for DR and latency.</li>
-            <li><strong>Pre-signed URLs</strong> — temporary signed links so clients upload/download <em>directly</em> to S3, bypassing your service.</li>
-            <li><strong>Event notifications</strong> — trigger SQS / SNS / Lambda when an object is created or deleted.</li>
-          </ul>
-
-          <p><b>Upload from a Spring Boot service (AWS SDK v2):</b></p>
-          <pre><code>s3Client.putObject(
+<p><b>Features that matter in production:</b></p>
+<ul>
+<li><strong>Durability &amp; availability</strong> — 11 nines of durability, designed for 99.99% availability per region.</li>
+<li><strong>Virtually unlimited capacity</strong> — petabytes per bucket, no provisioning.</li>
+<li><strong>Versioning</strong> — keep previous versions automatically; pairs with MFA Delete for ransomware protection.</li>
+<li><strong>Lifecycle policies</strong> — auto-transition objects to cheaper tiers (Standard → IA → Glacier) by age.</li>
+<li><strong>Encryption</strong> — server-side (SSE-S3 / SSE-KMS) and TLS in transit, default-on for new buckets.</li>
+<li><strong>Replication</strong> — cross-region (CRR) or same-region (SRR) for DR and latency.</li>
+<li><strong>Pre-signed URLs</strong> — temporary signed links so clients upload/download <em>directly</em> to S3, bypassing your service.</li>
+<li><strong>Event notifications</strong> — trigger SQS / SNS / Lambda when an object is created or deleted.</li>
+</ul>
+<p><b>Upload from a Spring Boot service (AWS SDK v2):</b></p>
+<pre><code>s3Client.putObject(
     PutObjectRequest.builder()
         .bucket("employee-docs")
         .key("resumes/alice.pdf")
@@ -433,58 +396,51 @@ server {
         .build(),
     RequestBody.fromFile(file)
 );</code></pre>
-
-          <p><b>Common use cases:</b></p>
-          <div class="use-cases">
-            <div class="use-case"><b>File upload / download</b><br/>User-generated content, resumes, attachments — usually via <em>pre-signed URLs</em> so the API never proxies large files.</div>
-            <div class="use-case green"><b>Backups &amp; archives</b><br/>Nightly DB dumps, snapshots; lifecycle to Glacier after 30/90 days for cheap retention.</div>
-            <div class="use-case pink"><b>Static website hosting</b><br/>SPAs (React/Vue/Angular) hosted from S3 behind CloudFront — globally fast, no servers.</div>
-            <div class="use-case orange"><b>Log storage</b><br/>App / access / VPC flow logs landed in S3, queried with Athena.</div>
-            <div class="use-case"><b>Data lake</b><br/>Parquet/CSV in S3 → queried with Athena, Glue, EMR, Redshift Spectrum.</div>
-            <div class="use-case green"><b>Event source</b><br/>S3 PUT → Lambda for image resizing, virus scanning, indexing into ES.</div>
-          </div>
-
-          <p><b>Patterns I always use:</b></p>
-          <ul>
-            <li><strong>Pre-signed URLs</strong> for any upload &gt; a few MB — your API stays small.</li>
-            <li><strong>Lifecycle policies</strong> from day one — automatic cost optimisation.</li>
-            <li><strong>Block all public access</strong> by default; share via pre-signed URLs or CloudFront, not bucket-level public ACLs.</li>
-            <li><strong>VPC endpoint for S3</strong> when calling from inside a VPC — avoids NAT egress costs.</li>
-          </ul>
-
-          <p class="takeaway">
-            <b>One-liner:</b> S3 is AWS's <strong>object storage</strong> — buckets of objects identified by keys, with <em>11 nines</em> of durability, virtually unlimited scale, lifecycle policies, versioning, and pre-signed URLs. It's the default home for files, backups, logs, and static sites in any modern AWS architecture.
+<p><b>Common use cases:</b></p>
+<div class="use-cases">
+<div class="use-case"><b>File upload / download</b><br/>User-generated content, resumes, attachments — usually via <em>pre-signed URLs</em> so the API never proxies large files.</div>
+<div class="use-case green"><b>Backups &amp; archives</b><br/>Nightly DB dumps, snapshots; lifecycle to Glacier after 30/90 days for cheap retention.</div>
+<div class="use-case pink"><b>Static website hosting</b><br/>SPAs (React/Vue/Angular) hosted from S3 behind CloudFront — globally fast, no servers.</div>
+<div class="use-case orange"><b>Log storage</b><br/>App / access / VPC flow logs landed in S3, queried with Athena.</div>
+<div class="use-case"><b>Data lake</b><br/>Parquet/CSV in S3 → queried with Athena, Glue, EMR, Redshift Spectrum.</div>
+<div class="use-case green"><b>Event source</b><br/>S3 PUT → Lambda for image resizing, virus scanning, indexing into ES.</div>
+</div>
+<p><b>Patterns I always use:</b></p>
+<ul>
+<li><strong>Pre-signed URLs</strong> for any upload &gt; a few MB — your API stays small.</li>
+<li><strong>Lifecycle policies</strong> from day one — automatic cost optimisation.</li>
+<li><strong>Block all public access</strong> by default; share via pre-signed URLs or CloudFront, not bucket-level public ACLs.</li>
+<li><strong>VPC endpoint for S3</strong> when calling from inside a VPC — avoids NAT egress costs.</li>
+</ul>
+<p class="takeaway">
+<b>One-liner:</b> S3 is AWS's <strong>object storage</strong> — buckets of objects identified by keys, with <em>11 nines</em> of durability, virtually unlimited scale, lifecycle policies, versioning, and pre-signed URLs. It's the default home for files, backups, logs, and static sites in any modern AWS architecture.
           </p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>AWS IAM — Identity &amp; Access Management <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro"><strong>IAM (Identity and Access Management)</strong> is AWS's <em>authentication and authorisation</em> service. It controls <strong>who can do what</strong> on <strong>which AWS resource</strong>. Every AWS API call is checked against an IAM policy — get this wrong and you either lock yourself out or hand attackers the keys.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-row">
-              <span class="core-diff-key">CORE IDEA</span>
-              <span class="core-diff-val">Define <strong>identities</strong> (humans, services, apps), attach <strong>policies</strong> (JSON allow/deny rules), and let AWS enforce them on every API call. Always prefer <strong>roles</strong> with temporary credentials over long-lived <strong>access keys</strong>.</span>
-            </div>
-          </div>
-
-          <p><b>The four building blocks:</b></p>
-          <div class="note-table-wrap">
-            <table class="note-table">
-              <thead><tr><th>Component</th><th>Purpose</th><th>Example</th></tr></thead>
-              <tbody>
-                <tr><td><strong>User</strong></td><td>Long-lived identity for a <em>human</em> — has a password and/or access keys.</td><td><code>chandan@company</code></td></tr>
-                <tr><td><strong>Group</strong></td><td>Collection of users that share permissions — easier than attaching policies one-by-one.</td><td><code>Developers</code>, <code>Admins</code></td></tr>
-                <tr><td><strong>Role</strong></td><td>Identity <em>assumed</em> by an AWS service, EC2, Lambda, ECS task, K8s pod (IRSA), or external account. Hands out <strong>temporary credentials</strong>.</td><td>EC2 instance role to read S3</td></tr>
-                <tr><td><strong>Policy</strong></td><td>JSON document defining <em>what actions</em> are allowed/denied on <em>which resources</em>.</td><td><code>AmazonS3ReadOnlyAccess</code></td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <p><b>Anatomy of a policy:</b></p>
-          <pre><code>{
+</div>
+</details>
+<details class="qa">
+<summary>AWS IAM — Identity &amp; Access Management <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro"><strong>IAM (Identity and Access Management)</strong> is AWS's <em>authentication and authorisation</em> service. It controls <strong>who can do what</strong> on <strong>which AWS resource</strong>. Every AWS API call is checked against an IAM policy — get this wrong and you either lock yourself out or hand attackers the keys.</p>
+<div class="core-diff">
+<div class="core-diff-row">
+<span class="core-diff-key">CORE IDEA</span>
+<span class="core-diff-val">Define <strong>identities</strong> (humans, services, apps), attach <strong>policies</strong> (JSON allow/deny rules), and let AWS enforce them on every API call. Always prefer <strong>roles</strong> with temporary credentials over long-lived <strong>access keys</strong>.</span>
+</div>
+</div>
+<p><b>The four building blocks:</b></p>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead><tr><th>Component</th><th>Purpose</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td><strong>User</strong></td><td>Long-lived identity for a <em>human</em> — has a password and/or access keys.</td><td><code>chandan@company</code></td></tr>
+<tr><td><strong>Group</strong></td><td>Collection of users that share permissions — easier than attaching policies one-by-one.</td><td><code>Developers</code>, <code>Admins</code></td></tr>
+<tr><td><strong>Role</strong></td><td>Identity <em>assumed</em> by an AWS service, EC2, Lambda, ECS task, K8s pod (IRSA), or external account. Hands out <strong>temporary credentials</strong>.</td><td>EC2 instance role to read S3</td></tr>
+<tr><td><strong>Policy</strong></td><td>JSON document defining <em>what actions</em> are allowed/denied on <em>which resources</em>.</td><td><code>AmazonS3ReadOnlyAccess</code></td></tr>
+</tbody>
+</table>
+</div>
+<p><b>Anatomy of a policy:</b></p>
+<pre><code>{
   "Version": "2012-10-17",
   "Statement": [
     {
@@ -500,287 +456,254 @@ server {
     }
   ]
 }</code></pre>
-          <p>Four fields decide everything: <strong>Effect</strong> (Allow/Deny), <strong>Action</strong> (which API calls), <strong>Resource</strong> (which ARNs), and optional <strong>Condition</strong> (e.g., only from a VPC, only with MFA).</p>
-
-          <p><b>User vs Role — when to use which:</b></p>
-          <div class="cmp-grid">
-            <div class="cmp-card">
-              <div class="cmp-card-title">IAM User</div>
-              <ul>
-                <li>Long-lived credentials (password + access keys).</li>
-                <li>Use for <strong>humans</strong> logging into the AWS Console / CLI.</li>
-                <li>Always enable <strong>MFA</strong>.</li>
-                <li>Should NOT be used by applications.</li>
-              </ul>
-            </div>
-            <div class="cmp-card">
-              <div class="cmp-card-title">IAM Role</div>
-              <ul>
-                <li>Temporary credentials (15 min – 12 hours, auto-rotated).</li>
-                <li>Use for <strong>EC2, Lambda, ECS, EKS pods, other AWS accounts</strong>.</li>
-                <li>No secrets in your code — credentials delivered via instance metadata.</li>
-                <li>The right answer for almost every workload.</li>
-              </ul>
-            </div>
-          </div>
-
-          <p><b>How an IAM role works for a Spring Boot app on EC2:</b></p>
-          <div class="flow">
-            <div class="flow-step">EC2 instance launched with an <strong>Instance Profile</strong> attached</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step">App calls <code>s3.putObject(...)</code> using AWS SDK</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step">SDK fetches <strong>temporary credentials</strong> from the EC2 metadata endpoint</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step">Request signed with those credentials → sent to S3</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step">IAM evaluates the role's policy → S3 allows / denies the action</div>
-          </div>
-          <p>No credentials in code, in env vars, or in <code>application.yml</code>. Credentials rotate automatically.</p>
-
-          <p><b>Where IAM Roles are typically used:</b></p>
-          <div class="use-cases">
-            <div class="use-case"><b>EC2 instance role</b><br/>App on a VM accesses S3, RDS, SecretsManager via instance profile.</div>
-            <div class="use-case green"><b>Lambda execution role</b><br/>Function gets temporary creds to read DynamoDB, write to SQS, etc.</div>
-            <div class="use-case pink"><b>ECS task role</b><br/>Each container/task gets its own role — least-privilege per service.</div>
-            <div class="use-case orange"><b>EKS / Kubernetes IRSA</b><br/>"IAM Roles for Service Accounts" — pods assume a role via OIDC.</div>
-            <div class="use-case"><b>Cross-account access</b><br/>Account A's role trusts Account B — clean alternative to sharing keys.</div>
-            <div class="use-case green"><b>External / SSO</b><br/>Federated login (Google, Okta, AWS IAM Identity Center) → assume a role on sign-in.</div>
-          </div>
-
-          <p><b>Real-world example — Spring Boot app uploading to S3:</b></p>
-          <div class="flow">
-            <div class="flow-step">Spring Boot app on EC2 / ECS / EKS</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step">Attached IAM Role with policy allowing <code>s3:PutObject</code> on <code>employee-docs/*</code></div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step">Access S3 bucket</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step">Upload file (no access keys in code)</div>
-          </div>
-
-          <p><b>Best practices I follow on every project:</b></p>
-          <ul>
-            <li><strong>Least privilege</strong> — start with nothing, add the exact actions and resources the workload needs. Avoid <code>"Action": "*"</code> and <code>"Resource": "*"</code>.</li>
-            <li><strong>Roles, not access keys</strong>, for services. No long-lived secrets in env vars, code, or YAML.</li>
-            <li><strong>MFA on every human account</strong>, especially the root user (and lock the root user away).</li>
-            <li><strong>Resource-based policies</strong> for cross-account access — S3 bucket policies, KMS key policies.</li>
-            <li><strong>AWS Organizations + SCPs</strong> for guardrails across multiple accounts (e.g., deny <code>iam:CreateUser</code> in prod accounts).</li>
-            <li><strong>Periodically audit</strong> with IAM Access Analyzer, <code>aws iam generate-credential-report</code>, or third-party tools.</li>
-            <li><strong>Tag resources</strong> and use ABAC (Attribute-Based Access Control) for scalable per-team permissions.</li>
-          </ul>
-
-          <p class="takeaway">
-            <b>Interview one-liner:</b> AWS IAM controls <em>authentication and authorisation</em> in AWS through four primitives — <strong>Users</strong> (humans), <strong>Groups</strong> (sets of users), <strong>Roles</strong> (temporary identities assumed by services or accounts), and <strong>Policies</strong> (JSON allow/deny rules on actions and resources). The two golden rules are <em>least privilege</em> and <em>use Roles for services</em> — never hard-code access keys. In production, EC2 instance roles, Lambda execution roles, ECS task roles, and EKS IRSA give applications secure, auto-rotated access to S3, RDS, SQS, and other services without storing any credentials in code.
+<p>Four fields decide everything: <strong>Effect</strong> (Allow/Deny), <strong>Action</strong> (which API calls), <strong>Resource</strong> (which ARNs), and optional <strong>Condition</strong> (e.g., only from a VPC, only with MFA).</p>
+<p><b>User vs Role — when to use which:</b></p>
+<div class="cmp-grid">
+<div class="cmp-card">
+<div class="cmp-card-title">IAM User</div>
+<ul>
+<li>Long-lived credentials (password + access keys).</li>
+<li>Use for <strong>humans</strong> logging into the AWS Console / CLI.</li>
+<li>Always enable <strong>MFA</strong>.</li>
+<li>Should NOT be used by applications.</li>
+</ul>
+</div>
+<div class="cmp-card">
+<div class="cmp-card-title">IAM Role</div>
+<ul>
+<li>Temporary credentials (15 min – 12 hours, auto-rotated).</li>
+<li>Use for <strong>EC2, Lambda, ECS, EKS pods, other AWS accounts</strong>.</li>
+<li>No secrets in your code — credentials delivered via instance metadata.</li>
+<li>The right answer for almost every workload.</li>
+</ul>
+</div>
+</div>
+<p><b>How an IAM role works for a Spring Boot app on EC2:</b></p>
+<div class="flow">
+<div class="flow-step">EC2 instance launched with an <strong>Instance Profile</strong> attached</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">App calls <code>s3.putObject(...)</code> using AWS SDK</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">SDK fetches <strong>temporary credentials</strong> from the EC2 metadata endpoint</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Request signed with those credentials → sent to S3</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">IAM evaluates the role's policy → S3 allows / denies the action</div>
+</div>
+<p>No credentials in code, in env vars, or in <code>application.yml</code>. Credentials rotate automatically.</p>
+<p><b>Where IAM Roles are typically used:</b></p>
+<div class="use-cases">
+<div class="use-case"><b>EC2 instance role</b><br/>App on a VM accesses S3, RDS, SecretsManager via instance profile.</div>
+<div class="use-case green"><b>Lambda execution role</b><br/>Function gets temporary creds to read DynamoDB, write to SQS, etc.</div>
+<div class="use-case pink"><b>ECS task role</b><br/>Each container/task gets its own role — least-privilege per service.</div>
+<div class="use-case orange"><b>EKS / Kubernetes IRSA</b><br/>"IAM Roles for Service Accounts" — pods assume a role via OIDC.</div>
+<div class="use-case"><b>Cross-account access</b><br/>Account A's role trusts Account B — clean alternative to sharing keys.</div>
+<div class="use-case green"><b>External / SSO</b><br/>Federated login (Google, Okta, AWS IAM Identity Center) → assume a role on sign-in.</div>
+</div>
+<p><b>Real-world example — Spring Boot app uploading to S3:</b></p>
+<div class="flow">
+<div class="flow-step">Spring Boot app on EC2 / ECS / EKS</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Attached IAM Role with policy allowing <code>s3:PutObject</code> on <code>employee-docs/*</code></div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Access S3 bucket</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Upload file (no access keys in code)</div>
+</div>
+<p><b>Best practices I follow on every project:</b></p>
+<ul>
+<li><strong>Least privilege</strong> — start with nothing, add the exact actions and resources the workload needs. Avoid <code>"Action": "*"</code> and <code>"Resource": "*"</code>.</li>
+<li><strong>Roles, not access keys</strong>, for services. No long-lived secrets in env vars, code, or YAML.</li>
+<li><strong>MFA on every human account</strong>, especially the root user (and lock the root user away).</li>
+<li><strong>Resource-based policies</strong> for cross-account access — S3 bucket policies, KMS key policies.</li>
+<li><strong>AWS Organizations + SCPs</strong> for guardrails across multiple accounts (e.g., deny <code>iam:CreateUser</code> in prod accounts).</li>
+<li><strong>Periodically audit</strong> with IAM Access Analyzer, <code>aws iam generate-credential-report</code>, or third-party tools.</li>
+<li><strong>Tag resources</strong> and use ABAC (Attribute-Based Access Control) for scalable per-team permissions.</li>
+</ul>
+<p class="takeaway">
+<b>Interview one-liner:</b> AWS IAM controls <em>authentication and authorisation</em> in AWS through four primitives — <strong>Users</strong> (humans), <strong>Groups</strong> (sets of users), <strong>Roles</strong> (temporary identities assumed by services or accounts), and <strong>Policies</strong> (JSON allow/deny rules on actions and resources). The two golden rules are <em>least privilege</em> and <em>use Roles for services</em> — never hard-code access keys. In production, EC2 instance roles, Lambda execution roles, ECS task roles, and EKS IRSA give applications secure, auto-rotated access to S3, RDS, SQS, and other services without storing any credentials in code.
           </p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>VPC basics — subnets, security groups, NACLs</summary>
-        <div class="qa-body">
-          <p>A <strong>VPC</strong> is your private network in AWS. Composed of:</p>
-          <ul>
-            <li><strong>Subnets</strong> — segments tied to an AZ. <strong>Public</strong> (route to Internet Gateway), <strong>private</strong> (no direct internet; outbound via NAT Gateway).</li>
-            <li><strong>Route tables</strong> — control traffic flow between subnets and gateways.</li>
-            <li><strong>Internet Gateway</strong> — public internet ingress/egress.</li>
-            <li><strong>NAT Gateway</strong> — outbound internet from private subnets.</li>
-            <li><strong>Security Groups</strong> — stateful firewall at instance/ENI level. Default: deny all inbound, allow all outbound.</li>
-            <li><strong>NACLs</strong> — stateless firewall at subnet level; rarely customized in most apps.</li>
-          </ul>
-          <p>Pattern I use: <strong>multi-AZ</strong> public subnets for load balancers, private subnets for app pods, isolated subnets for DBs. Never put DBs in public subnets. Use <strong>VPC endpoints</strong> for S3/DynamoDB to avoid NAT traffic costs.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Auto-scaling — how does it actually work?</summary>
-        <div class="qa-body">
-          <p>AWS Auto Scaling Groups (ASG) maintain a target count of instances. Triggers:</p>
-          <ul>
-            <li><strong>Target tracking</strong> — keep average CPU at 60%. Simple and effective.</li>
-            <li><strong>Step scaling</strong> — add N instances if metric crosses threshold.</li>
-            <li><strong>Scheduled</strong> — scale up before known peaks (campaigns, daily peaks).</li>
-            <li><strong>Predictive</strong> — ML-based forecast.</li>
-          </ul>
-          <p>For Kubernetes: <strong>Horizontal Pod Autoscaler (HPA)</strong> scales pods based on CPU/mem/custom metrics; <strong>Cluster Autoscaler</strong> or <strong>Karpenter</strong> adds/removes EC2 nodes.</p>
-          <p>Gotchas: scale-out is fast (seconds–minutes); pod startup may bottleneck (slow JVM warmup, image pulls). Use <strong>readiness probes</strong> so traffic only hits ready pods. Scale-in needs <strong>graceful shutdown</strong> — terminate gracefully so in-flight requests complete. At Indus Net I tuned JVM startup with CDS to make Spring Boot pods ready in &lt;10s, which made HPA much more responsive.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Blue-green vs canary vs rolling deployments <span class="qa-tag hot">hot</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">Three ways to ship a new version without taking the service down — they differ in risk, cost, and how fast you can roll back.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-row">
-              <span class="core-diff-key">Rolling</span>
-              <span class="core-diff-val">Replace pods/instances in batches — default in Kubernetes; old and new run together briefly.</span>
-            </div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">Blue-green</span>
-              <span class="core-diff-val">Two full stacks; flip traffic at the load balancer — instant rollback, ~2× infra during cutover.</span>
-            </div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">Canary</span>
-              <span class="core-diff-val">Send a small % of traffic to the new version, watch metrics, ramp gradually — lowest blast radius.</span>
-            </div>
-          </div>
-
-          <div class="note-table-wrap">
-            <table class="note-table">
-              <thead><tr><th>Strategy</th><th>Rollback speed</th><th>Cost</th><th>Best for</th></tr></thead>
-              <tbody>
-                <tr><td>Rolling</td><td>Minutes (undo rollout)</td><td>Low</td><td>Most stateless APIs, routine releases</td></tr>
-                <tr><td>Blue-green</td><td>Seconds (LB flip)</td><td>High (2× env)</td><td>Big-bang migrations, DB cutovers with rehearsal</td></tr>
-                <tr><td>Canary</td><td>Seconds (stop ramp)</td><td>Medium</td><td>Payments, ML models, schema-sensitive changes</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="flow">
-            <div class="flow-row">
-              <div class="flow-step"><div class="flow-step-title">Canary flow</div><div class="flow-step-body">5% → watch error rate &amp; p99 → 25% → 50% → 100%. Abort if SLO breaches.</div></div>
-            </div>
-          </div>
-
-          <p><b>Prerequisites for any strategy:</b> readiness probes so traffic only hits warm pods, graceful shutdown (<code>preStop</code> hook + drain), health checks on dependencies, and feature flags for risky logic.</p>
-
-          <p><b>Common interview gotchas:</b></p>
-          <ul>
-            <li>Rolling deploy with a <strong>breaking schema change</strong> still breaks — deploy strategy ≠ migration strategy.</li>
-            <li>Blue-green does not help if both stacks share one DB you migrated incompatibly.</li>
-            <li>Canary without metrics is just slow rolling — you need error rate, latency, and business KPIs.</li>
-          </ul>
-
-          <p class="takeaway"><b>Interview one-liner:</b> Rolling is the default for stateless services with good probes. Blue-green buys instant rollback at 2× cost. Canary buys the smallest blast radius when you can split traffic and watch SLOs. Pick the strategy from risk and observability, not fashion.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Securing secrets in cloud deployments <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">Secrets never belong in git, images, or plain env vars in prod — use a managed store, short-lived credentials, and least-privilege IAM.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-row">
-              <span class="core-diff-key">CORE IDEA</span>
-              <span class="core-diff-val">Inject at runtime from AWS Secrets Manager / SSM Parameter Store (or Vault), rotate automatically, audit every read.</span>
-            </div>
-          </div>
-
-          <div class="note-table-wrap">
-            <table class="note-table">
-              <thead><tr><th>Anti-pattern</th><th>Why it fails</th><th>Fix</th></tr></thead>
-              <tbody>
-                <tr><td>Secrets in <code>application.yml</code> in repo</td><td>Forever in git history</td><td>Externalise; use Spring Cloud AWS / Config Server</td></tr>
-                <tr><td>Long-lived IAM access keys on EC2</td><td>Leak = full account risk</td><td>Instance/task <strong>IAM roles</strong></td></tr>
-                <tr><td>Baking into Docker image</td><td>Anyone with registry access reads them</td><td>Fetch at container start from Secrets Manager</td></tr>
-                <tr><td>Same secret all environments</td><td>Dev leak compromises prod</td><td>Per-env secret names + separate accounts (ideal)</td></tr>
-              </tbody>
-            </table>
-          </div>
-
+</div>
+</details>
+<details class="qa">
+<summary>VPC basics — subnets, security groups, NACLs</summary>
+<div class="qa-body">
+<p>A <strong>VPC</strong> is your private network in AWS. Composed of:</p>
+<ul>
+<li><strong>Subnets</strong> — segments tied to an AZ. <strong>Public</strong> (route to Internet Gateway), <strong>private</strong> (no direct internet; outbound via NAT Gateway).</li>
+<li><strong>Route tables</strong> — control traffic flow between subnets and gateways.</li>
+<li><strong>Internet Gateway</strong> — public internet ingress/egress.</li>
+<li><strong>NAT Gateway</strong> — outbound internet from private subnets.</li>
+<li><strong>Security Groups</strong> — stateful firewall at instance/ENI level. Default: deny all inbound, allow all outbound.</li>
+<li><strong>NACLs</strong> — stateless firewall at subnet level; rarely customized in most apps.</li>
+</ul>
+<p>Pattern I use: <strong>multi-AZ</strong> public subnets for load balancers, private subnets for app pods, isolated subnets for DBs. Never put DBs in public subnets. Use <strong>VPC endpoints</strong> for S3/DynamoDB to avoid NAT traffic costs.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Auto-scaling — how does it actually work?</summary>
+<div class="qa-body">
+<p>AWS Auto Scaling Groups (ASG) maintain a target count of instances. Triggers:</p>
+<ul>
+<li><strong>Target tracking</strong> — keep average CPU at 60%. Simple and effective.</li>
+<li><strong>Step scaling</strong> — add N instances if metric crosses threshold.</li>
+<li><strong>Scheduled</strong> — scale up before known peaks (campaigns, daily peaks).</li>
+<li><strong>Predictive</strong> — ML-based forecast.</li>
+</ul>
+<p>For Kubernetes: <strong>Horizontal Pod Autoscaler (HPA)</strong> scales pods based on CPU/mem/custom metrics; <strong>Cluster Autoscaler</strong> or <strong>Karpenter</strong> adds/removes EC2 nodes.</p>
+<p>Gotchas: scale-out is fast (seconds–minutes); pod startup may bottleneck (slow JVM warmup, image pulls). Use <strong>readiness probes</strong> so traffic only hits ready pods. Scale-in needs <strong>graceful shutdown</strong> — terminate gracefully so in-flight requests complete. At Indus Net I tuned JVM startup with CDS to make Spring Boot pods ready in &lt;10s, which made HPA much more responsive.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Blue-green vs canary vs rolling deployments <span class="qa-tag hot">hot</span></summary>
+<div class="qa-body">
+<p class="answer-intro">Three ways to ship a new version without taking the service down — they differ in risk, cost, and how fast you can roll back.</p>
+<div class="core-diff">
+<div class="core-diff-row">
+<span class="core-diff-key">Rolling</span>
+<span class="core-diff-val">Replace pods/instances in batches — default in Kubernetes; old and new run together briefly.</span>
+</div>
+<div class="core-diff-row">
+<span class="core-diff-key">Blue-green</span>
+<span class="core-diff-val">Two full stacks; flip traffic at the load balancer — instant rollback, ~2× infra during cutover.</span>
+</div>
+<div class="core-diff-row">
+<span class="core-diff-key">Canary</span>
+<span class="core-diff-val">Send a small % of traffic to the new version, watch metrics, ramp gradually — lowest blast radius.</span>
+</div>
+</div>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead><tr><th>Strategy</th><th>Rollback speed</th><th>Cost</th><th>Best for</th></tr></thead>
+<tbody>
+<tr><td>Rolling</td><td>Minutes (undo rollout)</td><td>Low</td><td>Most stateless APIs, routine releases</td></tr>
+<tr><td>Blue-green</td><td>Seconds (LB flip)</td><td>High (2× env)</td><td>Big-bang migrations, DB cutovers with rehearsal</td></tr>
+<tr><td>Canary</td><td>Seconds (stop ramp)</td><td>Medium</td><td>Payments, ML models, schema-sensitive changes</td></tr>
+</tbody>
+</table>
+</div>
+<div class="flow">
+<div class="flow-row">
+<div class="flow-step"><div class="flow-step-title">Canary flow</div><div class="flow-step-body">5% → watch error rate &amp; p99 → 25% → 50% → 100%. Abort if SLO breaches.</div></div>
+</div>
+</div>
+<p><b>Prerequisites for any strategy:</b> readiness probes so traffic only hits warm pods, graceful shutdown (<code>preStop</code> hook + drain), health checks on dependencies, and feature flags for risky logic.</p>
+<p><b>Common interview gotchas:</b></p>
+<ul>
+<li>Rolling deploy with a <strong>breaking schema change</strong> still breaks — deploy strategy ≠ migration strategy.</li>
+<li>Blue-green does not help if both stacks share one DB you migrated incompatibly.</li>
+<li>Canary without metrics is just slow rolling — you need error rate, latency, and business KPIs.</li>
+</ul>
+<p class="takeaway"><b>Interview one-liner:</b> Rolling is the default for stateless services with good probes. Blue-green buys instant rollback at 2× cost. Canary buys the smallest blast radius when you can split traffic and watch SLOs. Pick the strategy from risk and observability, not fashion.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Securing secrets in cloud deployments <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro">Secrets never belong in git, images, or plain env vars in prod — use a managed store, short-lived credentials, and least-privilege IAM.</p>
+<div class="core-diff">
+<div class="core-diff-row">
+<span class="core-diff-key">CORE IDEA</span>
+<span class="core-diff-val">Inject at runtime from AWS Secrets Manager / SSM Parameter Store (or Vault), rotate automatically, audit every read.</span>
+</div>
+</div>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead><tr><th>Anti-pattern</th><th>Why it fails</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Secrets in <code>application.yml</code> in repo</td><td>Forever in git history</td><td>Externalise; use Spring Cloud AWS / Config Server</td></tr>
+<tr><td>Long-lived IAM access keys on EC2</td><td>Leak = full account risk</td><td>Instance/task <strong>IAM roles</strong></td></tr>
+<tr><td>Baking into Docker image</td><td>Anyone with registry access reads them</td><td>Fetch at container start from Secrets Manager</td></tr>
+<tr><td>Same secret all environments</td><td>Dev leak compromises prod</td><td>Per-env secret names + separate accounts (ideal)</td></tr>
+</tbody>
+</table>
+</div>
 <pre><code># Spring Boot 3 + AWS Secrets Manager (conceptual)
 spring.config.import=aws-secretsmanager:/prod/myapp/db
 
 # K8s: prefer External Secrets Operator → K8s Secret → env/volume
 # EKS pod: IRSA role with secretsmanager:GetSecretValue only</code></pre>
-
-          <ul>
-            <li><strong>Rotation</strong> — enable automatic rotation for DB passwords; apps must reconnect on refresh.</li>
-            <li><strong>Audit</strong> — CloudTrail on <code>GetSecretValue</code>; alert on unusual callers.</li>
-            <li><strong>CI/CD</strong> — OIDC to AWS (no static keys in GitHub Actions).</li>
-          </ul>
-
-          <p class="takeaway"><b>Interview one-liner:</b> Treat secrets as runtime data: managed store, IAM roles not keys, per-environment isolation, rotation, and audit. If it is in the image or the repo, it is already leaked.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Zero-downtime deployment strategy <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">Zero downtime is a stack of practices — deploy pattern, backward-compatible APIs, safe migrations, and graceful drain — not a single tool.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-row">
-              <span class="core-diff-key">CORE IDEA</span>
-              <span class="core-diff-val">Old and new code must coexist during rollout; the database must tolerate both versions until the deploy finishes.</span>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> Application layer</div>
-            <ul>
-              <li><strong>Backward-compatible APIs</strong> — add fields, don't remove/rename in one release (expand-contract).</li>
-              <li><strong>Feature flags</strong> — ship code dark; enable after all pods are new.</li>
-              <li><strong>Readiness probes</strong> — JVM warmed, DB pool healthy, migrations done.</li>
-              <li><strong>Graceful shutdown</strong> — <code>preStop</code> sleep + <code>server.shutdown=graceful</code> so in-flight requests finish.</li>
-            </ul>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> Data layer</div>
-            <ul>
-              <li>Never <code>ADD COLUMN NOT NULL</code> without default on a hot table in the same release as app code.</li>
-              <li>Use expand → backfill → contract for schema changes.</li>
-              <li>Dual-write or dual-read windows when renaming columns.</li>
-            </ul>
-          </div>
-
-          <div class="flow">
-            <div class="flow-row">
-              <div class="flow-step good"><div class="flow-step-title">Safe sequence</div><div class="flow-step-body">Deploy tolerant new code → migrate schema (expand) → backfill → enable flag → contract old column in later release.</div></div>
-            </div>
-          </div>
-
-          <p><b>Common interview gotchas:</b></p>
-          <ul>
-            <li>"We use Kubernetes" is not an answer — probes and PDBs must be configured.</li>
-            <li>Stateful sessions on one pod break rolling deploys — use sticky sessions or externalise state.</li>
-            <li>Cache invalidation during deploy can cause thundering herd — version cache keys with deploy.</li>
-          </ul>
-
-          <p class="takeaway"><b>Interview one-liner:</b> Zero downtime means old and new versions run together safely: compatible APIs, expand-contract migrations, readiness + graceful shutdown, and a deploy pattern matched to risk. The outage usually comes from the database change, not the load balancer.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>High availability vs disaster recovery — the difference</summary>
-        <div class="qa-body">
-          <p>Both about resilience, different scales of failure.</p>
-          <p><strong>High Availability (HA)</strong> handles routine failures (one instance crashes, an AZ becomes unhealthy). Achieved within a region: multi-AZ deployments, load balancers, replicated databases, auto-healing. Goal: minutes of degradation max.</p>
-          <p><strong>Disaster Recovery (DR)</strong> handles catastrophic failures — region-wide outage, data corruption, ransomware. Achieved across regions: cross-region replication, periodic backups, runbook drills. Measured by:</p>
-          <ul>
-            <li><strong>RTO (Recovery Time Objective)</strong> — how fast we restore.</li>
-            <li><strong>RPO (Recovery Point Objective)</strong> — how much data we can afford to lose.</li>
-          </ul>
-          <p>Tiered DR: <strong>Backup &amp; restore</strong> (hours RTO), <strong>Pilot light</strong> (warm core, scale up), <strong>Warm standby</strong> (scaled-down full env), <strong>Multi-region active-active</strong> (zero RTO). Cost rises with each tier. Test DR regularly — un-rehearsed plans fail.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Cost optimization — practical levers</summary>
-        <div class="qa-body">
-          <p>Where cloud bills blow up and how I've cut them:</p>
-          <ul>
-            <li><strong>Right-size compute</strong> — most EC2/EKS workloads run at 10–20% CPU. Migrate to smaller instances or use ARM (Graviton, 20–40% cheaper).</li>
-            <li><strong>Spot / preemptible</strong> instances for batch/build jobs (up to 90% off).</li>
-            <li><strong>Reserved instances / Savings Plans</strong> for steady-state production (30–60% off).</li>
-            <li><strong>S3 lifecycle policies</strong> — Standard → IA → Glacier as data ages.</li>
-            <li><strong>NAT Gateway egress</strong> is often the silent killer; use VPC endpoints for S3/DynamoDB.</li>
-            <li><strong>Right-size RDS</strong> — auto-stop dev DBs at night.</li>
-            <li><strong>CloudWatch logs</strong> — set retention; logs at default forever are expensive.</li>
-            <li><strong>Tag everything</strong> and run cost-explorer + budgets per team.</li>
-          </ul>
-          <p>At Indus Net I cut a non-prod environment's bill ~45% by ARM, scheduled stop/start, and S3 lifecycle policies. FinOps mindset is a real skill.</p>
-        </div>
-      </details>
-
-    </div>
-
-  </main>
-
-  <script src="main.js"></script>
+<ul>
+<li><strong>Rotation</strong> — enable automatic rotation for DB passwords; apps must reconnect on refresh.</li>
+<li><strong>Audit</strong> — CloudTrail on <code>GetSecretValue</code>; alert on unusual callers.</li>
+<li><strong>CI/CD</strong> — OIDC to AWS (no static keys in GitHub Actions).</li>
+</ul>
+<p class="takeaway"><b>Interview one-liner:</b> Treat secrets as runtime data: managed store, IAM roles not keys, per-environment isolation, rotation, and audit. If it is in the image or the repo, it is already leaked.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Zero-downtime deployment strategy <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro">Zero downtime is a stack of practices — deploy pattern, backward-compatible APIs, safe migrations, and graceful drain — not a single tool.</p>
+<div class="core-diff">
+<div class="core-diff-row">
+<span class="core-diff-key">CORE IDEA</span>
+<span class="core-diff-val">Old and new code must coexist during rollout; the database must tolerate both versions until the deploy finishes.</span>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> Application layer</div>
+<ul>
+<li><strong>Backward-compatible APIs</strong> — add fields, don't remove/rename in one release (expand-contract).</li>
+<li><strong>Feature flags</strong> — ship code dark; enable after all pods are new.</li>
+<li><strong>Readiness probes</strong> — JVM warmed, DB pool healthy, migrations done.</li>
+<li><strong>Graceful shutdown</strong> — <code>preStop</code> sleep + <code>server.shutdown=graceful</code> so in-flight requests finish.</li>
+</ul>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> Data layer</div>
+<ul>
+<li>Never <code>ADD COLUMN NOT NULL</code> without default on a hot table in the same release as app code.</li>
+<li>Use expand → backfill → contract for schema changes.</li>
+<li>Dual-write or dual-read windows when renaming columns.</li>
+</ul>
+</div>
+<div class="flow">
+<div class="flow-row">
+<div class="flow-step good"><div class="flow-step-title">Safe sequence</div><div class="flow-step-body">Deploy tolerant new code → migrate schema (expand) → backfill → enable flag → contract old column in later release.</div></div>
+</div>
+</div>
+<p><b>Common interview gotchas:</b></p>
+<ul>
+<li>"We use Kubernetes" is not an answer — probes and PDBs must be configured.</li>
+<li>Stateful sessions on one pod break rolling deploys — use sticky sessions or externalise state.</li>
+<li>Cache invalidation during deploy can cause thundering herd — version cache keys with deploy.</li>
+</ul>
+<p class="takeaway"><b>Interview one-liner:</b> Zero downtime means old and new versions run together safely: compatible APIs, expand-contract migrations, readiness + graceful shutdown, and a deploy pattern matched to risk. The outage usually comes from the database change, not the load balancer.</p>
+</div>
+</details>
+<details class="qa">
+<summary>High availability vs disaster recovery — the difference</summary>
+<div class="qa-body">
+<p>Both about resilience, different scales of failure.</p>
+<p><strong>High Availability (HA)</strong> handles routine failures (one instance crashes, an AZ becomes unhealthy). Achieved within a region: multi-AZ deployments, load balancers, replicated databases, auto-healing. Goal: minutes of degradation max.</p>
+<p><strong>Disaster Recovery (DR)</strong> handles catastrophic failures — region-wide outage, data corruption, ransomware. Achieved across regions: cross-region replication, periodic backups, runbook drills. Measured by:</p>
+<ul>
+<li><strong>RTO (Recovery Time Objective)</strong> — how fast we restore.</li>
+<li><strong>RPO (Recovery Point Objective)</strong> — how much data we can afford to lose.</li>
+</ul>
+<p>Tiered DR: <strong>Backup &amp; restore</strong> (hours RTO), <strong>Pilot light</strong> (warm core, scale up), <strong>Warm standby</strong> (scaled-down full env), <strong>Multi-region active-active</strong> (zero RTO). Cost rises with each tier. Test DR regularly — un-rehearsed plans fail.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Cost optimization — practical levers</summary>
+<div class="qa-body">
+<p>Where cloud bills blow up and how I've cut them:</p>
+<ul>
+<li><strong>Right-size compute</strong> — most EC2/EKS workloads run at 10–20% CPU. Migrate to smaller instances or use ARM (Graviton, 20–40% cheaper).</li>
+<li><strong>Spot / preemptible</strong> instances for batch/build jobs (up to 90% off).</li>
+<li><strong>Reserved instances / Savings Plans</strong> for steady-state production (30–60% off).</li>
+<li><strong>S3 lifecycle policies</strong> — Standard → IA → Glacier as data ages.</li>
+<li><strong>NAT Gateway egress</strong> is often the silent killer; use VPC endpoints for S3/DynamoDB.</li>
+<li><strong>Right-size RDS</strong> — auto-stop dev DBs at night.</li>
+<li><strong>CloudWatch logs</strong> — set retention; logs at default forever are expensive.</li>
+<li><strong>Tag everything</strong> and run cost-explorer + budgets per team.</li>
+</ul>
+<p>At Indus Net I cut a non-prod environment's bill ~45% by ARM, scheduled stop/start, and S3 lifecycle policies. FinOps mindset is a real skill.</p>
+</div>
+</details>
+</div>
+</main>
+<script src="main.js"></script>
 </body>
 </html>

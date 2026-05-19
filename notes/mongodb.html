@@ -1,284 +1,262 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex,nofollow,noarchive">
-  <title>MongoDB · Notes</title>
-  <link rel="icon" href="../assets/img/logo.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<title>MongoDB · Notes</title>
+<link href="../assets/img/logo.png" rel="icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
-
-  <header class="topbar">
-    <div class="topbar-inner">
-      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
-      <div class="search-wrap">
-        <i class="bi bi-search"></i>
-        <input id="search" type="search" placeholder="Search within MongoDB..." autocomplete="off" spellcheck="false">
-        <span class="search-shortcut">/</span>
-      </div>
-      <div class="topbar-actions">
-        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
-        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
-      </div>
-    </div>
-  </header>
-
-  <main class="topic-page">
-
-    <div class="topic-page-header">
-      <div class="topic-page-eyebrow">08 · MongoDB</div>
-      <h1>MongoDB — documents, aggregation, scaling</h1>
-      <p class="topic-page-desc">Document database. Talk about embedding vs referencing, aggregation pipelines, indexes, and replication.</p>
-      <div class="topic-page-meta">
-        <span><strong>9</strong> questions</span>
-        <span>Press <span class="hint-kbd">/</span> to search</span>
-      </div>
-    </div>
-
-    <div class="no-results" id="noResults">No matches.</div>
-
-    <div class="qa-list">
-
-      <details class="qa">
-        <summary>What is MongoDB and when to choose it? <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p><strong>MongoDB</strong> is a document database that stores JSON-like records (BSON internally) in collections. Schemaless at the engine level, though you can enforce <strong>schema validation</strong> in modern versions. It's distributed by design — horizontal scaling via sharding, HA via replica sets.</p>
-          <p>Pick it when:</p>
-          <ul>
-            <li><strong>Flexible schema</strong> — fields vary per record, or schema evolves rapidly (early-stage product, multi-tenant SaaS).</li>
-            <li><strong>Nested data fits naturally</strong> — embedding lists/objects beats joining 5 tables.</li>
-            <li><strong>You need horizontal write scaling</strong> — sharding is built in.</li>
-            <li>You're OK with eventual consistency on reads from secondaries.</li>
-          </ul>
-          <p>I've used it for resume data — each resume is a different shape (different sections, custom fields), and we'd hate a 12-table relational model. For strongly relational data with complex joins, I'd still pick Postgres.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Embedded documents vs References <span class="qa-tag hot">hot</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">The single most important MongoDB design decision — it shapes how you query, scale, and maintain your data.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">Embed</span>
-              <span class="core-diff-val">Nest child data <strong>inside</strong> the parent document — one read brings everything.</span>
-            </div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">Reference</span>
-              <span class="core-diff-val">Store children in a <strong>separate collection</strong>, link by <code>_id</code> — like SQL foreign keys.</span>
-            </div>
+<header class="topbar">
+<div class="topbar-inner">
+<a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+<div class="search-wrap">
+<i class="bi bi-search"></i>
+<input autocomplete="off" id="search" placeholder="Search within MongoDB..." spellcheck="false" type="search"/>
+<span class="search-shortcut">/</span>
+</div>
+<div class="topbar-actions">
+<button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+<button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+</div>
+</div>
+</header>
+<main class="topic-page">
+<div class="topic-page-header">
+<div class="topic-page-eyebrow">08 · MongoDB</div>
+<h1>MongoDB — documents, aggregation, scaling</h1>
+<p class="topic-page-desc">Document database. Talk about embedding vs referencing, aggregation pipelines, indexes, and replication.</p>
+<div class="topic-page-meta">
+<span><strong>9</strong> questions</span>
+<span>Press <span class="hint-kbd">/</span> to search</span>
+</div>
+</div>
+<div class="no-results" id="noResults">No matches.</div>
+<div class="qa-list">
+<details class="qa">
+<summary>What is MongoDB and when to choose it? <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p><strong>MongoDB</strong> is a document database that stores JSON-like records (BSON internally) in collections. Schemaless at the engine level, though you can enforce <strong>schema validation</strong> in modern versions. It's distributed by design — horizontal scaling via sharding, HA via replica sets.</p>
+<p>Pick it when:</p>
+<ul>
+<li><strong>Flexible schema</strong> — fields vary per record, or schema evolves rapidly (early-stage product, multi-tenant SaaS).</li>
+<li><strong>Nested data fits naturally</strong> — embedding lists/objects beats joining 5 tables.</li>
+<li><strong>You need horizontal write scaling</strong> — sharding is built in.</li>
+<li>You're OK with eventual consistency on reads from secondaries.</li>
+</ul>
+<p>I've used it for resume data — each resume is a different shape (different sections, custom fields), and we'd hate a 12-table relational model. For strongly relational data with complex joins, I'd still pick Postgres.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Embedded documents vs References <span class="qa-tag hot">hot</span></summary>
+<div class="qa-body">
+<p class="answer-intro">The single most important MongoDB design decision — it shapes how you query, scale, and maintain your data.</p>
+<div class="core-diff">
+<div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+<div class="core-diff-row">
+<span class="core-diff-key">Embed</span>
+<span class="core-diff-val">Nest child data <strong>inside</strong> the parent document — one read brings everything.</span>
+</div>
+<div class="core-diff-row">
+<span class="core-diff-key">Reference</span>
+<span class="core-diff-val">Store children in a <strong>separate collection</strong>, link by <code>_id</code> — like SQL foreign keys.</span>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> Read &amp; Write Pattern</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> Embed</div>
+<ul>
+<li>Single round-trip — read parent, get everything.</li>
+<li>Write is <strong>atomic</strong> on the whole document — no transactions needed.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> Reference</div>
+<ul>
+<li>Two queries or one <code>$lookup</code> — extra latency.</li>
+<li>Updates touch only the changed entity.</li>
+<li>Cross-document writes need multi-document transactions.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> Relationship Cardinality</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> Embed</div>
+<ul>
+<li>1:1 or 1:few (bounded list).</li>
+<li>Tight ownership — child can't exist without parent.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> Reference</div>
+<ul>
+<li>1:many or many:many with <strong>unbounded growth</strong>.</li>
+<li>Child has its own identity, often queried independently.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">3</span> Constraints</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> Embed</div>
+<ul>
+<li>Hard <strong>16 MB document limit</strong>; practical limit much lower (~hundreds of KB).</li>
+<li>Growing arrays force document migration — fragmentation, slow updates.</li>
+<li>Duplicated data if the same child belongs to multiple parents.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> Reference</div>
+<ul>
+<li>No size ceiling per relation.</li>
+<li>No duplicate data.</li>
+<li>App must handle "missing parent" / orphan references.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">4</span> Use Case</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> Embed</div>
+<ul>
+<li>Blog post + its comments (if small).</li>
+<li>User profile + addresses.</li>
+<li>Resume + sections (experience, education, skills).</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> Reference</div>
+<ul>
+<li>User + millions of orders.</li>
+<li>Product + reviews (queried independently).</li>
+<li>Resume + recruiter feedback (separate lifecycle).</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="takeaway">
+<b>Real example:</b> resume sections (experience, education, skills) are <strong>embedded</strong> — always read with the resume, naturally bounded. Recruiter feedback and search-event history are <strong>referenced</strong> in separate collections — unbounded, independently queried, separate lifecycle.
           </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> Read &amp; Write Pattern</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> Embed</div>
-                <ul>
-                  <li>Single round-trip — read parent, get everything.</li>
-                  <li>Write is <strong>atomic</strong> on the whole document — no transactions needed.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> Reference</div>
-                <ul>
-                  <li>Two queries or one <code>$lookup</code> — extra latency.</li>
-                  <li>Updates touch only the changed entity.</li>
-                  <li>Cross-document writes need multi-document transactions.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> Relationship Cardinality</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> Embed</div>
-                <ul>
-                  <li>1:1 or 1:few (bounded list).</li>
-                  <li>Tight ownership — child can't exist without parent.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> Reference</div>
-                <ul>
-                  <li>1:many or many:many with <strong>unbounded growth</strong>.</li>
-                  <li>Child has its own identity, often queried independently.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> Constraints</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> Embed</div>
-                <ul>
-                  <li>Hard <strong>16 MB document limit</strong>; practical limit much lower (~hundreds of KB).</li>
-                  <li>Growing arrays force document migration — fragmentation, slow updates.</li>
-                  <li>Duplicated data if the same child belongs to multiple parents.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> Reference</div>
-                <ul>
-                  <li>No size ceiling per relation.</li>
-                  <li>No duplicate data.</li>
-                  <li>App must handle "missing parent" / orphan references.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">4</span> Use Case</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> Embed</div>
-                <ul>
-                  <li>Blog post + its comments (if small).</li>
-                  <li>User profile + addresses.</li>
-                  <li>Resume + sections (experience, education, skills).</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> Reference</div>
-                <ul>
-                  <li>User + millions of orders.</li>
-                  <li>Product + reviews (queried independently).</li>
-                  <li>Resume + recruiter feedback (separate lifecycle).</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="takeaway">
-            <b>Real example:</b> resume sections (experience, education, skills) are <strong>embedded</strong> — always read with the resume, naturally bounded. Recruiter feedback and search-event history are <strong>referenced</strong> in separate collections — unbounded, independently queried, separate lifecycle.
-          </div>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Aggregation pipeline — explain with an example <span class="qa-tag hot">hot</span></summary>
-        <div class="qa-body">
-          <p>The <strong>aggregation pipeline</strong> is Mongo's data-transformation language — a sequence of stages where each stage's output is the next stage's input. Each stage starts with <code>$</code>:</p>
-          <pre><code>db.orders.aggregate([
+</div>
+</details>
+<details class="qa">
+<summary>Aggregation pipeline — explain with an example <span class="qa-tag hot">hot</span></summary>
+<div class="qa-body">
+<p>The <strong>aggregation pipeline</strong> is Mongo's data-transformation language — a sequence of stages where each stage's output is the next stage's input. Each stage starts with <code>$</code>:</p>
+<pre><code>db.orders.aggregate([
   { $match: { status: "PAID", createdAt: { $gte: ISODate("2026-01-01") } } },
   { $group: { _id: "$customerId", total: { $sum: "$amount" }, count: { $sum: 1 } } },
   { $sort:  { total: -1 } },
   { $limit: 10 },
   { $lookup: { from: "customers", localField: "_id", foreignField: "_id", as: "customer" } }
 ])</code></pre>
-          <p>Common stages: <strong><code>$match</code></strong> (filter — push to top to use indexes), <strong><code>$project</code></strong> (reshape), <strong><code>$group</code></strong> (aggregate), <strong><code>$sort</code></strong>, <strong><code>$limit</code></strong>, <strong><code>$lookup</code></strong> (left join), <strong><code>$unwind</code></strong> (array to multiple docs), <strong><code>$facet</code></strong> (multiple sub-pipelines).</p>
-          <p>It's MongoDB's equivalent of complex SQL. I use <code>explain()</code> to see if <code>$match</code> hits indexes.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Indexes in MongoDB — kinds and pitfalls</summary>
-        <div class="qa-body">
-          <p>Mongo's indexes are B-trees, same idea as SQL. Types I use:</p>
-          <ul>
-            <li><strong>Single-field</strong> — <code>{ email: 1 }</code>.</li>
-            <li><strong>Compound</strong> — <code>{ tenantId: 1, createdAt: -1 }</code>. ESR rule: <strong>E</strong>quality fields first, then <strong>S</strong>ort, then <strong>R</strong>ange — for the planner to use the index efficiently.</li>
-            <li><strong>Text</strong> — <code>{ description: "text" }</code> for basic full-text (Elasticsearch is better for real search).</li>
-            <li><strong>TTL</strong> — <code>{ createdAt: 1 }, expireAfterSeconds: 86400</code> auto-deletes old docs. Great for sessions, audit trails.</li>
-            <li><strong>Partial</strong> — index only docs matching a filter; saves space.</li>
-            <li><strong>Unique</strong> — enforces uniqueness.</li>
-            <li><strong>Geo (2dsphere)</strong> — spatial queries.</li>
-          </ul>
-          <p>Pitfalls: indexes slow writes, take RAM (working set should fit), and unindexed sorts cap out at 32 MB before erroring. Always check <code>explain("executionStats")</code> for new queries.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Replication — replica sets and read preferences</summary>
-        <div class="qa-body">
-          <p>A <strong>replica set</strong> is a group of mongod nodes — one <strong>primary</strong> for writes plus secondaries that asynchronously replicate via the oplog. If the primary fails, surviving members hold an election and a new primary takes over (failover typically &lt;10 s).</p>
-          <p>Reads can hit the primary or secondaries via <strong>read preferences</strong>:</p>
-          <ul>
-            <li><code>primary</code> (default) — strong consistency.</li>
-            <li><code>primaryPreferred</code> — primary if available, else secondary.</li>
-            <li><code>secondary</code> — offload reads, but data may lag.</li>
-            <li><code>nearest</code> — lowest latency, regardless of role.</li>
-          </ul>
-          <p><strong>Write concern</strong> controls acknowledgement: <code>w: "majority"</code> waits for a majority to confirm (durable across failover); <code>w: 1</code> just the primary. For money and orders I use <code>majority</code>; for analytics events I use <code>w: 1</code> for throughput.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Sharding — how does it work?</summary>
-        <div class="qa-body">
-          <p><strong>Sharding</strong> partitions data across multiple replica sets (shards) for horizontal write scale. Three components:</p>
-          <ul>
-            <li><strong>Shards</strong> — each is a replica set holding a subset of data.</li>
-            <li><strong>Config servers</strong> — store metadata (which chunks live on which shard).</li>
-            <li><strong>mongos routers</strong> — entry point for clients; route queries to relevant shards.</li>
-          </ul>
-          <p>The <strong>shard key</strong> determines partitioning. Hash sharding gives even write distribution but kills range queries. Range sharding is better for range queries but risks hot spots if the key is monotonic (e.g., timestamps — everything writes to the latest shard).</p>
-          <p>Picking a shard key is irreversible (kind of — there's now reshard but it's expensive). I look for <strong>high cardinality</strong>, <strong>even write distribution</strong>, and <strong>query locality</strong> — so a query can hit one shard. Compound keys like <code>(tenantId, createdAt)</code> often work well.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Transactions in MongoDB — multi-document ACID?</summary>
-        <div class="qa-body">
-          <p>MongoDB has had <strong>multi-document transactions</strong> since v4.0 (replica sets) and v4.2 (sharded clusters). Use them similarly to SQL transactions:</p>
-          <pre><code>try (ClientSession s = client.startSession()) {
+<p>Common stages: <strong><code>$match</code></strong> (filter — push to top to use indexes), <strong><code>$project</code></strong> (reshape), <strong><code>$group</code></strong> (aggregate), <strong><code>$sort</code></strong>, <strong><code>$limit</code></strong>, <strong><code>$lookup</code></strong> (left join), <strong><code>$unwind</code></strong> (array to multiple docs), <strong><code>$facet</code></strong> (multiple sub-pipelines).</p>
+<p>It's MongoDB's equivalent of complex SQL. I use <code>explain()</code> to see if <code>$match</code> hits indexes.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Indexes in MongoDB — kinds and pitfalls</summary>
+<div class="qa-body">
+<p>Mongo's indexes are B-trees, same idea as SQL. Types I use:</p>
+<ul>
+<li><strong>Single-field</strong> — <code>{ email: 1 }</code>.</li>
+<li><strong>Compound</strong> — <code>{ tenantId: 1, createdAt: -1 }</code>. ESR rule: <strong>E</strong>quality fields first, then <strong>S</strong>ort, then <strong>R</strong>ange — for the planner to use the index efficiently.</li>
+<li><strong>Text</strong> — <code>{ description: "text" }</code> for basic full-text (Elasticsearch is better for real search).</li>
+<li><strong>TTL</strong> — <code>{ createdAt: 1 }, expireAfterSeconds: 86400</code> auto-deletes old docs. Great for sessions, audit trails.</li>
+<li><strong>Partial</strong> — index only docs matching a filter; saves space.</li>
+<li><strong>Unique</strong> — enforces uniqueness.</li>
+<li><strong>Geo (2dsphere)</strong> — spatial queries.</li>
+</ul>
+<p>Pitfalls: indexes slow writes, take RAM (working set should fit), and unindexed sorts cap out at 32 MB before erroring. Always check <code>explain("executionStats")</code> for new queries.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Replication — replica sets and read preferences</summary>
+<div class="qa-body">
+<p>A <strong>replica set</strong> is a group of mongod nodes — one <strong>primary</strong> for writes plus secondaries that asynchronously replicate via the oplog. If the primary fails, surviving members hold an election and a new primary takes over (failover typically &lt;10 s).</p>
+<p>Reads can hit the primary or secondaries via <strong>read preferences</strong>:</p>
+<ul>
+<li><code>primary</code> (default) — strong consistency.</li>
+<li><code>primaryPreferred</code> — primary if available, else secondary.</li>
+<li><code>secondary</code> — offload reads, but data may lag.</li>
+<li><code>nearest</code> — lowest latency, regardless of role.</li>
+</ul>
+<p><strong>Write concern</strong> controls acknowledgement: <code>w: "majority"</code> waits for a majority to confirm (durable across failover); <code>w: 1</code> just the primary. For money and orders I use <code>majority</code>; for analytics events I use <code>w: 1</code> for throughput.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Sharding — how does it work?</summary>
+<div class="qa-body">
+<p><strong>Sharding</strong> partitions data across multiple replica sets (shards) for horizontal write scale. Three components:</p>
+<ul>
+<li><strong>Shards</strong> — each is a replica set holding a subset of data.</li>
+<li><strong>Config servers</strong> — store metadata (which chunks live on which shard).</li>
+<li><strong>mongos routers</strong> — entry point for clients; route queries to relevant shards.</li>
+</ul>
+<p>The <strong>shard key</strong> determines partitioning. Hash sharding gives even write distribution but kills range queries. Range sharding is better for range queries but risks hot spots if the key is monotonic (e.g., timestamps — everything writes to the latest shard).</p>
+<p>Picking a shard key is irreversible (kind of — there's now reshard but it's expensive). I look for <strong>high cardinality</strong>, <strong>even write distribution</strong>, and <strong>query locality</strong> — so a query can hit one shard. Compound keys like <code>(tenantId, createdAt)</code> often work well.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Transactions in MongoDB — multi-document ACID?</summary>
+<div class="qa-body">
+<p>MongoDB has had <strong>multi-document transactions</strong> since v4.0 (replica sets) and v4.2 (sharded clusters). Use them similarly to SQL transactions:</p>
+<pre><code>try (ClientSession s = client.startSession()) {
     s.startTransaction();
     orders.insertOne(s, order);
     inventory.updateOne(s, ...);
     s.commitTransaction();
 }</code></pre>
-          <p>However, the right approach is usually to <strong>avoid them</strong> by designing schemas around atomic single-document writes — that's the original Mongo philosophy. Transactions have real performance cost, especially on sharded clusters where they coordinate across shards.</p>
-          <p>I use them when an operation genuinely spans collections and consistency matters (transfer between accounts in two collections, for instance). For most CRUD I rely on embedded documents being atomic.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Change streams — what are they good for?</summary>
-        <div class="qa-body">
-          <p><strong>Change streams</strong> let you subscribe to data changes in a collection or database in real time. Under the hood they tail the oplog with a stable resume token — restart-safe.</p>
-          <pre><code>collection.watch().forEach(change -&gt; {
+<p>However, the right approach is usually to <strong>avoid them</strong> by designing schemas around atomic single-document writes — that's the original Mongo philosophy. Transactions have real performance cost, especially on sharded clusters where they coordinate across shards.</p>
+<p>I use them when an operation genuinely spans collections and consistency matters (transfer between accounts in two collections, for instance). For most CRUD I rely on embedded documents being atomic.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Change streams — what are they good for?</summary>
+<div class="qa-body">
+<p><strong>Change streams</strong> let you subscribe to data changes in a collection or database in real time. Under the hood they tail the oplog with a stable resume token — restart-safe.</p>
+<pre><code>collection.watch().forEach(change -&gt; {
     // change.operationType: insert, update, replace, delete
     publishToKafka(change.fullDocument);
 });</code></pre>
-          <p>I've used them to feed Elasticsearch: every document insert/update emits a change → Kafka → ES indexer. Idempotent indexing (by document ID) means retries are safe.</p>
-          <p>Use cases: CDC (change data capture), cache invalidation, real-time analytics, push notifications. They're much cleaner than polling. Note: they require a replica set (not standalone Mongo).</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>How do you secure a MongoDB cluster in production?</summary>
-        <div class="qa-body">
-          <p>Production checklist:</p>
-          <ul>
-            <li><strong>Authentication on</strong> — SCRAM-SHA-256 at minimum; LDAP/x509 for enterprise. The default-no-auth setup is how Mongo got a bad reputation for ransom incidents.</li>
-            <li><strong>Role-based authorization</strong> — least privilege. App user has <code>readWrite</code> on its own DB, not <code>root</code>.</li>
-            <li><strong>TLS</strong> for all connections, including between members of the replica set.</li>
-            <li><strong>Network</strong> — bind only to private interfaces, use security groups / firewall, never expose to the public internet. VPC peering or PrivateLink for managed services.</li>
-            <li><strong>Encryption at rest</strong> — WiredTiger encryption or storage-layer (EBS, KMS).</li>
-            <li><strong>Auditing</strong> — Atlas audit logs or self-hosted equivalent.</li>
-            <li><strong>Backups</strong> — automated snapshots, regularly tested restore.</li>
-          </ul>
-          <p>For managed services (MongoDB Atlas), most of this is on by default — much harder to mis-configure.</p>
-        </div>
-      </details>
-
-    </div>
-
-  </main>
-
-  <script src="main.js"></script>
+<p>I've used them to feed Elasticsearch: every document insert/update emits a change → Kafka → ES indexer. Idempotent indexing (by document ID) means retries are safe.</p>
+<p>Use cases: CDC (change data capture), cache invalidation, real-time analytics, push notifications. They're much cleaner than polling. Note: they require a replica set (not standalone Mongo).</p>
+</div>
+</details>
+<details class="qa">
+<summary>How do you secure a MongoDB cluster in production?</summary>
+<div class="qa-body">
+<p>Production checklist:</p>
+<ul>
+<li><strong>Authentication on</strong> — SCRAM-SHA-256 at minimum; LDAP/x509 for enterprise. The default-no-auth setup is how Mongo got a bad reputation for ransom incidents.</li>
+<li><strong>Role-based authorization</strong> — least privilege. App user has <code>readWrite</code> on its own DB, not <code>root</code>.</li>
+<li><strong>TLS</strong> for all connections, including between members of the replica set.</li>
+<li><strong>Network</strong> — bind only to private interfaces, use security groups / firewall, never expose to the public internet. VPC peering or PrivateLink for managed services.</li>
+<li><strong>Encryption at rest</strong> — WiredTiger encryption or storage-layer (EBS, KMS).</li>
+<li><strong>Auditing</strong> — Atlas audit logs or self-hosted equivalent.</li>
+<li><strong>Backups</strong> — automated snapshots, regularly tested restore.</li>
+</ul>
+<p>For managed services (MongoDB Atlas), most of this is on by default — much harder to mis-configure.</p>
+</div>
+</details>
+</div>
+</main>
+<script src="main.js"></script>
 </body>
 </html>

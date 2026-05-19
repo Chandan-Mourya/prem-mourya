@@ -1,156 +1,144 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex,nofollow,noarchive">
-  <title>CI/CD &amp; Git · Notes</title>
-  <link rel="icon" href="../assets/img/logo.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<title>CI/CD &amp; Git · Notes</title>
+<link href="../assets/img/logo.png" rel="icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
-
-  <header class="topbar">
-    <div class="topbar-inner">
-      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
-      <div class="search-wrap">
-        <i class="bi bi-search"></i>
-        <input id="search" type="search" placeholder="Search within CI/CD..." autocomplete="off" spellcheck="false">
-        <span class="search-shortcut">/</span>
-      </div>
-      <div class="topbar-actions">
-        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
-        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
-      </div>
-    </div>
-  </header>
-
-  <main class="topic-page">
-
-    <div class="topic-page-header">
-      <div class="topic-page-eyebrow">15 · CI/CD &amp; Git</div>
-      <h1>CI/CD &amp; Git workflows</h1>
-      <p class="topic-page-desc">Pipelines, deploys, branching strategies, code reviews. Talk about your GitHub Actions / Jenkins setup at Indus Net &amp; OneXtel.</p>
-      <div class="topic-page-meta">
-        <span><strong>9</strong> questions</span>
-        <span>Press <span class="hint-kbd">/</span> to search</span>
-      </div>
-    </div>
-
-    <div class="no-results" id="noResults">No matches.</div>
-
-    <div class="qa-list">
-
-      <details class="qa">
-        <summary>CI vs CD vs CD — what each one means <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p>The three CI/CD terms are confusingly similar:</p>
-          <ul>
-            <li><strong>Continuous Integration</strong> — every commit triggers automated build + tests. Goal: catch breakage within minutes, not days. Requires good test coverage and a healthy main branch.</li>
-            <li><strong>Continuous Delivery</strong> — every commit that passes CI is <em>deployable</em> — packaged and ready for staging/prod. Production deploys are a one-click manual gate.</li>
-            <li><strong>Continuous Deployment</strong> — every commit that passes goes <strong>automatically</strong> to production. No human gate. Requires very strong tests, feature flags, canary rollouts, automated rollback.</li>
-          </ul>
-          <p>Most teams aim for Delivery first; Deployment is for mature orgs with deep monitoring. At Indus Net we're at Delivery — staging deploys are auto, prod is one-click after a smoke check.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>CI/CD Pipeline — step-by-step (with Jenkinsfile example) <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">A CI/CD pipeline <strong>automates the entire path from code commit to production</strong>: pull the latest code → build → test → quality-check → package → deploy → verify. The goal is to make every push <em>safely deployable</em> with no manual SSH-ing into servers or hand-built JARs.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-row">
-              <span class="core-diff-key">CORE FLOW</span>
-              <span class="core-diff-val"><strong>Code Commit → Build → Test → Quality Check → Artifact → Deploy → Verify.</strong> Every CI/CD pipeline, no matter how big, is a chain of these stages — each stage fails fast and blocks the next.</span>
-            </div>
-          </div>
-
-          <p><b>The typical toolchain:</b></p>
-          <div class="note-table-wrap">
-            <table class="note-table">
-              <thead><tr><th>Purpose</th><th>Tools I've used</th></tr></thead>
-              <tbody>
-                <tr><td><strong>Source control</strong></td><td>GitHub, GitLab, Bitbucket</td></tr>
-                <tr><td><strong>Build</strong></td><td>Maven, Gradle</td></tr>
-                <tr><td><strong>CI/CD orchestrator</strong></td><td>Jenkins, GitHub Actions, GitLab CI, CircleCI, AWS CodePipeline</td></tr>
-                <tr><td><strong>Static analysis / quality</strong></td><td>SonarQube, Checkstyle, Spotless, OWASP/Snyk for vulns</td></tr>
-                <tr><td><strong>Artifact registry</strong></td><td>Nexus / Artifactory (JARs), Docker Hub / ECR / GCR (images)</td></tr>
-                <tr><td><strong>Deploy target</strong></td><td>EC2, ECS, EKS, Lambda, Kubernetes</td></tr>
-                <tr><td><strong>Monitoring</strong></td><td>CloudWatch, Prometheus + Grafana, Datadog, New Relic</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <p><b>The 9-stage pipeline at a glance:</b></p>
-          <div class="flow">
-            <div class="flow-step"><b>1.</b> Developer pushes code to <code>main</code> / opens a PR</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step"><b>2.</b> CI tool (Jenkins / GitHub Actions) triggers automatically via webhook</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step"><b>3.</b> Checkout latest code into a clean workspace</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step"><b>4.</b> Build — <code>mvn clean package</code> → produces <code>target/app.jar</code></div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step"><b>5.</b> Run automated tests — unit + integration. Failure = pipeline stops.</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step"><b>6.</b> Code quality &amp; security scans — SonarQube, OWASP, Snyk</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step"><b>7.</b> Create artifact — JAR uploaded to Nexus, or Docker image pushed to ECR</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step"><b>8.</b> Deploy to AWS — EC2 / ECS / EKS via SSH, ECS update-service, or kubectl</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step"><b>9.</b> Verify — health check, smoke tests, CloudWatch alarms</div>
-          </div>
-
-          <p><b>What each stage actually does:</b></p>
-          <div class="note-table-wrap">
-            <table class="note-table">
-              <thead><tr><th>#</th><th>Stage</th><th>Action</th><th>Failure behaviour</th></tr></thead>
-              <tbody>
-                <tr><td>1</td><td>Push</td><td>Developer commits to a branch.</td><td>—</td></tr>
-                <tr><td>2</td><td>Trigger</td><td>Webhook fires the pipeline (push / PR / cron).</td><td>—</td></tr>
-                <tr><td>3</td><td>Checkout</td><td>Pull the exact commit SHA into a clean workspace.</td><td>Abort.</td></tr>
-                <tr><td>4</td><td>Build</td><td><code>mvn clean package</code> — compile + create JAR.</td><td>Stop, notify author.</td></tr>
-                <tr><td>5</td><td>Test</td><td>Unit + integration tests (Testcontainers for real DB/Kafka).</td><td>Stop. No deploy.</td></tr>
-                <tr><td>6</td><td>Quality</td><td>Sonar, Checkstyle, vulnerability scans.</td><td>Stop if gate violated.</td></tr>
-                <tr><td>7</td><td>Artifact</td><td>Upload JAR / push Docker image tagged with commit SHA.</td><td>Stop.</td></tr>
-                <tr><td>8</td><td>Deploy</td><td>Update EC2/ECS/EKS with new artifact.</td><td>Rollback to previous version.</td></tr>
-                <tr><td>9</td><td>Verify</td><td>Hit <code>/actuator/health</code>, run smoke tests, watch metrics.</td><td>Trigger automated rollback.</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <p><b>Deploy stage — two common shapes:</b></p>
-          <div class="cmp-grid">
-            <div class="cmp-card">
-              <div class="cmp-card-title">JAR-based (EC2)</div>
-              <ol>
-                <li><code>scp</code> the JAR to the EC2 instance.</li>
-                <li><code>systemctl stop app</code> (or kill the old process).</li>
-                <li>Replace the JAR file.</li>
-                <li><code>systemctl start app</code> → new version live.</li>
-              </ol>
-              <p>Simple, works for single-instance deployments. No zero-downtime by default.</p>
-            </div>
-            <div class="cmp-card">
-              <div class="cmp-card-title">Container-based (ECS / EKS)</div>
-              <ol>
-                <li>Build Docker image → tag with commit SHA.</li>
-                <li>Push to <strong>ECR</strong>.</li>
-                <li>Update ECS service / Kubernetes Deployment with the new image tag.</li>
-                <li>Rolling deploy — drain old tasks, ramp up new ones, health-check gated.</li>
-              </ol>
-              <p>This is what real production looks like — zero-downtime, auto-rollback, multi-instance.</p>
-            </div>
-          </div>
-
-          <p><b>Example Jenkinsfile (declarative pipeline):</b></p>
-          <pre><code>pipeline {
+<header class="topbar">
+<div class="topbar-inner">
+<a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+<div class="search-wrap">
+<i class="bi bi-search"></i>
+<input autocomplete="off" id="search" placeholder="Search within CI/CD..." spellcheck="false" type="search"/>
+<span class="search-shortcut">/</span>
+</div>
+<div class="topbar-actions">
+<button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+<button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+</div>
+</div>
+</header>
+<main class="topic-page">
+<div class="topic-page-header">
+<div class="topic-page-eyebrow">15 · CI/CD &amp; Git</div>
+<h1>CI/CD &amp; Git workflows</h1>
+<p class="topic-page-desc">Pipelines, deploys, branching strategies, code reviews. Talk about your GitHub Actions / Jenkins setup at Indus Net &amp; OneXtel.</p>
+<div class="topic-page-meta">
+<span><strong>30</strong> questions</span>
+<span>Press <span class="hint-kbd">/</span> to search</span>
+</div>
+</div>
+<div class="no-results" id="noResults">No matches.</div>
+<div class="qa-list">
+<details class="qa">
+<summary>CI vs CD vs CD — what each one means <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p>The three CI/CD terms are confusingly similar:</p>
+<ul>
+<li><strong>Continuous Integration</strong> — every commit triggers automated build + tests. Goal: catch breakage within minutes, not days. Requires good test coverage and a healthy main branch.</li>
+<li><strong>Continuous Delivery</strong> — every commit that passes CI is <em>deployable</em> — packaged and ready for staging/prod. Production deploys are a one-click manual gate.</li>
+<li><strong>Continuous Deployment</strong> — every commit that passes goes <strong>automatically</strong> to production. No human gate. Requires very strong tests, feature flags, canary rollouts, automated rollback.</li>
+</ul>
+<p>Most teams aim for Delivery first; Deployment is for mature orgs with deep monitoring. At Indus Net we're at Delivery — staging deploys are auto, prod is one-click after a smoke check.</p>
+</div>
+</details>
+<details class="qa">
+<summary>CI/CD Pipeline — step-by-step (with Jenkinsfile example) <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro">A CI/CD pipeline <strong>automates the entire path from code commit to production</strong>: pull the latest code → build → test → quality-check → package → deploy → verify. The goal is to make every push <em>safely deployable</em> with no manual SSH-ing into servers or hand-built JARs.</p>
+<div class="core-diff">
+<div class="core-diff-row">
+<span class="core-diff-key">CORE FLOW</span>
+<span class="core-diff-val"><strong>Code Commit → Build → Test → Quality Check → Artifact → Deploy → Verify.</strong> Every CI/CD pipeline, no matter how big, is a chain of these stages — each stage fails fast and blocks the next.</span>
+</div>
+</div>
+<p><b>The typical toolchain:</b></p>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead><tr><th>Purpose</th><th>Tools I've used</th></tr></thead>
+<tbody>
+<tr><td><strong>Source control</strong></td><td>GitHub, GitLab, Bitbucket</td></tr>
+<tr><td><strong>Build</strong></td><td>Maven, Gradle</td></tr>
+<tr><td><strong>CI/CD orchestrator</strong></td><td>Jenkins, GitHub Actions, GitLab CI, CircleCI, AWS CodePipeline</td></tr>
+<tr><td><strong>Static analysis / quality</strong></td><td>SonarQube, Checkstyle, Spotless, OWASP/Snyk for vulns</td></tr>
+<tr><td><strong>Artifact registry</strong></td><td>Nexus / Artifactory (JARs), Docker Hub / ECR / GCR (images)</td></tr>
+<tr><td><strong>Deploy target</strong></td><td>EC2, ECS, EKS, Lambda, Kubernetes</td></tr>
+<tr><td><strong>Monitoring</strong></td><td>CloudWatch, Prometheus + Grafana, Datadog, New Relic</td></tr>
+</tbody>
+</table>
+</div>
+<p><b>The 9-stage pipeline at a glance:</b></p>
+<div class="flow">
+<div class="flow-step"><b>1.</b> Developer pushes code to <code>main</code> / opens a PR</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step"><b>2.</b> CI tool (Jenkins / GitHub Actions) triggers automatically via webhook</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step"><b>3.</b> Checkout latest code into a clean workspace</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step"><b>4.</b> Build — <code>mvn clean package</code> → produces <code>target/app.jar</code></div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step"><b>5.</b> Run automated tests — unit + integration. Failure = pipeline stops.</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step"><b>6.</b> Code quality &amp; security scans — SonarQube, OWASP, Snyk</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step"><b>7.</b> Create artifact — JAR uploaded to Nexus, or Docker image pushed to ECR</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step"><b>8.</b> Deploy to AWS — EC2 / ECS / EKS via SSH, ECS update-service, or kubectl</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step"><b>9.</b> Verify — health check, smoke tests, CloudWatch alarms</div>
+</div>
+<p><b>What each stage actually does:</b></p>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead><tr><th>#</th><th>Stage</th><th>Action</th><th>Failure behaviour</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Push</td><td>Developer commits to a branch.</td><td>—</td></tr>
+<tr><td>2</td><td>Trigger</td><td>Webhook fires the pipeline (push / PR / cron).</td><td>—</td></tr>
+<tr><td>3</td><td>Checkout</td><td>Pull the exact commit SHA into a clean workspace.</td><td>Abort.</td></tr>
+<tr><td>4</td><td>Build</td><td><code>mvn clean package</code> — compile + create JAR.</td><td>Stop, notify author.</td></tr>
+<tr><td>5</td><td>Test</td><td>Unit + integration tests (Testcontainers for real DB/Kafka).</td><td>Stop. No deploy.</td></tr>
+<tr><td>6</td><td>Quality</td><td>Sonar, Checkstyle, vulnerability scans.</td><td>Stop if gate violated.</td></tr>
+<tr><td>7</td><td>Artifact</td><td>Upload JAR / push Docker image tagged with commit SHA.</td><td>Stop.</td></tr>
+<tr><td>8</td><td>Deploy</td><td>Update EC2/ECS/EKS with new artifact.</td><td>Rollback to previous version.</td></tr>
+<tr><td>9</td><td>Verify</td><td>Hit <code>/actuator/health</code>, run smoke tests, watch metrics.</td><td>Trigger automated rollback.</td></tr>
+</tbody>
+</table>
+</div>
+<p><b>Deploy stage — two common shapes:</b></p>
+<div class="cmp-grid">
+<div class="cmp-card">
+<div class="cmp-card-title">JAR-based (EC2)</div>
+<ol>
+<li><code>scp</code> the JAR to the EC2 instance.</li>
+<li><code>systemctl stop app</code> (or kill the old process).</li>
+<li>Replace the JAR file.</li>
+<li><code>systemctl start app</code> → new version live.</li>
+</ol>
+<p>Simple, works for single-instance deployments. No zero-downtime by default.</p>
+</div>
+<div class="cmp-card">
+<div class="cmp-card-title">Container-based (ECS / EKS)</div>
+<ol>
+<li>Build Docker image → tag with commit SHA.</li>
+<li>Push to <strong>ECR</strong>.</li>
+<li>Update ECS service / Kubernetes Deployment with the new image tag.</li>
+<li>Rolling deploy — drain old tasks, ramp up new ones, health-check gated.</li>
+</ol>
+<p>This is what real production looks like — zero-downtime, auto-rollback, multi-instance.</p>
+</div>
+</div>
+<p><b>Example Jenkinsfile (declarative pipeline):</b></p>
+<pre><code>pipeline {
     agent any
 
     tools {
@@ -219,9 +207,8 @@
         success  { echo "Deployed ${env.GIT_COMMIT} successfully." }
     }
 }</code></pre>
-
-          <p><b>Equivalent GitHub Actions workflow (for comparison):</b></p>
-          <pre><code>name: build-test-deploy
+<p><b>Equivalent GitHub Actions workflow (for comparison):</b></p>
+<pre><code>name: build-test-deploy
 on:
   push: { branches: [ main ] }
 
@@ -242,9 +229,8 @@ jobs:
         run: |
           aws ecs update-service --cluster prod --service my-app \
               --force-new-deployment</code></pre>
-
-          <p><b>Production architecture — how it all fits:</b></p>
-          <pre class="tree-viz">  Developer (git push)
+<p><b>Production architecture — how it all fits:</b></p>
+<pre class="tree-viz">  Developer (git push)
         ↓
   GitHub / GitLab
         ↓ (webhook)
@@ -258,98 +244,89 @@ jobs:
   AWS (EC2 / ECS / EKS)
         ↓
   CloudWatch / Prometheus  (health checks, alarms, auto-rollback)</pre>
-
-          <p><b>Why CI/CD pipelines matter:</b></p>
-          <ul>
-            <li><strong>Faster delivery</strong> — minutes from merge to production, not days.</li>
-            <li><strong>Fewer human errors</strong> — same script every time; no "forgot to update the env var".</li>
-            <li><strong>Quality gates baked in</strong> — failing tests / vulnerabilities block bad code automatically.</li>
-            <li><strong>Reproducible</strong> — every artifact is tied to a commit SHA; you can roll back to any past build.</li>
-            <li><strong>Confidence to deploy small &amp; often</strong> — small diffs are safer than monthly mega-releases.</li>
-          </ul>
-
-          <p><b>Best practices I follow:</b></p>
-          <ul>
-            <li><strong>Keep CI fast</strong> — target &lt; 10 min for a PR build. Cache Maven deps, parallelize tests, skip slow integration tests until merge.</li>
-            <li><strong>Tag everything with commit SHA</strong> — JARs, Docker images, deploy metadata. Makes rollbacks one command.</li>
-            <li><strong>Fail fast, fail loud</strong> — first stage that fails should stop the pipeline and ping the author.</li>
-            <li><strong>Secrets in a vault</strong> — never echo them in build logs. Use GitHub Actions secrets / Jenkins credentials / AWS Secrets Manager.</li>
-            <li><strong>Smoke tests after deploy</strong> — at minimum hit <code>/actuator/health</code>; ideally a few end-to-end API calls.</li>
-            <li><strong>Automated rollback</strong> on health-check failure for prod — don't rely on humans during incidents.</li>
-            <li><strong>Promote artifacts</strong>, don't rebuild — the same Docker image moves dev → staging → prod, eliminating "works on staging" surprises.</li>
-          </ul>
-
-          <p class="takeaway">
-            <b>Interview one-liner:</b> A CI/CD pipeline automates <strong>build → test → quality check → package → deploy → verify</strong>. When a developer pushes to GitHub, a webhook triggers <strong>Jenkins / GitHub Actions</strong>, which checks out the code, runs <code>mvn clean package</code>, runs all tests, scans for quality and vulnerabilities, builds a JAR or Docker image, pushes it to <strong>Nexus / ECR</strong>, and deploys it to <strong>EC2 / ECS / EKS</strong>. After deploy, health checks and CloudWatch alarms verify success; on failure the previous version is automatically rolled back. The result is <em>faster, repeatable, error-free releases</em> — small commits flow to production in minutes with full traceability back to the source commit.
+<p><b>Why CI/CD pipelines matter:</b></p>
+<ul>
+<li><strong>Faster delivery</strong> — minutes from merge to production, not days.</li>
+<li><strong>Fewer human errors</strong> — same script every time; no "forgot to update the env var".</li>
+<li><strong>Quality gates baked in</strong> — failing tests / vulnerabilities block bad code automatically.</li>
+<li><strong>Reproducible</strong> — every artifact is tied to a commit SHA; you can roll back to any past build.</li>
+<li><strong>Confidence to deploy small &amp; often</strong> — small diffs are safer than monthly mega-releases.</li>
+</ul>
+<p><b>Best practices I follow:</b></p>
+<ul>
+<li><strong>Keep CI fast</strong> — target &lt; 10 min for a PR build. Cache Maven deps, parallelize tests, skip slow integration tests until merge.</li>
+<li><strong>Tag everything with commit SHA</strong> — JARs, Docker images, deploy metadata. Makes rollbacks one command.</li>
+<li><strong>Fail fast, fail loud</strong> — first stage that fails should stop the pipeline and ping the author.</li>
+<li><strong>Secrets in a vault</strong> — never echo them in build logs. Use GitHub Actions secrets / Jenkins credentials / AWS Secrets Manager.</li>
+<li><strong>Smoke tests after deploy</strong> — at minimum hit <code>/actuator/health</code>; ideally a few end-to-end API calls.</li>
+<li><strong>Automated rollback</strong> on health-check failure for prod — don't rely on humans during incidents.</li>
+<li><strong>Promote artifacts</strong>, don't rebuild — the same Docker image moves dev → staging → prod, eliminating "works on staging" surprises.</li>
+</ul>
+<p class="takeaway">
+<b>Interview one-liner:</b> A CI/CD pipeline automates <strong>build → test → quality check → package → deploy → verify</strong>. When a developer pushes to GitHub, a webhook triggers <strong>Jenkins / GitHub Actions</strong>, which checks out the code, runs <code>mvn clean package</code>, runs all tests, scans for quality and vulnerabilities, builds a JAR or Docker image, pushes it to <strong>Nexus / ECR</strong>, and deploys it to <strong>EC2 / ECS / EKS</strong>. After deploy, health checks and CloudWatch alarms verify success; on failure the previous version is automatically rolled back. The result is <em>faster, repeatable, error-free releases</em> — small commits flow to production in minutes with full traceability back to the source commit.
           </p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>What does a good CI pipeline look like?</summary>
-        <div class="qa-body">
-          <p>For a typical Spring Boot service:</p>
-          <ol>
-            <li><strong>Checkout</strong> + cache dependencies (Maven/Gradle, Docker layer cache).</li>
-            <li><strong>Lint / format check</strong> — Spotless, Checkstyle, EditorConfig. Fast, fails first.</li>
-            <li><strong>Unit tests</strong> — fast, isolated.</li>
-            <li><strong>Integration tests</strong> — with Testcontainers spinning up Postgres, Kafka, Redis. Production-like, slower.</li>
-            <li><strong>Static analysis</strong> — SonarQube/Codacy, dependency vulnerabilities (Snyk, OWASP, Dependabot), SAST (CodeQL).</li>
-            <li><strong>Build container image</strong>, push to registry tagged with commit SHA.</li>
-            <li><strong>Sign + SBOM</strong> for supply-chain security (sigstore/cosign).</li>
-            <li><strong>Auto-deploy</strong> to dev/staging.</li>
-            <li><strong>Smoke tests / health checks</strong> post-deploy.</li>
-            <li><strong>Manual approval</strong> + canary to production.</li>
-          </ol>
-          <p>Total CI time target: &lt;10 min for typical PR; &lt;20 min for the full pipeline. Anything slower kills developer flow.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>SonarQube — code quality &amp; security scanning in CI/CD <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro"><strong>SonarQube</strong> is a <em>static code analysis</em> platform that scans your code for <strong>bugs, vulnerabilities, code smells, duplication, and test coverage</strong> — and enforces a <em>Quality Gate</em> in CI/CD that blocks bad code before it merges or deploys. It's the standard tool every Java/Spring Boot team I've worked with uses to keep technical debt and security issues from sneaking into production.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-row">
-              <span class="core-diff-key">CORE IDEA</span>
-              <span class="core-diff-val">Run the scanner on every PR / build → SonarQube analyses the diff → produces a <strong>Quality Gate</strong> verdict (PASS / FAIL) based on coverage, duplication, bug count, and security issues. <strong>Fail = pipeline stops</strong>. Quality stays high automatically.</span>
-            </div>
-          </div>
-
-          <p><b>What SonarQube checks:</b></p>
-          <div class="note-table-wrap">
-            <table class="note-table">
-              <thead><tr><th>Category</th><th>What it catches</th><th>Examples</th></tr></thead>
-              <tbody>
-                <tr><td><strong>Bugs</strong></td><td>Likely runtime errors — NPEs, resource leaks, infinite loops.</td><td>Unclosed <code>InputStream</code>, <code>null</code> dereference after a null check.</td></tr>
-                <tr><td><strong>Vulnerabilities</strong></td><td>Security issues that an attacker could exploit.</td><td>SQL injection, hardcoded passwords, weak crypto (<code>MD5</code>).</td></tr>
-                <tr><td><strong>Security Hotspots</strong></td><td>Lines worth a security review (not always wrong, but worth a look).</td><td><code>Random</code> instead of <code>SecureRandom</code>, permissive CORS.</td></tr>
-                <tr><td><strong>Code Smells</strong></td><td>Maintainability issues — design / style problems.</td><td>Methods over 100 lines, complex conditionals, dead code.</td></tr>
-                <tr><td><strong>Coverage</strong></td><td>How much of new code is covered by tests.</td><td>"80% coverage on new code" gate.</td></tr>
-                <tr><td><strong>Duplication</strong></td><td>Copy-pasted blocks across files.</td><td>Same try/catch block in 5 services.</td></tr>
-                <tr><td><strong>Complexity</strong></td><td>Cyclomatic complexity of methods/classes.</td><td>Method with 20 nested if/else branches.</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <p><b>How SonarQube fits into a CI/CD pipeline:</b></p>
-          <div class="flow">
-            <div class="flow-step">Developer pushes code / opens a PR</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step">CI/CD pipeline (Jenkins / GitHub Actions) starts</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step">Pipeline runs build + tests + coverage (<code>mvn verify</code>)</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step"><strong>SonarQube scanner</strong> sends source + coverage + issues to the Sonar server</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step">SonarQube applies the <strong>Quality Gate</strong> → PASS / FAIL</div>
-            <div class="flow-arrow">↓</div>
-            <div class="flow-step">FAIL → pipeline stops, PR blocked. PASS → continue to deploy.</div>
-          </div>
-
-          <p><b>Wiring SonarQube into Maven + Jenkins:</b></p>
-          <pre><code>// Run tests with coverage, then scan
+</div>
+</details>
+<details class="qa">
+<summary>What does a good CI pipeline look like?</summary>
+<div class="qa-body">
+<p>For a typical Spring Boot service:</p>
+<ol>
+<li><strong>Checkout</strong> + cache dependencies (Maven/Gradle, Docker layer cache).</li>
+<li><strong>Lint / format check</strong> — Spotless, Checkstyle, EditorConfig. Fast, fails first.</li>
+<li><strong>Unit tests</strong> — fast, isolated.</li>
+<li><strong>Integration tests</strong> — with Testcontainers spinning up Postgres, Kafka, Redis. Production-like, slower.</li>
+<li><strong>Static analysis</strong> — SonarQube/Codacy, dependency vulnerabilities (Snyk, OWASP, Dependabot), SAST (CodeQL).</li>
+<li><strong>Build container image</strong>, push to registry tagged with commit SHA.</li>
+<li><strong>Sign + SBOM</strong> for supply-chain security (sigstore/cosign).</li>
+<li><strong>Auto-deploy</strong> to dev/staging.</li>
+<li><strong>Smoke tests / health checks</strong> post-deploy.</li>
+<li><strong>Manual approval</strong> + canary to production.</li>
+</ol>
+<p>Total CI time target: &lt;10 min for typical PR; &lt;20 min for the full pipeline. Anything slower kills developer flow.</p>
+</div>
+</details>
+<details class="qa">
+<summary>SonarQube — code quality &amp; security scanning in CI/CD <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro"><strong>SonarQube</strong> is a <em>static code analysis</em> platform that scans your code for <strong>bugs, vulnerabilities, code smells, duplication, and test coverage</strong> — and enforces a <em>Quality Gate</em> in CI/CD that blocks bad code before it merges or deploys. It's the standard tool every Java/Spring Boot team I've worked with uses to keep technical debt and security issues from sneaking into production.</p>
+<div class="core-diff">
+<div class="core-diff-row">
+<span class="core-diff-key">CORE IDEA</span>
+<span class="core-diff-val">Run the scanner on every PR / build → SonarQube analyses the diff → produces a <strong>Quality Gate</strong> verdict (PASS / FAIL) based on coverage, duplication, bug count, and security issues. <strong>Fail = pipeline stops</strong>. Quality stays high automatically.</span>
+</div>
+</div>
+<p><b>What SonarQube checks:</b></p>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead><tr><th>Category</th><th>What it catches</th><th>Examples</th></tr></thead>
+<tbody>
+<tr><td><strong>Bugs</strong></td><td>Likely runtime errors — NPEs, resource leaks, infinite loops.</td><td>Unclosed <code>InputStream</code>, <code>null</code> dereference after a null check.</td></tr>
+<tr><td><strong>Vulnerabilities</strong></td><td>Security issues that an attacker could exploit.</td><td>SQL injection, hardcoded passwords, weak crypto (<code>MD5</code>).</td></tr>
+<tr><td><strong>Security Hotspots</strong></td><td>Lines worth a security review (not always wrong, but worth a look).</td><td><code>Random</code> instead of <code>SecureRandom</code>, permissive CORS.</td></tr>
+<tr><td><strong>Code Smells</strong></td><td>Maintainability issues — design / style problems.</td><td>Methods over 100 lines, complex conditionals, dead code.</td></tr>
+<tr><td><strong>Coverage</strong></td><td>How much of new code is covered by tests.</td><td>"80% coverage on new code" gate.</td></tr>
+<tr><td><strong>Duplication</strong></td><td>Copy-pasted blocks across files.</td><td>Same try/catch block in 5 services.</td></tr>
+<tr><td><strong>Complexity</strong></td><td>Cyclomatic complexity of methods/classes.</td><td>Method with 20 nested if/else branches.</td></tr>
+</tbody>
+</table>
+</div>
+<p><b>How SonarQube fits into a CI/CD pipeline:</b></p>
+<div class="flow">
+<div class="flow-step">Developer pushes code / opens a PR</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">CI/CD pipeline (Jenkins / GitHub Actions) starts</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Pipeline runs build + tests + coverage (<code>mvn verify</code>)</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step"><strong>SonarQube scanner</strong> sends source + coverage + issues to the Sonar server</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">SonarQube applies the <strong>Quality Gate</strong> → PASS / FAIL</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">FAIL → pipeline stops, PR blocked. PASS → continue to deploy.</div>
+</div>
+<p><b>Wiring SonarQube into Maven + Jenkins:</b></p>
+<pre><code>// Run tests with coverage, then scan
 mvn clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
     -Dsonar.host.url=https://sonar.company.com \
     -Dsonar.login=$SONAR_TOKEN \
@@ -370,188 +347,532 @@ stage('Quality Gate') {
         }
     }
 }</code></pre>
-
-          <p><b>Equivalent GitHub Actions step:</b></p>
-          <pre><code>- name: SonarQube Scan
+<p><b>Equivalent GitHub Actions step:</b></p>
+<pre><code>- name: SonarQube Scan
   env:
     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   run: |
     mvn verify sonar:sonar \
         -Dsonar.host.url=https://sonar.company.com \
         -Dsonar.projectKey=my-app</code></pre>
-
-          <p><b>What a typical Quality Gate enforces:</b></p>
-          <div class="note-table-wrap">
-            <table class="note-table">
-              <thead><tr><th>Metric</th><th>Typical threshold</th><th>Why</th></tr></thead>
-              <tbody>
-                <tr><td><strong>Coverage on new code</strong></td><td>≥ 80%</td><td>Force test coverage for every new feature without re-testing legacy.</td></tr>
-                <tr><td><strong>Duplicated lines (new code)</strong></td><td>&lt; 3%</td><td>Keeps codebases DRY.</td></tr>
-                <tr><td><strong>New bugs</strong></td><td>= 0</td><td>No new bugs introduced in this PR.</td></tr>
-                <tr><td><strong>New vulnerabilities</strong></td><td>= 0</td><td>Zero security regressions allowed.</td></tr>
-                <tr><td><strong>New security hotspots reviewed</strong></td><td>100%</td><td>Every flagged hotspot needs a human decision.</td></tr>
-                <tr><td><strong>Maintainability rating</strong></td><td>≥ A</td><td>Caps technical debt on new code.</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <p><b>Why SonarQube is worth the effort:</b></p>
-          <ul>
-            <li><strong>Catches bugs &amp; vulnerabilities early</strong> — before code review, before merge, before production.</li>
-            <li><strong>Enforces coding standards consistently</strong> — same rules across teams, no debate per PR.</li>
-            <li><strong>Tracks technical debt</strong> — "debt ratio" trend over time keeps it from growing silently.</li>
-            <li><strong>Reduces code-review friction</strong> — humans focus on design and logic; the bot catches style + obvious bugs.</li>
-            <li><strong>Compliance &amp; audit</strong> — useful evidence for ISO/SOC2/security audits.</li>
-            <li><strong>Multi-language</strong> — Java, Kotlin, JavaScript, Python, Go, C#, SQL, YAML…</li>
-          </ul>
-
-          <p><b>SonarQube vs the other tools (used together, not instead):</b></p>
-          <div class="note-table-wrap">
-            <table class="note-table">
-              <thead><tr><th>Tool</th><th>Focus</th><th>How it relates to SonarQube</th></tr></thead>
-              <tbody>
-                <tr><td><strong>SonarQube</strong></td><td>Code quality, smells, coverage, basic security.</td><td>Master quality dashboard.</td></tr>
-                <tr><td><strong>Checkstyle / Spotless</strong></td><td>Style and formatting.</td><td>Fast pre-commit / build-step; complements Sonar.</td></tr>
-                <tr><td><strong>SpotBugs / PMD</strong></td><td>Bytecode-level bug patterns.</td><td>Sonar can ingest their reports.</td></tr>
-                <tr><td><strong>OWASP Dependency-Check / Snyk</strong></td><td>Vulnerable dependencies (CVEs).</td><td>Run alongside Sonar; covers a different angle.</td></tr>
-                <tr><td><strong>GitHub CodeQL</strong></td><td>Deep semantic SAST for security.</td><td>Stronger security scanner; pairs with Sonar.</td></tr>
-                <tr><td><strong>JaCoCo</strong></td><td>Test coverage measurement.</td><td>SonarQube reads JaCoCo's report to compute coverage.</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <p><b>Common interview gotchas:</b></p>
-          <ul>
-            <li><strong>SonarQube doesn't run your tests</strong> — it consumes the JaCoCo/Surefire coverage report. Run <code>mvn verify</code> before the scan.</li>
-            <li><strong>"New code" vs "Overall"</strong> — the Quality Gate is usually scoped to <em>new code</em> so you don't drown in legacy issues.</li>
-            <li><strong>It's not a replacement for code review</strong> — it catches the boring stuff so humans can focus on design.</li>
-            <li><strong>Pull request decoration</strong> — modern setups post Sonar issues as inline PR comments (GitHub/GitLab).</li>
-            <li><strong>SonarLint</strong> — the IDE plugin (IntelliJ / VS Code) catches the same issues <em>while you type</em>, before push.</li>
-          </ul>
-
-          <p class="takeaway">
-            <b>Interview one-liner:</b> <strong>SonarQube</strong> is a static code analysis tool that scans every build for <em>bugs, vulnerabilities, security hotspots, code smells, duplication, and test coverage</em>. It's integrated into the CI/CD pipeline (Jenkins / GitHub Actions / GitLab CI), runs after build + tests, and enforces a <strong>Quality Gate</strong> that fails the pipeline if thresholds (e.g., 80% new-code coverage, zero new bugs, zero new vulnerabilities) aren't met. The result: <em>code quality stays high automatically</em>, security regressions don't ship, and teams have an objective baseline for technical debt.
+<p><b>What a typical Quality Gate enforces:</b></p>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead><tr><th>Metric</th><th>Typical threshold</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td><strong>Coverage on new code</strong></td><td>≥ 80%</td><td>Force test coverage for every new feature without re-testing legacy.</td></tr>
+<tr><td><strong>Duplicated lines (new code)</strong></td><td>&lt; 3%</td><td>Keeps codebases DRY.</td></tr>
+<tr><td><strong>New bugs</strong></td><td>= 0</td><td>No new bugs introduced in this PR.</td></tr>
+<tr><td><strong>New vulnerabilities</strong></td><td>= 0</td><td>Zero security regressions allowed.</td></tr>
+<tr><td><strong>New security hotspots reviewed</strong></td><td>100%</td><td>Every flagged hotspot needs a human decision.</td></tr>
+<tr><td><strong>Maintainability rating</strong></td><td>≥ A</td><td>Caps technical debt on new code.</td></tr>
+</tbody>
+</table>
+</div>
+<p><b>Why SonarQube is worth the effort:</b></p>
+<ul>
+<li><strong>Catches bugs &amp; vulnerabilities early</strong> — before code review, before merge, before production.</li>
+<li><strong>Enforces coding standards consistently</strong> — same rules across teams, no debate per PR.</li>
+<li><strong>Tracks technical debt</strong> — "debt ratio" trend over time keeps it from growing silently.</li>
+<li><strong>Reduces code-review friction</strong> — humans focus on design and logic; the bot catches style + obvious bugs.</li>
+<li><strong>Compliance &amp; audit</strong> — useful evidence for ISO/SOC2/security audits.</li>
+<li><strong>Multi-language</strong> — Java, Kotlin, JavaScript, Python, Go, C#, SQL, YAML…</li>
+</ul>
+<p><b>SonarQube vs the other tools (used together, not instead):</b></p>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead><tr><th>Tool</th><th>Focus</th><th>How it relates to SonarQube</th></tr></thead>
+<tbody>
+<tr><td><strong>SonarQube</strong></td><td>Code quality, smells, coverage, basic security.</td><td>Master quality dashboard.</td></tr>
+<tr><td><strong>Checkstyle / Spotless</strong></td><td>Style and formatting.</td><td>Fast pre-commit / build-step; complements Sonar.</td></tr>
+<tr><td><strong>SpotBugs / PMD</strong></td><td>Bytecode-level bug patterns.</td><td>Sonar can ingest their reports.</td></tr>
+<tr><td><strong>OWASP Dependency-Check / Snyk</strong></td><td>Vulnerable dependencies (CVEs).</td><td>Run alongside Sonar; covers a different angle.</td></tr>
+<tr><td><strong>GitHub CodeQL</strong></td><td>Deep semantic SAST for security.</td><td>Stronger security scanner; pairs with Sonar.</td></tr>
+<tr><td><strong>JaCoCo</strong></td><td>Test coverage measurement.</td><td>SonarQube reads JaCoCo's report to compute coverage.</td></tr>
+</tbody>
+</table>
+</div>
+<p><b>Common interview gotchas:</b></p>
+<ul>
+<li><strong>SonarQube doesn't run your tests</strong> — it consumes the JaCoCo/Surefire coverage report. Run <code>mvn verify</code> before the scan.</li>
+<li><strong>"New code" vs "Overall"</strong> — the Quality Gate is usually scoped to <em>new code</em> so you don't drown in legacy issues.</li>
+<li><strong>It's not a replacement for code review</strong> — it catches the boring stuff so humans can focus on design.</li>
+<li><strong>Pull request decoration</strong> — modern setups post Sonar issues as inline PR comments (GitHub/GitLab).</li>
+<li><strong>SonarLint</strong> — the IDE plugin (IntelliJ / VS Code) catches the same issues <em>while you type</em>, before push.</li>
+</ul>
+<p class="takeaway">
+<b>Interview one-liner:</b> <strong>SonarQube</strong> is a static code analysis tool that scans every build for <em>bugs, vulnerabilities, security hotspots, code smells, duplication, and test coverage</em>. It's integrated into the CI/CD pipeline (Jenkins / GitHub Actions / GitLab CI), runs after build + tests, and enforces a <strong>Quality Gate</strong> that fails the pipeline if thresholds (e.g., 80% new-code coverage, zero new bugs, zero new vulnerabilities) aren't met. The result: <em>code quality stays high automatically</em>, security regressions don't ship, and teams have an objective baseline for technical debt.
           </p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Trunk-based vs Git Flow vs GitHub Flow</summary>
-        <div class="qa-body">
-          <p>Three popular branching strategies.</p>
-          <p><strong>Git Flow</strong> — long-lived branches: <code>master</code>, <code>develop</code>, <code>feature/*</code>, <code>release/*</code>, <code>hotfix/*</code>. Designed for versioned releases (installable software). Heavy for web/SaaS — too much branch ceremony.</p>
-          <p><strong>GitHub Flow</strong> — one main branch + short-lived feature branches → PR → merge → deploy. Simple, works great for continuous delivery.</p>
-          <p><strong>Trunk-based development</strong> — everyone commits to main multiple times a day; very short-lived branches. Relies on feature flags to hide incomplete work in production. Used by Google, Facebook, Meta. Fastest velocity.</p>
-          <p>For web services I prefer <strong>GitHub Flow with trunk-based principles</strong>: feature branches live &lt;2 days, integrate often, use flags for unfinished features. Long-lived branches are where merge conflicts and bugs come from.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Merge vs rebase — which when?</summary>
-        <div class="qa-body">
-          <p>Two ways to integrate one branch's changes into another.</p>
-          <p><strong>Merge</strong> (<code>git merge feature</code>) creates a merge commit preserving full history. Pros: non-destructive, easy collaboration on a shared branch. Cons: history can get noisy.</p>
-          <p><strong>Rebase</strong> (<code>git rebase main</code>) replays your commits on top of the target. Pros: linear history, easier to read. Cons: rewrites commit SHAs — dangerous on shared branches.</p>
-          <p>Rules I follow:</p>
-          <ul>
-            <li><strong>Rebase your local feature branch onto main</strong> before pushing to keep PR clean.</li>
-            <li><strong>Never rebase commits that have been pushed</strong> and others may have pulled.</li>
-            <li>Use <strong>squash-and-merge</strong> on PRs — one logical commit per feature on main. Clean history without rewriting branches.</li>
-            <li>Reserve true merge commits for integrating long-lived release branches.</li>
-          </ul>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>How do you handle hotfixes in production?</summary>
-        <div class="qa-body">
-          <p>The playbook:</p>
-          <ol>
-            <li><strong>Triage</strong> — confirm severity. If it's data loss or auth break, prioritize. Otherwise queue normally.</li>
-            <li><strong>Create a hotfix branch</strong> from the production tag (not main, in case main has unreleased changes).</li>
-            <li><strong>Minimal fix</strong> — smallest possible diff. Don't sneak unrelated changes in.</li>
-            <li><strong>Test</strong> — add a regression test that fails before the fix and passes after.</li>
-            <li><strong>Fast-track PR</strong> — same review standards, just expedited.</li>
-            <li><strong>Deploy</strong> — canary first if at all possible. Watch metrics.</li>
-            <li><strong>Cherry-pick / merge back to main</strong> immediately so the fix isn't lost on the next release.</li>
-            <li><strong>Post-mortem</strong> — what caused this? Add monitoring/tests/automation so the next one is caught earlier.</li>
-          </ol>
-          <p>One Indus Net case: a JSON parsing bug caused 500s for some resumes. Hotfix shipped in 30 minutes; the regression test we added has caught two similar bugs since.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Feature flags — why and how?</summary>
-        <div class="qa-body">
-          <p><strong>Feature flags</strong> let you turn features on/off without redeploying. Code is shipped to production behind a flag, then enabled gradually for specific users.</p>
-          <p>Use cases:</p>
-          <ul>
-            <li><strong>Trunk-based development</strong> — merge unfinished work behind a flag; flip it on when ready.</li>
-            <li><strong>Canary releases</strong> — enable for 5% of users, watch metrics, ramp up.</li>
-            <li><strong>A/B testing</strong> — show variant A to half, B to the other.</li>
-            <li><strong>Kill switches</strong> — disable a misbehaving feature without a deploy.</li>
-            <li><strong>Per-customer features</strong> in B2B SaaS.</li>
-          </ul>
-          <p>Tools: <strong>LaunchDarkly</strong>, <strong>Unleash</strong>, <strong>Split.io</strong>, <strong>Flagsmith</strong>, or roll your own. A simple <code>FeatureService.enabled("new-search", userId)</code> lookup with a config map and percentage rollouts gets you 80%.</p>
-          <p>Watch out for <strong>flag debt</strong>: clean up old flags monthly — they accumulate quickly.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>What makes a good code review?</summary>
-        <div class="qa-body">
-          <p>What I look for as a reviewer:</p>
-          <ul>
-            <li><strong>Correctness</strong> — does it do what the PR says? Edge cases?</li>
-            <li><strong>Tests</strong> — meaningful coverage, including failure paths. Not just "happy path + 100% coverage".</li>
-            <li><strong>Design fit</strong> — does it belong here, or does it deserve its own module/service? Are abstractions earning their keep?</li>
-            <li><strong>Security</strong> — input validation, authz checks, secrets, SQL injection.</li>
-            <li><strong>Observability</strong> — logs, metrics, tracing for the new code paths.</li>
-            <li><strong>Performance</strong> — N+1 queries, missing indexes, hot-path allocations.</li>
-            <li><strong>Readability</strong> — naming, comments where needed, no clever tricks.</li>
-            <li><strong>Backward compatibility</strong> — DB migrations, API contracts.</li>
-          </ul>
-          <p>What I value as an author: small PRs (&lt;400 lines diff), clear description with context, screenshots/curl examples for API changes. Code review is mentorship — explain the "why", not just "no".</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>How do you manage database migrations?</summary>
-        <div class="qa-body">
-          <p>Use a migration tool — <strong>Flyway</strong> or <strong>Liquibase</strong> — that versions schema changes as code in your repo, applied in order. <code>V1__create_users.sql</code>, <code>V2__add_status_to_users.sql</code>, etc.</p>
-          <p>Rules I follow for zero-downtime migrations:</p>
-          <ul>
-            <li><strong>Backward-compatible changes only.</strong> Old code must still work with the new schema for the duration of a deploy.</li>
-            <li><strong>Two-phase for breaking changes</strong>: add column (nullable) → deploy code that writes both old and new → backfill → deploy code that reads new only → drop old column later.</li>
-            <li><strong>Renames</strong> are two migrations + an interim code change.</li>
-            <li><strong>Long migrations</strong> (large tables) — run online; use tools like <code>pg_repack</code> or <code>gh-ost</code> for big alters.</li>
-            <li><strong>Apply migrations early</strong> in the deploy pipeline, before pod rollout — never on app startup in parallel.</li>
-          </ul>
-          <p>Always test migrations on a staging snapshot. Test rollback. Migration mistakes cause the worst incidents.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>GitOps — what and why?</summary>
-        <div class="qa-body">
-          <p><strong>GitOps</strong> declares infrastructure and app state as code in git, and a reconciler agent applies it. Git is the single source of truth — to change production, open a PR.</p>
-          <p>Tools: <strong>Argo CD</strong> and <strong>Flux</strong> for Kubernetes deploys. They watch a git repo containing manifests/Helm charts and continuously reconcile cluster state.</p>
-          <p>Wins:</p>
-          <ul>
-            <li><strong>Audit trail</strong> — every change is a commit by a named author.</li>
-            <li><strong>Easy rollback</strong> — revert the commit.</li>
-            <li><strong>Self-healing</strong> — if someone manually changes the cluster, the agent reverts it.</li>
-            <li><strong>Disaster recovery</strong> — recreate a cluster by pointing Argo at the repo.</li>
-            <li><strong>Separation of concerns</strong> — CI builds and tests; GitOps deploys. No CI agent has cluster credentials.</li>
-          </ul>
-          <p>Pattern: app code repo → CI builds image → bumps image tag in deploy repo → Argo CD picks it up and rolls out. We use Argo CD at Indus Net — production is a git revert away if anything breaks.</p>
-        </div>
-      </details>
-
-    </div>
-
-  </main>
-
-  <script src="main.js"></script>
+</div>
+</details>
+<details class="qa">
+<summary>Trunk-based vs Git Flow vs GitHub Flow</summary>
+<div class="qa-body">
+<p>Three popular branching strategies.</p>
+<p><strong>Git Flow</strong> — long-lived branches: <code>master</code>, <code>develop</code>, <code>feature/*</code>, <code>release/*</code>, <code>hotfix/*</code>. Designed for versioned releases (installable software). Heavy for web/SaaS — too much branch ceremony.</p>
+<p><strong>GitHub Flow</strong> — one main branch + short-lived feature branches → PR → merge → deploy. Simple, works great for continuous delivery.</p>
+<p><strong>Trunk-based development</strong> — everyone commits to main multiple times a day; very short-lived branches. Relies on feature flags to hide incomplete work in production. Used by Google, Facebook, Meta. Fastest velocity.</p>
+<p>For web services I prefer <strong>GitHub Flow with trunk-based principles</strong>: feature branches live &lt;2 days, integrate often, use flags for unfinished features. Long-lived branches are where merge conflicts and bugs come from.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Merge vs rebase — which when?</summary>
+<div class="qa-body">
+<p>Two ways to integrate one branch's changes into another.</p>
+<p><strong>Merge</strong> (<code>git merge feature</code>) creates a merge commit preserving full history. Pros: non-destructive, easy collaboration on a shared branch. Cons: history can get noisy.</p>
+<p><strong>Rebase</strong> (<code>git rebase main</code>) replays your commits on top of the target. Pros: linear history, easier to read. Cons: rewrites commit SHAs — dangerous on shared branches.</p>
+<p>Rules I follow:</p>
+<ul>
+<li><strong>Rebase your local feature branch onto main</strong> before pushing to keep PR clean.</li>
+<li><strong>Never rebase commits that have been pushed</strong> and others may have pulled.</li>
+<li>Use <strong>squash-and-merge</strong> on PRs — one logical commit per feature on main. Clean history without rewriting branches.</li>
+<li>Reserve true merge commits for integrating long-lived release branches.</li>
+</ul>
+</div>
+</details>
+<details class="qa">
+<summary>How do you handle hotfixes in production?</summary>
+<div class="qa-body">
+<p>The playbook:</p>
+<ol>
+<li><strong>Triage</strong> — confirm severity. If it's data loss or auth break, prioritize. Otherwise queue normally.</li>
+<li><strong>Create a hotfix branch</strong> from the production tag (not main, in case main has unreleased changes).</li>
+<li><strong>Minimal fix</strong> — smallest possible diff. Don't sneak unrelated changes in.</li>
+<li><strong>Test</strong> — add a regression test that fails before the fix and passes after.</li>
+<li><strong>Fast-track PR</strong> — same review standards, just expedited.</li>
+<li><strong>Deploy</strong> — canary first if at all possible. Watch metrics.</li>
+<li><strong>Cherry-pick / merge back to main</strong> immediately so the fix isn't lost on the next release.</li>
+<li><strong>Post-mortem</strong> — what caused this? Add monitoring/tests/automation so the next one is caught earlier.</li>
+</ol>
+<p>One Indus Net case: a JSON parsing bug caused 500s for some resumes. Hotfix shipped in 30 minutes; the regression test we added has caught two similar bugs since.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Feature flags — why and how?</summary>
+<div class="qa-body">
+<p><strong>Feature flags</strong> let you turn features on/off without redeploying. Code is shipped to production behind a flag, then enabled gradually for specific users.</p>
+<p>Use cases:</p>
+<ul>
+<li><strong>Trunk-based development</strong> — merge unfinished work behind a flag; flip it on when ready.</li>
+<li><strong>Canary releases</strong> — enable for 5% of users, watch metrics, ramp up.</li>
+<li><strong>A/B testing</strong> — show variant A to half, B to the other.</li>
+<li><strong>Kill switches</strong> — disable a misbehaving feature without a deploy.</li>
+<li><strong>Per-customer features</strong> in B2B SaaS.</li>
+</ul>
+<p>Tools: <strong>LaunchDarkly</strong>, <strong>Unleash</strong>, <strong>Split.io</strong>, <strong>Flagsmith</strong>, or roll your own. A simple <code>FeatureService.enabled("new-search", userId)</code> lookup with a config map and percentage rollouts gets you 80%.</p>
+<p>Watch out for <strong>flag debt</strong>: clean up old flags monthly — they accumulate quickly.</p>
+</div>
+</details>
+<details class="qa">
+<summary>What makes a good code review?</summary>
+<div class="qa-body">
+<p>What I look for as a reviewer:</p>
+<ul>
+<li><strong>Correctness</strong> — does it do what the PR says? Edge cases?</li>
+<li><strong>Tests</strong> — meaningful coverage, including failure paths. Not just "happy path + 100% coverage".</li>
+<li><strong>Design fit</strong> — does it belong here, or does it deserve its own module/service? Are abstractions earning their keep?</li>
+<li><strong>Security</strong> — input validation, authz checks, secrets, SQL injection.</li>
+<li><strong>Observability</strong> — logs, metrics, tracing for the new code paths.</li>
+<li><strong>Performance</strong> — N+1 queries, missing indexes, hot-path allocations.</li>
+<li><strong>Readability</strong> — naming, comments where needed, no clever tricks.</li>
+<li><strong>Backward compatibility</strong> — DB migrations, API contracts.</li>
+</ul>
+<p>What I value as an author: small PRs (&lt;400 lines diff), clear description with context, screenshots/curl examples for API changes. Code review is mentorship — explain the "why", not just "no".</p>
+</div>
+</details>
+<details class="qa">
+<summary>How do you manage database migrations?</summary>
+<div class="qa-body">
+<p>Use a migration tool — <strong>Flyway</strong> or <strong>Liquibase</strong> — that versions schema changes as code in your repo, applied in order. <code>V1__create_users.sql</code>, <code>V2__add_status_to_users.sql</code>, etc.</p>
+<p>Rules I follow for zero-downtime migrations:</p>
+<ul>
+<li><strong>Backward-compatible changes only.</strong> Old code must still work with the new schema for the duration of a deploy.</li>
+<li><strong>Two-phase for breaking changes</strong>: add column (nullable) → deploy code that writes both old and new → backfill → deploy code that reads new only → drop old column later.</li>
+<li><strong>Renames</strong> are two migrations + an interim code change.</li>
+<li><strong>Long migrations</strong> (large tables) — run online; use tools like <code>pg_repack</code> or <code>gh-ost</code> for big alters.</li>
+<li><strong>Apply migrations early</strong> in the deploy pipeline, before pod rollout — never on app startup in parallel.</li>
+</ul>
+<p>Always test migrations on a staging snapshot. Test rollback. Migration mistakes cause the worst incidents.</p>
+</div>
+</details>
+<details class="qa">
+<summary>GitOps — what and why?</summary>
+<div class="qa-body">
+<p><strong>GitOps</strong> declares infrastructure and app state as code in git, and a reconciler agent applies it. Git is the single source of truth — to change production, open a PR.</p>
+<p>Tools: <strong>Argo CD</strong> and <strong>Flux</strong> for Kubernetes deploys. They watch a git repo containing manifests/Helm charts and continuously reconcile cluster state.</p>
+<p>Wins:</p>
+<ul>
+<li><strong>Audit trail</strong> — every change is a commit by a named author.</li>
+<li><strong>Easy rollback</strong> — revert the commit.</li>
+<li><strong>Self-healing</strong> — if someone manually changes the cluster, the agent reverts it.</li>
+<li><strong>Disaster recovery</strong> — recreate a cluster by pointing Argo at the repo.</li>
+<li><strong>Separation of concerns</strong> — CI builds and tests; GitOps deploys. No CI agent has cluster credentials.</li>
+</ul>
+<p>Pattern: app code repo → CI builds image → bumps image tag in deploy repo → Argo CD picks it up and rolls out. We use Argo CD at Indus Net — production is a git revert away if anything breaks.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Maven vs Gradle. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Maven</strong> uses XML-based declarative configuration with fixed lifecycle; <strong>Gradle</strong> uses Groovy/Kotlin DSL with flexible, incremental build and better performance.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Maven</div>
+<p>pom.xml: declarative; strict lifecycle (validate→compile→test→package→install→deploy); wide enterprise adoption.</p>
+<p>Convention over configuration: standard project layout, predictable behavior, strong plugin ecosystem.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Gradle</div>
+<p>build.gradle: programmable DSL; incremental builds (skips unchanged tasks); build cache speeds CI significantly.</p>
+<p>Android standard; gaining traction in Java microservices; steeper learning curve than Maven.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking context</div>
+<p>Most banking projects use Maven for legacy codebases; new microservices projects increasingly adopt Gradle.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Maven for stability and enterprise convention; Gradle for performance and flexibility in modern projects.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is `pom.xml`? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>pom.xml (Project Object Model)</strong> is Maven's build descriptor defining project coordinates, dependencies, plugins, profiles, and build lifecycle configuration.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Key sections</div>
+<p>groupId, artifactId, version: uniquely identify the artifact (e.g., com.bank:payment-service:1.0.0).</p>
+<p>dependencies: list of library dependencies with scope (compile, test, provided, runtime).</p>
+<p>build/plugins: Maven Surefire (test), Maven Compiler (Java version), Spring Boot Maven Plugin (fat JAR).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking usage</div>
+<p>Parent POM defines common dependency versions (BOM) and plugin config shared across all microservices.</p>
+<p>Profiles: -Pproduction activates production-specific settings (logging level, optimization flags).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use a parent POM with dependencyManagement to centralize version control across a multi-module banking project.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is dependency management? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Dependency management</strong> in Maven centrally declares dependency versions in a parent POM's dependencyManagement section, ensuring consistent versions across all child modules.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">How it works</div>
+<p>Parent POM: dependencyManagement lists all dependencies with versions — child POMs inherit versions without specifying them.</p>
+<p>Spring Boot BOM (Bill of Materials): import spring-boot-dependencies BOM to get tested, compatible library versions.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Benefits</div>
+<p>Version consistency across all modules in a multi-module project; no version drift between services.</p>
+<p>Upgrade: change version in one place (parent) — all children pick up the new version.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Dependency management is essential in large banking projects with 20+ Maven modules sharing common libraries.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is transitive dependency? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>transitive dependency</strong> is a library that your direct dependency depends on — Maven automatically includes it in the build classpath.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Example</div>
+<p>Your project depends on spring-web; spring-web depends on jackson-databind — jackson-databind is a transitive dependency.</p>
+<p>mvn dependency:tree shows the full transitive dependency tree including version of each resolved artifact.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Issues</div>
+<p>Version conflicts: two different libraries depend on different versions of the same artifact — Maven picks nearest-wins version.</p>
+<p>Exclusion: use &lt;exclusions&gt; to exclude a transitive dependency that conflicts or is unused.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always inspect the dependency tree when upgrading libraries — a transitive version change can break production.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is Maven lifecycle? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Maven lifecycle phases: <code>validate</code> → <code>compile</code> → <code>test</code> → <code>package</code> → <code>verify</code> → <code>install</code> → <code>deploy</code>.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to common.</div>
+<code>mvn clean package</code> runs compile, test, jar.
+          </div>
+</div>
+</details>
+<details class="qa">
+<summary>What is Maven profile? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>Maven profile</strong> allows environment-specific build configuration (properties, dependencies, plugins) activated via -P flag or environment trigger.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Usage</div>
+<p>Profiles: dev (H2 DB config, debug logging), sit (Oracle DB config), production (minified, optimized builds).</p>
+<p>Activate: mvn package -Pproduction; or auto-activate based on OS, JDK version, or absence of a file.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking use</div>
+<p>CI pipeline activates -Psit to use SIT database URL and credentials during integration testing.</p>
+<p>Production profile enables dead-code elimination and disables actuator endpoints for security.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Profiles keep environment-specific configuration out of the main build — critical for banking deploy pipelines.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is snapshot version? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>SNAPSHOT version</strong> (e.g., 1.0.0-SNAPSHOT) in Maven indicates a development version that may change; Maven always downloads the latest snapshot from the remote repository.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Behaviour</div>
+<p>Maven downloads SNAPSHOT artifact from Nexus on every build (or per update policy) — gets latest published development build.</p>
+<p>Release version (1.0.0 without SNAPSHOT) is immutable once published — never changed after release.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking practice</div>
+<p>Use SNAPSHOT versions during development and SIT; release (remove SNAPSHOT) before promoting to UAT/Production.</p>
+<p>Never deploy SNAPSHOT artifacts to production — they are mutable and non-reproducible.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>SNAPSHOT in production is a red flag — always release a fixed version before production deployment.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you resolve dependency conflict? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Dependency conflicts are resolved using Maven's dependency:tree to identify conflicting versions, then adding explicit version declarations or exclusions to force the correct version.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Steps</div>
+<p>mvn dependency:tree -Dincludes=groupId:artifactId shows which version is being pulled and by whom.</p>
+<p>Add explicit &lt;dependency&gt; in your POM with the correct version to override Maven's nearest-wins selection.</p>
+<p>Use &lt;exclusion&gt; in the conflicting dependency to remove the wrong transitive version.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Example</div>
+<p>jackson-databind 2.9 (vulnerable) pulled transitively — add explicit 2.15.x dependency to override.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Run OWASP dependency-check plugin in CI to detect known CVEs in transitive dependencies automatically.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is Git branching strategy? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>Git branching strategy</strong> defines how branches are created, merged, and managed — common strategies are GitFlow, trunk-based development, and GitHub Flow.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">GitFlow</div>
+<p>main (production), develop (integration), feature/*, release/*, hotfix/* branches.</p>
+<p>Feature branches merged to develop; release branch cut from develop; hotfix branches from main.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Trunk-based</div>
+<p>All developers commit to main/trunk frequently; feature flags hide incomplete features; short-lived branches.</p>
+<p>Better for continuous delivery; reduces merge conflicts from long-lived feature branches.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking practice</div>
+<p>Most banking teams use GitFlow due to release management complexity; hotfix branches for production patches.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Choose branching strategy based on team size and release frequency; document and enforce it via PR rules.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is pull request? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>pull request (PR)</strong> is a proposal to merge code changes from a feature branch into a target branch, with code review, CI checks, and approval gate before merge.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Process</div>
+<p>Developer pushes feature branch → opens PR → reviewers inspect code, leave comments → CI runs tests.</p>
+<p>After review approvals and green CI: merge using merge commit (preserves history) or squash merge (clean history).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking practice</div>
+<p>Require minimum 2 approvals for PRs touching financial calculation or security code.</p>
+<p>Branch protection: no direct push to main/develop; all changes via PR with mandatory CI pass.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>PRs are the main quality gate — enforce code review, test coverage, and SonarQube pass before any merge.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you resolve merge conflicts? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Merge conflicts are resolved by identifying the conflicting changes, understanding both versions' intent, choosing the correct merge, and verifying the result with tests.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Steps</div>
+<p>git pull origin develop; git merge or git rebase triggers conflict markers in affected files.</p>
+<p>Open conflicting file: &lt;&lt;&lt; HEAD shows your changes, &gt;&gt;&gt; branch shows incoming; edit to correct combined version.</p>
+<p>git add &lt;resolved-file&gt;; git merge --continue (or git rebase --continue); run tests to verify.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Prevention</div>
+<p>Short-lived feature branches (&lt; 1 week) reduce conflict probability significantly.</p>
+<p>Rebase feature branch onto latest develop daily to incorporate others' changes incrementally.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Never blindly accept 'ours' or 'theirs' in a merge — understand what both sides changed before deciding.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is Git stash? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>git stash</strong> temporarily shelves uncommitted working-directory changes so you can switch context (fix a bug, pull updates) then restore them later.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Usage</div>
+<p>git stash (saves changes); git stash pop (restores and removes latest stash); git stash list (view all stashes).</p>
+<p>git stash push -m 'WIP: interest calculation' to add a descriptive name for later identification.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Use case</div>
+<p>Mid-feature when an urgent hotfix is needed: stash WIP, checkout hotfix branch, fix, merge, pop stash.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Stash is a temporary shelf — don't leave stashes for days; commit or discard to keep the stash list clean.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is cherry-pick? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>git cherry-pick</strong> applies a specific commit from one branch to another — useful for backporting a hotfix to a release branch without merging the full feature branch.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Usage</div>
+<p>git cherry-pick &lt;commit-sha&gt; applies that commit's changes on top of current branch.</p>
+<p>Cherry-pick a range: git cherry-pick A..B applies commits A+1 through B.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking use case</div>
+<p>Critical hotfix committed to main: cherry-pick to release/1.5 branch to include in next patch release without merging main.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Cherry-pick creates a new commit with a different SHA — can cause confusion if the original is later merged; use carefully.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is Jira workflow? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>Jira workflow</strong> defines the lifecycle states (To Do → In Progress → Code Review → Testing → Done) and transitions for issues in a project.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">States</div>
+<p>To Do → In Progress (dev starts) → Code Review (PR raised) → In Testing (in SIT) → Done (deployed and verified).</p>
+<p>Defects: Open → In Progress → Fixed → In Testing → Closed (or Reopened if regression found).</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking projects</div>
+<p>Additional states for banking: Awaiting UAT, UAT Passed, Pending Change Approval, Production Deployed.</p>
+<p>Jira automation: trigger notifications on state change; update story status when PR merged.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>A well-defined Jira workflow provides real-time visibility into project status for stakeholders and management.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you estimate story points? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Story points estimate relative effort and complexity using Fibonacci sequence (1, 2, 3, 5, 8, 13) — accounting for complexity, uncertainty, and effort.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Process</div>
+<p>Planning poker: each team member independently estimates; discuss outliers to understand different assumptions.</p>
+<p>Use a reference story as benchmark (e.g., account balance API = 3 points) to calibrate team's estimation scale.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking specifics</div>
+<p>Banking stories have hidden complexity: regulatory checks, maker-checker flows, audit logging add points.</p>
+<p>Integration stories get higher points due to external system dependency and testing complexity.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Story points estimate complexity, not hours — they help the team understand capacity and spot under-estimated work.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is sprint? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>sprint</strong> is a fixed time-box (typically 2 weeks) in Scrum during which a cross-functional team delivers a potentially shippable product increment.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Structure</div>
+<p>Sprint planning: team selects stories from backlog fitting velocity; defines sprint goal.</p>
+<p>Daily standup: what did I do, what will I do, any blockers — 15 minutes, standing.</p>
+<p>Sprint review: demo completed work to stakeholders; sprint retrospective: improve team process.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking projects</div>
+<p>Banking sprints must account for SIT/UAT cycles — delivery in sprint may mean 'dev complete + SIT pass'.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>A sprint's value is the working software delivered — not the number of story points completed.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is bug lifecycle? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>bug lifecycle</strong> tracks a defect from discovery through triage, assignment, fix, testing, and closure — ensuring no defect is lost or prematurely closed.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">States</div>
+<p>New → Assigned → In Progress → Fixed → In Testing → Closed (or Reopened → In Progress if not fixed).</p>
+<p>Deferred: valid bug but not fixed in current release — documented and scheduled for future.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking practice</div>
+<p>P1/Sev1 bugs (financial data loss, security breach) bypasses normal cycle — immediate hotfix with emergency change request.</p>
+<p>Bug closure requires test evidence (test case pass screenshot) and business sign-off for UAT defects.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Never close a bug without verified test evidence — 'Fixed' without test leads to production regression.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is release branch? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>release branch</strong> is cut from develop (GitFlow) when a version is feature-complete; it receives only bug fixes, doc updates, and release preparation — no new features.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Purpose</div>
+<p>Allows new feature development on develop to continue in parallel while release branch is stabilized.</p>
+<p>Hotfixes on release branch are cherry-picked back to develop to keep main branch in sync.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking naming</div>
+<p>release/v1.5.0 branch: contains exactly the features going into the 1.5.0 production deployment.</p>
+<p>After go-live: merge release branch to main, tag with version (v1.5.0), then delete the release branch.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Tagging release branches in Git provides an immutable reference for any future hotfix baseline.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you manage hotfix? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>hotfix</strong> is an emergency fix for a critical production defect: branch from main/production, fix, test, deploy via emergency change process, and merge back to develop.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Process</div>
+<p>git checkout -b hotfix/ORA-04091-trigger main — branch from the current production code.</p>
+<p>Fix, unit test, deploy to SIT/staging for smoke test, raise emergency change request.</p>
+<p>Merge to main (tag new patch version), cherry-pick to develop and any active release branches.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking constraints</div>
+<p>Hotfixes require emergency CAB (Change Advisory Board) approval; cannot skip testing even under pressure.</p>
+<p>Always have a rollback plan: if hotfix causes new issue, can revert to previous tagged version.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Hotfix urgency must not eliminate testing — a bad hotfix in banking can cause worse damage than the original issue.</p>
+</div>
+</div>
+</details>
+</div>
+</main>
+<script src="main.js"></script>
 </body>
 </html>

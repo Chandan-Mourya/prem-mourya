@@ -1,357 +1,330 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex,nofollow,noarchive">
-  <title>Concurrency · Notes</title>
-  <link rel="icon" href="../assets/img/logo.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<title>Concurrency · Notes</title>
+<link href="../assets/img/logo.png" rel="icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
-
-  <header class="topbar">
-    <div class="topbar-inner">
-      <a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
-      <div class="search-wrap">
-        <i class="bi bi-search"></i>
-        <input id="search" type="search" placeholder="Search within Concurrency..." autocomplete="off" spellcheck="false">
-        <span class="search-shortcut">/</span>
-      </div>
-      <div class="topbar-actions">
-        <button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
-        <button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
-      </div>
-    </div>
-  </header>
-
-  <main class="topic-page">
-
-    <div class="topic-page-header">
-      <div class="topic-page-eyebrow">03 · Concurrency</div>
-      <h1>Concurrency &amp; threads</h1>
-      <p class="topic-page-desc">The area senior interviews dig hardest. Know synchronized vs Lock, the executor framework, Atomic types, and Virtual Threads.</p>
-      <div class="topic-page-meta">
-        <span><strong>15</strong> questions</span>
-        <span>Press <span class="hint-kbd">/</span> to search</span>
-      </div>
-    </div>
-
-    <div class="no-results" id="noResults">No matches.</div>
-
-    <div class="qa-list">
-
-      <details class="qa">
-        <summary>Process vs Thread vs Virtual Thread <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">Three levels of concurrency, each progressively lighter — understanding the hierarchy is essential before talking about scaling and Project Loom.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">Process</span>
-              <span class="core-diff-val">Independent program — <strong>own memory</strong>, OS-managed.</span>
-            </div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">Thread (platform)</span>
-              <span class="core-diff-val">Inside a process, <strong>shares memory</strong>, 1:1 with an OS thread.</span>
-            </div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">Virtual Thread</span>
-              <span class="core-diff-val">JVM-managed lightweight thread (Java 21+) — <strong>millions feasible</strong>.</span>
-            </div>
+<header class="topbar">
+<div class="topbar-inner">
+<a class="back-link" href="index.html"><i class="bi bi-arrow-left"></i> <span>All notes</span></a>
+<div class="search-wrap">
+<i class="bi bi-search"></i>
+<input autocomplete="off" id="search" placeholder="Search within Concurrency..." spellcheck="false" type="search"/>
+<span class="search-shortcut">/</span>
+</div>
+<div class="topbar-actions">
+<button class="action-btn" id="expandAll"><i class="bi bi-arrows-expand"></i> Expand</button>
+<button class="action-btn" id="collapseAll"><i class="bi bi-arrows-collapse"></i> Collapse</button>
+</div>
+</div>
+</header>
+<main class="topic-page">
+<div class="topic-page-header">
+<div class="topic-page-eyebrow">03 · Concurrency</div>
+<h1>Concurrency &amp; threads</h1>
+<p class="topic-page-desc">The area senior interviews dig hardest. Know synchronized vs Lock, the executor framework, Atomic types, and Virtual Threads.</p>
+<div class="topic-page-meta">
+<span><strong>23</strong> questions</span>
+<span>Press <span class="hint-kbd">/</span> to search</span>
+</div>
+</div>
+<div class="no-results" id="noResults">No matches.</div>
+<div class="qa-list">
+<details class="qa">
+<summary>Process vs Thread vs Virtual Thread <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro">Three levels of concurrency, each progressively lighter — understanding the hierarchy is essential before talking about scaling and Project Loom.</p>
+<div class="core-diff">
+<div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+<div class="core-diff-row">
+<span class="core-diff-key">Process</span>
+<span class="core-diff-val">Independent program — <strong>own memory</strong>, OS-managed.</span>
+</div>
+<div class="core-diff-row">
+<span class="core-diff-key">Thread (platform)</span>
+<span class="core-diff-val">Inside a process, <strong>shares memory</strong>, 1:1 with an OS thread.</span>
+</div>
+<div class="core-diff-row">
+<span class="core-diff-key">Virtual Thread</span>
+<span class="core-diff-val">JVM-managed lightweight thread (Java 21+) — <strong>millions feasible</strong>.</span>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> Memory</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> Process</div>
+<ul>
+<li>Separate address space, separate heap.</li>
+<li>Inter-process communication via pipes, sockets, shared memory.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> Threads (platform &amp; virtual)</div>
+<ul>
+<li>Share heap, code, file descriptors with other threads in the process.</li>
+<li>Each has its own stack and program counter.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> Cost &amp; Footprint</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> Process / Platform Thread</div>
+<ul>
+<li><strong>Process</strong> — MBs / seconds to spawn. Heavy.</li>
+<li><strong>Platform thread</strong> — ~1 MB stack, ~ms to spawn. A typical server tops out at a few thousand.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> Virtual Thread</div>
+<ul>
+<li>Few KB stack, microseconds to spawn.</li>
+<li><strong>Millions</strong> of concurrent virtual threads on a single JVM.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">3</span> Scheduler</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> Process / Platform Thread</div>
+<ul>
+<li>Managed by the <strong>OS scheduler</strong>.</li>
+<li>Context switching has kernel-level cost.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> Virtual Thread</div>
+<ul>
+<li>Scheduled by the <strong>JVM</strong> onto a small pool of carrier (platform) threads.</li>
+<li>Parks instead of blocking the OS thread on I/O — that's the magic of Loom.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">4</span> When to Use</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> Process / Platform Thread</div>
+<ul>
+<li><strong>Process</strong> — strong isolation (sandboxing, security), different language.</li>
+<li><strong>Platform thread</strong> — CPU-bound parallel computation (sized to cores).</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> Virtual Thread</div>
+<ul>
+<li>I/O-bound services (most backend microservices).</li>
+<li>"One thread per request" without pool tuning headaches.</li>
+<li>Write blocking code, get reactive-like scale.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="takeaway">
+<b>Takeaway:</b> with Java 21 + Spring Boot 3.2 you can flip <code>spring.threads.virtual.enabled=true</code> and your service suddenly handles 10× more concurrent requests on the same hardware — provided your blocking calls aren't pinned (avoid <code>synchronized</code> around I/O; use <code>ReentrantLock</code>).
           </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> Memory</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> Process</div>
-                <ul>
-                  <li>Separate address space, separate heap.</li>
-                  <li>Inter-process communication via pipes, sockets, shared memory.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> Threads (platform &amp; virtual)</div>
-                <ul>
-                  <li>Share heap, code, file descriptors with other threads in the process.</li>
-                  <li>Each has its own stack and program counter.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> Cost &amp; Footprint</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> Process / Platform Thread</div>
-                <ul>
-                  <li><strong>Process</strong> — MBs / seconds to spawn. Heavy.</li>
-                  <li><strong>Platform thread</strong> — ~1 MB stack, ~ms to spawn. A typical server tops out at a few thousand.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> Virtual Thread</div>
-                <ul>
-                  <li>Few KB stack, microseconds to spawn.</li>
-                  <li><strong>Millions</strong> of concurrent virtual threads on a single JVM.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> Scheduler</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> Process / Platform Thread</div>
-                <ul>
-                  <li>Managed by the <strong>OS scheduler</strong>.</li>
-                  <li>Context switching has kernel-level cost.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> Virtual Thread</div>
-                <ul>
-                  <li>Scheduled by the <strong>JVM</strong> onto a small pool of carrier (platform) threads.</li>
-                  <li>Parks instead of blocking the OS thread on I/O — that's the magic of Loom.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">4</span> When to Use</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> Process / Platform Thread</div>
-                <ul>
-                  <li><strong>Process</strong> — strong isolation (sandboxing, security), different language.</li>
-                  <li><strong>Platform thread</strong> — CPU-bound parallel computation (sized to cores).</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> Virtual Thread</div>
-                <ul>
-                  <li>I/O-bound services (most backend microservices).</li>
-                  <li>"One thread per request" without pool tuning headaches.</li>
-                  <li>Write blocking code, get reactive-like scale.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="takeaway">
-            <b>Takeaway:</b> with Java 21 + Spring Boot 3.2 you can flip <code>spring.threads.virtual.enabled=true</code> and your service suddenly handles 10× more concurrent requests on the same hardware — provided your blocking calls aren't pinned (avoid <code>synchronized</code> around I/O; use <code>ReentrantLock</code>).
-          </div>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Thread lifecycle states</summary>
-        <div class="qa-body">
-          <p>A Java thread moves through six states from <code>Thread.State</code>:</p>
-          <ul>
-            <li><strong>NEW</strong> — created but <code>start()</code> not called.</li>
-            <li><strong>RUNNABLE</strong> — eligible to run; OS schedules it. Note: "runnable" lumps together actually-running and ready-to-run.</li>
-            <li><strong>BLOCKED</strong> — waiting to acquire a monitor lock (someone else holds the synchronized).</li>
-            <li><strong>WAITING</strong> — waiting indefinitely for another thread (<code>wait()</code>, <code>join()</code>, <code>LockSupport.park()</code>).</li>
-            <li><strong>TIMED_WAITING</strong> — waiting with a timeout (<code>sleep(n)</code>, <code>wait(n)</code>, <code>parkNanos</code>).</li>
-            <li><strong>TERMINATED</strong> — finished.</li>
-          </ul>
-          <p>When debugging thread dumps, BLOCKED and WAITING are the states you care about — they tell you which threads are stuck and on what monitor or condition.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>synchronized — how does it actually work? <span class="qa-tag hot">hot</span></summary>
-        <div class="qa-body">
-          <p><strong><code>synchronized</code></strong> uses an <em>intrinsic monitor</em> attached to every Java object. <code>synchronized (obj) { ... }</code> acquires obj's monitor on entry and releases it on exit (even on exception). <code>synchronized</code> instance method = synchronized on <code>this</code>; on a static method = synchronized on <code>ClassName.class</code>.</p>
-          <p>It provides two guarantees: <strong>mutual exclusion</strong> (only one thread runs the block) and <strong>memory visibility</strong> via the happens-before relationship — changes made inside the block are visible to the next thread that acquires the same monitor. The JVM optimizes contention with biased locking, lightweight locking, and only escalates to heavyweight OS-level mutexes under real contention.</p>
-          <p>Modern guidance: prefer <code>ReentrantLock</code> when you need <code>tryLock</code>, timeouts, fairness, or interruptible locking; use <code>synchronized</code> for simple cases.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>wait() / notify() / notifyAll() — usage</summary>
-        <div class="qa-body">
-          <p>These are methods on <code>Object</code> for thread coordination. They <strong>must be called while holding the object's monitor</strong> — i.e., inside a synchronized block on that object — otherwise <code>IllegalMonitorStateException</code>.</p>
-          <p><code>wait()</code> releases the monitor and parks the thread; <code>notify()</code> wakes <em>one</em> waiting thread; <code>notifyAll()</code> wakes all of them. The woken thread re-acquires the monitor before returning from <code>wait()</code>.</p>
-          <p>Idiom — always wait in a loop, never an if:</p>
-          <pre><code>synchronized (lock) {
+</div>
+</details>
+<details class="qa">
+<summary>Thread lifecycle states</summary>
+<div class="qa-body">
+<p>A Java thread moves through six states from <code>Thread.State</code>:</p>
+<ul>
+<li><strong>NEW</strong> — created but <code>start()</code> not called.</li>
+<li><strong>RUNNABLE</strong> — eligible to run; OS schedules it. Note: "runnable" lumps together actually-running and ready-to-run.</li>
+<li><strong>BLOCKED</strong> — waiting to acquire a monitor lock (someone else holds the synchronized).</li>
+<li><strong>WAITING</strong> — waiting indefinitely for another thread (<code>wait()</code>, <code>join()</code>, <code>LockSupport.park()</code>).</li>
+<li><strong>TIMED_WAITING</strong> — waiting with a timeout (<code>sleep(n)</code>, <code>wait(n)</code>, <code>parkNanos</code>).</li>
+<li><strong>TERMINATED</strong> — finished.</li>
+</ul>
+<p>When debugging thread dumps, BLOCKED and WAITING are the states you care about — they tell you which threads are stuck and on what monitor or condition.</p>
+</div>
+</details>
+<details class="qa">
+<summary>synchronized — how does it actually work? <span class="qa-tag hot">hot</span></summary>
+<div class="qa-body">
+<p><strong><code>synchronized</code></strong> uses an <em>intrinsic monitor</em> attached to every Java object. <code>synchronized (obj) { ... }</code> acquires obj's monitor on entry and releases it on exit (even on exception). <code>synchronized</code> instance method = synchronized on <code>this</code>; on a static method = synchronized on <code>ClassName.class</code>.</p>
+<p>It provides two guarantees: <strong>mutual exclusion</strong> (only one thread runs the block) and <strong>memory visibility</strong> via the happens-before relationship — changes made inside the block are visible to the next thread that acquires the same monitor. The JVM optimizes contention with biased locking, lightweight locking, and only escalates to heavyweight OS-level mutexes under real contention.</p>
+<p>Modern guidance: prefer <code>ReentrantLock</code> when you need <code>tryLock</code>, timeouts, fairness, or interruptible locking; use <code>synchronized</code> for simple cases.</p>
+</div>
+</details>
+<details class="qa">
+<summary>wait() / notify() / notifyAll() — usage</summary>
+<div class="qa-body">
+<p>These are methods on <code>Object</code> for thread coordination. They <strong>must be called while holding the object's monitor</strong> — i.e., inside a synchronized block on that object — otherwise <code>IllegalMonitorStateException</code>.</p>
+<p><code>wait()</code> releases the monitor and parks the thread; <code>notify()</code> wakes <em>one</em> waiting thread; <code>notifyAll()</code> wakes all of them. The woken thread re-acquires the monitor before returning from <code>wait()</code>.</p>
+<p>Idiom — always wait in a loop, never an if:</p>
+<pre><code>synchronized (lock) {
     while (!condition) lock.wait();
     // act on condition
 }</code></pre>
-          <p>This handles spurious wake-ups. In modern code I almost never write this — I use <code>BlockingQueue</code>, <code>CountDownLatch</code>, <code>Semaphore</code>, or <code>Condition</code> on a Lock, which are far cleaner.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>wait() vs sleep() <span class="qa-tag hot">hot</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">Both pause the current thread, but they live on different classes and behave very differently with locks. Mixing them up is a classic interview red flag.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">wait()</span>
-              <span class="core-diff-val">On <code>Object</code> — <strong>releases the monitor lock</strong>, waits for <code>notify()</code>.</span>
-            </div>
-            <div class="core-diff-row">
-              <span class="core-diff-key">sleep()</span>
-              <span class="core-diff-val">On <code>Thread</code> (static) — <strong>keeps all locks</strong>, just pauses for a duration.</span>
-            </div>
+<p>This handles spurious wake-ups. In modern code I almost never write this — I use <code>BlockingQueue</code>, <code>CountDownLatch</code>, <code>Semaphore</code>, or <code>Condition</code> on a Lock, which are far cleaner.</p>
+</div>
+</details>
+<details class="qa">
+<summary>wait() vs sleep() <span class="qa-tag hot">hot</span></summary>
+<div class="qa-body">
+<p class="answer-intro">Both pause the current thread, but they live on different classes and behave very differently with locks. Mixing them up is a classic interview red flag.</p>
+<div class="core-diff">
+<div class="core-diff-title"><i class="bi bi-key-fill"></i> Core Difference</div>
+<div class="core-diff-row">
+<span class="core-diff-key">wait()</span>
+<span class="core-diff-val">On <code>Object</code> — <strong>releases the monitor lock</strong>, waits for <code>notify()</code>.</span>
+</div>
+<div class="core-diff-row">
+<span class="core-diff-key">sleep()</span>
+<span class="core-diff-val">On <code>Thread</code> (static) — <strong>keeps all locks</strong>, just pauses for a duration.</span>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> Where it's defined</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> wait()</div>
+<ul>
+<li>Instance method on <code>Object</code>.</li>
+<li>Called as <code>obj.wait()</code> — must hold <code>obj</code>'s monitor.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> sleep()</div>
+<ul>
+<li>Static method on <code>Thread</code>.</li>
+<li>Called as <code>Thread.sleep(ms)</code> — affects current thread.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> Lock Behavior</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> wait()</div>
+<ul>
+<li><strong>Releases</strong> the monitor while waiting — other threads can enter synchronized blocks on the same lock.</li>
+<li>Re-acquires the monitor before returning.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> sleep()</div>
+<ul>
+<li><strong>Does NOT release</strong> any locks.</li>
+<li>If called inside a synchronized block, every other thread waiting on that lock stays blocked.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">3</span> How it Wakes Up</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> wait()</div>
+<ul>
+<li>Another thread calls <code>obj.notify()</code> / <code>obj.notifyAll()</code>.</li>
+<li>Optional timeout (<code>wait(ms)</code>).</li>
+<li>Interruption (<code>InterruptedException</code>).</li>
+<li>Spurious wakeups happen — <strong>always wait in a <code>while</code> loop</strong>.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> sleep()</div>
+<ul>
+<li>The duration expires.</li>
+<li>Or another thread interrupts it (<code>InterruptedException</code>).</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">4</span> Use Case</div>
+<div class="cmp-grid">
+<div class="cmp-card left">
+<div class="cmp-card-head"><span class="dot"></span> wait()</div>
+<ul>
+<li>Inter-thread coordination — producer/consumer, signaling.</li>
+<li>Modern code prefers <code>BlockingQueue</code>, <code>CountDownLatch</code>, <code>Condition</code>.</li>
+</ul>
+</div>
+<div class="cmp-card right">
+<div class="cmp-card-head"><span class="dot"></span> sleep()</div>
+<ul>
+<li>Throttling, retry backoff, simulating delay in tests.</li>
+<li>Polling loops (though usually a smell).</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="takeaway">
+<b>Remember:</b> both throw <code>InterruptedException</code>. When you catch it, either propagate it or re-set the interrupt flag with <code>Thread.currentThread().interrupt()</code>. Swallowing it silently is one of the most common bugs in legacy Java code.
           </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> Where it's defined</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> wait()</div>
-                <ul>
-                  <li>Instance method on <code>Object</code>.</li>
-                  <li>Called as <code>obj.wait()</code> — must hold <code>obj</code>'s monitor.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> sleep()</div>
-                <ul>
-                  <li>Static method on <code>Thread</code>.</li>
-                  <li>Called as <code>Thread.sleep(ms)</code> — affects current thread.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> Lock Behavior</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> wait()</div>
-                <ul>
-                  <li><strong>Releases</strong> the monitor while waiting — other threads can enter synchronized blocks on the same lock.</li>
-                  <li>Re-acquires the monitor before returning.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> sleep()</div>
-                <ul>
-                  <li><strong>Does NOT release</strong> any locks.</li>
-                  <li>If called inside a synchronized block, every other thread waiting on that lock stays blocked.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> How it Wakes Up</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> wait()</div>
-                <ul>
-                  <li>Another thread calls <code>obj.notify()</code> / <code>obj.notifyAll()</code>.</li>
-                  <li>Optional timeout (<code>wait(ms)</code>).</li>
-                  <li>Interruption (<code>InterruptedException</code>).</li>
-                  <li>Spurious wakeups happen — <strong>always wait in a <code>while</code> loop</strong>.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> sleep()</div>
-                <ul>
-                  <li>The duration expires.</li>
-                  <li>Or another thread interrupts it (<code>InterruptedException</code>).</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">4</span> Use Case</div>
-            <div class="cmp-grid">
-              <div class="cmp-card left">
-                <div class="cmp-card-head"><span class="dot"></span> wait()</div>
-                <ul>
-                  <li>Inter-thread coordination — producer/consumer, signaling.</li>
-                  <li>Modern code prefers <code>BlockingQueue</code>, <code>CountDownLatch</code>, <code>Condition</code>.</li>
-                </ul>
-              </div>
-              <div class="cmp-card right">
-                <div class="cmp-card-head"><span class="dot"></span> sleep()</div>
-                <ul>
-                  <li>Throttling, retry backoff, simulating delay in tests.</li>
-                  <li>Polling loops (though usually a smell).</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="takeaway">
-            <b>Remember:</b> both throw <code>InterruptedException</code>. When you catch it, either propagate it or re-set the interrupt flag with <code>Thread.currentThread().interrupt()</code>. Swallowing it silently is one of the most common bugs in legacy Java code.
-          </div>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>What is a deadlock? How do you avoid it? <span class="qa-tag hot">hot</span></summary>
-        <div class="qa-body">
-          <p>A <strong>deadlock</strong> is when two or more threads each hold a resource the other needs and wait forever. Classic example: thread A holds lock 1 and wants lock 2; thread B holds lock 2 and wants lock 1.</p>
-          <p>Coffman's four conditions are all needed: mutual exclusion, hold and wait, no preemption, and circular wait. Break any one of them.</p>
-          <p>Prevention strategies:</p>
-          <ul>
-            <li><strong>Lock ordering</strong> — always acquire locks in the same global order (e.g., by account ID ascending). This is the most practical fix.</li>
-            <li><strong>tryLock with timeout</strong> — use <code>ReentrantLock.tryLock(t, unit)</code> and back off if the lock isn't acquired in time.</li>
-            <li><strong>Reduce lock scope</strong> — hold locks for the minimum critical section.</li>
-            <li>Avoid nested locks when possible.</li>
-          </ul>
-          <p>Diagnosis: take a thread dump (<code>jstack</code>); it explicitly says <em>"Found one Java-level deadlock"</em>.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>volatile keyword — what does it guarantee?</summary>
-        <div class="qa-body">
-          <p><strong><code>volatile</code></strong> on a field guarantees two things: <strong>(1) visibility</strong> — writes by one thread are immediately visible to reads by other threads (no thread-local cache), and <strong>(2) ordering</strong> — a write to a volatile field happens-before any subsequent read of it.</p>
-          <p>What it does <em>not</em> give you: atomicity for compound operations. <code>volatile int counter; counter++</code> is still racy because <code>counter++</code> is read–modify–write — three steps that can interleave. For that, use <code>AtomicInteger.incrementAndGet()</code>.</p>
-          <p>Typical use: a single boolean <code>volatile boolean running</code> for stop flags, or single-reference publication of an immutable config object. For anything more complex, reach for <code>java.util.concurrent</code> primitives.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>ExecutorService — why not raw threads?</summary>
-        <div class="qa-body">
-          <p>Raw threads (<code>new Thread(r).start()</code>) are expensive to create and uncontrolled — under load you can spawn thousands and exhaust memory. <strong><code>ExecutorService</code></strong> separates task submission from thread management: you submit tasks (<code>Runnable</code>/<code>Callable</code>), the pool runs them on a bounded set of worker threads.</p>
-          <p>Common factories in <code>Executors</code>:</p>
-          <ul>
-            <li><code>newFixedThreadPool(n)</code> — n workers; tasks queue when busy.</li>
-            <li><code>newCachedThreadPool()</code> — unbounded workers; reuses idle. <strong>Dangerous in production</strong> — can spawn thousands.</li>
-            <li><code>newScheduledThreadPool(n)</code> — for delayed/periodic tasks.</li>
-            <li><code>newVirtualThreadPerTaskExecutor()</code> — Java 21, one virtual thread per task.</li>
-          </ul>
-          <p>In production I prefer constructing <code>ThreadPoolExecutor</code> directly to control queue size, rejection policy, and core/max thread counts. Always shut down with <code>shutdown()</code> + <code>awaitTermination()</code>.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Thread pool tuning in Java applications — sizing and parameters <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p class="answer-intro">A correctly sized thread pool is the difference between a service that scales linearly and one that thrashes under load. Most production tuning bugs come from <strong>misunderstanding how <code>ThreadPoolExecutor</code> actually grows threads</strong>, choosing the wrong queue, picking a CPU-bound formula for an I/O-bound workload, or forgetting the rejection policy.</p>
-
-          <div class="core-diff">
-            <div class="core-diff-row">
-              <span class="core-diff-key">CORE IDEA</span>
-              <span class="core-diff-val">Tasks first fill <strong>core</strong> threads → then <strong>queue</strong> → then grow to <strong>max</strong> threads only if the queue is <em>full</em> → then the <strong>rejection policy</strong> fires. Size the pool from the workload type (CPU vs I/O), pick a <strong>bounded queue</strong>, and choose a rejection policy that creates back-pressure (<code>CallerRunsPolicy</code>) instead of dropping work.</span>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">1</span> The full constructor</div>
-            <pre><code>new ThreadPoolExecutor(
+</div>
+</details>
+<details class="qa">
+<summary>What is a deadlock? How do you avoid it? <span class="qa-tag hot">hot</span></summary>
+<div class="qa-body">
+<p>A <strong>deadlock</strong> is when two or more threads each hold a resource the other needs and wait forever. Classic example: thread A holds lock 1 and wants lock 2; thread B holds lock 2 and wants lock 1.</p>
+<p>Coffman's four conditions are all needed: mutual exclusion, hold and wait, no preemption, and circular wait. Break any one of them.</p>
+<p>Prevention strategies:</p>
+<ul>
+<li><strong>Lock ordering</strong> — always acquire locks in the same global order (e.g., by account ID ascending). This is the most practical fix.</li>
+<li><strong>tryLock with timeout</strong> — use <code>ReentrantLock.tryLock(t, unit)</code> and back off if the lock isn't acquired in time.</li>
+<li><strong>Reduce lock scope</strong> — hold locks for the minimum critical section.</li>
+<li>Avoid nested locks when possible.</li>
+</ul>
+<p>Diagnosis: take a thread dump (<code>jstack</code>); it explicitly says <em>"Found one Java-level deadlock"</em>.</p>
+</div>
+</details>
+<details class="qa">
+<summary>volatile keyword — what does it guarantee?</summary>
+<div class="qa-body">
+<p><strong><code>volatile</code></strong> on a field guarantees two things: <strong>(1) visibility</strong> — writes by one thread are immediately visible to reads by other threads (no thread-local cache), and <strong>(2) ordering</strong> — a write to a volatile field happens-before any subsequent read of it.</p>
+<p>What it does <em>not</em> give you: atomicity for compound operations. <code>volatile int counter; counter++</code> is still racy because <code>counter++</code> is read–modify–write — three steps that can interleave. For that, use <code>AtomicInteger.incrementAndGet()</code>.</p>
+<p>Typical use: a single boolean <code>volatile boolean running</code> for stop flags, or single-reference publication of an immutable config object. For anything more complex, reach for <code>java.util.concurrent</code> primitives.</p>
+</div>
+</details>
+<details class="qa">
+<summary>ExecutorService — why not raw threads?</summary>
+<div class="qa-body">
+<p>Raw threads (<code>new Thread(r).start()</code>) are expensive to create and uncontrolled — under load you can spawn thousands and exhaust memory. <strong><code>ExecutorService</code></strong> separates task submission from thread management: you submit tasks (<code>Runnable</code>/<code>Callable</code>), the pool runs them on a bounded set of worker threads.</p>
+<p>Common factories in <code>Executors</code>:</p>
+<ul>
+<li><code>newFixedThreadPool(n)</code> — n workers; tasks queue when busy.</li>
+<li><code>newCachedThreadPool()</code> — unbounded workers; reuses idle. <strong>Dangerous in production</strong> — can spawn thousands.</li>
+<li><code>newScheduledThreadPool(n)</code> — for delayed/periodic tasks.</li>
+<li><code>newVirtualThreadPerTaskExecutor()</code> — Java 21, one virtual thread per task.</li>
+</ul>
+<p>In production I prefer constructing <code>ThreadPoolExecutor</code> directly to control queue size, rejection policy, and core/max thread counts. Always shut down with <code>shutdown()</code> + <code>awaitTermination()</code>.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Thread pool tuning in Java applications — sizing and parameters <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p class="answer-intro">A correctly sized thread pool is the difference between a service that scales linearly and one that thrashes under load. Most production tuning bugs come from <strong>misunderstanding how <code>ThreadPoolExecutor</code> actually grows threads</strong>, choosing the wrong queue, picking a CPU-bound formula for an I/O-bound workload, or forgetting the rejection policy.</p>
+<div class="core-diff">
+<div class="core-diff-row">
+<span class="core-diff-key">CORE IDEA</span>
+<span class="core-diff-val">Tasks first fill <strong>core</strong> threads → then <strong>queue</strong> → then grow to <strong>max</strong> threads only if the queue is <em>full</em> → then the <strong>rejection policy</strong> fires. Size the pool from the workload type (CPU vs I/O), pick a <strong>bounded queue</strong>, and choose a rejection policy that creates back-pressure (<code>CallerRunsPolicy</code>) instead of dropping work.</span>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">1</span> The full constructor</div>
+<pre><code>new ThreadPoolExecutor(
     int corePoolSize,                  // always-warm threads
     int maximumPoolSize,               // upper limit
     long keepAliveTime,                // idle timeout for above-core threads
@@ -360,87 +333,82 @@
     ThreadFactory threadFactory,        // name your threads!
     RejectedExecutionHandler handler    // what happens when both pool and queue are full
 );</code></pre>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">2</span> How it actually grows threads (the gotcha)</div>
-            <div class="flow">
-              <div class="flow-step">Submit task</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">If active threads &lt; <code>corePoolSize</code> → create a new thread</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">Else if queue has space → enqueue (no new thread!)</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step">Else if active threads &lt; <code>maximumPoolSize</code> → create a new thread</div>
-              <div class="flow-arrow">↓</div>
-              <div class="flow-step accent">Else → <code>RejectedExecutionHandler</code> fires</div>
-            </div>
-            <p class="solution-desc">Most engineers expect "grow to max first, then queue" — it's the <em>opposite</em>. That's why <code>newFixedThreadPool</code> with its <code>LinkedBlockingQueue</code> (unbounded) never grows beyond <code>corePoolSize</code> and can OOM under sustained load. Pick a <strong>bounded queue</strong> (e.g., <code>ArrayBlockingQueue</code>) for production.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">3</span> Sizing — by workload type</div>
-            <div class="note-table-wrap">
-              <table class="note-table">
-                <thead><tr><th>Workload</th><th>Formula</th><th>Example</th></tr></thead>
-                <tbody>
-                  <tr><td><strong>CPU-bound</strong></td><td>≈ number of cores (or cores + 1 for hyper-threading slack)</td><td>Image transform, encryption, in-memory compute → 8 cores → ~8 threads</td></tr>
-                  <tr><td><strong>I/O-bound</strong></td><td>Little's law: <code>N = cores × targetCpuUtil × (1 + waitTime/computeTime)</code></td><td>Mostly waiting on DB/HTTP → cores × 10 → 50–200 threads</td></tr>
-                  <tr><td><strong>Mixed</strong></td><td>Split into two pools, one per workload type — bulkhead</td><td>API thread pool + DB-write pool + downstream-call pool</td></tr>
-                  <tr><td><strong>Tomcat / web layer</strong></td><td>Sized for concurrent in-flight requests; typically 100–400</td><td>Each thread blocks on DB / downstream → high count justified</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <p>Always validate with a load test — formulas give you a starting point; production behaviour wins.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">4</span> Queue choice matters as much as size</div>
-            <div class="cmp-grid">
-              <div class="cmp-card">
-                <div class="cmp-card-title">Bounded ArrayBlockingQueue</div>
-                <ul>
-                  <li>Fixed capacity → memory-safe.</li>
-                  <li>When full, pool grows to max, then rejects.</li>
-                  <li><strong>Recommended</strong> for production.</li>
-                </ul>
-              </div>
-              <div class="cmp-card">
-                <div class="cmp-card-title">Unbounded LinkedBlockingQueue</div>
-                <ul>
-                  <li>Default in <code>newFixedThreadPool</code>.</li>
-                  <li>Pool never grows past core; queue can OOM under load.</li>
-                  <li>Use only if you fully control input rate.</li>
-                </ul>
-              </div>
-              <div class="cmp-card">
-                <div class="cmp-card-title">SynchronousQueue</div>
-                <ul>
-                  <li>No buffering — direct hand-off; pool must grow to handle each task.</li>
-                  <li>Used by <code>newCachedThreadPool</code> — unbounded thread growth, dangerous.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">5</span> Rejection policies — pick back-pressure over dropping</div>
-            <div class="note-table-wrap">
-              <table class="note-table">
-                <thead><tr><th>Policy</th><th>What it does</th><th>When to use</th></tr></thead>
-                <tbody>
-                  <tr><td><code>AbortPolicy</code> (default)</td><td>Throws <code>RejectedExecutionException</code></td><td>API endpoints — surface a 503 to the caller</td></tr>
-                  <tr><td><code>CallerRunsPolicy</code></td><td>Caller thread runs the task</td><td><strong>Best for back-pressure</strong> on producers — slows them down naturally</td></tr>
-                  <tr><td><code>DiscardPolicy</code></td><td>Silently drops the task</td><td>Almost never; metrics-only fire-and-forget</td></tr>
-                  <tr><td><code>DiscardOldestPolicy</code></td><td>Drops the oldest queued task</td><td>Rare — when newer is more important than older</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">6</span> Spring Boot — declarative pool</div>
-            <pre><code>@Bean("ioExecutor")
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">2</span> How it actually grows threads (the gotcha)</div>
+<div class="flow">
+<div class="flow-step">Submit task</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">If active threads &lt; <code>corePoolSize</code> → create a new thread</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Else if queue has space → enqueue (no new thread!)</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step">Else if active threads &lt; <code>maximumPoolSize</code> → create a new thread</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-step accent">Else → <code>RejectedExecutionHandler</code> fires</div>
+</div>
+<p class="solution-desc">Most engineers expect "grow to max first, then queue" — it's the <em>opposite</em>. That's why <code>newFixedThreadPool</code> with its <code>LinkedBlockingQueue</code> (unbounded) never grows beyond <code>corePoolSize</code> and can OOM under sustained load. Pick a <strong>bounded queue</strong> (e.g., <code>ArrayBlockingQueue</code>) for production.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">3</span> Sizing — by workload type</div>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead><tr><th>Workload</th><th>Formula</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td><strong>CPU-bound</strong></td><td>≈ number of cores (or cores + 1 for hyper-threading slack)</td><td>Image transform, encryption, in-memory compute → 8 cores → ~8 threads</td></tr>
+<tr><td><strong>I/O-bound</strong></td><td>Little's law: <code>N = cores × targetCpuUtil × (1 + waitTime/computeTime)</code></td><td>Mostly waiting on DB/HTTP → cores × 10 → 50–200 threads</td></tr>
+<tr><td><strong>Mixed</strong></td><td>Split into two pools, one per workload type — bulkhead</td><td>API thread pool + DB-write pool + downstream-call pool</td></tr>
+<tr><td><strong>Tomcat / web layer</strong></td><td>Sized for concurrent in-flight requests; typically 100–400</td><td>Each thread blocks on DB / downstream → high count justified</td></tr>
+</tbody>
+</table>
+</div>
+<p>Always validate with a load test — formulas give you a starting point; production behaviour wins.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">4</span> Queue choice matters as much as size</div>
+<div class="cmp-grid">
+<div class="cmp-card">
+<div class="cmp-card-title">Bounded ArrayBlockingQueue</div>
+<ul>
+<li>Fixed capacity → memory-safe.</li>
+<li>When full, pool grows to max, then rejects.</li>
+<li><strong>Recommended</strong> for production.</li>
+</ul>
+</div>
+<div class="cmp-card">
+<div class="cmp-card-title">Unbounded LinkedBlockingQueue</div>
+<ul>
+<li>Default in <code>newFixedThreadPool</code>.</li>
+<li>Pool never grows past core; queue can OOM under load.</li>
+<li>Use only if you fully control input rate.</li>
+</ul>
+</div>
+<div class="cmp-card">
+<div class="cmp-card-title">SynchronousQueue</div>
+<ul>
+<li>No buffering — direct hand-off; pool must grow to handle each task.</li>
+<li>Used by <code>newCachedThreadPool</code> — unbounded thread growth, dangerous.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">5</span> Rejection policies — pick back-pressure over dropping</div>
+<div class="note-table-wrap">
+<table class="note-table">
+<thead><tr><th>Policy</th><th>What it does</th><th>When to use</th></tr></thead>
+<tbody>
+<tr><td><code>AbortPolicy</code> (default)</td><td>Throws <code>RejectedExecutionException</code></td><td>API endpoints — surface a 503 to the caller</td></tr>
+<tr><td><code>CallerRunsPolicy</code></td><td>Caller thread runs the task</td><td><strong>Best for back-pressure</strong> on producers — slows them down naturally</td></tr>
+<tr><td><code>DiscardPolicy</code></td><td>Silently drops the task</td><td>Almost never; metrics-only fire-and-forget</td></tr>
+<tr><td><code>DiscardOldestPolicy</code></td><td>Drops the oldest queued task</td><td>Rare — when newer is more important than older</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">6</span> Spring Boot — declarative pool</div>
+<pre><code>@Bean("ioExecutor")
 public ThreadPoolTaskExecutor ioExecutor(MeterRegistry registry) {
     ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
     ex.setCorePoolSize(20);
@@ -456,108 +424,261 @@ public ThreadPoolTaskExecutor ioExecutor(MeterRegistry registry) {
                                List.of()).bindTo(registry);    // Micrometer
     return ex;
 }</code></pre>
-            <p>Always export pool metrics — active threads, queue depth, completed tasks, rejections — to Prometheus. The first sign of trouble is a growing queue.</p>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">7</span> Production tuning checklist</div>
-            <ul>
-              <li>Bound the queue. Always.</li>
-              <li>Name threads via <code>ThreadFactory</code> — invaluable in thread dumps.</li>
-              <li>Use <strong>per-dependency pools</strong> (bulkheads) so one slow downstream doesn't drain the global pool.</li>
-              <li>Pick <code>CallerRunsPolicy</code> for back-pressure or <code>AbortPolicy</code> + 503 for HTTP services.</li>
-              <li>Export metrics: <code>active</code>, <code>queue.size</code>, <code>queue.remaining</code>, <code>rejected</code>, <code>completed</code>.</li>
-              <li>Alert on <code>queue.size</code> close to capacity or any rejections.</li>
-              <li>Configure graceful shutdown (<code>setWaitForTasksToCompleteOnShutdown(true)</code>).</li>
-              <li>Validate with a load test that gradually exceeds capacity — observe behavior at saturation.</li>
-            </ul>
-          </div>
-
-          <div class="cmp-section">
-            <div class="cmp-section-title"><span class="cmp-num">8</span> Common interview gotchas</div>
-            <ul>
-              <li>The growth order is <strong>core → queue → max → reject</strong>, not "core → max → queue".</li>
-              <li><code>newFixedThreadPool</code> uses an unbounded queue → silent OOM risk.</li>
-              <li><code>newCachedThreadPool</code> grows threads without limit → can crash the JVM.</li>
-              <li>CPU-bound formulas applied to I/O workloads under-utilize cores → low throughput.</li>
-              <li>I/O-bound formulas applied to CPU workloads → context-switch thrash.</li>
-              <li>One global pool for everything = no bulkhead = one slow downstream takes the whole service down.</li>
-              <li>Pool sizing depends on the JVM cgroup CPU limits in containers — check with <code>Runtime.availableProcessors()</code>.</li>
-              <li>Virtual threads (Java 21+) make many of these tradeoffs irrelevant for pure I/O — but you still need pools for CPU-bound work.</li>
-              <li>Forgetting to set thread names → impossible to debug a thread dump.</li>
-              <li>Default rejection of tasks → silent failures unless you wire <code>CallerRunsPolicy</code> or surface a 503.</li>
-            </ul>
-          </div>
-
-          <p class="takeaway"><b>Interview one-liner:</b> Tune a thread pool by understanding its growth order — <strong>core → queue → max → reject</strong> — and choosing each piece deliberately. Size from workload type: <strong>~cores</strong> for CPU-bound, <strong>cores × (1 + waitTime/computeTime)</strong> for I/O-bound. Use a <strong>bounded queue</strong> (<code>ArrayBlockingQueue</code>) and a back-pressure rejection policy (<code>CallerRunsPolicy</code>) — never <code>newCachedThreadPool</code> or <code>newFixedThreadPool</code> in production. Use <strong>per-dependency bulkhead pools</strong> so one slow downstream doesn't drain the global pool. Always name threads, export pool metrics to Prometheus (active / queue size / rejections), and configure graceful shutdown. Validate sizing with a load test that pushes past capacity.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Callable vs Runnable, Future, CompletableFuture</summary>
-        <div class="qa-body">
-          <p><strong><code>Runnable</code></strong> — <code>void run()</code>, can't throw checked exceptions, no return value. <strong><code>Callable&lt;V&gt;</code></strong> — <code>V call() throws Exception</code>, returns a value and can throw.</p>
-          <p>Submit a Callable to ExecutorService and get back a <strong><code>Future&lt;V&gt;</code></strong> — represents the pending result. <code>future.get()</code> blocks until done; <code>future.get(timeout)</code> blocks with timeout. Future is limited: no chaining, no composition, no callbacks.</p>
-          <p><strong><code>CompletableFuture&lt;V&gt;</code></strong> is the modern replacement. It can be composed (<code>thenApply</code>, <code>thenCompose</code>, <code>thenCombine</code>), supports callbacks (<code>thenAccept</code>), exception handling (<code>exceptionally</code>, <code>handle</code>), and waiting (<code>allOf</code>, <code>anyOf</code>). I use it for fan-out parallel calls to multiple downstreams.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Atomic classes — how do they work?</summary>
-        <div class="qa-body">
-          <p>Classes in <code>java.util.concurrent.atomic</code> — <code>AtomicInteger</code>, <code>AtomicLong</code>, <code>AtomicReference</code>, <code>AtomicBoolean</code> — provide lock-free thread-safe operations using <strong>Compare-And-Swap (CAS)</strong> instructions provided by the CPU.</p>
-          <p>Example: <code>AtomicInteger.incrementAndGet()</code> reads the value, computes value+1, then CAS — if no other thread has changed the value in the meantime, the write succeeds; otherwise it retries. No locks, no thread parking, very fast under low–moderate contention.</p>
-          <p>Under <em>very high</em> contention, retries dominate and performance drops. For hot counters, prefer <strong><code>LongAdder</code></strong> and <strong><code>LongAccumulator</code></strong> — they shard updates across multiple cells and sum on read. I used <code>LongAdder</code> for request-rate metrics at Indus Net and saw measurable throughput improvement under load.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Race condition vs data race — fixing one</summary>
-        <div class="qa-body">
-          <p>A <strong>data race</strong> is two threads accessing the same memory location concurrently, at least one writing, with no synchronization. It's a specific JMM violation that causes undefined behavior — torn writes, stale reads.</p>
-          <p>A <strong>race condition</strong> is a broader bug — program correctness depends on timing. Example: a check-then-act on a HashMap (<code>if (!map.contains(k)) map.put(k, v);</code>) — two threads might both see "not contains" and both put.</p>
-          <p>Fixes: <code>synchronized</code> blocks, <code>java.util.concurrent</code> atomic methods (<code>computeIfAbsent</code>), or atomic primitives. At Indus Net I had a race on a session cache — fixed by switching from <code>HashMap</code> with synchronized blocks to <code>ConcurrentHashMap.computeIfAbsent</code>. Always reach for <em>atomic</em> compound methods on concurrent collections rather than rolling your own.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>CountDownLatch vs CyclicBarrier vs Semaphore</summary>
-        <div class="qa-body">
-          <p><strong><code>CountDownLatch(n)</code></strong> — a one-shot counter. One or more threads <code>await()</code> until other threads have called <code>countDown()</code> n times. Use to wait for several initialization tasks to complete. Not reusable.</p>
-          <p><strong><code>CyclicBarrier(n)</code></strong> — n threads call <code>await()</code> and all block until the n-th arrives, then all proceed together. <strong>Reusable</strong> — it resets automatically. Use for repeated phased computations (like simulation rounds).</p>
-          <p><strong><code>Semaphore(n)</code></strong> — n permits. Threads <code>acquire()</code> a permit (blocking if none available) and <code>release()</code> when done. Use for rate-limiting or bounding concurrent access to a resource — e.g., limit concurrent HTTP calls to a downstream service.</p>
-          <p>Mnemonic: latch = wait for events, barrier = sync threads, semaphore = throttle access.</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>ThreadLocal — when and what to watch for</summary>
-        <div class="qa-body">
-          <p><strong><code>ThreadLocal&lt;T&gt;</code></strong> gives each thread its own private copy of a value. Common uses: per-request context (user ID, trace ID, locale), <code>SimpleDateFormat</code> (which is not thread-safe), DB connections in legacy patterns.</p>
-          <p>Two big pitfalls. <strong>(1) Memory leaks in thread pools.</strong> Pool threads live forever; if you set a ThreadLocal and don't remove it, the value sticks around — and if it references a large object or a classloader, you've leaked memory. <strong>Always call <code>threadLocal.remove()</code> in a finally block</strong> (Spring's <code>RequestContextHolder</code> does this; custom code often doesn't).</p>
-          <p><strong>(2) Inheritance</strong> — child threads don't inherit. Use <code>InheritableThreadLocal</code> if needed, but be careful with thread pools where threads aren't really "children". Modern alternative: <strong>ScopedValue</strong> (Java 21, preview).</p>
-        </div>
-      </details>
-
-      <details class="qa">
-        <summary>Virtual threads — should I use them? <span class="qa-tag must">must</span></summary>
-        <div class="qa-body">
-          <p><strong>Yes — for I/O-bound workloads</strong>, which is most server-side Java. Virtual threads (Java 21) are JVM-managed, ~few KB each, and the JVM unmounts them from a carrier OS thread when they block on I/O. You can run a million of them.</p>
-          <p>Where they win:</p>
-          <ul>
-            <li>Microservices doing remote calls (HTTP, DB, Kafka).</li>
-            <li>Replacing thread-pool sizing headaches — one virtual thread per task is fine.</li>
-            <li>Writing blocking-style code without reactive complexity.</li>
-          </ul>
-          <p>Where they don't help: <strong>CPU-bound</strong> work — still bounded by cores. <strong>Pinned threads</strong> — code inside <code>synchronized</code> doing I/O pins the carrier; use <code>ReentrantLock</code> instead. Also be careful with <code>ThreadLocal</code> in code that may run on millions of threads.</p>
-          <p>I've started using them on internal services with great results — sometimes 5–10× throughput.</p>
-        </div>
-      </details>
-
-    </div>
-
-  </main>
-
-  <script src="main.js"></script>
+<p>Always export pool metrics — active threads, queue depth, completed tasks, rejections — to Prometheus. The first sign of trouble is a growing queue.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">7</span> Production tuning checklist</div>
+<ul>
+<li>Bound the queue. Always.</li>
+<li>Name threads via <code>ThreadFactory</code> — invaluable in thread dumps.</li>
+<li>Use <strong>per-dependency pools</strong> (bulkheads) so one slow downstream doesn't drain the global pool.</li>
+<li>Pick <code>CallerRunsPolicy</code> for back-pressure or <code>AbortPolicy</code> + 503 for HTTP services.</li>
+<li>Export metrics: <code>active</code>, <code>queue.size</code>, <code>queue.remaining</code>, <code>rejected</code>, <code>completed</code>.</li>
+<li>Alert on <code>queue.size</code> close to capacity or any rejections.</li>
+<li>Configure graceful shutdown (<code>setWaitForTasksToCompleteOnShutdown(true)</code>).</li>
+<li>Validate with a load test that gradually exceeds capacity — observe behavior at saturation.</li>
+</ul>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title"><span class="cmp-num">8</span> Common interview gotchas</div>
+<ul>
+<li>The growth order is <strong>core → queue → max → reject</strong>, not "core → max → queue".</li>
+<li><code>newFixedThreadPool</code> uses an unbounded queue → silent OOM risk.</li>
+<li><code>newCachedThreadPool</code> grows threads without limit → can crash the JVM.</li>
+<li>CPU-bound formulas applied to I/O workloads under-utilize cores → low throughput.</li>
+<li>I/O-bound formulas applied to CPU workloads → context-switch thrash.</li>
+<li>One global pool for everything = no bulkhead = one slow downstream takes the whole service down.</li>
+<li>Pool sizing depends on the JVM cgroup CPU limits in containers — check with <code>Runtime.availableProcessors()</code>.</li>
+<li>Virtual threads (Java 21+) make many of these tradeoffs irrelevant for pure I/O — but you still need pools for CPU-bound work.</li>
+<li>Forgetting to set thread names → impossible to debug a thread dump.</li>
+<li>Default rejection of tasks → silent failures unless you wire <code>CallerRunsPolicy</code> or surface a 503.</li>
+</ul>
+</div>
+<p class="takeaway"><b>Interview one-liner:</b> Tune a thread pool by understanding its growth order — <strong>core → queue → max → reject</strong> — and choosing each piece deliberately. Size from workload type: <strong>~cores</strong> for CPU-bound, <strong>cores × (1 + waitTime/computeTime)</strong> for I/O-bound. Use a <strong>bounded queue</strong> (<code>ArrayBlockingQueue</code>) and a back-pressure rejection policy (<code>CallerRunsPolicy</code>) — never <code>newCachedThreadPool</code> or <code>newFixedThreadPool</code> in production. Use <strong>per-dependency bulkhead pools</strong> so one slow downstream doesn't drain the global pool. Always name threads, export pool metrics to Prometheus (active / queue size / rejections), and configure graceful shutdown. Validate sizing with a load test that pushes past capacity.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Callable vs Runnable, Future, CompletableFuture</summary>
+<div class="qa-body">
+<p><strong><code>Runnable</code></strong> — <code>void run()</code>, can't throw checked exceptions, no return value. <strong><code>Callable&lt;V&gt;</code></strong> — <code>V call() throws Exception</code>, returns a value and can throw.</p>
+<p>Submit a Callable to ExecutorService and get back a <strong><code>Future&lt;V&gt;</code></strong> — represents the pending result. <code>future.get()</code> blocks until done; <code>future.get(timeout)</code> blocks with timeout. Future is limited: no chaining, no composition, no callbacks.</p>
+<p><strong><code>CompletableFuture&lt;V&gt;</code></strong> is the modern replacement. It can be composed (<code>thenApply</code>, <code>thenCompose</code>, <code>thenCombine</code>), supports callbacks (<code>thenAccept</code>), exception handling (<code>exceptionally</code>, <code>handle</code>), and waiting (<code>allOf</code>, <code>anyOf</code>). I use it for fan-out parallel calls to multiple downstreams.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Atomic classes — how do they work?</summary>
+<div class="qa-body">
+<p>Classes in <code>java.util.concurrent.atomic</code> — <code>AtomicInteger</code>, <code>AtomicLong</code>, <code>AtomicReference</code>, <code>AtomicBoolean</code> — provide lock-free thread-safe operations using <strong>Compare-And-Swap (CAS)</strong> instructions provided by the CPU.</p>
+<p>Example: <code>AtomicInteger.incrementAndGet()</code> reads the value, computes value+1, then CAS — if no other thread has changed the value in the meantime, the write succeeds; otherwise it retries. No locks, no thread parking, very fast under low–moderate contention.</p>
+<p>Under <em>very high</em> contention, retries dominate and performance drops. For hot counters, prefer <strong><code>LongAdder</code></strong> and <strong><code>LongAccumulator</code></strong> — they shard updates across multiple cells and sum on read. I used <code>LongAdder</code> for request-rate metrics at Indus Net and saw measurable throughput improvement under load.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Race condition vs data race — fixing one</summary>
+<div class="qa-body">
+<p>A <strong>data race</strong> is two threads accessing the same memory location concurrently, at least one writing, with no synchronization. It's a specific JMM violation that causes undefined behavior — torn writes, stale reads.</p>
+<p>A <strong>race condition</strong> is a broader bug — program correctness depends on timing. Example: a check-then-act on a HashMap (<code>if (!map.contains(k)) map.put(k, v);</code>) — two threads might both see "not contains" and both put.</p>
+<p>Fixes: <code>synchronized</code> blocks, <code>java.util.concurrent</code> atomic methods (<code>computeIfAbsent</code>), or atomic primitives. At Indus Net I had a race on a session cache — fixed by switching from <code>HashMap</code> with synchronized blocks to <code>ConcurrentHashMap.computeIfAbsent</code>. Always reach for <em>atomic</em> compound methods on concurrent collections rather than rolling your own.</p>
+</div>
+</details>
+<details class="qa">
+<summary>CountDownLatch vs CyclicBarrier vs Semaphore</summary>
+<div class="qa-body">
+<p><strong><code>CountDownLatch(n)</code></strong> — a one-shot counter. One or more threads <code>await()</code> until other threads have called <code>countDown()</code> n times. Use to wait for several initialization tasks to complete. Not reusable.</p>
+<p><strong><code>CyclicBarrier(n)</code></strong> — n threads call <code>await()</code> and all block until the n-th arrives, then all proceed together. <strong>Reusable</strong> — it resets automatically. Use for repeated phased computations (like simulation rounds).</p>
+<p><strong><code>Semaphore(n)</code></strong> — n permits. Threads <code>acquire()</code> a permit (blocking if none available) and <code>release()</code> when done. Use for rate-limiting or bounding concurrent access to a resource — e.g., limit concurrent HTTP calls to a downstream service.</p>
+<p>Mnemonic: latch = wait for events, barrier = sync threads, semaphore = throttle access.</p>
+</div>
+</details>
+<details class="qa">
+<summary>ThreadLocal — when and what to watch for</summary>
+<div class="qa-body">
+<p><strong><code>ThreadLocal&lt;T&gt;</code></strong> gives each thread its own private copy of a value. Common uses: per-request context (user ID, trace ID, locale), <code>SimpleDateFormat</code> (which is not thread-safe), DB connections in legacy patterns.</p>
+<p>Two big pitfalls. <strong>(1) Memory leaks in thread pools.</strong> Pool threads live forever; if you set a ThreadLocal and don't remove it, the value sticks around — and if it references a large object or a classloader, you've leaked memory. <strong>Always call <code>threadLocal.remove()</code> in a finally block</strong> (Spring's <code>RequestContextHolder</code> does this; custom code often doesn't).</p>
+<p><strong>(2) Inheritance</strong> — child threads don't inherit. Use <code>InheritableThreadLocal</code> if needed, but be careful with thread pools where threads aren't really "children". Modern alternative: <strong>ScopedValue</strong> (Java 21, preview).</p>
+</div>
+</details>
+<details class="qa">
+<summary>Virtual threads — should I use them? <span class="qa-tag must">must</span></summary>
+<div class="qa-body">
+<p><strong>Yes — for I/O-bound workloads</strong>, which is most server-side Java. Virtual threads (Java 21) are JVM-managed, ~few KB each, and the JVM unmounts them from a carrier OS thread when they block on I/O. You can run a million of them.</p>
+<p>Where they win:</p>
+<ul>
+<li>Microservices doing remote calls (HTTP, DB, Kafka).</li>
+<li>Replacing thread-pool sizing headaches — one virtual thread per task is fine.</li>
+<li>Writing blocking-style code without reactive complexity.</li>
+</ul>
+<p>Where they don't help: <strong>CPU-bound</strong> work — still bounded by cores. <strong>Pinned threads</strong> — code inside <code>synchronized</code> doing I/O pins the carrier; use <code>ReentrantLock</code> instead. Also be careful with <code>ThreadLocal</code> in code that may run on millions of threads.</p>
+<p>I've started using them on internal services with great results — sometimes 5–10× throughput.</p>
+</div>
+</details>
+<details class="qa">
+<summary>Difference between process and thread. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">A <strong>process</strong> is an independent program with its own memory space; a <strong>thread</strong> is a lightweight unit of execution within a process sharing the same heap memory.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Process</div>
+<p>Isolated memory space (heap, stack, code segment); process crash doesn't affect others.</p>
+<p>IPC (Inter-Process Communication) needed to share data between processes — expensive.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Thread</div>
+<p>Shares heap with other threads in the same JVM; only has its own stack and program counter.</p>
+<p>Context switch between threads is cheaper than process switch; enables parallelism within one JVM.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">JVM context</div>
+<p>Each JVM process has one heap; multiple threads share it — concurrent access to shared objects requires synchronization.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>In banking Java apps, threads (via ExecutorService) parallelize work within a single JVM process.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Difference between Runnable and Callable. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Runnable</strong> defines a task with no return value and cannot throw checked exceptions; <strong>Callable</strong> returns a result via Future and can throw checked exceptions.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Runnable</div>
+<p>Interface with void run() method; submitted via execute() on ExecutorService.</p>
+<p>Cannot communicate result back to caller; exceptions must be caught internally.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Callable&lt;V&gt;</div>
+<p>Interface with V call() throws Exception; submitted via submit() returning Future&lt;V&gt;.</p>
+<p>Future.get() retrieves result (blocking) or throws ExecutionException wrapping the original exception.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking use</div>
+<p>Callable used for parallel account processing: each Callable returns a List&lt;ProcessedAccount&gt;; results collected via invokeAll().</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Prefer Callable when the task result is needed; use Runnable for fire-and-forget tasks like sending notifications.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Difference between `start()` and `run()`. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Calling <strong>start()</strong> creates a new OS thread and executes run() in that thread; calling <strong>run()</strong> directly executes the method on the current thread — no new thread created.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">start()</div>
+<p>Registers the thread with JVM, allocates thread stack, OS schedules the thread; run() executes concurrently.</p>
+<p>Can only call start() once — calling it again throws IllegalThreadStateException.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">run()</div>
+<p>Treated as a normal method call on the current thread — no concurrency, no new thread.</p>
+<p>Common mistake: thread.run() instead of thread.start() — code appears to work but runs serially.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Always call start() to actually spawn a thread — run() is just a regular method invocation.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>What is synchronization? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Synchronization</strong> controls concurrent access to shared mutable state, ensuring only one thread executes a synchronized block or method at a time for a given object's monitor.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Mechanisms</div>
+<p>synchronized method: intrinsic lock on the object (this); synchronized(obj) block for finer-grained locking.</p>
+<p>volatile: ensures visibility of variable changes across threads — not mutual exclusion; no atomicity.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking example</div>
+<p>synchronized void debit(amount): prevents two threads from simultaneously reading balance, both seeing sufficient funds, and both debiting — causing over-withdrawal.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Downsides</div>
+<p>Contention: only one thread at a time — becomes bottleneck; consider ReentrantReadWriteLock for read-heavy scenarios.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Synchronize only the minimum critical section — wide synchronized blocks kill performance.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Difference between synchronized and ReentrantLock. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>synchronized</strong> uses Java's intrinsic lock implicitly; <strong>ReentrantLock</strong> is an explicit lock with advanced features: try-lock, timed lock, interruptible lock, and fairness.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">synchronized</div>
+<p>Built into Java; automatic lock release on exception; cannot timeout or interrupt waiting thread.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">ReentrantLock</div>
+<p>tryLock(): non-blocking attempt; tryLock(time, unit): timeout attempt — prevents deadlock.</p>
+<p>lockInterruptibly(): waiting thread can be interrupted — useful for cancellation in batch processing.</p>
+<p>Fair lock: ReentrantLock(true) grants lock in FIFO order — prevents starvation but reduces throughput.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking use</div>
+<p>Account locking for fund transfer: ReentrantLock.tryLock(100ms) on both accounts — back off and retry if either unavailable.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Use ReentrantLock when you need tryLock, timeout, or interruptibility; use synchronized for simple mutual exclusion.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How to prevent deadlock? <span class="qa-tag must">must</span></summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Deadlock</strong> — two threads wait for each other's locks forever.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to prevention.</div>
+<p>Lock ordering, timeouts, smaller transactions, avoid nested locks.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>Difference between fixed thread pool and cached thread pool. </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro"><strong>Fixed thread pool</strong> maintains a constant number of threads and queues excess tasks; <strong>cached thread pool</strong> creates new threads on demand and reuses idle ones.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Fixed thread pool</div>
+<p>Executors.newFixedThreadPool(n): n threads always alive; excess tasks queued in LinkedBlockingQueue (unbounded).</p>
+<p>Predictable resource usage; good for CPU-bound tasks where n = number of processors.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Cached thread pool</div>
+<p>Executors.newCachedThreadPool(): creates new thread if none available; idle threads expire after 60s.</p>
+<p>Risk: unlimited thread creation under load — can exhaust system threads; use for short-lived tasks.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking choice</div>
+<p>Fixed pool for EOD batch (controlled parallelism); cached pool dangerous for banking under high transaction load.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>For banking services, use fixed thread pool with bounded queue (ThreadPoolExecutor) to control resource usage.</p>
+</div>
+</div>
+</details>
+<details class="qa">
+<summary>How do you debug thread issues in production? </summary>
+<div class="qa-body user-verbatim"> <p class="answer-intro">Thread issues in production (deadlock, thread leak, high CPU) are diagnosed using thread dumps, JVM monitoring tools, and analysis of lock contention patterns.</p>
+<div class="cmp-section">
+<div class="cmp-section-title">Thread dump</div>
+<p>jstack &lt;pid&gt; or kill -3 &lt;pid&gt;: captures all thread states (RUNNABLE, BLOCKED, WAITING) and their stack traces.</p>
+<p>Take 3 dumps 10 seconds apart: BLOCKED threads at same frame = deadlock or lock contention.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Tools</div>
+<p>JConsole, VisualVM: live thread monitoring, deadlock detection tab shows detected deadlock cycles.</p>
+<p>FastThread.io: paste thread dump for visual deadlock analysis and thread grouping.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Banking pattern</div>
+<p>DB connection pool exhaustion: all threads in WAITING state at DataSource.getConnection() — increase pool or fix slow queries.</p>
+</div>
+<div class="cmp-section">
+<div class="cmp-section-title">Now coming to conclusion.</div>
+<p>Thread dumps are the primary diagnostic for threading issues — learn to read them, they tell the complete story.</p>
+</div>
+</div>
+</details>
+</div>
+</main>
+<script src="main.js"></script>
 </body>
 </html>
